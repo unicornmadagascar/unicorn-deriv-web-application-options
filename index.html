@@ -9,7 +9,17 @@
   <script defer src="app.js"></script>
 
   <style>
-    body { font-family: Arial, sans-serif; margin:0; height:100vh; display:flex; flex-direction:column; background:#f8f9fa; }
+    body { 
+      transform: scale(0.8);       /* 80% du zoom */
+      transform-origin: top center; /* point d’ancrage */
+      width: 125%;                 /* compense le shrink */
+      font-family: Arial, sans-serif; 
+      margin:0; height:100vh; 
+      display:flex; 
+      flex-direction:column;
+      background:#f8f9fa; 
+    }
+
     header { display:flex; justify-content:space-between; align-items:center; padding:10px 16px; background:#fff; border-bottom:1px solid #e6e6e6; }
     #symbolList { display:flex; gap:10px; overflow-x:auto; }
     .symbol-item { padding:6px 12px; border-radius:20px; background:#eee; cursor:pointer; font-weight:600; transition:0.18s; }
