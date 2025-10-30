@@ -645,23 +645,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log("Closing all profitable trades...");
 
-    const ws = new WebSocket(WS_URL);
+    const wsCloseWinning = new WebSocket(WS_URL);
     
-    ws.onopen = () => {
-      ws.send(JSON.stringify({ authorize: TOKEN }));
+    wsCloseWinning.onopen = () => {
+      wsCloseWinning.send(JSON.stringify({ authorize: TOKEN }));
     };
 
-    ws.onerror = (e) => {
+    wsCloseWinning.onerror = (e) => {
       console.log("❌ WS Error: " + JSON.stringify(e));
     };
 
-    ws.onmessage = (msg) => {
+    wsCloseWinning.onmessage = (msg) => {
        const data = JSON.parse(msg.data);
 
       // Authorization successful
       if (data.msg_type === "authorize") {
          console.log("✅ Authorized successfully. Fetching portfolio...");
-         ws.send(JSON.stringify({ portfolio: 1 }));
+         wsCloseWinning.send(JSON.stringify({ portfolio: 1 }));
       }
 
       // Portfolio received
@@ -671,7 +671,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
          contracts.forEach((contract,i) => {
          setTimeout(() => {
-            ws.send(
+            wsCloseWinning.send(
               JSON.stringify({
                  proposal_open_contract: 1,
                  contract_id: contract.contract_id,
@@ -691,7 +691,7 @@ document.addEventListener("DOMContentLoaded", () => {
           `💰 Closing profitable trade ${poc.contract_id} with profit ${profit.toFixed(2)}`
         );
 
-        ws.send(
+        wsCloseWinning.send(
           JSON.stringify({
             sell: poc.contract_id,
             price: 0, // 0 = sell at market price
