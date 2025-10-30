@@ -1,0 +1,24 @@
+{
+  "name": "web-deriv-application",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unicornmadagascar/unicorn-deriv-web-application-options.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/unicornmadagascar/unicorn-deriv-web-application-options/issues"
+  },
+  "homepage": "https://github.com/unicornmadagascar/unicorn-deriv-web-application-options#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
