@@ -809,18 +809,18 @@ closeAll.onclick=()=>{
 // --- 🔍 Récupère tous les contrats ouverts
   function fetchOpenContracts() {
     if (wsContracts && wsContracts.readyState === WebSocket.OPEN) {
-      wsContracts.send(JSON.stringify({ portfolio: 1 }));
+      ws.send(JSON.stringify({ portfolio: 1 }));
     }
   }
 
   // --- 🔄 S’abonne aux détails d’un contrat
   function subscribeContractDetails(contract_id) {
-     wsContracts.send(JSON.stringify({ proposal_open_contract: 1, contract_id : contract_id, subscribe: 1 }));
+     ws.send(JSON.stringify({ proposal_open_contract: 1, contract_id : contract_id, subscribe: 1 }));
   }
 
   // --- 💰 Ferme un contrat
   function closeContract(contract_id) {
-    wsContracts.send(JSON.stringify({ sell: contract_id.trim(), price: 0 }));
+    ws.send(JSON.stringify({ sell: contract_id.trim(), price: 0 }));
     console.log("🚪 Closing contract:", contract_id);
   }
 
@@ -906,19 +906,18 @@ closeAll.onclick=()=>{
 
    // --- 🧱 Connexion WebSocket
   function connectDeriv() {
-    //wsContracts = ws;
-    if (wsContracts && wsContracts.readyState === WebSocket.OPEN)
+    if (ws && ws.readyState === WebSocket.OPEN)
     {
-      wsContracts.close();
+      ws.close();
      return;
     }
 
-    wsContracts = new WebSocket(WS_URL);
+    ws = new WebSocket(WS_URL);
      
-    wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
-    wsContracts.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-    wsContracts.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-    wsContracts.onmessage=msg=>{
+    ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
+    ws.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+    ws.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+    ws.onmessage=msg=>{
       const data=JSON.parse(msg.data);
       switch (data.msg_type) {
         case "authorize":
@@ -939,8 +938,8 @@ closeAll.onclick=()=>{
       }
     };
 
-    wsContracts.onerror = (err) => console.error("❌ WebSocket error:", err);
-    wsContracts.onclose = () => console.log("🔴 Disconnected");
+    ws.onerror = (err) => console.error("❌ WebSocket error:", err);
+    ws.onclose = () => console.log("🔴 Disconnected");
   }
 
   contractsPanelToggle.addEventListener("click", () => {
@@ -959,15 +958,15 @@ closeAll.onclick=()=>{
     });
     contractsPanel.classList.remove("active");
     contractsPanelToggle.textContent = "📄 Show Contracts";
-    if (wsContracts && wsContracts.readyState === WebSocket.CLOSING || wsContracts.readyState === WebSocket.CLOSED)
+    if (ws && ws.readyState === WebSocket.CLOSING || ws.readyState === WebSocket.CLOSED)
     {
       wsContracts = new WebSocket(WS_URL);
       wsContracts.send(JSON.stringify({ forget_all : "ticks"}));
       wsContracts.close();
     };
 
-    wsContracts.send(JSON.stringify({ forget_all : "ticks"}));
-    wsContracts.close();
+    ws.send(JSON.stringify({ forget_all : "ticks"}));
+    ws.close();
     setTimeout(() => (contractsPanel.style.display = "none"), 400);
   }
   });
