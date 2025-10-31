@@ -950,6 +950,7 @@ closeAll.onclick=()=>{
     contractsPanel.style.height = contentHeight;
     contractsPanel.classList.add("active");
     contractsPanelToggle.textContent = "📁 Hide Contracts";
+    autoHistoryList.innerHTML = " ";
     initTable();
   } else {
     contractsPanel.style.height = contractsPanel.scrollHeight + "px";
@@ -958,7 +959,6 @@ closeAll.onclick=()=>{
     });
     contractsPanel.classList.remove("active");
     contractsPanelToggle.textContent = "📄 Show Contracts";
-    autoHistoryList.innerHTML = " ";
     wsContracts.send(JSON.stringify({ forget_all : "ticks"}));
     wsContracts.close();
     setTimeout(() => (contractsPanel.style.display = "none"), 400);
