@@ -145,26 +145,21 @@
    }
 
     /* 📊 Panneau des contrats ouverts */
- #contractsPanelContainer {
-   display: flex;
-   flex-direction: column;
-   align-items: center;
-   margin-top: 12px;
-   margin-bottom: 12px;
-   width: 100%;
-   z-index: 100;
-   position: relative;
- }
+   /* --- Style du panneau --- */
+  #contractsPanelContainer {
+    position: relative;
+    margin: 12px;
+  }
 
- #contractsPanelToggle {
-   background: white; /* vert moderne */
-   color: #4d4747;
-   border: none;
-   border-radius: 8px;
-   padding: 8px 14px;
-   cursor: pointer;
-   font-weight: bold;
-   transition: all 0.2s ease-in-out;
+  #contractsPanelToggle {
+    background: white;
+    color: rgb(36, 33, 33);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
   }
 
   #contractsPanelToggle:hover {
@@ -172,70 +167,45 @@
   }
 
   #contractsPanel {
-    display: none;
-    flex-direction: column;
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    width: 95%;
-    max-height: 80vh;
-    overflow-y: auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    padding: 12px;
     margin-top: 10px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
     transition: all 0.3s ease;
+    overflow: hidden;
   }
 
+  #contractsPanel.hidden {
+    max-height: 0;
+    padding: 0;
+    opacity: 0;
+    margin-top: 0;
+  }
+
+  #contractsPanel:not(.hidden) {
+    max-height: 600px;
+    opacity: 1;
+  }
+
+  /* --- Table style --- */
   .trade-table {
     width: 100%;
     border-collapse: collapse;
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #0f172a; /* fond général sombre */
+    font-size: 14px;
   }
 
-  /* En-têtes */
-  .trade-table th {
-    background-color: #007bff;
-    color: #fafafa;
-    padding: 8px;
-    text-align: center;
-    border-bottom: 2px solid #334155;
-  }
-
-  /* Cellules générales */
+  .trade-table th,
   .trade-table td {
-    color: #393a3c;
-    padding: 8px;
+    border: 1px solid #e5e7eb;
+    padding: 6px 8px;
     text-align: center;
-    border-bottom: 1px solid #334155;
   }
 
-  /* Lignes survolées */
-  .trade-table tr:hover {
-    background-color: #1e293b;
-  }
-
-  /* Contrats BUY et SELL */
-  .trade-table td.buy {
-    color: #22c55e;
+  .trade-table thead {
+    background: #f3f4f6;
     font-weight: bold;
   }
-
-  .trade-table td.sell {
-    color: #ef4444;
-    font-weight: bold;
-  }
-
-  /* Profit positif/négatif */
-  .trade-table td.profit-positive {
-    color: #16a34a;
-    font-weight: bold;
-  }
-
-  .trade-table td.profit-negative {
-    color: #dc2626;
-    font-weight: bold;
-  }
-
   </style>
 </head>
 <body>
@@ -323,42 +293,10 @@
   <!-- Nouveau panneau des contrats ouverts -->
   <div id="contractsPanelContainer">
     <button id="contractsPanelToggle">📄 Show Contracts</button>
-
     <div id="contractsPanel">
-      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
-        <div style="font-weight:700;">Open Contracts</div>
-        <div style="display:flex; gap:8px; align-items:center;">
-          <button id="contractsRefreshBtn" style="background:#06b6d4; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer;">Refresh</button>
-        </div>
-      </div>
       <div id="autoHistoryList"></div>
       <div style="margin-top:8px; display:flex; flex-direction:column; gap:8px;">
-        <div id="contractsControls" style="display:flex; gap:8px; align-items:center; justify-content:space-between;">
-          <div style="display:flex; gap:8px; align-items:center;">
-            <label style="font-size:13px; font-weight:600;">Sort:</label>
-            <select id="contractsSortSelect" style="padding:6px; border-radius:6px;">
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="profit_desc">Profit ↓</option>
-              <option value="profit_asc">Profit ↑</option>
-            </select>
-          </div>
-          <div style="display:flex; gap:8px; align-items:center;">
-            <button id="contractsPrevBtn" style="padding:6px 10px; border-radius:6px;">Prev</button>
-            <div id="contractsPageInfo" style="font-size:13px;">Page 1</div>
-            <button id="contractsNextBtn" style="padding:6px 10px; border-radius:6px;">Next</button>
-            <label style="margin-left:8px; font-size:13px;">Per page
-              <select id="contractsPageSize" style="margin-left:6px; padding:6px; border-radius:6px;">
-                <option value="5">5</option>
-                <option value="10" selected>10</option>
-                <option value="25">25</option>
-              </select>
-            </label>
-          </div>
-        </div>
-      
-        <div style="font-size:12px; margin-bottom:6px; font-weight:600;">WS Debug Log</div>
-        <pre id="contractsDebugLog" style="height:96px; overflow:auto; background:#0b1220; color:#d1e8ff; padding:8px; border-radius:6px; font-size:12px; white-space:pre-wrap;"></pre>
+        <div id="contractsControls" style="display:flex; gap:8px; align-items:center; justify-content:space-between;"></div>
       </div>
     </div>
   </div>

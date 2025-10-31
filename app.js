@@ -24,6 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeAll = document.getElementById("closeAll");
   const buyNum = document.getElementById("buyNumberInput");
   const sellNum = document.getElementById("sellNumberInput");
+  const contractsPanelToggle = document.getElementById("contractsPanelToggle");
+  const contractsPanel = document.getElementById("contractsPanel");
+  const autoHistoryList = document.getElementById("autoHistoryList");
  
   let totalPL = 0; // cumul des profits et pertes
   let automationRunning = false;
@@ -748,6 +751,62 @@ closeAll.onclick=()=>{
       }
     };
   }; 
+
+  // Table
+  function initTable()
+  {
+   // Construction du tableau HTML
+   autoHistoryList.innerHTML = `
+    <table class="trade-table" id="autoTradeTable">
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="selectAll"></th>
+          <th>Time of Trade</th>
+          <th>Contract ID</th>
+          <th>Contract Type</th>
+          <th>Stake</th>
+          <th>Multiplier</th>
+          <th>Entry Spot</th>
+          <th>TP (%)</th>
+          <th>SL (%)</th>
+          <th>Profit</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="autoTradeBody"></tbody>
+    </table>
+    <button id="deleteSelected" style="margin-top:8px; background:#dc2626; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer;">🗑 Delete Selected</button>
+   `;
+
+    const autoTradeBody = document.getElementById("autoTradeBody");
+  }
+
+  // Fonction d’ajout d’une ligne de trade
+  function addTradeRow(trade) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><input type="checkbox" class="rowSelect"></td>
+      <td>${trade.time}</td>
+      <td>${trade.contract_id}</td>
+      <td class="${trade.type === "BUY" ? "buy" : "sell"}">${trade.type}</td>
+      <td>${trade.stake.toFixed(2)}</td>
+      <td>${trade.multiplier}</td>
+      <td>${trade.entry_spot}</td>
+      <td>${trade.tp}%</td>
+      <td>${trade.sl}%</td>
+      <td>${trade.profit}</td>
+      <td>
+        <button class="deleteRowBtn" style="background:#ef4444; border:none; color:white; border-radius:4px; padding:2px 6px; cursor:pointer;">Delete</button>
+      </td>
+    `;
+    autoTradeBody.appendChild(tr);
+  }
+
+  // --- Toggle du panneau ---
+  contractsPanelToggle.addEventListener("click", () => {
+    const isHidden = contractsPanel.classList.toggle("hidden");
+    contractsPanelToggle.textContent = isHidden ? "📄 Show Contracts" : "📁 Hide Contracts";
+  });
 
   // === Automation Toggle ===
   const toggleAutomationBtn = document.getElementById("toggleAutomation");
