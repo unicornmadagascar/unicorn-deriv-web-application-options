@@ -610,8 +610,7 @@ document.addEventListener("DOMContentLoaded", () => {
           basis: "stake",
           amount: stake.toFixed(2),
           multiplier: multiplier,
-          limit_order: { take_profit: 150, 
-                         stop_loss: 130 }
+          limit_order: { stop_loss: 130 }
         }
       };
 
