@@ -906,7 +906,13 @@ closeAll.onclick=()=>{
 
    // --- 🧱 Connexion WebSocket
   function connectDeriv() {
-    ws = new WebSocket(WS_URL);
+    if (ws === null)
+    {
+     ws = new WebSocket(WS_URL);
+     ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+    
+
     if (ws && ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)
     {
      ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
@@ -917,7 +923,6 @@ closeAll.onclick=()=>{
       ws = new WebSocket(WS_URL);
       ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
-     
     
     ws.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
     ws.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
