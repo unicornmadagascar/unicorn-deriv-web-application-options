@@ -906,9 +906,9 @@ closeAll.onclick=()=>{
 
    // --- 🧱 Connexion WebSocket
   function connectDeriv() {
-    //if (wsContracts && wsContracts.readyState === WebSocket.OPEN)
-    //  wsContracts.close();  
-    //  return wsContracts;
+    /*if (wsContracts && wsContracts.readyState === WebSocket.OPEN)
+      wsContracts.close();  
+      return wsContracts;*/
 
     wsContracts = new WebSocket(WS_URL);
      
@@ -947,6 +947,8 @@ closeAll.onclick=()=>{
     contractsPanel.style.height = contentHeight;
     contractsPanel.classList.add("active");
     contractsPanelToggle.textContent = "📁 Hide Contracts";
+    initTable();
+    connectDeriv();
   } else {
     contractsPanel.style.height = contractsPanel.scrollHeight + "px";
     requestAnimationFrame(() => {
@@ -954,6 +956,9 @@ closeAll.onclick=()=>{
     });
     contractsPanel.classList.remove("active");
     contractsPanelToggle.textContent = "📄 Show Contracts";
+    autoHistoryList.innerHTML = '';
+    wsContracts.send(JSON.stringify({ forget_all : "ticks"}));
+    wsContracts.close();
     setTimeout(() => (contractsPanel.style.display = "none"), 400);
   }
   });
@@ -1042,6 +1047,6 @@ closeAll.onclick=()=>{
   
   // Subscribing Tables
   setInterval(() => {
-      connectDeriv();
+      //connectDeriv();
   }, 1000);
 });
