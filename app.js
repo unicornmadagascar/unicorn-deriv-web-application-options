@@ -30,6 +30,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let smoothVol = 0;
   let smoothTrend = 0;
   let ws = null;
+  let wsAutomation = null;
+  let wsContracts = null;
   let chart = null;
   let areaSeries = null;
   let chartData = [];
@@ -240,29 +242,69 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function startAutomation() {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.close();
-      ws = null;
-      authorized = false;
-      return;
+    if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN) {
+      return wsAutomation;
     }
 
-    ws = new WebSocket(WS_URL);
-    console.log("Connecting...");
+    if (currentSymbol === null) {
+      console.log("Please select a symbol first.");
+      return wsAutomation;
+    }
 
-    ws.onopen = () => {
-      console.log("Connected");
-      // Exemple : abonnement aux ticks
-      ws.send(JSON.stringify({
-        ticks: "R_100",
-        subscribe: 1
-      }));
+    wsAutomation = new WebSocket(WS_URL);
+
+    wsAutomation.onopen = () => {
+      console.log("✅ Connecté au WebSocket Deriv");
+      wsAutomation.send(JSON.stringify({ authorize: TOKEN }));
     };
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+    wsAutomation.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+
+      // Autorisation réussie → abonnement aux ticks
+      if (data.authorize) {
+         console.log("🔑 Autorisé, abonnement aux ticks...");
+         wsAutomation.send(JSON.stringify({ ticks: currentSymbol, subscribe: 1 }));
+      }
+
+      // Sauvegarder l'ID d'abonnement
+      if (data.subscription && data.subscription.id) {
+         tickSubscriptionId = data.subscription.id;
+         console.log("🆔 ID abonnement:", tickSubscriptionId);
+      }
+
+      // Quand un tick arrive
       if (data.tick) {
-        console.log("Tick:", data.tick.quote);
+         const price = parseFloat(data.tick.quote);
+         const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
+
+         tickHistory.push(price);
+         if (tickHistory.length > 3) tickHistory.shift(); // garder seulement les 3 derniers ticks
+
+         //console.clear();
+         //console.log(`🕒 Tick reçu à ${time} | Prix : ${price}`);
+
+         if (tickHistory.length === 3) {
+            // Calcul sur le vecteur des 3 derniers ticks
+            const [p1, p2, p3] = tickHistory;
+
+           // Exemple de "variation moyenne" locale
+           const variation = (p3 - p1) / 3; 
+           
+           // On peut aussi normaliser avec la moyenne
+           const mean = (p1 + p2 + p3) / 3;
+           Dispersion = ecartType(tickHistory);
+           if (Dispersion !==0)
+           {
+            const delta = (p3 - mean) / Dispersion; // variation relative
+            // Application de la sigmoïde
+            signal = sigmoid(delta); // delta*10 ou 10 = facteur de sensibilité
+
+            //console.log(`📊 Derniers ticks : ${tickHistory.map(x => x.toFixed(3)).join(", ")}`);
+            //console.log(`⚙️ Variation moyenne : ${variation.toFixed(6)}`);
+            console.log(`📈 Sigmoid : ${signal.toFixed(6)}`);
+           }
+         }
       }
     };
 
@@ -276,11 +318,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function stopAutomation() {
-    if (ws && ws.readyState === WebSocket.OPEN) {
+    if (wsAutomation  && wsAutomation.readyState === WebSocket.OPEN) {
        // Envoyer unsubscribe avant de fermer
-       ws.send(JSON.stringify({ forget_all: "ticks" }));
-       ws.close();
+       wsAutomation.send(JSON.stringify({ forget_all: "ticks" }));
+       wsAutomation.close();
     }
+  }
+
+  function sigmoid(x) {
+    return (1 - 1 / (1 + Math.exp(-x)));
+  }
+
+  // Fonction pour calculer l’écart-type (population)
+  function ecartType(values) {
+    if (values.length === 0) return 0;
+    const mean = values.reduce((a, b) => a + b, 0) / values.length;
+    const variance = values.map(x => (x - mean) ** 2).reduce((a, b) => a + b, 0) / values.length;
+       
+    return Math.sqrt(variance);
   }
 
   // --- SUBSCRIBE SYMBOL ---
@@ -523,78 +578,6 @@ document.addEventListener("DOMContentLoaded", () => {
    return totalPL;
   }
 
-
-  function sigmoid(x) {
-     return (1 - 1 / (1 + Math.exp(-x)));
-  }
-
-  /*function ActivePositions(ws, symbol){
-
-    ws.onopen = () => {
-      console.log("✅ Connecté au WebSocket Deriv");
-      ws.send(JSON.stringify({ authorize: TOKEN }));
-    };
-
-    ws.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-
-      // Autorisation réussie → abonnement aux ticks
-      if (data.authorize) {
-         console.log("🔑 Autorisé, abonnement aux ticks...");
-         ws.send(JSON.stringify({ ticks: symbol, subscribe: 1 }));
-      }
-
-      // Quand un tick arrive
-      if (data.tick) {
-         const price = parseFloat(data.tick.quote);
-         const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
-
-         tickHistory.push(price);
-         if (tickHistory.length > 3) tickHistory.shift(); // garder seulement les 3 derniers ticks
-
-         console.clear();
-         console.log(`🕒 Tick reçu à ${time} | Prix : ${price}`);
-
-         if (tickHistory.length === 3) {
-            // Calcul sur le vecteur des 3 derniers ticks
-            const [p1, p2, p3] = tickHistory;
-
-           // Exemple de "variation moyenne" locale
-           const variation = (p3 - p1) / 3; 
-           
-           // On peut aussi normaliser avec la moyenne
-           const mean = (p1 + p2 + p3) / 3;
-           Dispersion = ecartType(tickHistory);
-           console.log("Dispersion : " + Dispersion);
-           if (Dispersion !==0)
-           {
-            const delta = (p3 - mean) / Dispersion; // variation relative
-            // Application de la sigmoïde
-            signal = sigmoid(delta); // delta*10 ou 10 = facteur de sensibilité
-
-            console.log(`📊 Derniers ticks : ${tickHistory.map(x => x.toFixed(3)).join(", ")}`);
-            console.log(`⚙️ Variation moyenne : ${variation.toFixed(6)}`);
-            console.log(`📈 Sigmoid : ${signal.toFixed(6)}`);
-           }
-          else
-           {
-             signal = null;
-           }
-         }
-      }
-    };
-
-    return signal;
-  } */
-
-  // Fonction pour calculer l’écart-type (population)
-  function ecartType(values) {
-    if (values.length === 0) return 0;
-    const mean = values.reduce((a, b) => a + b, 0) / values.length;
-    const variance = values.map(x => (x - mean) ** 2).reduce((a, b) => a + b, 0) / values.length;
-    return Math.sqrt(variance);
-  }
-
   // Initialisation
   function initPLGauge() {
     const gauge__ = document.getElementById("plGauge");
@@ -607,10 +590,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   //--- Trades (New)
   function executeTrade(type){
+    if (wsContracts && wsContracts.readyState === WebSocket.OPEN)
+       return wsContracts;
+
+    wsContracts = new WebSocket(WS_URL);
     const stake=parseFloat(stakeInput.value)||1;
     const multiplier=parseInt(multiplierInput.value)||300;
 
-    if(authorized && ws && ws.readyState===WebSocket.OPEN){
+    if(authorized && wsContracts && wsContracts.readyState===WebSocket.OPEN){
        const payload = {
         buy: 1,
         price: stake.toFixed(2),
@@ -636,7 +623,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       for (let i=0;i < numb_; i++)
        {
-         ws.send(JSON.stringify(payload));
+         wsContracts.send(JSON.stringify(payload));
        }
     }
   }
@@ -769,6 +756,7 @@ closeAll.onclick=()=>{
     if (automationRunning) {
       toggleAutomationBtn.textContent = "Stop Automation";
       toggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
+      toggleAutomationBtn.style.color = "white";
       startAutomation();
     } else {
       toggleAutomationBtn.textContent = "Launch Automation";
