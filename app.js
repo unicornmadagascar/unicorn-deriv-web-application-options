@@ -906,6 +906,7 @@ closeAll.onclick=()=>{
 
    // --- 🧱 Connexion WebSocket
   function connectDeriv() {
+    wsContracts = ws;
     if (wsContracts && wsContracts.readyState === WebSocket.OPEN)
     {
       wsContracts.close();
