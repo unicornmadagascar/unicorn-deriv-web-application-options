@@ -802,19 +802,23 @@ closeAll.onclick=()=>{
     autoTradeBody.appendChild(tr);
   }
 
-  // --- Animation d’ouverture / fermeture ---
   contractsPanelToggle.addEventListener("click", () => {
-    const isActive = contractsPanel.classList.toggle("active");
-
-    if (isActive) {
-      contractsPanel.style.display = "flex";
-      contractsPanelToggle.textContent = "📁 Hide Contracts";
-    } else {
-      contractsPanel.classList.remove("active");
-      setTimeout(() => (contractsPanel.style.display = "none"), 400);
-      contractsPanelToggle.textContent = "📄 Show Contracts";
-    }
-  });
+  if (!contractsPanel.classList.contains("active")) {
+    contractsPanel.style.display = "flex";
+    const contentHeight = contractsPanel.scrollHeight + "px";
+    contractsPanel.style.height = contentHeight;
+    contractsPanel.classList.add("active");
+    contractsPanelToggle.textContent = "📁 Hide Contracts";
+  } else {
+    contractsPanel.style.height = contractsPanel.scrollHeight + "px";
+    requestAnimationFrame(() => {
+      contractsPanel.style.height = "0";
+    });
+    contractsPanel.classList.remove("active");
+    contractsPanelToggle.textContent = "📄 Show Contracts";
+    setTimeout(() => (contractsPanel.style.display = "none"), 400);
+  }
+});
 
   // === Automation Toggle ===
   const toggleAutomationBtn = document.getElementById("toggleAutomation");
