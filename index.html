@@ -354,6 +354,47 @@
         controlPanelToggle.textContent = "⚙️ Show Controls";
       }
     });
+
+    const autoHistoryList = document.getElementById("autoHistoryList");
+  const contractsPanel = document.getElementById("contractsPanel");
+  const toggleButton = document.getElementById("contractsPanelToggle");
+
+  // Injecte le tableau
+  autoHistoryList.innerHTML = `
+    <table class="trade-table" id="autoTradeTable">
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="selectAll"></th>
+          <th>Time of Trade</th>
+          <th>Contract ID</th>
+          <th>Contract Type</th>
+          <th>Stake</th>
+          <th>Multiplier</th>
+          <th>Entry Spot</th>
+          <th>TP (%)</th>
+          <th>SL (%)</th>
+          <th>Profit</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="autoTradeBody">
+        ${Array.from({ length: 50 }).map((_, i) => `
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>${new Date().toLocaleTimeString()}</td>
+            <td>${100000 + i}</td>
+            <td>Rise</td>
+            <td>10</td>
+            <td>200</td>
+            <td>12345.67</td>
+            <td>5%</td>
+            <td>3%</td>
+            <td>+3.20</td>
+            <td>Close</td>
+          </tr>`).join("")}
+      </tbody>
+    </table>
+  `;
   </script>
 </body>
 </html>
