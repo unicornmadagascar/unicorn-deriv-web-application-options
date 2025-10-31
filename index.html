@@ -145,66 +145,67 @@
    }
 
     /* 📊 Panneau des contrats ouverts */
-   /* --- Style du panneau --- */
-  #contractsPanelContainer {
-    position: relative;
-    margin: 12px;
-  }
-
-  #contractsPanelToggle {
-    background: white;
-    color: rgb(36, 33, 33);
-    border: none;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: 0.2s;
-  }
-
-  #contractsPanelToggle:hover {
-    background: white;
-  }
-
-  #contractsPanel {
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-    padding: 12px;
-    margin-top: 10px;
-    transition: all 0.3s ease;
-    overflow: hidden;
-  }
-
-  #contractsPanel.hidden {
-    max-height: 0;
-    padding: 0;
+   #contractsPanel {
+    display: none;
     opacity: 0;
-    margin-top: 0;
+    transform: translateY(40px);
+    transition: all 0.35s ease;
+    flex-direction: column;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    padding: 20px;
+    margin-top: 12px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  #contractsPanel:not(.hidden) {
-    max-height: 600px;
+  #contractsPanel.active {
+    display: flex;
     opacity: 1;
+    transform: translateY(0);
   }
 
-  /* --- Table style --- */
+  /* --- Table des trades --- */
   .trade-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
+    margin-top: 8px;
   }
 
   .trade-table th,
   .trade-table td {
     border: 1px solid #e5e7eb;
-    padding: 6px 8px;
+    padding: 8px;
     text-align: center;
   }
 
   .trade-table thead {
-    background: #f3f4f6;
+    background: #f8f9fa;
     font-weight: bold;
+  }
+
+  .trade-table tbody tr:hover {
+    background: #f1f5f9;
+  }
+
+  #deleteSelected {
+    margin-top: 10px;
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  }
+
+  #deleteSelected:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
   }
   </style>
 </head>
