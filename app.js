@@ -963,7 +963,9 @@ closeAll.onclick=()=>{
     {
       wsContracts = new WebSocket(WS_URL);
       wsContracts.send(JSON.stringify({ forget_all : "ticks"}));
+      wsContracts.close();
     };
+
     wsContracts.send(JSON.stringify({ forget_all : "ticks"}));
     wsContracts.close();
     setTimeout(() => (contractsPanel.style.display = "none"), 400);
