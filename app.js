@@ -909,10 +909,8 @@ closeAll.onclick=()=>{
     if (ws === null)
     {
      ws = new WebSocket(WS_URL);
-     ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
-    
-
+  
     if (ws && ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)
     {
      ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
