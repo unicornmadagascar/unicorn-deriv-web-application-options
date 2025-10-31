@@ -959,6 +959,11 @@ closeAll.onclick=()=>{
     });
     contractsPanel.classList.remove("active");
     contractsPanelToggle.textContent = "📄 Show Contracts";
+    if (wsContracts && wsContracts.readyState === WebSocket.CLOSING || wsContracts.readyState === WebSocket.CLOSED)
+    {
+      wsContracts = new WebSocket(WS_URL);
+      wsContracts.send(JSON.stringify({ forget_all : "ticks"}));
+    };
     wsContracts.send(JSON.stringify({ forget_all : "ticks"}));
     wsContracts.close();
     setTimeout(() => (contractsPanel.style.display = "none"), 400);
