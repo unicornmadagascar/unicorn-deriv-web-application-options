@@ -808,19 +808,19 @@ closeAll.onclick=()=>{
 // ==========================
 // --- 🔍 Récupère tous les contrats ouverts
   function fetchOpenContracts() {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ portfolio: 1 }));
+    if (wsContracts && wsContracts.readyState === WebSocket.OPEN) {
+      wsContracts.send(JSON.stringify({ portfolio: 1 }));
     }
   }
 
   // --- 🔄 S’abonne aux détails d’un contrat
   function subscribeContractDetails(contract_id) {
-     ws.send(JSON.stringify({ proposal_open_contract: 1, contract_id : contract_id, subscribe: 1 }));
+     wsContracts.send(JSON.stringify({ proposal_open_contract: 1, contract_id : contract_id, subscribe: 1 }));
   }
 
   // --- 💰 Ferme un contrat
   function closeContract(contract_id) {
-    ws.send(JSON.stringify({ sell: contract_id.trim(), price: 0 }));
+    wsContracts.send(JSON.stringify({ sell: contract_id.trim(), price: 0 }));
     console.log("🚪 Closing contract:", contract_id);
   }
 
@@ -906,7 +906,7 @@ closeAll.onclick=()=>{
 
    // --- 🧱 Connexion WebSocket
   function connectDeriv() {
-    wsContracts = ws;
+    //wsContracts = ws;
     if (wsContracts && wsContracts.readyState === WebSocket.OPEN)
     {
       wsContracts.close();
