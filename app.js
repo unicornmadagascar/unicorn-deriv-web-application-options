@@ -596,8 +596,8 @@ document.addEventListener("DOMContentLoaded", () => {
     wsContracts = new WebSocket(WS_URL);
     const stake=parseFloat(stakeInput.value)||1;
     const multiplier=parseInt(multiplierInput.value)||300;
-    const tp_contract = parseFloat(takeProfitInput.value)||0;
-    const sl_contract = parseFloat(stopLossInput.value)||0;
+    const tp_contract = parseInt(takeProfitInput.value)||0;
+    const sl_contract = parseInt(stopLossInput.value)||0;
 
     if(authorized && wsContracts && wsContracts.readyState===WebSocket.OPEN){
        const payload = {
@@ -610,7 +610,7 @@ document.addEventListener("DOMContentLoaded", () => {
           basis: "stake",
           amount: stake.toFixed(2),
           multiplier: multiplier,
-          limit_order: { stop_loss: sl_contract.toFixed(2), take_profit: tp_contract.toFixed(2)}
+          limit_order: { stop_loss: sl_contract, take_profit: tp_contract }
         }
       };
 
