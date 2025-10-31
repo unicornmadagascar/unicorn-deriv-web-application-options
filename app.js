@@ -78,6 +78,28 @@ document.addEventListener("DOMContentLoaded", () => {
        tp: 2.0,
        sl: 1.5,
        profit: "-1.00"
+     },
+     {
+       time: "12:10:44",
+       contract_id: "9823746158",
+       type: "SELL",
+       stake: 2.00,
+       multiplier: 300,
+       entry_spot: 12678.92,
+       tp: 2.0,
+       sl: 1.5,
+       profit: "-1.00"
+     },
+     {
+       time: "12:10:44",
+       contract_id: "9823746158",
+       type: "SELL",
+       stake: 2.00,
+       multiplier: 300,
+       entry_spot: 12678.92,
+       tp: 2.0,
+       sl: 1.5,
+       profit: "-1.00"
      }
   ];
 
