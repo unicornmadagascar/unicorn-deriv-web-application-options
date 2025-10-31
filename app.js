@@ -591,11 +591,6 @@ document.addEventListener("DOMContentLoaded", () => {
   //--- Trades (New)
   function executeTrade(type){
     wsContracts = ws;
-    if (!wsContracts || wsContracts.readyState !== WebSocket.OPEN)
-     {
-      return wsContracts;
-     }
-       
 
     wsContracts = new WebSocket(WS_URL);
     const stake=parseFloat(stakeInput.value)||1;
