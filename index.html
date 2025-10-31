@@ -355,9 +355,9 @@
       }
     });
 
-    const autoHistoryList = document.getElementById("autoHistoryList");
+  const autoHistoryList = document.getElementById("autoHistoryList");
   const contractsPanel = document.getElementById("contractsPanel");
-  const toggleButton = document.getElementById("contractsPanelToggle");
+  const contractsPanelToggle = document.getElementById("contractsPanelToggle");
 
   // Injecte le tableau
   autoHistoryList.innerHTML = `
@@ -395,6 +395,25 @@
       </tbody>
     </table>
   `;
+
+  contractsPanelToggle.addEventListener("click", () => {
+  if (!contractsPanel.classList.contains("active")) {
+    contractsPanel.style.display = "flex";
+    const contentHeight = contractsPanel.scrollHeight + "px";
+    contractsPanel.style.height = contentHeight;
+    contractsPanel.classList.add("active");
+    contractsPanelToggle.textContent = "📁 Hide Contracts";
+  } else {
+    contractsPanel.style.height = contractsPanel.scrollHeight + "px";
+    requestAnimationFrame(() => {
+      contractsPanel.style.height = "0";
+    });
+    contractsPanel.classList.remove("active");
+    contractsPanelToggle.textContent = "📄 Show Contracts";
+    setTimeout(() => (contractsPanel.style.display = "none"), 400);
+  }
+  });
+
   </script>
 </body>
 </html>
