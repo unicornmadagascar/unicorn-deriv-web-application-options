@@ -591,7 +591,11 @@ document.addEventListener("DOMContentLoaded", () => {
   //--- Trades (New)
   function executeTrade(type){
     if (wsContracts && wsContracts.readyState === WebSocket.OPEN)
-       return wsContracts;
+     {
+      wsContracts = null;
+      return wsContracts;
+     }
+       
 
     wsContracts = new WebSocket(WS_URL);
     const stake=parseFloat(stakeInput.value)||1;
@@ -628,6 +632,8 @@ document.addEventListener("DOMContentLoaded", () => {
          wsContracts.send(JSON.stringify(payload));
        }
     }
+
+    wsContracts = null;
   }
 
   closewinning.onclick=()=>{
