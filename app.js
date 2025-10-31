@@ -590,11 +590,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   //--- Trades (New)
   function executeTrade(type){
-    /*if (wsContracts && wsContracts.readyState === WebSocket.OPEN)
+    wsContracts = ws;
+    if (!wsContracts || wsContracts.readyState !== WebSocket.OPEN)
      {
-      wsContracts = null;
       return wsContracts;
-     }*/
+     }
        
 
     wsContracts = new WebSocket(WS_URL);
