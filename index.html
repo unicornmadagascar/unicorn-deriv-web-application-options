@@ -397,9 +397,9 @@
   `;
 
   contractsPanelToggle.addEventListener("click", () => {
-  if (!contractsPanel.classList.contains("active")) {
+  if (!contractsPanel.classList.contains("active")) {   
     contractsPanel.style.display = "flex";
-    const contentHeight = contractsPanel.scrollHeight + "px";
+    const contentHeight = contractsPanel.scrollHeight + "px";  
     contractsPanel.style.height = contentHeight;
     contractsPanel.classList.add("active");
     contractsPanelToggle.textContent = "📁 Hide Contracts";
