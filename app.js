@@ -56,53 +56,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let pendingSubscribe = null;
   let authorized = false;
   // Exemple de données
-  const trades__ = [
-  {
-       time: "12:05:10",
-       contract_id: "9823746123",
-       type: "BUY",
-       stake: 1.00,
-       multiplier: 200,
-       entry_spot: 13456.25,
-       tp: 1.5,
-       sl: 1.0,
-       profit: "+0.50"
-     },
-     {
-       time: "12:10:44",
-       contract_id: "9823746158",
-       type: "SELL",
-       stake: 2.00,
-       multiplier: 300,
-       entry_spot: 12678.92,
-       tp: 2.0,
-       sl: 1.5,
-       profit: "-1.00"
-     },
-     {
-       time: "12:10:44",
-       contract_id: "9823746158",
-       type: "SELL",
-       stake: 2.00,
-       multiplier: 300,
-       entry_spot: 12678.92,
-       tp: 2.0,
-       sl: 1.5,
-       profit: "-1.00"
-     },
-     {
-       time: "12:10:44",
-       contract_id: "9823746158",
-       type: "SELL",
-       stake: 2.00,
-       multiplier: 300,
-       entry_spot: 12678.92,
-       tp: 2.0,
-       sl: 1.5,
-       profit: "-1.00"
-     }
-  ];
-
 
   const SYMBOLS = [
     { symbol: "BOOM1000", name: "Boom 1000" },
@@ -1047,7 +1000,7 @@ closeAll.onclick=()=>{
   initPLGauge();
   initTable();
  // Ajoute les trades de test
-  trades__.forEach(addTradeRow);
+  //trades__.forEach(addTradeRow);
 
   // Gestion du "Select All"
   const selectAll = document.getElementById("selectAll");
