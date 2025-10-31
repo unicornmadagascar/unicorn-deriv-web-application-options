@@ -169,20 +169,30 @@
   box-sizing: border-box;   /* évite tout débordement */
 }
 
-#contractsPanelToggle:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
-}
+ #contractsPanelToggle:hover {
+   transform: translateY(-2px);
+   box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+ }
 
-  #contractsPanel {
-    background: #fff;
-    max-height: 70vh;      /* panneau raisonnablement haut */
-    border-radius: 8px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-    padding: 12px;
-    margin-top: 10px;
-    transition: all 0.3s ease;
-    overflow: hidden;
+ #contractsPanel {
+    display: none;
+    opacity: 0;
+    transform: translateY(-40px); /* 🔹 change de +40px à -40px */
+    transition: all 0.35s ease;
+    flex-direction: column;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    padding: 20px;
+    margin-top: 12px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  #contractsPanel.active {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0); /* revient à sa position normale */
   }
 
   #contractsPanel.hidden {
