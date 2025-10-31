@@ -1005,7 +1005,6 @@ closeAll.onclick=()=>{
   displaySymbols();
   initChart();
   initPLGauge();
-  initTable();
  // Ajoute les trades de test
   //trades__.forEach(addTradeRow);
 
