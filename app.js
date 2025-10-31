@@ -951,7 +951,6 @@ closeAll.onclick=()=>{
     contractsPanel.classList.add("active");
     contractsPanelToggle.textContent = "📁 Hide Contracts";
     initTable();
-    connectDeriv();
   } else {
     contractsPanel.style.height = contractsPanel.scrollHeight + "px";
     requestAnimationFrame(() => {
@@ -959,7 +958,7 @@ closeAll.onclick=()=>{
     });
     contractsPanel.classList.remove("active");
     contractsPanelToggle.textContent = "📄 Show Contracts";
-    //autoHistoryList.innerHTML = '';
+    autoHistoryList.innerHTML = " ";
     wsContracts.send(JSON.stringify({ forget_all : "ticks"}));
     wsContracts.close();
     setTimeout(() => (contractsPanel.style.display = "none"), 400);
