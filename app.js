@@ -809,18 +809,18 @@ closeAll.onclick=()=>{
 // --- 🔍 Récupère tous les contrats ouverts
   function fetchOpenContracts() {
     if (wsContracts && wsContracts.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ portfolio: 1 }));
+      wsContracts.send(JSON.stringify({ portfolio: 1 }));
     }
   }
 
   // --- 🔄 S’abonne aux détails d’un contrat
   function subscribeContractDetails(contract_id) {
-     ws.send(JSON.stringify({ proposal_open_contract: 1, contract_id : contract_id, subscribe: 1 }));
+     wsContracts.send(JSON.stringify({ proposal_open_contract: 1, contract_id : contract_id, subscribe: 1 }));
   }
 
   // --- 💰 Ferme un contrat
   function closeContract(contract_id) {
-    ws.send(JSON.stringify({ sell: contract_id.trim(), price: 0 }));
+    wsContracts.send(JSON.stringify({ sell: contract_id.trim(), price: 0 }));
     console.log("🚪 Closing contract:", contract_id);
   }
 
@@ -905,26 +905,26 @@ closeAll.onclick=()=>{
   }
 
    // --- 🧱 Connexion WebSocket
-  function connectDeriv() {
-    if (ws === null)
+  function connectDeriv_table() {
+    if (wsContracts === null)
     {
-     ws = new WebSocket(WS_URL);
+     wsContracts = new WebSocket(WS_URL);
     }
   
-    if (ws && ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)
+    if (wsContracts && wsContracts.readyState === WebSocket.OPEN || wsContracts.readyState === WebSocket.CONNECTING)
     {
-     ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
+     wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (ws && ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING)
+    if (wsContracts && wsContracts.readyState === WebSocket.CLOSED || wsContracts.readyState === WebSocket.CLOSING)
     {
-      ws = new WebSocket(WS_URL);
-      ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
+      wsContracts = new WebSocket(WS_URL);
+      wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
     }
     
-    ws.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-    ws.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-    ws.onmessage=msg=>{
+    wsContracts.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+    wsContracts.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+    wsContracts.onmessage=msg=>{
       const data=JSON.parse(msg.data);
       switch (data.msg_type) {
         case "authorize":
@@ -945,8 +945,8 @@ closeAll.onclick=()=>{
       }
     };
 
-    ws.onerror = (err) => console.error("❌ WebSocket error:", err);
-    ws.onclose = () => console.log("🔴 Disconnected");
+    wsContracts.onerror = (err) => console.error("❌ WebSocket error:", err);
+    wsContracts.onclose = () => console.log("🔴 Disconnected");
   }
 
   contractsPanelToggle.addEventListener("click", () => {
@@ -1062,6 +1062,6 @@ closeAll.onclick=()=>{
   
   // Subscribing Tables
   setInterval(() => {
-      //connectDeriv();
+      connectDeriv_table();
   }, 1000);
 });
