@@ -715,12 +715,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 closeAll.onclick=()=>{
   
-    ws = new WebSocket(WS_URL);
+    const wsCloseAll = new WebSocket(WS_URL);
     
-    ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
-    ws.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-    ws.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-    ws.onmessage=msg=>{
+    wsCloseAll.onopen=()=>{ wsCloseAll.send(JSON.stringify({ authorize: TOKEN })); };
+    wsCloseAll.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+    wsCloseAll.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+    wsCloseAll.onmessage=msg=>{
     const data=JSON.parse(msg.data);
     if(data.msg_type==="authorize")
      {
@@ -728,15 +728,15 @@ closeAll.onclick=()=>{
         authorized=true; 
         console.log("connection Authorized.");
 
-        if(authorized && ws && ws.readyState===WebSocket.OPEN)
+        if(authorized && wsCloseAll && wsCloseAll.readyState===WebSocket.OPEN)
         {
            const portfoliopayload = { portfolio : 1};
            console.log('The request is open...');
            console.log('Request in process...');   
 
-           ws.send(JSON.stringify(portfoliopayload));
+           wsCloseAll.send(JSON.stringify(portfoliopayload));
        
-           ws.onmessage = msg => {
+           wsCloseAll.onmessage = msg => {
            const data = JSON.parse(msg.data);
            if (data.msg_type === "portfolio" && data.portfolio?.contracts?.length > 0)
             {
@@ -745,7 +745,7 @@ closeAll.onclick=()=>{
              for (const contract of contracts)
               {
                console.log('Closing contract '+ contract.contract_id + '(' + contract.contract_type + ')');
-               ws.send(JSON.stringify({
+               wsCloseAll.send(JSON.stringify({
                  "sell": contract.contract_id,
                  "price": 0
                }));
@@ -772,7 +772,8 @@ closeAll.onclick=()=>{
       startAutomation();
     } else {
       toggleAutomationBtn.textContent = "Launch Automation";
-      toggleAutomationBtn.style.background = "linear-gradient(90deg,#4caf50,#81c784)";
+      toggleAutomationBtn.style.background = "white";
+      toggleAutomationBtn.style.color = "gray";
       stopAutomation();
     }
   });
