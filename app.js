@@ -906,9 +906,8 @@ closeAll.onclick=()=>{
 
    // --- 🧱 Connexion WebSocket
   function connectDeriv() {
-    /*if (wsContracts && wsContracts.readyState === WebSocket.OPEN)
-      wsContracts.close();  
-      return wsContracts;*/
+    if (wsContracts !== null)
+      return;
 
     wsContracts = new WebSocket(WS_URL);
      
@@ -956,7 +955,7 @@ closeAll.onclick=()=>{
     });
     contractsPanel.classList.remove("active");
     contractsPanelToggle.textContent = "📄 Show Contracts";
-    autoHistoryList.innerHTML = '';
+    //autoHistoryList.innerHTML = '';
     wsContracts.send(JSON.stringify({ forget_all : "ticks"}));
     wsContracts.close();
     setTimeout(() => (contractsPanel.style.display = "none"), 400);
