@@ -906,8 +906,8 @@ closeAll.onclick=()=>{
 
    // --- 🧱 Connexion WebSocket
   function connectDeriv() {
-    if (wsContracts !== null)
-      return;
+    //if (wsContracts !== null)
+    //  return;
 
     wsContracts = new WebSocket(WS_URL);
      
