@@ -802,10 +802,18 @@ closeAll.onclick=()=>{
     autoTradeBody.appendChild(tr);
   }
 
-  // --- Toggle du panneau ---
+  // --- Animation d’ouverture / fermeture ---
   contractsPanelToggle.addEventListener("click", () => {
-    const isHidden = contractsPanel.classList.toggle("hidden");
-    contractsPanelToggle.textContent = isHidden ? "📄 Show Contracts" : "📁 Hide Contracts";
+    const isActive = contractsPanel.classList.toggle("active");
+
+    if (isActive) {
+      contractsPanel.style.display = "flex";
+      contractsPanelToggle.textContent = "📁 Hide Contracts";
+    } else {
+      contractsPanel.classList.remove("active");
+      setTimeout(() => (contractsPanel.style.display = "none"), 400);
+      contractsPanelToggle.textContent = "📄 Show Contracts";
+    }
   });
 
   // === Automation Toggle ===
