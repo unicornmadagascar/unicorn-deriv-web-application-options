@@ -596,8 +596,8 @@ document.addEventListener("DOMContentLoaded", () => {
     ws = new WebSocket(WS_URL);
     const stake=parseFloat(stakeInput.value)||1;
     const multiplier=parseInt(multiplierInput.value)||100;
-    const tp_contract = Number(takeProfitInput.value)||null;
-    const sl_contract = Number(stopLossInput.value)||null;
+    const tp_contract = Number(takeProfitInput.value)||0;
+    const sl_contract = Number(stopLossInput.value)||0;
 
     if(authorized && ws && ws.readyState===WebSocket.OPEN){
        const payload = {
