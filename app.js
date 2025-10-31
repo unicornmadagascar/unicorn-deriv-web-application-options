@@ -906,14 +906,14 @@ closeAll.onclick=()=>{
 
    // --- 🧱 Connexion WebSocket
   function connectDeriv() {
+    ws = new WebSocket(WS_URL);
     if (ws && ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)
     {
       ws.close();
      return;
     }
-
-    ws = new WebSocket(WS_URL);
      
+    ws = new WebSocket(WS_URL);
     ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     ws.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
     ws.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
