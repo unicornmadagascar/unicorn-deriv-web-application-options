@@ -590,8 +590,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   //--- Trades (New)
   function executeTrade(type){
-    if (ws && ws.readyState === WebSocket.OPEN)
-       return ws;
+    //if (ws && ws.readyState === WebSocket.OPEN)
+    //   return ws;
 
     ws = new WebSocket(WS_URL);
     const stake=parseFloat(stakeInput.value)||1;
@@ -610,7 +610,7 @@ document.addEventListener("DOMContentLoaded", () => {
           basis: "stake",
           amount: stake.toFixed(2),
           multiplier: multiplier,
-          limit_order: { take_profit: 150, stop_loss: 130 }
+          limit_order: { take_profit: tp_contract, stop_loss: sl_contract }
         }
       };
 
