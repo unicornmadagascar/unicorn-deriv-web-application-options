@@ -590,16 +590,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   //--- Trades (New)
   function executeTrade(type){
-    //if (ws && ws.readyState === WebSocket.OPEN)
-    //   return ws;
+    if (wsContracts && wsContracts.readyState === WebSocket.OPEN)
+       return wsContracts;
 
-    ws = new WebSocket(WS_URL);
+    wsContracts = new WebSocket(WS_URL);
     const stake=parseFloat(stakeInput.value)||1;
     const multiplier=parseInt(multiplierInput.value)||100;
-    //const tp_contract = Number(takeProfitInput.value)||0;
-    //const sl_contract = Number(stopLossInput.value)||0;
+    const tp_contract = Number(takeProfitInput.value)||0;
+    const sl_contract = Number(stopLossInput.value)||0;
 
-    if(authorized && ws && ws.readyState===WebSocket.OPEN){
+    if(authorized && wsContracts && wsContracts.readyState===WebSocket.OPEN){
        const payload = {
         buy: 1,
         price: stake.toFixed(2),
@@ -610,7 +610,7 @@ document.addEventListener("DOMContentLoaded", () => {
           basis: "stake",
           amount: stake.toFixed(2),
           multiplier: multiplier,
-          limit_order: { stop_loss: 130 }
+          //limit_order: { take_profit: 150, stop_loss: 130 }
         }
       };
 
@@ -625,7 +625,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       for (let i=0;i < numb_; i++)
        {
-         ws.send(JSON.stringify(payload));
+         wsContracts.send(JSON.stringify(payload));
        }
     }
   }
