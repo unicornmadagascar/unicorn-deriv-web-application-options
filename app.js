@@ -239,7 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    wspl.onclose = () => {
+    /*wspl.onclose = () => {
       connectBtn.textContent = "Connect";
       accountInfo.textContent = "";
       wspl = null;
@@ -248,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     wspl.onerror = (e) => {
       console.error("WS error", e);
-    };
+    };*/
   }
 
   // --- CONNECT DERIV ---
