@@ -1035,7 +1035,7 @@ closeAll.onclick=()=>{
   connectBtn.addEventListener("click", () => {
     if (!isConnect) {
       connectBtn.textContent = "Connecting...";
-      accountInfo.textContent = "Connecting...";
+      accountInfo.textContent = "Connecting..."; 
       connectDeriv();
       displaySymbols();
       isConnect = true;
