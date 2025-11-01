@@ -45,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let signal;
   let signal__;
   let Dispersion;
+  let isConnect = false;
   // Historique local des ticks
   let tickHistory = [];
   // Historique de profits
@@ -248,6 +249,33 @@ document.addEventListener("DOMContentLoaded", () => {
     wspl.onerror = (e) => {
       console.error("WS error", e);
     };
+  }
+
+  // --- CONNECT DERIV ---
+  function DisconnectDeriv() {
+
+    connectBtn.textContent = "Disconnecting...";
+    accountInfo.textContent = "Disconnecting...";
+  
+    if (wspl && wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING)
+    {
+      wspl.send(JSON.stringify({ forget_all: "ticks" }));
+      wspl.close();
+      connectBtn.textContent = "Connect";
+      accountInfo.textContent = "";
+      authorized = false;
+      console.log("Socket Closed");
+    }
+
+    if (wspl && wspl.readyState === WebSocket.CLOSED || wspl.readyState === WebSocket.CLOSING)
+    {
+      wspl.send(JSON.stringify({ forget_all: "ticks" }));
+      wspl.close();
+      connectBtn.textContent = "Connect";
+      accountInfo.textContent = "";
+      authorized = false;
+      console.log("Socket Closed");
+    }
   }
 
   function startAutomation() {
@@ -1020,8 +1048,13 @@ closeAll.onclick=()=>{
 
   // wire connect button
   connectBtn.addEventListener("click", () => {
-    connectDeriv();
-    displaySymbols();
+    isConnect = !isConnect;
+    if (isConnect) {
+      connectDeriv();
+      displaySymbols();
+    } else {
+      DisconnectDeriv();
+    }
   });
 
   // startup
