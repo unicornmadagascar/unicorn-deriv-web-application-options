@@ -1017,8 +1017,6 @@ closeAll.onclick=()=>{
   initChart();
   initPLGauge();
   initTable();
- // Ajoute les trades de test
-  //trades__.forEach(addTradeRow);
 
   // Gestion du "Select All"
   const selectAll = document.getElementById("selectAll");
