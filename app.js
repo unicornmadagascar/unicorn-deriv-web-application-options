@@ -1044,8 +1044,10 @@ closeAll.onclick=()=>{
     if (isConnect === true) {
       connectDeriv();
       displaySymbols();
+      isConnect = true;
     } else if (isConnect === false) {
       DisconnectDeriv();
+      isConnect = false;
     }
   });
 
