@@ -788,7 +788,7 @@ closeAll.onclick=()=>{
       <td><input type="checkbox" class="rowSelect"></td>
       <td>${trade.time}</td>
       <td>${trade.contract_id}</td>
-      <td>${trade.symbol}</td>
+      <td>${String(trade.symbol)}</td>
       <td class="${trade.type === "BUY" ? "buy" : "sell"}">${trade.type}</td>
       <td>${trade.stake.toFixed(2)}</td>
       <td>${trade.multiplier}</td>
