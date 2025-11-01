@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsAutomation = null;
   let wsContracts = null;
   let wspl = null;
+  let wsplgauge = null;
   let chart = null;
   let areaSeries = null;
   let chartData = [];
