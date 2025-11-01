@@ -168,6 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (wspl === null)
     {
+     authorized = false;
      wspl = new WebSocket(WS_URL);
     }
 
@@ -184,15 +185,6 @@ document.addEventListener("DOMContentLoaded", () => {
       wspl = new WebSocket(WS_URL);
       wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
     }
-
-    /*if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.close();
-      ws = null;
-      authorized = false;
-      connectBtn.textContent = "Se connecter";
-      accountInfo.textContent = "";
-      return;
-    }*/
 
     wspl.onmessage = (evt) => {
       try {
@@ -931,6 +923,8 @@ closeAll.onclick=()=>{
 
    // --- 🧱 Connexion WebSocket
   function connectDeriv_table() {
+    if (ws && ws.readyState !== WebSocket.CONNECTING) return;
+
     if (wsContracts === null)
     {
      wsContracts = new WebSocket(WS_URL);
@@ -990,15 +984,6 @@ closeAll.onclick=()=>{
     });
     contractsPanel.classList.remove("active");
     contractsPanelToggle.textContent = "📄 Show Contracts";
-    if (ws && ws.readyState === WebSocket.CLOSING || ws.readyState === WebSocket.CLOSED)
-    {
-      wsContracts = new WebSocket(WS_URL);
-      wsContracts.send(JSON.stringify({ forget_all : "ticks"}));
-      wsContracts.close();
-    };
-
-    ws.send(JSON.stringify({ forget_all : "ticks"}));
-    ws.close();
     setTimeout(() => (contractsPanel.style.display = "none"), 400);
   }
   });
