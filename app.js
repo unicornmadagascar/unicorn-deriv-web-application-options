@@ -555,7 +555,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wsplgauge.onopen=()=>{ wsplgauge.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-   wsgauge.onmessage = (msg) => {
+   wsplgauge.onmessage = (msg) => {
     const data = JSON.parse(msg.data);
 
     // Étape 1️⃣ : autorisation OK → on demande le portefeuille
