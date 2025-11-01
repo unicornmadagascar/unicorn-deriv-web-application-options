@@ -860,7 +860,7 @@ closeAll.onclick=()=>{
     const trade = {
       time: new Date(c.date_start * 1000).toLocaleTimeString(),
       contract_id: c.contract_id,
-      symbol: c.proposal.symbol,
+      symbol: c.symbol,
       type: c.is_buy ? "BUY" : "SELL",
       stake: c.buy_price || 0,
       multiplier: c.multiplier || "-",
@@ -884,7 +884,7 @@ closeAll.onclick=()=>{
         <td><input type="checkbox" class="rowSelect"></td>
         <td>${trade.time}</td>
         <td>${trade.contract_id}</td>
-        <td>${trade.symbol}</td>
+        <td>${String(trade.symbol)}</td>
         <td class="${trade.type === "BUY" ? "buy" : "sell"}">${trade.type}</td>
         <td>${Number(trade.stake).toFixed(2)}</td>
         <td>${trade.multiplier}</td>
