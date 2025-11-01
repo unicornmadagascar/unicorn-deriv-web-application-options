@@ -240,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     wspl.onclose = () => {
-      connectBtn.textContent = "Se connecter";
+      connectBtn.textContent = "Connect";
       accountInfo.textContent = "";
       wspl = null;
       authorized = false;
@@ -253,29 +253,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- CONNECT DERIV ---
   function DisconnectDeriv() {
-
-    connectBtn.textContent = "Disconnecting...";
-    accountInfo.textContent = "Disconnecting...";
+    
+    setTimeout(() => {
+      connectBtn.textContent = "Disconnecting...";
+      accountInfo.textContent = "Disconnecting...";
   
-    if (wspl && wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING)
-    {
-      wspl.send(JSON.stringify({ forget_all: "ticks" }));
-      wspl.close();
-      connectBtn.textContent = "Connect";
-      accountInfo.textContent = "";
-      authorized = false;
-      console.log("Socket Closed");
-    }
-
-    if (wspl && wspl.readyState === WebSocket.CLOSED || wspl.readyState === WebSocket.CLOSING)
-    {
-      wspl.send(JSON.stringify({ forget_all: "ticks" }));
-      wspl.close();
-      connectBtn.textContent = "Connect";
-      accountInfo.textContent = "";
-      authorized = false;
-      console.log("Socket Closed");
-    }
+      if (wspl && wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING)
+      {
+        wspl.send(JSON.stringify({ forget_all: "ticks" }));
+        wspl.close();
+        connectBtn.textContent = "Connect";
+        accountInfo.textContent = "";
+        authorized = false;
+        console.log("Socket Closed");
+      }
+    }, 500);  
   }
 
   function startAutomation() {
@@ -1049,10 +1041,10 @@ closeAll.onclick=()=>{
   // wire connect button
   connectBtn.addEventListener("click", () => {
     isConnect = !isConnect;
-    if (isConnect) {
+    if (isConnect === true) {
       connectDeriv();
       displaySymbols();
-    } else {
+    } else if (isConnect === false) {
       DisconnectDeriv();
     }
   });
