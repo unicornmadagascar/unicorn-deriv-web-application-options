@@ -255,6 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
       {
         wspl.send(JSON.stringify({ forget_all: "ticks" }));
         wspl.close();
+        wspl = null;
         connectBtn.textContent = "Connect";
         accountInfo.textContent = "";
         authorized = false;
@@ -373,24 +374,35 @@ document.addEventListener("DOMContentLoaded", () => {
     initChart(); // reinit chart so areaSeries exists before ticks arrive
 
     // if WS not ready, set pendingSubscribe and open connection
-    if (!wspl || wspl.readyState !== WebSocket.OPEN || !authorized) {
+    /*if (!wspl || wspl.readyState !== WebSocket.OPEN || !authorized) {
       pendingSubscribe = symbol;
       if (!wspl || wspl.readyState === WebSocket.CLOSED) {
         connectDeriv();
       }
       // we'll actually send subscription after authorize in ws.onmessage
       return;
+    }*/
+
+    if (!wspl || wspl.readyState === WebSocket.CLOSED)
+    {
+     connectDeriv();
+    }
+
+    if (wspl && wspl.readyState === WebSocket.OPEN && authorized)
+    {
+      wspl.send(JSON.stringify({ forget_all: "ticks" }));
+      wspl.send(JSON.stringify({ ticks: symbol }));
     }
 
     // WS open and authorized -> subscribe now
-    try {
+    /*try {
       wspl.send(JSON.stringify({ forget_all: "ticks" }));
       wspl.send(JSON.stringify({ ticks: symbol }));
     } catch (e) {
       // fallback: queue for after authorize
       pendingSubscribe = symbol;
       console.warn("Failed to send subscribe immediately, queued", e);
-    }
+    }*/
   }
 
   // --- TICK HANDLER ---
@@ -1050,7 +1062,6 @@ closeAll.onclick=()=>{
       accountInfo.textContent = "Disconnecting...";
       isConnect = false;
       DisconnectDeriv();
-      wspl = null;
     }
   });
 
