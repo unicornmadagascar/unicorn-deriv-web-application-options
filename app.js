@@ -174,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     connectBtn.textContent = "Connecting...";
-    accountInfo.textContent = "Connecting...";
+    //accountInfo.textContent = "Connecting...";
   
     if (wspl && wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING)
     {
