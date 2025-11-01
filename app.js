@@ -172,9 +172,6 @@ document.addEventListener("DOMContentLoaded", () => {
      authorized = false;
      wspl = new WebSocket(WS_URL);
     }
-
-    connectBtn.textContent = "Connecting...";
-    //accountInfo.textContent = "Connecting...";
   
     if (wspl && wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING)
     {
@@ -253,8 +250,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- CONNECT DERIV ---
   function DisconnectDeriv() {
-    connectBtn.textContent = "Disconnecting...";
-    accountInfo.textContent = "Disconnecting...";
     setTimeout(() => {
       if (wspl && wspl.readyState === WebSocket.OPEN)
       {
@@ -1038,14 +1033,17 @@ closeAll.onclick=()=>{
 
   // wire connect button
   connectBtn.addEventListener("click", () => {
-    isConnect = !isConnect;
-    if (isConnect === true) {
+    if (!isConnect) {
+      connectBtn.textContent = "Connecting...";
+      accountInfo.textContent = "Connecting...";
       connectDeriv();
       displaySymbols();
-      //isConnect = true;
-    } else if (isConnect === false) {
+      isConnect = true;
+    } else {
+      connectBtn.textContent = "Disconnecting...";
+      accountInfo.textContent = "Disconnecting...";
       DisconnectDeriv();
-      //isConnect = false;
+      isConnect = false;
     }
   });
 
