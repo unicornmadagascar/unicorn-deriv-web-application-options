@@ -875,7 +875,7 @@ closeAll.onclick=()=>{
     const trade = {
       time: new Date(c.date_start * 1000).toLocaleTimeString(),
       contract_id: c.contract_id,
-      symbol: c.symbol || "-",
+      symbol: c.underlying || c.symbol,
       type: c.is_buy ? "BUY" : "SELL",
       stake: c.buy_price || 0,
       multiplier: c.multiplier || "-",
