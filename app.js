@@ -258,7 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
       connectBtn.textContent = "Disconnecting...";
       accountInfo.textContent = "Disconnecting...";
   
-      if (wspl && wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING)
+      if (wspl && wspl.readyState === WebSocket.OPEN)
       {
         wspl.send(JSON.stringify({ forget_all: "ticks" }));
         wspl.close();
