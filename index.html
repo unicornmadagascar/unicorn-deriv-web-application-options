@@ -25,7 +25,7 @@
     #container { position:relative; flex:none; flex-direction: column; display:flex; }
     /* chart area */
     #chartArea { flex:1; display:flex; flex-direction:column; }
-    #chartInner { flex:1; min-height:700px; background:#fff; margin:12px; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.06); overflow:hidden; }
+    #chartInner { flex:1; min-height:750px; background:#fff; margin:12px; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.06); overflow:hidden; }
 
     /* gauges */
     #gauges { position:absolute; top:18px; right:18px; display:flex; gap:16px; z-index:10; }
@@ -291,10 +291,11 @@
 }
 
 #tradeEvalPanel.active {
-  max-height: 800px;
+  max-height: 1000px;
   opacity: 1;
   transform: translateY(0);
   visibility: visible;
+  overflow-y: auto;
 }
 
 /* --- Layout --- */
@@ -488,14 +489,7 @@
     </div>
   </div>
 
-  <!-- Nouveau panneau des contrats ouverts -->
-  <div id="contractsPanelContainer">
-    <button id="contractsPanelToggle">📄 Show Contracts</button>
-    <div id="contractsPanel">
-      <div id="autoHistoryList"></div>
-    </div>
-  </div>
-   <!-- Nouveau panneau des Trades -->
+  <!-- Nouveau panneau des Trades -->
   <div id="tradeEvaluationContainer">
   <button id="tradeEvalToggle">📊 Trade Evaluation</button>
 
@@ -577,6 +571,14 @@
       </table>
     </div>
   </div>
+  </div>
+
+  <!-- Nouveau panneau des contrats ouverts -->
+  <div id="contractsPanelContainer">
+    <button id="contractsPanelToggle">📄 Show Contracts</button>
+    <div id="contractsPanel">
+      <div id="autoHistoryList"></div>
+    </div>
   </div>
 
   <script>
