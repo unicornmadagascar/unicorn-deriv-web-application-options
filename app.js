@@ -379,6 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wspl === null)
     {
      wspl = new WebSocket(WS_URL);
+     return;
     }
     
     if (wspl && wspl.readyState === WebSocket.OPEN && authorized)
@@ -1053,14 +1054,14 @@ closeAll.onclick=()=>{
     if (!isConnect) {
       connectBtn.textContent = "Connecting...";
       accountInfo.textContent = "Connecting..."; 
+      isConnect = true; 
       connectDeriv();
       displaySymbols();
-      isConnect = true; 
     } else {
       connectBtn.textContent = "Disconnecting...";
       accountInfo.textContent = "Disconnecting...";
-      DisconnectDeriv();
       isConnect = false;
+      DisconnectDeriv();
     }
   });
 
