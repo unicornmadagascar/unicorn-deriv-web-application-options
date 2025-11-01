@@ -170,6 +170,9 @@ document.addEventListener("DOMContentLoaded", () => {
     {
      wspl = new WebSocket(WS_URL);
     }
+
+    connectBtn.textContent = "Connecting...";
+    accountInfo.textContent = "Connecting...";
   
     if (wspl && wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING)
     {
@@ -190,15 +193,6 @@ document.addEventListener("DOMContentLoaded", () => {
       accountInfo.textContent = "";
       return;
     }*/
-
-    wspl = new WebSocket(WS_URL);
-    connectBtn.textContent = "Connecting...";
-    accountInfo.textContent = "Connecting...";
-
-    wspl.onopen = () => {
-      // send authorize
-      wspl.send(JSON.stringify({ authorize: TOKEN }));
-    };
 
     wspl.onmessage = (evt) => {
       try {
@@ -561,7 +555,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Étape 1️⃣ : autorisation OK → on demande le portefeuille
     if (data.msg_type === "authorize" && !authorized) {
       authorized = true;
-      wsgauge.send(JSON.stringify({ portfolio: 1 }));
+      wsplgauge.send(JSON.stringify({ portfolio: 1 }));
     }
 
     // Étape 2️⃣ : réception du portefeuille (liste des contrats ouverts)
