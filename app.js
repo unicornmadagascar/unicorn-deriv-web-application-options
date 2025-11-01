@@ -362,6 +362,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- SUBSCRIBE SYMBOL ---
   function subscribeSymbol(symbol) {
+
+    if (wspl === null)
+    {
+     wspl = new WebSocket(WS_URL);
+     return;
+    }
+    
     // set desired symbol and reinit chart immediately
     currentSymbol = symbol;
     initChart(); // reinit chart so areaSeries exists before ticks arrive
@@ -376,12 +383,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }*/
 
-    if (wspl === null)
-    {
-     wspl = new WebSocket(WS_URL);
-     return;
-    }
-    
     if (wspl && wspl.readyState === WebSocket.OPEN && authorized)
     {
       wspl.send(JSON.stringify({ forget_all: "ticks" }));
