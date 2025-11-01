@@ -390,7 +390,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (wspl && wspl.readyState === WebSocket.CLOSED || wspl.readyState === WebSocket.CLOSING)
-    {
+    { 
+      wspl = null;
       connectDeriv();
     }
 
