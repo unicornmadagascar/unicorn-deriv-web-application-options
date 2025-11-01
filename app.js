@@ -253,11 +253,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- CONNECT DERIV ---
   function DisconnectDeriv() {
-    
+    connectBtn.textContent = "Disconnecting...";
+    accountInfo.textContent = "Disconnecting...";
     setTimeout(() => {
-      connectBtn.textContent = "Disconnecting...";
-      accountInfo.textContent = "Disconnecting...";
-  
       if (wspl && wspl.readyState === WebSocket.OPEN)
       {
         wspl.send(JSON.stringify({ forget_all: "ticks" }));
@@ -1044,10 +1042,10 @@ closeAll.onclick=()=>{
     if (isConnect === true) {
       connectDeriv();
       displaySymbols();
-      isConnect = true;
+      //isConnect = true;
     } else if (isConnect === false) {
       DisconnectDeriv();
-      isConnect = false;
+      //isConnect = false;
     }
   });
 
