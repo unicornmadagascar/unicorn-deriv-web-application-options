@@ -1060,6 +1060,10 @@ closeAll.onclick=()=>{
       try { chart.resize(chartInner.clientWidth, chartInner.clientHeight); } catch (e) {}
     }
   });
+
+  document.getElementById("tradeEvalToggle").addEventListener("click", () => {
+     document.getElementById("tradeEvalPanel").classList.toggle("active");
+  });
   
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
