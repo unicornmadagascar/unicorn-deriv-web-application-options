@@ -385,8 +385,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // WS open and authorized -> subscribe now
     try {
-      ws.send(JSON.stringify({ forget_all: "ticks" }));
-      ws.send(JSON.stringify({ ticks: symbol }));
+      wspl.send(JSON.stringify({ forget_all: "ticks" }));
+      wspl.send(JSON.stringify({ ticks: symbol }));
     } catch (e) {
       // fallback: queue for after authorize
       pendingSubscribe = symbol;
