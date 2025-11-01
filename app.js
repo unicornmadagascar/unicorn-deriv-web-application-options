@@ -374,9 +374,9 @@ document.addEventListener("DOMContentLoaded", () => {
     initChart(); // reinit chart so areaSeries exists before ticks arrive
 
     // if WS not ready, set pendingSubscribe and open connection
-    if (!ws || ws.readyState !== WebSocket.OPEN || !authorized) {
+    if (!wspl || wspl.readyState !== WebSocket.OPEN || !authorized) {
       pendingSubscribe = symbol;
-      if (!ws || ws.readyState === WebSocket.CLOSED) {
+      if (!wspl || wspl.readyState === WebSocket.CLOSED) {
         connectDeriv();
       }
       // we'll actually send subscription after authorize in ws.onmessage
