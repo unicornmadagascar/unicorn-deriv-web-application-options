@@ -1038,7 +1038,7 @@ closeAll.onclick=()=>{
       accountInfo.textContent = "Connecting..."; 
       connectDeriv();
       displaySymbols();
-      isConnect = true;
+      isConnect = true; 
     } else {
       connectBtn.textContent = "Disconnecting...";
       accountInfo.textContent = "Disconnecting...";
