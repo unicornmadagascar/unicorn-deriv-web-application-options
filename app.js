@@ -935,7 +935,7 @@ closeAll.onclick=()=>{
   }
 
    // --- 🧱 Connexion WebSocket
-  function connectDeriv_table() {
+  function connectDeriv_table() {   
     if (ws && ws.readyState !== WebSocket.CONNECTING) return;
 
     if (wsContracts === null)
