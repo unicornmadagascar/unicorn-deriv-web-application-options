@@ -12,11 +12,11 @@
     padding: 20px;
   }
 
-  /* ✅ Boutons centrés horizontalement et rapprochés */
+  /* Boutons centrés horizontalement et rapprochés */
   #buttonsContainer {
     display: flex;
     justify-content: center;
-    gap: 10px; /* espace réduit entre les boutons */
+    gap: 10px;
     margin-bottom: 20px;
   }
 
@@ -36,7 +36,7 @@
     color: white;
   }
 
-  /* ✅ Panneaux pleine largeur */
+  /* Panneaux pleine largeur */
   #tradeEvaluationPanel, #contractsPanel {
     width: 95%;
     max-width: 100%;
@@ -45,20 +45,18 @@
     border-radius: 16px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    display: none;
-    animation-duration: 0.4s;
-    animation-fill-mode: forwards;
+    display: none; /* caché par défaut */
   }
 
-  /* ✅ Animation ouverture */
+  /* Animation ouverture */
   @keyframes slideDown {
     0% { opacity: 0; transform: translateY(-20px); }
     100% { opacity: 1; transform: translateY(0); }
   }
 
   .panel-open {
-    display: block;
-    animation-name: slideDown;
+    display: block !important;
+    animation: slideDown 0.4s ease;
   }
 
   h3 {
@@ -67,7 +65,7 @@
     padding-bottom: 5px;
   }
 
-  /* ✅ Tableaux */
+  /* Tableaux */
   .trade-table {
     width: 100%;
     border-collapse: collapse;
@@ -95,7 +93,7 @@
     background-color: #b3d7ff;
   }
 
-  /* ✅ Bouton Delete petit à gauche */
+  /* Bouton Delete petit à gauche */
   .delete-container {
     text-align: left;
     margin-top: 10px;
@@ -114,7 +112,6 @@
   #deleteSelected:hover {
     background-color: #a71d2a;
   }
-
 </style>
 </head>
 <body>
@@ -206,6 +203,24 @@
         checkbox.checked = !checkbox.checked;
       }
     });
+  });
+
+  // Select All
+  const selectAll = document.getElementById("selectAll");
+  selectAll.addEventListener("change", () => {
+    const checkboxes = document.querySelectorAll("#tradeTable tbody input[type='checkbox']");
+    checkboxes.forEach(cb => {
+      cb.checked = selectAll.checked;
+      if (selectAll.checked) cb.closest('tr').classList.add('selected');
+      else cb.closest('tr').classList.remove('selected');
+    });
+  });
+
+  // Delete Selected
+  const deleteBtn = document.getElementById("deleteSelected");
+  deleteBtn.addEventListener("click", () => {
+    const selectedRows = document.querySelectorAll("#tradeTable tbody tr.selected");
+    selectedRows.forEach(row => row.remove());
   });
 </script>
 
