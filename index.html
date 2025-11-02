@@ -14,28 +14,50 @@
       align-items: center;
     }
 
-    /* --- Boutons de toggles --- */
+    /* ✅ Conteneur vertical sans écart */
     #buttonsContainer {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0; /* 🔥 aucun espace entre les deux boutons */
+      gap: 0;
     }
 
+    /* ✅ Boutons stylés avec effet lumineux */
     button {
-      width: 250px;
-      padding: 10px;
-      background: #007bff;
+      width: 260px;
+      padding: 12px;
+      background: linear-gradient(180deg, #007bff, #0062cc);
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
-      font-size: 16px;
-      transition: background 0.3s ease;
+      font-size: 15px;
+      font-weight: 600;
+      transition: all 0.25s ease;
+      position: relative;
     }
 
+    /* ✅ Bordure animée subtile entre les deux boutons */
+    #tradeEvaluationToggle {
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+      border-radius: 10px 10px 0 0;
+    }
+
+    #contractsPanelToggle {
+      border-radius: 0 0 10px 10px;
+    }
+
+    /* ✅ Effet hover doux */
     button:hover {
-      background: #0056b3;
+      background: linear-gradient(180deg, #3399ff, #0056b3);
+      transform: scale(1.02);
+      box-shadow: 0 0 10px rgba(0,123,255,0.5);
+    }
+
+    /* ✅ Effet de clic */
+    button:active {
+      transform: scale(0.98);
+      box-shadow: 0 0 4px rgba(0,0,0,0.3);
     }
 
     /* --- Panneaux --- */
@@ -44,11 +66,24 @@
       display: none;
       background: white;
       padding: 15px;
-      margin-top: 10px;
-      border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      margin-top: 14px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       width: 80%;
       max-width: 700px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* ✅ Animation d’ouverture fluide */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* --- Table --- */
@@ -76,6 +111,11 @@
       color: white;
       border-radius: 6px;
       cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    #deleteSelected:hover {
+      background: #a71d2a;
     }
   </style>
 </head>
@@ -133,12 +173,14 @@
   </div>
 
   <script>
+    // ✅ Bouton Trade Evaluation
     const tradeBtn = document.getElementById("tradeEvaluationToggle");
     const tradePanel = document.getElementById("tradeEvaluationPanel");
     tradeBtn.addEventListener("click", () => {
       tradePanel.style.display = tradePanel.style.display === "block" ? "none" : "block";
     });
 
+    // ✅ Bouton Contracts Panel
     const contractBtn = document.getElementById("contractsPanelToggle");
     const contractPanel = document.getElementById("contractsPanel");
     contractBtn.addEventListener("click", () => {
