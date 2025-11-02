@@ -930,7 +930,7 @@ closeAll.onclick=()=>{
        autoTradeBody.appendChild(tr);
     } else {
       // 🔄 Mise à jour en temps réel du profit
-      tr.cells[10].textContent = trade.profit;
+      tr.cells[10].textContent = trade.profit; 
     }
   }
 
