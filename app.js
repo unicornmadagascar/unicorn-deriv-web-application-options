@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let ws = null;
   let wsAutomation = null;
   let wsContracts = null;
+  let wsContracts__ = null;
   let wspl = null;
   let wsplgauge = null;
   let chart = null;
@@ -627,23 +628,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const tp_contract = Number(takeProfitInput.value)||0;
     const sl_contract = Number(stopLossInput.value)||0;
 
-    if (wsContracts === null)
+    if (wsContracts__ === null)
     {
-     wsContracts = new WebSocket(WS_URL);
+     wsContracts__ = new WebSocket(WS_URL);
     }
   
-    if (wsContracts && wsContracts.readyState === WebSocket.OPEN || wsContracts.readyState === WebSocket.CONNECTING)
+    if (wsContracts__ && wsContracts__.readyState === WebSocket.OPEN || wsContracts__.readyState === WebSocket.CONNECTING)
     {
-     wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
+     wsContracts__.onopen=()=>{ wsContracts__.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wsContracts && wsContracts.readyState === WebSocket.CLOSED || wsContracts.readyState === WebSocket.CLOSING)
+    if (wsContracts__  && wsContracts__.readyState === WebSocket.CLOSED || wsContracts__.readyState === WebSocket.CLOSING)
     {
-      wsContracts = new WebSocket(WS_URL);
-      wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
+      wsContracts__ = new WebSocket(WS_URL);
+      wsContracts__.onopen=()=>{ wsContracts__.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if(authorized && ws&& ws.readyState===WebSocket.OPEN){
+    if(authorized && wsContracts__ && wsContracts__.readyState===WebSocket.OPEN){
        const payload = {
         buy: 1,
         price: stake.toFixed(2),
@@ -669,7 +670,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       for (let i=0;i < numb_; i++)
        {
-         wsContracts.send(JSON.stringify(payload));
+         wsContracts__.send(JSON.stringify(payload));
        }
     }
   }
