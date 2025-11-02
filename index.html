@@ -1,502 +1,150 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>🦄 World Unicorn — Deriv Live Ticks</title>
-
- <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <script defer src="app.js"></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panneaux Contracts & Trade Evaluation</title>
   <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      margin:0; height:120vh; 
-      display:flex; 
-      flex-direction:column;
-      background:#f8f9fa; 
-    }
-
-    header { display:flex; justify-content:space-between; align-items:center; padding:10px 16px; background:#fff; border-bottom:1px solid #e6e6e6; }
-    #symbolList { display:flex; gap:10px; overflow-x:auto; }
-    .symbol-item { padding:6px 12px; border-radius:20px; background:#eee; cursor:pointer; font-weight:600; transition:0.18s; }
-    .symbol-item:hover { background:#007bff; color:#fff; }
-    #container { position:relative; flex:none; flex-direction: column; display:flex; }
-    #chartArea { flex:none; display:flex; flex-direction:column; }
-    #chartInner { flex:1; min-height:730px; background:#fff; margin:12px; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.06); overflow:hidden; }
-
-    #gauges { position:absolute; top:18px; right:18px; display:flex; gap:16px; z-index:10; }
-    .gauge-container { display:flex; flex-direction:column; align-items:center; width:120px; }
-    .gauge { width:110px; height:110px; border-radius:50%; background: conic-gradient(#ddd 0deg, #ddd 360deg); display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(0,0,0,0.08); }
-    .gauge span { font-weight:700; color:#222; }
-    .gauge-label { margin-top:6px; color:#555; font-size:13px; text-align:center; }
-
-    #controls { padding:8px 16px; background:#fff; border-bottom:1px solid #eee; display:flex; gap:12px; align-items:center; }
-    #connectBtn { background:#007bff; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; }
-    #connectBtn:hover { background:#0056b3; }
-
-    #controlFormPanel {
-      display: none;
-      position: relative;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
       padding: 20px;
-      margin-top: 10px;
-      width: 100%;
-      box-sizing: border-box;
-      transition: all 0.25s ease-in-out;
-    }  
-
-    #controlFormPanel div {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
- 
-    #controlFormPanel button {
-      height: 42px;
-      padding: 0 16px;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    }
-
-    #controlFormPanel button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 14px rgba(0,0,0,0.12);
-    }
-
-    #toggleAutomation, #buyBtn, #sellBtn, #closeWinning, #closeAll {
-      background: white; color: #4d4747;
-    }
-
-    #controlFormPanel label {
       display: flex;
       flex-direction: column;
-      font-size: 13px;
-      font-weight: 500;
-      min-width: 80px;
+      align-items: center;
     }
 
-    #controlFormPanel input,
-    #controlFormPanel select {
-      margin-top: 6px;
+    /* --- Boutons de toggles --- */
+    #buttonsContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0; /* 🔥 aucun espace entre les deux boutons */
+    }
+
+    button {
+      width: 250px;
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    /* --- Panneaux --- */
+    #tradeEvaluationPanel,
+    #contractsPanel {
+      display: none;
+      background: white;
+      padding: 15px;
+      margin-top: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      width: 80%;
+      max-width: 700px;
+    }
+
+    /* --- Table --- */
+    .trade-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .trade-table th, .trade-table td {
+      border: 1px solid #ddd;
       padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-      transition: all 0.2s ease;
+      text-align: center;
     }
 
-    #controlFormPanel input:focus,
-    #controlFormPanel select:focus {
-      outline: none;
-      border-color: #007bff;
-      box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
+    .trade-table th {
+      background-color: #007bff;
+      color: white;
     }
 
-    #controlPanelToggle {
+    #deleteSelected {
       margin-top: 10px;
       padding: 8px 16px;
-      border-radius: 8px;
-      background: white;
-      color: #4d4747;
       border: none;
+      background: #dc3545;
+      color: white;
+      border-radius: 6px;
       cursor: pointer;
-      font-weight: 600;
-      transition: all 0.2s ease;
     }
-
-    #controlPanelToggle:hover {
-      background: white;
-      transform: translateY(-2px);
-    }
-
-    #controlFormPanel {
-     display: none;
-     opacity: 0;
-     transform: translateY(40px);
-     transition: all 0.35s ease;
-     flex-direction: column;
-     background: white;
-     border-radius: 12px;
-     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-     padding: 20px;
-     margin-top: 12px;
-   }
-
-   #controlFormPanel.active {
-     opacity: 1;
-     transform: translateY(0);
-   }
-
-   /* 📊 Panneau des contrats ouverts */
-   #contractsPanelContainer {
-     flex: none;
-     width: 100%;
-     max-width: 100vw;
-     box-sizing: border-box;
-     display: flex;
-     flex-direction: column;
-     align-items: center;
-     padding: 0 12px;
-     margin-top: 2px; /* 🔧 rapproché */
-   }
-
-   #contractsPanelToggle {
-     width: 100%;
-     display: flex;
-     align-items: center;
-     justify-content: center;
-     margin-top: 2px; /* 🔧 réduit */
-     padding: 12px 16px;
-     border-radius: 8px;
-     background: white;
-     color: #4d4747;
-     border: none;
-     cursor: pointer;
-     font-weight: 600;
-     font-size: 13px;
-     transition: all 0.2s ease;
-     box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-     box-sizing: border-box;
-   }
-
-   #contractsPanelToggle:hover {
-     transform: translateY(0px);
-     box-shadow: 0 6px 14px rgba(0,0,0,0.12);
-   }
-
-   #contractsPanel {
-     display: flex;
-     opacity: 0;
-     transform: translateY(-20px);
-     transition: all 0.4s ease;
-     flex-direction: column;
-     background: white;
-     border-radius: 12px;
-     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-     padding: 20px;
-     margin-top: 5px;
-     width: 100%;
-     box-sizing: border-box;
-     max-height: 0;
-     overflow: hidden;
-   }
-
-   #contractsPanel.active {
-     display:flex;
-     opacity: 1;
-     transform: translateY(0);
-     max-height: 2200px;
-     height: 2000px;   
-     overflow-y: auto;
-   }
-
-   .trade-table {
-     width: 100%;
-     border-collapse: collapse;
-     font-size: 14px;
-     margin-top: 8px;
-   }
-
-   .trade-table th,
-   .trade-table td {
-     border: 1px solid #e5e7eb;
-     padding: 8px;
-     text-align: center;
-   }
-
-   .trade-table thead {
-     background: #f8f9fa;
-     font-weight: bold;
-   }
-
-   .trade-table tbody tr:hover {
-     background: #f1f5f9;
-   }
-
-   #deleteSelected {
-     margin-top: 10px;
-     background: #dc2626;
-     color: white;
-     border: none;
-     padding: 8px 14px;
-     border-radius: 8px;
-     cursor: pointer;
-     font-weight: 600;
-     transition: all 0.2s ease;
-     box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-   }
-
-   #deleteSelected:hover {
-     transform: translateY(-2px);
-     box-shadow: 0 6px 14px rgba(0,0,0,0.12);
-   }
-
-   #tradeEvaluationContainer {
-     margin-top: 4px;
-     margin-bottom: 0; /* 🔧 réduit l’espace entre les deux boutons */
-   }
-
-   #tradeEvalToggle {
-     width: 100%;
-     padding: 10px 16px;
-     border-radius: 8px;
-     background: white;
-     color: #4d4747;
-     border: none;
-     cursor: pointer;
-     font-weight: 600;
-     transition: all 0.3s ease;
-     margin-top: 4px;
-     box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-   }
-
-   #tradeEvalToggle:hover {
-     transform: translateY(-2px);
-   }
-
-   #tradeEvalPanel {
-     background: #fff;
-     border-radius: 12px;
-     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-     margin-top: 12px;
-     padding: 20px;
-     overflow: hidden;
-     max-height: 0;
-     opacity: 0;
-     transform: translateY(-10px);
-     transition: all 0.5s cubic-bezier(0.25, 1, 0.3, 1);
-     visibility: hidden;
-   }
-
-   #tradeEvalPanel.active {
-     max-height: 1000px;
-     opacity: 1;
-     transform: translateY(0);
-     visibility: visible;
-     overflow-y: auto;
-   }
-
-   #tradeSummary {
-     display: flex;
-     flex-wrap: wrap;
-     justify-content: space-between;
-     gap: 12px;
-   }
-
-   .trade-info label { font-weight: 600; color: #333; }
-   .trade-info span { font-weight: 500; color: #555; }
-
-   .trade-dates { display: flex; gap: 8px; align-items: center; }
-   .trade-dates input { padding: 6px; border-radius: 6px; border: 1px solid #ccc; }
-
-   #tradeCharts { display: flex; justify-content: space-around; align-items: center; margin: 20px 0; }
-
-   .circle-chart {
-     width: 100px; height: 100px; border-radius: 50%; position: relative;
-     display: flex; justify-content: center; align-items: center;
-     background: conic-gradient(#e5e7eb 0deg, #e5e7eb 360deg);
-     transition: background 1.2s linear;
-   }
-
-   .circle-chart .inner {
-     width: 80px; height: 80px; background: white; border-radius: 50%;
-     display: flex; flex-direction: column; justify-content: center; align-items: center;
-   }
-
-   .circle-chart span { font-size: 18px; font-weight: 700; }
-   .circle-chart small { color: #6b7280; font-size: 13px; }
-
-   #tradeEvalPanel.active .circle-chart.red { background: conic-gradient(#ef4444 72deg, #e5e7eb 72deg); }
-   #tradeEvalPanel.active .circle-chart.blue { background: conic-gradient(#3b82f6 288deg, #e5e7eb 288deg); }
-   #tradeEvalPanel.active .circle-chart.mix { background: conic-gradient(#10b981 216deg, #e5e7eb 216deg); }
-
-   #tradeHistory { margin-top: 20px; overflow-y: auto; max-height: 250px; }
-   #tradeHistory h3 { margin-bottom: 8px; }
-
-   .trade-table { width: 100%; border-collapse: collapse; }
-   .trade-table th, .trade-table td { border-bottom: 1px solid #e5e7eb; padding: 8px; text-align: center; }
-   .trade-table thead { background: #f8fafc; font-weight: 600; }
-   .trade-table tbody tr:hover { background: #f1f5f9; }
   </style>
 </head>
 <body>
-  <header>
-    <div id="symbolList"></div>
-    <div id="controls">
-      <div id="accountInfo" style="margin-right:10px; font-weight:500; color:#333;"></div>
-      <button id="connectBtn">Connect</button>
-    </div>
-  </header>
 
-  <div id="controlFormPanel">
-    <div>
-      <div style="display:flex; gap:12px; flex-wrap:wrap;">
-        <button id="toggleAutomation">Launch Automation</button>
-        <button id="buyBtn">BUY</button>
-        <button id="sellBtn">SELL</button>
-        <button id="closeWinning">Close Winning</button>
-        <button id="closeAll">Close All</button> 
-      </div>
-
-      <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:flex-end; flex:1 1 auto;">
-        <label>Multiplier
-          <select id="multiplierSelect">
-            <option value="100">100</option>
-            <option value="200">200</option>
-            <option value="300">300</option>
-            <option value="400">400</option>
-            <option value="500">500</option>
-          </select>
-        </label>
-
-        <label>Stake
-          <input type="number" id="stakeInput" value="1" min="1">
-        </label>
-
-        <label>Buy Number
-          <input type="number" id="buyNumberInput" value="1" min="1">
-        </label>
-
-        <label>Sell Number
-          <input type="number" id="sellNumberInput" value="1" min="1">
-        </label>
-
-        <label>TP
-          <input type="number" id="tpInput" value="0" min="0">
-        </label>
-
-        <label>SL
-          <input type="number" id="slInput" value="0" min="0">
-        </label>
-      </div>
-    </div>
-  </div>
-  
-  <button id="controlPanelToggle">⚙️ Show Controls</button>
-
-  <div id="container">
-    <div id="chartArea">
-      <div id="chartInner"></div>
-    </div>
-
-    <div id="gauges">
-      <div class="gauge-container">
-        <div id="volGauge" class="gauge"><span>0%</span></div>
-      </div>
-      <div class="gauge-container">
-        <div id="trendGauge" class="gauge"><span>0%</span></div>
-      </div>
-      <div class="gauge-container">
-        <div id="probGauge" class="gauge"><span>0%</span></div>
-      </div>
-      <div class="gauge-container">
-        <div id="plGauge" class="gauge"><span>$0.00</span></div>
-      </div>
-    </div>
-  </div>
-
-  <div id="tradeEvaluationContainer">
-    <button id="tradeEvalToggle">📊 Trade Evaluation</button>
-
-    <div id="tradeEvalPanel">
-      <div id="tradeSummary">
-        <div class="trade-info">
-          <label>Balance:</label><span id="balanceValue">250 USD</span>
-        </div>
-        <div class="trade-info">
-          <label>Account Holder:</label><span id="accountHolder">Michel Davis</span>
-        </div>
-        <div class="trade-info">
-          <label>Account Type:</label><span id="accountType">CRW27535</span>
-        </div>
-
-        <div class="trade-dates">
-          <label>Start Date:</label>
-          <input type="date" id="startDate" value="2025-10-01">
-          <label>End Date:</label>
-          <input type="date" id="endDate" value="2025-10-31">
-        </div>
-      </div>
-
-      <div id="tradeCharts">
-        <div class="circle-chart red">
-          <div class="inner">
-            <span>20%</span><small>Loss</small>
-          </div>
-        </div>
-        <div class="circle-chart blue">
-          <div class="inner">
-            <span>80%</span><small>Profit</small>
-          </div>
-        </div>
-        <div class="circle-chart mix">
-          <div class="inner">
-            <span>60%</span><small>P/L</small>
-          </div>
-        </div>
-      </div>
-
-      <div id="tradeResults">
-        <p>Loss: <b>-350 USD</b></p>
-        <p>Profit: <b>+770 USD</b></p>
-        <p>Total P/L: <b>+420 USD</b></p>
-      </div>
-
-      <div id="tradeHistory">
-        <h3>Trade History</h3>
-        <table class="trade-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Trade Type</th>
-              <th>Stake</th>
-              <th>Result</th>
-              <th>Profit/Loss</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>2025-10-01</td><td>Buy</td><td>$50</td><td>Win</td><td>+$120</td></tr>
-            <tr><td>2025-10-02</td><td>Sell</td><td>$40</td><td>Loss</td><td>-$35</td></tr>
-            <tr><td>2025-10-03</td><td>Buy</td><td>$60</td><td>Win</td><td>+$150</td></tr>
-            <tr><td>2025-10-04</td><td>Sell</td><td>$55</td><td>Loss</td><td>-$40</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div id="contractsPanelContainer">
+  <!-- ✅ Conteneur des deux boutons -->
+  <div id="buttonsContainer">
+    <button id="tradeEvaluationToggle">📊 Trade Evaluation</button>
     <button id="contractsPanelToggle">📄 Show Contracts</button>
+  </div>
 
-    <div id="contractsPanel">
-      <table id="tradeTable" class="trade-table">
+  <div id="tradeEvaluationPanel">
+    <p><strong>Total Trades:</strong> 25</p>
+    <p><strong>Win Rate:</strong> 60%</p>
+    <p><strong>Total P/L:</strong> +420 USD</p>
+
+    <div id="tradeHistory">
+      <h3>Trade History</h3>
+      <table class="trade-table">
         <thead>
           <tr>
-            <th><input type="checkbox" id="selectAll"></th>
-            <th>Trade ID</th>
-            <th>Symbol</th>
-            <th>Type</th>
+            <th>Date</th>
+            <th>Trade Type</th>
             <th>Stake</th>
+            <th>Result</th>
             <th>Profit/Loss</th>
-            <th>Status</th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody>
+          <tr><td>2025-10-01</td><td>Buy</td><td>$50</td><td>Win</td><td>+$120</td></tr>
+          <tr><td>2025-10-02</td><td>Sell</td><td>$40</td><td>Loss</td><td>-$35</td></tr>
+          <tr><td>2025-10-03</td><td>Buy</td><td>$60</td><td>Win</td><td>+$150</td></tr>
+          <tr><td>2025-10-04</td><td>Sell</td><td>$55</td><td>Loss</td><td>-$40</td></tr>
+        </tbody>
       </table>
-      <button id="deleteSelected">🗑️ Delete Selected</button>
     </div>
   </div>
+
+  <div id="contractsPanel">
+    <table id="tradeTable" class="trade-table">
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="selectAll"></th>
+          <th>Trade ID</th>
+          <th>Symbol</th>
+          <th>Type</th>
+          <th>Stake</th>
+          <th>Profit/Loss</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button id="deleteSelected">🗑️ Delete Selected</button>
+  </div>
+
+  <script>
+    const tradeBtn = document.getElementById("tradeEvaluationToggle");
+    const tradePanel = document.getElementById("tradeEvaluationPanel");
+    tradeBtn.addEventListener("click", () => {
+      tradePanel.style.display = tradePanel.style.display === "block" ? "none" : "block";
+    });
+
+    const contractBtn = document.getElementById("contractsPanelToggle");
+    const contractPanel = document.getElementById("contractsPanel");
+    contractBtn.addEventListener("click", () => {
+      contractPanel.style.display = contractPanel.style.display === "block" ? "none" : "block";
+    });
+  </script>
 
 </body>
 </html>
