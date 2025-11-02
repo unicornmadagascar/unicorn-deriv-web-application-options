@@ -623,9 +623,25 @@ document.addEventListener("DOMContentLoaded", () => {
   //--- Trades (New)
   function executeTrade(type){
     const stake=parseFloat(stakeInput.value)||1;
-    const multiplier=parseInt(multiplierInput.value)||100;
+    const multiplier=parseInt(multiplierInput.value)||50;
     const tp_contract = Number(takeProfitInput.value)||0;
     const sl_contract = Number(stopLossInput.value)||0;
+
+    if (wsContracts === null)
+    {
+     wsContracts = new WebSocket(WS_URL);
+    }
+  
+    if (wsContracts && wsContracts.readyState === WebSocket.OPEN || wsContracts.readyState === WebSocket.CONNECTING)
+    {
+     wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (wsContracts && wsContracts.readyState === WebSocket.CLOSED || wsContracts.readyState === WebSocket.CLOSING)
+    {
+      wsContracts = new WebSocket(WS_URL);
+      wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
+    }
 
     if(authorized && ws&& ws.readyState===WebSocket.OPEN){
        const payload = {
@@ -653,7 +669,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       for (let i=0;i < numb_; i++)
        {
-         ws.send(JSON.stringify(payload));
+         wsContracts.send(JSON.stringify(payload));
        }
     }
   }
@@ -662,23 +678,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log("Closing all profitable trades...");
 
-    const ws = new WebSocket(WS_URL);
-    
-    ws.onopen = () => {
-      ws.send(JSON.stringify({ authorize: TOKEN }));
-    };
+    if (wsContracts === null)
+    {
+     wsContracts = new WebSocket(WS_URL);
+    }
+  
+    if (wsContracts && wsContracts.readyState === WebSocket.OPEN || wsContracts.readyState === WebSocket.CONNECTING)
+    {
+     wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
+    }
 
-    ws.onerror = (e) => {
+    if (wsContracts && wsContracts.readyState === WebSocket.CLOSED || wsContracts.readyState === WebSocket.CLOSING)
+    {
+      wsContracts = new WebSocket(WS_URL);
+      wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    wsContracts.onerror = (e) => {
       console.log("❌ WS Error: " + JSON.stringify(e));
     };
 
-    ws.onmessage = (msg) => {
+    wsContracts.onmessage = (msg) => {
        const data = JSON.parse(msg.data);
 
       // Authorization successful
       if (data.msg_type === "authorize") {
          console.log("✅ Authorized successfully. Fetching portfolio...");
-         ws.send(JSON.stringify({ portfolio: 1 }));
+         wsContracts.send(JSON.stringify({ portfolio: 1 }));
       }
 
       // Portfolio received
@@ -688,7 +714,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
          contracts.forEach((contract,i) => {
          setTimeout(() => {
-            ws.send(
+            wsContracts.send(
               JSON.stringify({
                  proposal_open_contract: 1,
                  contract_id: contract.contract_id,
@@ -708,7 +734,7 @@ document.addEventListener("DOMContentLoaded", () => {
           `💰 Closing profitable trade ${poc.contract_id} with profit ${profit.toFixed(2)}`
         );
 
-        ws.send(
+        wsContracts.send(
           JSON.stringify({
             sell: poc.contract_id,
             price: 0, // 0 = sell at market price
@@ -731,13 +757,26 @@ document.addEventListener("DOMContentLoaded", () => {
  };
 
 closeAll.onclick=()=>{
+
+   if (wsContracts === null)
+    {
+     wsContracts = new WebSocket(WS_URL);
+    }
   
-    const ws = new WebSocket(WS_URL);
+    if (wsContracts && wsContracts.readyState === WebSocket.OPEN || wsContracts.readyState === WebSocket.CONNECTING)
+    {
+     wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (wsContracts && wsContracts.readyState === WebSocket.CLOSED || wsContracts.readyState === WebSocket.CLOSING)
+    {
+      wsContracts = new WebSocket(WS_URL);
+      wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
+    }
     
-    ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
-    ws.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-    ws.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-    ws.onmessage=msg=>{
+    wsContracts.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+    wsContracts.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+    wsContracts.onmessage=msg=>{
     const data=JSON.parse(msg.data);
     if(data.msg_type==="authorize")
      {
@@ -751,9 +790,9 @@ closeAll.onclick=()=>{
            console.log('The request is open...');
            console.log('Request in process...');   
 
-           ws.send(JSON.stringify(portfoliopayload));
+           wsContracts.send(JSON.stringify(portfoliopayload));
        
-           ws.onmessage = msg => {
+           wsContracts.onmessage = msg => {
            const data = JSON.parse(msg.data);
            if (data.msg_type === "portfolio" && data.portfolio?.contracts?.length > 0)
             {
@@ -762,9 +801,9 @@ closeAll.onclick=()=>{
              for (const contract of contracts)
               {
                console.log('Closing contract '+ contract.contract_id + '(' + contract.contract_type + ')');
-               ws.send(JSON.stringify({
-                 "sell": contract.contract_id,
-                 "price": 0
+               wsContracts.send(JSON.stringify({
+                     "sell": contract.contract_id,
+                     "price": 0
                }));
              }
             }
