@@ -284,7 +284,7 @@
   overflow: hidden;
   max-height: 0;
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(0);
   transition: all 0.5s cubic-bezier(0.25, 1, 0.3, 1);
   visibility: hidden;
 }
@@ -292,7 +292,7 @@
 #tradeEvalPanel.active {
   max-height: 1000px;
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(-10)px;
   visibility: visible;
   overflow-y: auto;
 }
