@@ -15,7 +15,7 @@
       align-items: center;
     }
 
-    /* ✅ Conteneur vertical des boutons */
+    /* ✅ Conteneur des boutons */
     #buttonsContainer {
       display: flex;
       flex-direction: column;
@@ -28,7 +28,7 @@
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
 
-    /* ✅ Style des boutons */
+    /* ✅ Boutons stylés */
     button {
       width: 100%;
       padding: 14px;
@@ -41,13 +41,11 @@
       transition: all 0.3s ease;
     }
 
-    /* ✅ Effet au survol */
     button:hover {
       background: #e9f3ff;
       transform: scale(1.02);
     }
 
-    /* ✅ Bouton actif : fond bleu, texte blanc */
     button.active {
       background: #007bff;
       color: white;
@@ -55,7 +53,7 @@
       box-shadow: 0 0 12px rgba(0, 123, 255, 0.6);
     }
 
-    /* ✅ Panneaux pleine largeur + bordures arrondies */
+    /* ✅ Panneaux pleine largeur */
     #tradeEvaluationPanel,
     #contractsPanel {
       display: none;
@@ -64,19 +62,30 @@
       width: 95%;
       border-radius: 16px;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-      animation: slideIn 0.4s ease forwards;
       box-sizing: border-box;
     }
 
-    /* ✅ Animation d’entrée coulissante */
-    @keyframes slideIn {
+    /* ✅ Animation coulissante depuis la gauche */
+    @keyframes slideInLeft {
       from {
         opacity: 0;
-        transform: translateY(25px);
+        transform: translateX(-40px);
       }
       to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateX(0);
+      }
+    }
+
+    /* ✅ Animation coulissante depuis la droite */
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
       }
     }
 
@@ -88,17 +97,35 @@
       overflow: hidden;
     }
 
-    .trade-table th, .trade-table td {
-      border: 1px solid #ddd;
+    /* ✅ En-têtes bleu clair */
+    .trade-table th {
+      background-color: #b3d7ff;
+      color: #003366;
+      font-weight: bold;
       padding: 10px;
+      border: 1px solid #d0e3ff;
       text-align: center;
     }
 
-    .trade-table th {
-      background-color: #007bff;
-      color: white;
+    /* ✅ Cellules */
+    .trade-table td {
+      border: 1px solid #d0e3ff;
+      padding: 10px;
+      text-align: center;
+      transition: background-color 0.25s ease;
     }
 
+    /* ✅ Survol cellule */
+    .trade-table td:hover {
+      background-color: #e6f2ff;
+    }
+
+    /* ✅ Ligne sélectionnée */
+    .trade-table tr.selected {
+      background-color: #cce5ff;
+    }
+
+    /* ✅ Bouton Delete */
     #deleteSelected {
       margin-top: 15px;
       padding: 10px 18px;
@@ -170,7 +197,11 @@
           <th>Status</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody>
+        <tr><td><input type="checkbox"></td><td>#101</td><td>BOOM1000</td><td>Buy</td><td>$25</td><td>+$12</td><td>Closed</td></tr>
+        <tr><td><input type="checkbox"></td><td>#102</td><td>CRASH1000</td><td>Sell</td><td>$20</td><td>-$8</td><td>Closed</td></tr>
+        <tr><td><input type="checkbox"></td><td>#103</td><td>BOOM500</td><td>Buy</td><td>$30</td><td>+$15</td><td>Open</td></tr>
+      </tbody>
     </table>
     <button id="deleteSelected">🗑️ Delete Selected</button>
   </div>
@@ -190,14 +221,31 @@
       const visible = tradePanel.style.display === "block";
       tradePanel.style.display = visible ? "none" : "block";
       contractPanel.style.display = "none";
-      activateButton(visible ? null : tradeBtn);
+      if (!visible) {
+        tradePanel.style.animation = "slideInLeft 0.4s ease forwards";
+        activateButton(tradeBtn);
+      } else {
+        activateButton(null);
+      }
     });
 
     contractBtn.addEventListener("click", () => {
       const visible = contractPanel.style.display === "block";
       contractPanel.style.display = visible ? "none" : "block";
       tradePanel.style.display = "none";
-      activateButton(visible ? null : contractBtn);
+      if (!visible) {
+        contractPanel.style.animation = "slideInRight 0.4s ease forwards";
+        activateButton(contractBtn);
+      } else {
+        activateButton(null);
+      }
+    });
+
+    // ✅ Ajout sélection de ligne avec clic
+    document.querySelectorAll(".trade-table tbody tr").forEach(row => {
+      row.addEventListener("click", () => {
+        row.classList.toggle("selected");
+      });
     });
   </script>
 
