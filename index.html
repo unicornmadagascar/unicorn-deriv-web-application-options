@@ -185,7 +185,7 @@
 #contractsPanel {
   display: flex;
   opacity: 0;
-  transform: translateY(40px); /* au départ il est un peu au-dessus */
+  transform: translateY(-20px); /* au départ il est un peu au-dessus */
   transition: all 0.4s ease;
   flex-direction: column;
   background: white;
@@ -258,9 +258,7 @@
 
 #tradeEvalToggle {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
+  width: 90%;
   padding: 12px 16px;
   border-radius: 8px;
   background: white;
@@ -287,7 +285,7 @@
   overflow: hidden;
   max-height: 0;
   opacity: 0;
-  transform: translateY(+10px);
+  transform: translateY(-10px);
   transition: all 0.5s cubic-bezier(0.25, 1, 0.3, 1);
   visibility: hidden;
 }
@@ -470,14 +468,6 @@
   <!-- Bouton pour afficher / cacher le panneau -->
   <button id="controlPanelToggle">⚙️ Show Controls</button>
 
-  <!-- Nouveau panneau des contrats ouverts -->
-  <div id="contractsPanelContainer">
-    <button id="contractsPanelToggle">📄 Show Contracts</button>
-    <div id="contractsPanel">
-      <div id="autoHistoryList"></div>
-    </div>
-  </div>
-
   <div id="container">
     <div id="chartArea">
       <div id="chartInner"></div>
@@ -582,6 +572,14 @@
       </table>
     </div>
   </div>
+  </div>
+
+  <!-- Nouveau panneau des contrats ouverts -->
+  <div id="contractsPanelContainer">
+    <button id="contractsPanelToggle">📄 Show Contracts</button>
+    <div id="contractsPanel">
+      <div id="autoHistoryList"></div>
+    </div>
   </div>
 
   <script>
