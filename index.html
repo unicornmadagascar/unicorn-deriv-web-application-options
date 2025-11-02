@@ -3,82 +3,86 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panneaux Contracts & Trade Evaluation</title>
+  <title>Panneaux Contrats & Trade Evaluation</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f4f4f4;
       padding: 20px;
+      margin: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
-    /* ✅ Conteneur vertical sans écart */
+    /* ✅ Conteneur vertical des boutons */
     #buttonsContainer {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0;
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 10px;
     }
 
-    /* ✅ Boutons stylés avec effet lumineux */
+    /* ✅ Style des boutons */
     button {
-      width: 260px;
-      padding: 12px;
-      background: linear-gradient(180deg, #007bff, #0062cc);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 15px;
+      width: 100%;
+      padding: 14px;
+      background: white;
+      color: #333;
+      border: 2px solid #007bff;
+      border-bottom: none;
+      border-radius: 0;
+      font-size: 16px;
       font-weight: 600;
-      transition: all 0.25s ease;
-      position: relative;
+      cursor: pointer;
+      transition: all 0.3s ease;
     }
 
-    /* ✅ Bordure animée subtile entre les deux boutons */
+    /* ✅ Premier bouton arrondi en haut */
     #tradeEvaluationToggle {
-      border-bottom: 1px solid rgba(255,255,255,0.3);
       border-radius: 10px 10px 0 0;
     }
 
+    /* ✅ Deuxième bouton arrondi en bas */
     #contractsPanelToggle {
+      border-bottom: 2px solid #007bff;
       border-radius: 0 0 10px 10px;
     }
 
-    /* ✅ Effet hover doux */
+    /* ✅ Effet au survol */
     button:hover {
-      background: linear-gradient(180deg, #3399ff, #0056b3);
+      background: #e9f3ff;
       transform: scale(1.02);
-      box-shadow: 0 0 10px rgba(0,123,255,0.5);
     }
 
-    /* ✅ Effet de clic */
-    button:active {
-      transform: scale(0.98);
-      box-shadow: 0 0 4px rgba(0,0,0,0.3);
+    /* ✅ Bouton actif : fond bleu, texte blanc */
+    button.active {
+      background: #007bff;
+      color: white;
+      transform: scale(1.03);
+      box-shadow: 0 0 10px rgba(0, 123, 255, 0.6);
     }
 
-    /* --- Panneaux --- */
+    /* ✅ Panneaux plein écran */
     #tradeEvaluationPanel,
     #contractsPanel {
       display: none;
       background: white;
-      padding: 15px;
-      margin-top: 14px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 80%;
-      max-width: 700px;
+      padding: 25px;
+      width: 100%;
+      height: auto;
+      border-top: 3px solid #007bff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
       animation: fadeIn 0.3s ease;
+      box-sizing: border-box;
     }
 
-    /* ✅ Animation d’ouverture fluide */
     @keyframes fadeIn {
       from {
         opacity: 0;
-        transform: translateY(-5px);
+        transform: translateY(-10px);
       }
       to {
         opacity: 1;
@@ -86,7 +90,7 @@
       }
     }
 
-    /* --- Table --- */
+    /* ✅ Table stylée */
     .trade-table {
       width: 100%;
       border-collapse: collapse;
@@ -94,7 +98,7 @@
 
     .trade-table th, .trade-table td {
       border: 1px solid #ddd;
-      padding: 8px;
+      padding: 10px;
       text-align: center;
     }
 
@@ -104,11 +108,11 @@
     }
 
     #deleteSelected {
-      margin-top: 10px;
-      padding: 8px 16px;
-      border: none;
+      margin-top: 15px;
+      padding: 10px 18px;
       background: #dc3545;
       color: white;
+      border: none;
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -117,16 +121,22 @@
     #deleteSelected:hover {
       background: #a71d2a;
     }
+
+    h3 {
+      margin-top: 20px;
+      color: #007bff;
+    }
   </style>
 </head>
 <body>
 
-  <!-- ✅ Conteneur des deux boutons -->
+  <!-- ✅ Boutons -->
   <div id="buttonsContainer">
     <button id="tradeEvaluationToggle">📊 Trade Evaluation</button>
     <button id="contractsPanelToggle">📄 Show Contracts</button>
   </div>
 
+  <!-- ✅ Panneau Trade Evaluation -->
   <div id="tradeEvaluationPanel">
     <p><strong>Total Trades:</strong> 25</p>
     <p><strong>Win Rate:</strong> 60%</p>
@@ -154,6 +164,7 @@
     </div>
   </div>
 
+  <!-- ✅ Panneau Contracts -->
   <div id="contractsPanel">
     <table id="tradeTable" class="trade-table">
       <thead>
@@ -173,18 +184,32 @@
   </div>
 
   <script>
-    // ✅ Bouton Trade Evaluation
+    // ✅ Références boutons et panneaux
     const tradeBtn = document.getElementById("tradeEvaluationToggle");
+    const contractBtn = document.getElementById("contractsPanelToggle");
     const tradePanel = document.getElementById("tradeEvaluationPanel");
+    const contractPanel = document.getElementById("contractsPanel");
+
+    // ✅ Fonction d’activation du bouton
+    function activateButton(activeBtn) {
+      [tradeBtn, contractBtn].forEach(btn => btn.classList.remove("active"));
+      activeBtn.classList.add("active");
+    }
+
+    // ✅ Toggle Trade Evaluation
     tradeBtn.addEventListener("click", () => {
-      tradePanel.style.display = tradePanel.style.display === "block" ? "none" : "block";
+      const visible = tradePanel.style.display === "block";
+      tradePanel.style.display = visible ? "none" : "block";
+      contractPanel.style.display = "none";
+      activateButton(visible ? null : tradeBtn);
     });
 
-    // ✅ Bouton Contracts Panel
-    const contractBtn = document.getElementById("contractsPanelToggle");
-    const contractPanel = document.getElementById("contractsPanel");
+    // ✅ Toggle Contracts Panel
     contractBtn.addEventListener("click", () => {
-      contractPanel.style.display = contractPanel.style.display === "block" ? "none" : "block";
+      const visible = contractPanel.style.display === "block";
+      contractPanel.style.display = visible ? "none" : "block";
+      tradePanel.style.display = "none";
+      activateButton(visible ? null : contractBtn);
     });
   </script>
 
