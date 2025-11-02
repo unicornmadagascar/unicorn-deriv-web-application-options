@@ -1,190 +1,140 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panneaux Contrats & Trade Evaluation</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f7fb;
-      padding: 20px;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    background-color: #f0f4f8;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
 
-    /* ✅ Conteneur des boutons */
-    #buttonsContainer {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      max-width: 400px;
-      margin-bottom: 20px;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
+  /* Boutons principaux */
+  #buttonsContainer {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 15px;
+  }
 
-    /* ✅ Boutons stylés */
-    button {
-      width: 100%;
-      padding: 14px;
-      background: white;
-      color: #333;
-      border: none;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
+  #buttonsContainer button {
+    background-color: white;
+    border: 2px solid #007bff;
+    color: #007bff;
+    padding: 10px 20px;
+    font-weight: bold;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
 
-    button:hover {
-      background: #e9f3ff;
-      transform: scale(1.02);
-    }
+  #buttonsContainer button:hover {
+    background-color: #007bff;
+    color: white;
+  }
 
-    button.active {
-      background: #007bff;
-      color: white;
-      transform: scale(1.03);
-      box-shadow: 0 0 12px rgba(0, 123, 255, 0.6);
-    }
+  /* Panneaux */
+  #tradeEvaluationPanel, #contractsPanel {
+    width: 100%;
+    max-width: 100%;
+    margin: 10px 0;
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    display: none;
+  }
 
-    /* ✅ Panneaux pleine largeur */
-    #tradeEvaluationPanel,
-    #contractsPanel {
-      display: none;
-      background: white;
-      padding: 25px;
-      width: 95%;
-      border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-      box-sizing: border-box;
-    }
+  h3 {
+    color: #007bff;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 5px;
+  }
 
-    /* ✅ Animation coulissante depuis la gauche */
-    @keyframes slideInLeft {
-      from {
-        opacity: 0;
-        transform: translateX(-40px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
+  /* Tableaux */
+  .trade-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
 
-    /* ✅ Animation coulissante depuis la droite */
-    @keyframes slideInRight {
-      from {
-        opacity: 0;
-        transform: translateX(40px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
+  .trade-table th {
+    background-color: #cfe8ff;
+    color: #003366;
+    padding: 8px;
+    text-align: left;
+  }
 
-    /* ✅ Table stylée */
-    .trade-table {
-      width: 100%;
-      border-collapse: collapse;
-      border-radius: 10px;
-      overflow: hidden;
-    }
+  .trade-table td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+  }
 
-    /* ✅ En-têtes bleu clair */
-    .trade-table th {
-      background-color: #b3d7ff;
-      color: #003366;
-      font-weight: bold;
-      padding: 10px;
-      border: 1px solid #d0e3ff;
-      text-align: center;
-    }
+  /* Ligne sélectionnée */
+  .trade-table tr.selected {
+    background-color: #b3d7ff;
+  }
 
-    /* ✅ Cellules */
-    .trade-table td {
-      border: 1px solid #d0e3ff;
-      padding: 10px;
-      text-align: center;
-      transition: background-color 0.25s ease;
-    }
+  .trade-table tr:hover {
+    background-color: #e8f2ff;
+    cursor: pointer;
+  }
 
-    /* ✅ Survol cellule */
-    .trade-table td:hover {
-      background-color: #e6f2ff;
-    }
+  /* Bouton Delete */
+  #deleteSelected {
+    margin-top: 10px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
 
-    /* ✅ Ligne sélectionnée */
-    .trade-table tr.selected {
-      background-color: #cce5ff;
-    }
+  #deleteSelected:hover {
+    background-color: #a71d2a;
+  }
 
-    /* ✅ Bouton Delete */
-    #deleteSelected {
-      margin-top: 15px;
-      padding: 10px 18px;
-      background: #dc3545;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    #deleteSelected:hover {
-      background: #a71d2a;
-    }
-
-    h3 {
-      margin-top: 20px;
-      color: #007bff;
-    }
-  </style>
+  /* Conteneur pour le bouton delete */
+  .delete-container {
+    text-align: left;
+  }
+</style>
 </head>
 <body>
 
-  <!-- ✅ Boutons -->
   <div id="buttonsContainer">
     <button id="tradeEvaluationToggle">📊 Trade Evaluation</button>
     <button id="contractsPanelToggle">📄 Show Contracts</button>
   </div>
 
-  <!-- ✅ Panneau Trade Evaluation -->
+  <!-- Panneau Trade Evaluation -->
   <div id="tradeEvaluationPanel">
-    <p><strong>Total Trades:</strong> 25</p>
-    <p><strong>Win Rate:</strong> 60%</p>
-    <p><strong>Total P/L:</strong> +420 USD</p>
-
-    <div id="tradeHistory">
-      <h3>Trade History</h3>
-      <table class="trade-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Trade Type</th>
-            <th>Stake</th>
-            <th>Result</th>
-            <th>Profit/Loss</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>2025-10-01</td><td>Buy</td><td>$50</td><td>Win</td><td>+$120</td></tr>
-          <tr><td>2025-10-02</td><td>Sell</td><td>$40</td><td>Loss</td><td>-$35</td></tr>
-          <tr><td>2025-10-03</td><td>Buy</td><td>$60</td><td>Win</td><td>+$150</td></tr>
-          <tr><td>2025-10-04</td><td>Sell</td><td>$55</td><td>Loss</td><td>-$40</td></tr>
-        </tbody>
-      </table>
-    </div>
+    <h3>Trade Evaluation</h3>
+    <table class="trade-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Trade Type</th>
+          <th>Stake</th>
+          <th>Result</th>
+          <th>Profit/Loss</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>2025-10-01</td><td>Buy</td><td>$50</td><td>Win</td><td>+$120</td></tr>
+        <tr><td>2025-10-02</td><td>Sell</td><td>$40</td><td>Loss</td><td>-$35</td></tr>
+        <tr><td>2025-10-03</td><td>Buy</td><td>$60</td><td>Win</td><td>+$150</td></tr>
+      </tbody>
+    </table>
   </div>
 
-  <!-- ✅ Panneau Contracts -->
+  <!-- Panneau Contracts -->
   <div id="contractsPanel">
+    <h3>Contracts</h3>
     <table id="tradeTable" class="trade-table">
       <thead>
         <tr>
@@ -198,56 +148,45 @@
         </tr>
       </thead>
       <tbody>
-        <tr><td><input type="checkbox"></td><td>#101</td><td>BOOM1000</td><td>Buy</td><td>$25</td><td>+$12</td><td>Closed</td></tr>
-        <tr><td><input type="checkbox"></td><td>#102</td><td>CRASH1000</td><td>Sell</td><td>$20</td><td>-$8</td><td>Closed</td></tr>
-        <tr><td><input type="checkbox"></td><td>#103</td><td>BOOM500</td><td>Buy</td><td>$30</td><td>+$15</td><td>Open</td></tr>
+        <tr><td><input type="checkbox"></td><td>1001</td><td>BOOM1000</td><td>Buy</td><td>$50</td><td>+$20</td><td>Won</td></tr>
+        <tr><td><input type="checkbox"></td><td>1002</td><td>CRASH1000</td><td>Sell</td><td>$60</td><td>-$10</td><td>Lost</td></tr>
       </tbody>
     </table>
-    <button id="deleteSelected">🗑️ Delete Selected</button>
+
+    <div class="delete-container">
+      <button id="deleteSelected">🗑️ Delete Selected</button>
+    </div>
   </div>
 
-  <script>
-    const tradeBtn = document.getElementById("tradeEvaluationToggle");
-    const contractBtn = document.getElementById("contractsPanelToggle");
-    const tradePanel = document.getElementById("tradeEvaluationPanel");
-    const contractPanel = document.getElementById("contractsPanel");
+<script>
+  // --- Boutons toggle ---
+  const tradeBtn = document.getElementById("tradeEvaluationToggle");
+  const contractsBtn = document.getElementById("contractsPanelToggle");
+  const tradePanel = document.getElementById("tradeEvaluationPanel");
+  const contractsPanel = document.getElementById("contractsPanel");
 
-    function activateButton(activeBtn) {
-      [tradeBtn, contractBtn].forEach(btn => btn.classList.remove("active"));
-      if (activeBtn) activeBtn.classList.add("active");
-    }
+  tradeBtn.addEventListener("click", () => {
+    tradePanel.style.display = tradePanel.style.display === "block" ? "none" : "block";
+    contractsPanel.style.display = "none";
+  });
 
-    tradeBtn.addEventListener("click", () => {
-      const visible = tradePanel.style.display === "block";
-      tradePanel.style.display = visible ? "none" : "block";
-      contractPanel.style.display = "none";
-      if (!visible) {
-        tradePanel.style.animation = "slideInLeft 0.4s ease forwards";
-        activateButton(tradeBtn);
-      } else {
-        activateButton(null);
-      }
-    });
+  contractsBtn.addEventListener("click", () => {
+    contractsPanel.style.display = contractsPanel.style.display === "block" ? "none" : "block";
+    tradePanel.style.display = "none";
+  });
 
-    contractBtn.addEventListener("click", () => {
-      const visible = contractPanel.style.display === "block";
-      contractPanel.style.display = visible ? "none" : "block";
-      tradePanel.style.display = "none";
-      if (!visible) {
-        contractPanel.style.animation = "slideInRight 0.4s ease forwards";
-        activateButton(contractBtn);
-      } else {
-        activateButton(null);
-      }
-    });
-
-    // ✅ Ajout sélection de ligne avec clic
-    document.querySelectorAll(".trade-table tbody tr").forEach(row => {
-      row.addEventListener("click", () => {
+  // --- Sélection de lignes entières ---
+  const tableRows = document.querySelectorAll("#tradeTable tbody tr");
+  tableRows.forEach(row => {
+    row.addEventListener("click", (e) => {
+      if (e.target.tagName !== "INPUT") {
         row.classList.toggle("selected");
-      });
+        const checkbox = row.querySelector("input[type='checkbox']");
+        checkbox.checked = !checkbox.checked;
+      }
     });
-  </script>
+  });
+</script>
 
 </body>
 </html>
