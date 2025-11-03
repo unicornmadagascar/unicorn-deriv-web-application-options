@@ -1192,9 +1192,15 @@ closeAll.onclick=()=>{
   }
 });
 
-  setInterval(() => {
-      OAuthLink();
-  }, 1000);
+  window.addEventListener('load', () => {
+  // sécurise la récupération des tokens ici
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token1');
+  if (token) {
+    // puis exécute l'autorisation Deriv
+    console.log("TOKEN : " + token);
+  }
+});
   
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
