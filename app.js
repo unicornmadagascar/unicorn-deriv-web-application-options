@@ -1042,8 +1042,6 @@ closeAll.onclick=()=>{
    }
   } 
 
-console.log('Tous les tokens trouvés :', tokens);
-
   contractsPanelToggle.addEventListener("click", () => {
   if (!contractsPanel.classList.contains("active")) {   
     contractsPanel.style.display = "flex";
