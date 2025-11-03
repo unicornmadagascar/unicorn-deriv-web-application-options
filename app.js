@@ -1201,7 +1201,6 @@ closeAll.onclick=()=>{
         tokens.push(value);
       }
   }
-  
   if (tokens) {
     // puis exécute l'autorisation Deriv
     console.log("TOKEN : " + tokens);
