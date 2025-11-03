@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let smoothVol = 0;
   let smoothTrend = 0;
   let ws = null;
+  let wsload = null;
   let wsAutomation = null;
   let wsContracts = null;
   let wsContracts__ = null;
@@ -1025,21 +1026,7 @@ closeAll.onclick=()=>{
   }
   
   function OAuthLink(){
-   const params = new URLSearchParams(window.location.search);
-   const tokens = [];
-   try {
-     for (let [key, value] of params.entries()) {
-       if (key.startsWith('token')) {
-          tokens.push(value);
-       }
-     }
 
-     console.log('Tous les tokens trouvés :', tokens);
-   } 
-   catch (e)
-   {
-    console.warn('Erreur de port fermée (ignorable):', e);
-   }
   }   
 
   contractsPanelToggle.addEventListener("click", () => {
@@ -1199,6 +1186,32 @@ closeAll.onclick=()=>{
   if (token) {
     // puis exécute l'autorisation Deriv
     console.log("TOKEN : " + token);
+
+    if (wsload === null)
+    {
+      wsload = new WebSocket(WS_URL);
+    }
+    
+     if (wsload && wsload.readyState === WebSocket.OPEN || wsload.readyState === WebSocket.CONNECTING)
+    {
+     wsload.onopen=()=>{ wsload.send(JSON.stringify({ authorize: token })); };
+    }
+
+    if (wsload && wsload.readyState === WebSocket.CLOSED || wsload.readyState === WebSocket.CLOSING)
+    {
+      wsload = new WebSocket(WS_URL);
+      wsload.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+    
+    wsload.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+    wsload.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+    wsload.onmessage=msg=>{
+      const data = JSON.parse(msg.data);
+      if (data.msg_type === "authorized")
+       {
+        console.log("Token : " + token + " authorized");
+       }
+    };
   }
 });
   
