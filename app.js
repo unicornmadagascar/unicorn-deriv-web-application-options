@@ -1038,9 +1038,6 @@ closeAll.onclick=()=>{
 
    return tokens;
   }
-  
-
-
 
 console.log('Tous les tokens trouvés :', tokens);
 
