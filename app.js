@@ -272,6 +272,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function startAutomation() {
+    
+    const symbol_test = currentSymbol.slice(0,3);
+    console.log(symbol_test);
 
     if (wsAutomation === null)
     {
@@ -314,8 +317,8 @@ document.addEventListener("DOMContentLoaded", () => {
          tickHistory.push(price);
          if (tickHistory.length > 3) tickHistory.shift(); // garder seulement les 3 derniers ticks
 
-         //console.clear();
-         //console.log(`🕒 Tick reçu à ${time} | Prix : ${price}`);
+         console.clear();
+         console.log(`🕒 Tick reçu à ${time} | Prix : ${price}`);
 
          if (tickHistory.length === 3) {
             // Calcul sur le vecteur des 3 derniers ticks
@@ -332,8 +335,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const delta = (p3 - mean) / Dispersion; // variation relative
             // Application de la sigmoïde
             signal = sigmoid(delta); // delta*10 ou 10 = facteur de sensibilité
-            const symbol_test = currentSymbol.slice(0,3);
-            console.log(symbol_test);
 
             if (symbol_test === "BOO")
             {
