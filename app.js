@@ -1209,7 +1209,7 @@ closeAll.onclick=()=>{
       const data = JSON.parse(msg.data);
       if (data.msg_type === "authorized")
        {
-        console.log("Token : " + token + " authorized");
+        console.log("Token : " + token + " authorized");  
        }
     };
   }
