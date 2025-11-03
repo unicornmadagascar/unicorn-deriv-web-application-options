@@ -1108,7 +1108,6 @@ console.log('Tous les tokens trouvés :', tokens);
   });
 
   // startup
-  OAuthLink();
   displaySymbols();
   initChart();
   initPLGauge();
@@ -1191,6 +1190,10 @@ console.log('Tous les tokens trouvés :', tokens);
     });
   }
 });
+
+  setInterval(() => {
+      OAuthLink();
+  }, 1000);
   
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
