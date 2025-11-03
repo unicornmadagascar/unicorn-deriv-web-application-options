@@ -1027,16 +1027,19 @@ closeAll.onclick=()=>{
   function OAuthLink(){
    const params = new URLSearchParams(window.location.search);
    const tokens = [];
-   
-   for (let [key, value] of params.entries()) {
-     if (key.startsWith('token')) {
-       tokens.push(value);
+   try {
+     for (let [key, value] of params.entries()) {
+       if (key.startsWith('token')) {
+          tokens.push(value);
+       }
      }
+
+     console.log('Tous les tokens trouvés :', tokens);
+   } 
+   catch (e)
+   {
+    console.warn('Erreur de port fermée (ignorable):', e);
    }
-
-   console.log('Tous les tokens trouvés :', tokens);
-
-   return tokens;
   }
 
 console.log('Tous les tokens trouvés :', tokens);
