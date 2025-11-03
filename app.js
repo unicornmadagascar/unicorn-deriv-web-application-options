@@ -1194,18 +1194,12 @@ closeAll.onclick=()=>{
 
   window.addEventListener('load', () => {
   // sécurise la récupération des tokens ici
-  let tokens = [];
   const params = new URLSearchParams(window.location.search);
-  for (let [key, value] of params.entries()) {
-     if (key.startsWith('token')) {
-        tokens.push(value);
-      }
-  }
-  if (tokens) {
+  const token = params.get('token1');
+  if (token) {
     // puis exécute l'autorisation Deriv
-    console.log("TOKEN : " + tokens);
+    console.log("TOKEN : " + token);
   }
-
 });
   
   // Simulation : mise à jour toutes les 2 secondes
