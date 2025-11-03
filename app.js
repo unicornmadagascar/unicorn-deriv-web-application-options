@@ -1127,10 +1127,6 @@ closeAll.onclick=()=>{
     }
   });
 
-  /* document.getElementById("tradeEvalToggle").addEventListener("click", () => {
-     document.getElementById("tradeEvalPanel").classList.toggle("active");
-  }); */
-
   tradeEvalToggle.addEventListener("click", () => {
   tradeEvalPanel.classList.toggle("active");
 
