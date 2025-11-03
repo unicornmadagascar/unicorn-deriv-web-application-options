@@ -1173,6 +1173,9 @@ closeAll.onclick=()=>{
     });
   }
 });
+
+const TOKEN__ = new URLSearchParams(window.location.search).get("token");
+console.log("TOKEN : " + TOKEN__);
   
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
