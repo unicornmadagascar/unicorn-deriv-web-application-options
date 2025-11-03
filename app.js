@@ -1040,7 +1040,7 @@ closeAll.onclick=()=>{
    {
     console.warn('Erreur de port fermée (ignorable):', e);
    }
-  } 
+  }   
 
   contractsPanelToggle.addEventListener("click", () => {
   if (!contractsPanel.classList.contains("active")) {   
