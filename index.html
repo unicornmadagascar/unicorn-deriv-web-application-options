@@ -363,10 +363,15 @@
   padding-left: 150px;
 }
 
-.inner span {
+.inner #loss {
   padding-top: 40px;
   padding-left: 140px;
 }
+
+/*.inner span {
+  padding-top: 40px;
+  padding-left: 140px;
+} */
   
 .circle-chart span {
   font-size: 18px;
@@ -543,29 +548,23 @@ footer {
     <div id="tradeCharts">
       <div class="circle-chart red">
         <div class="inner">
-          <span>20%</span>
-          <label>Loss: <strong>-350 USD</strong></label>
+          <span id = "loss">20%</span>
+          <label>Loss: <span id = "lossvalue">-350 USD</span></label>
         </div>
       </div>
       <div class="circle-chart blue">
         <div class="inner">
-          <span>80%</span>
-          <label>Profit: <strong>+770 USD<strong></label>
+          <span id = "profit">80%</span>
+          <label>Profit: <span id = "profitvalue">+770 USD<span></label>
         </div>
       </div>
       <div class="circle-chart mix">
         <div class="inner">
-          <span>60%</span>
-          <label>P/L: <strong>+850 USD</strong></label>
+          <span id = "pl">60%</span>
+          <label>P/L: <span id = "plvalue">+850 USD</span></label>
         </div>
       </div>
     </div>
-
-    <!-- <div id="tradeResults">
-      <p>Loss: <b>-350 USD</b></p>
-      <p>Profit: <b>+770 USD</b></p> 
-      <p>P/L: <b>+850 USD</b></p>
-    </div> -->
 
     <div id="tradeHistory">
       <h3>Trade History</h3>
