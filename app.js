@@ -58,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const contractsData = {}; // stockage des contrats {id: {profits: [], infos: {…}}}
   let contracts = {};
   let portfolioReceived = false;
+  const token_user = "";
 
   // --- NEW: current symbol & pending subscribe ---
   let currentSymbol = null;
@@ -1026,7 +1027,39 @@ closeAll.onclick=()=>{
   }
   
   function OAuthLink(){
+    // sécurise la récupération des tokens ici
+    const params = new URLSearchParams(window.location.search);
+    token_user = params.get('token1');
+    if (token_user) {
+      // puis exécute l'autorisation Deriv
+      console.log("TOKEN : " + token_user);
 
+      if (wsload === null)
+      {
+       wsload = new WebSocket(WS_URL);
+      }
+    
+      if (wsload && wsload.readyState === WebSocket.OPEN || wsload.readyState === WebSocket.CONNECTING)
+      {
+       wsload.onopen=()=>{ wsload.send(JSON.stringify({ authorize: token_user })); };
+      }
+
+      if (wsload && wsload.readyState === WebSocket.CLOSED || wsload.readyState === WebSocket.CLOSING)
+      {
+        wsload = new WebSocket(WS_URL);
+        wsload.onopen=()=>{ wsload.send(JSON.stringify({ authorize: token_user })); };
+      }
+    
+      wsload.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+      wsload.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+      wsload.onmessage=msg=>{
+        const data = JSON.parse(msg.data);
+        if (data.msg_type === "authorized")
+         {
+          console.log("User Token : " + token_user + " authorized");  
+         }
+      };
+    }
   }   
 
   contractsPanelToggle.addEventListener("click", () => {
@@ -1087,6 +1120,7 @@ closeAll.onclick=()=>{
       isConnect = true; 
       connectDeriv();
       displaySymbols();
+      OAuthLink()
     } else {
       connectBtn.textContent = "Disconnecting...";
       accountInfo.textContent = "Disconnecting...";
@@ -1182,36 +1216,10 @@ closeAll.onclick=()=>{
   window.addEventListener('load', () => {
   // sécurise la récupération des tokens ici
   const params = new URLSearchParams(window.location.search);
-  const token = params.get('token1');
-  if (token) {
+  token_user = params.get('token1');
+  if (token_user) {
     // puis exécute l'autorisation Deriv
-    console.log("TOKEN : " + token);
-
-    if (wsload === null)
-    {
-      wsload = new WebSocket(WS_URL);
-    }
-    
-     if (wsload && wsload.readyState === WebSocket.OPEN || wsload.readyState === WebSocket.CONNECTING)
-    {
-     wsload.onopen=()=>{ wsload.send(JSON.stringify({ authorize: token })); };
-    }
-
-    if (wsload && wsload.readyState === WebSocket.CLOSED || wsload.readyState === WebSocket.CLOSING)
-    {
-      wsload = new WebSocket(WS_URL);
-      wsload.onopen=()=>{ wsload.send(JSON.stringify({ authorize: token })); };
-    }
-    
-    wsload.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-    wsload.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-    wsload.onmessage=msg=>{
-      const data = JSON.parse(msg.data);
-      if (data.msg_type === "authorized")
-       {
-        console.log("Token : " + token + " authorized");  
-       }
-    };
+    console.log("USER TOKEN : " + token_user);
   }
 });
   
@@ -1222,13 +1230,8 @@ closeAll.onclick=()=>{
       contractentry(totalPL => {
         updatePLGauge(totalPL);
       });
-    }
-  }, 1000);
   
   // Subscribing Tables
-  setInterval(() => {
-    if (connectBtn.textContent !== "Connect")
-    {
       connectDeriv_table();
     }
   }, 1000);
