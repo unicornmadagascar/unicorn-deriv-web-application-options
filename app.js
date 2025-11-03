@@ -1217,7 +1217,7 @@ closeAll.onclick=()=>{
   
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
-    if (connectBtn.textContent === "Connect")
+    if (connectBtn.textContent !== "Connect")
     {
       contractentry(totalPL => {
         updatePLGauge(totalPL);
@@ -1227,7 +1227,7 @@ closeAll.onclick=()=>{
   
   // Subscribing Tables
   setInterval(() => {
-    if (connectBtn.textContent === "Connect")
+    if (connectBtn.textContent !== "Connect")
     {
       connectDeriv_table();
     }
