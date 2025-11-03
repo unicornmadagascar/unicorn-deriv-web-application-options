@@ -1040,7 +1040,7 @@ closeAll.onclick=()=>{
    {
     console.warn('Erreur de port fermée (ignorable):', e);
    }
-  }
+  } 
 
 console.log('Tous les tokens trouvés :', tokens);
 
