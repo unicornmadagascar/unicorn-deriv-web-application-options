@@ -1023,6 +1023,26 @@ closeAll.onclick=()=>{
     wsContracts.onerror = (err) => console.error("❌ WebSocket error:", err);
     wsContracts.onclose = () => console.log("🔴 Disconnected");
   }
+  
+  function OAuthLink(){
+   const params = new URLSearchParams(window.location.search);
+   const tokens = [];
+   
+   for (let [key, value] of params.entries()) {
+     if (key.startsWith('token')) {
+       tokens.push(value);
+     }
+   }
+
+   console.log('Tous les tokens trouvés :', tokens);
+
+   return tokens;
+  }
+  
+
+
+
+console.log('Tous les tokens trouvés :', tokens);
 
   contractsPanelToggle.addEventListener("click", () => {
   if (!contractsPanel.classList.contains("active")) {   
@@ -1091,6 +1111,7 @@ closeAll.onclick=()=>{
   });
 
   // startup
+  OAuthLink();
   displaySymbols();
   initChart();
   initPLGauge();
@@ -1173,9 +1194,6 @@ closeAll.onclick=()=>{
     });
   }
 });
-
-const TOKEN__ = new URLSearchParams(window.location.search).get("token");
-console.log("TOKEN : " + TOKEN__);
   
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
