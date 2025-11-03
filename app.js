@@ -1135,15 +1135,20 @@ closeAll.onclick=()=>{
   tradeEvalPanel.classList.toggle("active");
 
   if (tradeEvalPanel.classList.contains("active")) {
-    // Animation des cercles
+    // Animation simultanée des cercles et des chiffres
     circles.forEach(circle => {
       let targetDeg = 0;
-      if (circle.classList.contains("red")) targetDeg = 72; // 20%
-      if (circle.classList.contains("blue")) targetDeg = 288; // 80%
-      if (circle.classList.contains("mix")) targetDeg = 216; // 60%
+      let targetPercent = 0;
+
+      if (circle.classList.contains("red")) { targetDeg = 72; targetPercent = 20; }
+      if (circle.classList.contains("blue")) { targetDeg = 288; targetPercent = 80; }
+      if (circle.classList.contains("mix")) { targetDeg = 216; targetPercent = 60; }
 
       let currentDeg = 0;
-      const step = targetDeg / 60; // durée de 1s environ
+      let currentPercent = 0;
+      const stepDeg = targetDeg / 60;       // 60 frames (≈ 1 sec)
+      const stepPercent = targetPercent / 60;
+      const span = circle.querySelector("span");
       const color =
         circle.classList.contains("red")
           ? "#ef4444"
@@ -1154,19 +1159,24 @@ closeAll.onclick=()=>{
       const interval = setInterval(() => {
         if (currentDeg >= targetDeg) {
           clearInterval(interval);
+          span.textContent = targetPercent + "%";
         } else {
-          currentDeg += step;
+          currentDeg += stepDeg;
+          currentPercent += stepPercent;
           circle.style.background = `conic-gradient(${color} ${currentDeg}deg, #e5e7eb ${currentDeg}deg)`;
+          span.textContent = Math.round(currentPercent) + "%";
         }
-      }, 16); // ≈60 FPS
+      }, 16); // 60 FPS
     });
   } else {
-    // Réinitialisation à la fermeture
+    // Réinitialisation des cercles à la fermeture
     circles.forEach(circle => {
       circle.style.background = "conic-gradient(#e5e7eb 0deg, #e5e7eb 360deg)";
+      const span = circle.querySelector("span");
+      span.textContent = "0%";
     });
   }
-  });
+});
   
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
