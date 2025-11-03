@@ -398,7 +398,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const data=JSON.parse(msg.data);
         if (data.authorize) {
            console.log("✅ Connecté à Deriv API !");
-           ws.send(JSON.stringify({ portfolio: 1 }));
+           wsAutomation.send(JSON.stringify({ portfolio: 1 }));
         }
 
         // Étape 3 : Réception du portefeuille
@@ -1379,10 +1379,10 @@ closeAll.onclick=()=>{
   window.addEventListener('load', () => {
   // sécurise la récupération des tokens ici
   const params = new URLSearchParams(window.location.search);
-  const token_user = params.get('token1');
-  if (token_user) {
+  const token = params.get('token1');
+  if (token) {
     // puis exécute l'autorisation Deriv
-    console.log("USER TOKEN : " + token_user);
+    console.log("USER TOKEN : " + token);
   }
 });
   
