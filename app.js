@@ -955,35 +955,32 @@ closeAll.onclick=()=>{
         authorized=true; 
         console.log("connection Authorized.");
 
-        if(authorized && wsContracts && wsContracts.readyState===WebSocket.OPEN)
-        {
-           const portfoliopayload = { portfolio : 1};
-           console.log('The request is open...');
-           console.log('Request in process...');   
+        const portfoliopayload = { portfolio : 1};
+        console.log('The request is open...');
+        console.log('Request in process...');   
 
-           wsContracts.send(JSON.stringify(portfoliopayload));
+        wsContracts.send(JSON.stringify(portfoliopayload));
        
-           wsContracts.onmessage = msg => {
-           const data = JSON.parse(msg.data);
-           if (data.msg_type === "portfolio" && data.portfolio?.contracts?.length > 0)
-            {
-             const contracts = data.portfolio.contracts;
-             console.log('Found '+ contracts.length + ' active contracts - close all...');   
-             for (const contract of contracts)
-              {
-               console.log('Closing contract '+ contract.contract_id + '(' + contract.contract_type + ')');
-               wsContracts.send(JSON.stringify({
-                     "sell": contract.contract_id,
-                     "price": 0
-               }));
-             }
-            }
+        wsContracts.onmessage = msg => {
+        const data = JSON.parse(msg.data);
+        if (data.msg_type === "portfolio" && data.portfolio?.contracts?.length > 0)
+        {
+          const contracts = data.portfolio.contracts;
+          console.log('Found '+ contracts.length + ' active contracts - close all...');   
+          for (const contract of contracts)
+          {
+            console.log('Closing contract '+ contract.contract_id + '(' + contract.contract_type + ')');
+            wsContracts.send(JSON.stringify({
+               "sell": contract.contract_id,
+               "price": 0
+            }));
+          }
+        }
             
-            if (contracts.length === 0)
-            {
-              console.log('No active contracts found.');
-            }
-          };
+        if (contracts.length === 0)
+        {
+          console.log('No active contracts found.');
+        }
         } 
       }
     };
