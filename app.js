@@ -947,42 +947,30 @@ closeAll.onclick=()=>{
     
     wsContracts.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
     wsContracts.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-    wsContracts.onmessage=msg=>{
-    const data=JSON.parse(msg.data);
-    if(data.msg_type==="authorize")
-     {
-        if(!data.authorize?.loginid){ console.log("Token not authorized"); return; }
-        authorized=true; 
-        console.log("connection Authorized.");
+    wsContracts.onmessage = (msg) => {
+       const data = JSON.parse(msg.data);
 
-        const portfoliopayload = { portfolio : 1};
-        console.log('The request is open...');
-        console.log('Request in process...');   
+       // 2️⃣ Quand autorisé, on demande le portefeuille
+       if (data.msg_type === 'authorize') {
+           wsContracts.send(JSON.stringify({ portfolio: 1 }));
+       }
 
-        wsContracts.send(JSON.stringify(portfoliopayload));
-       
-        wsContracts.onmessage = msg => {
-        const data = JSON.parse(msg.data);
-        if (data.msg_type === "portfolio" && data.portfolio?.contracts?.length > 0)
-        {
+       // 3️⃣ Quand on reçoit les contrats ouverts
+       if (data.msg_type === 'portfolio') {
           const contracts = data.portfolio.contracts;
-          console.log('Found '+ contracts.length + ' active contracts - close all...');   
-          for (const contract of contracts)
-          {
-            console.log('Closing contract '+ contract.contract_id + '(' + contract.contract_type + ')');
-            wsContracts.send(JSON.stringify({
-               "sell": contract.contract_id,
-               "price": 0
-            }));
-          }
-        }
-            
-        if (contracts.length === 0)
-        {
-          console.log('No active contracts found.');
-        }
-        } 
-      }
+          console.log('Contrats ouverts:', contracts);
+
+          // 4️⃣ Fermer chaque contrat
+          contracts.forEach(c => {
+            wsContracts.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+            console.log(`⛔ Fermeture du contrat ${c.contract_id} demandée`);
+          });
+       }
+
+       // 5️⃣ Confirmation de fermeture
+       if (data.msg_type === 'sell') {
+          console.log('✅ Contrat fermé:', data.sell.contract_id);
+       }
     };
   }; 
 
