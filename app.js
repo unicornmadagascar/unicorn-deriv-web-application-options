@@ -1217,13 +1217,19 @@ closeAll.onclick=()=>{
   
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
+    if (connectBtn.textContent === "Connect")
+    {
       contractentry(totalPL => {
         updatePLGauge(totalPL);
       });
+    }
   }, 1000);
   
   // Subscribing Tables
   setInterval(() => {
+    if (connectBtn.textContent === "Connect")
+    {
       connectDeriv_table();
+    }
   }, 1000);
 });
