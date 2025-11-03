@@ -1200,7 +1200,7 @@ closeAll.onclick=()=>{
     if (wsload && wsload.readyState === WebSocket.CLOSED || wsload.readyState === WebSocket.CLOSING)
     {
       wsload = new WebSocket(WS_URL);
-      wsload.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
+      wsload.onopen=()=>{ wsload.send(JSON.stringify({ authorize: token })); };
     }
     
     wsload.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
