@@ -1283,7 +1283,7 @@ closeAll.onclick=()=>{
       isConnect = true; 
       connectDeriv();
       displaySymbols();
-      OAuthLink()
+      //OAuthLink()
     } else {
       connectBtn.textContent = "Disconnecting...";
       accountInfo.textContent = "Disconnecting...";
@@ -1379,7 +1379,7 @@ closeAll.onclick=()=>{
   window.addEventListener('load', () => {
   // sécurise la récupération des tokens ici
   const params = new URLSearchParams(window.location.search);
-  token_user = params.get('token1');
+  const token_user = params.get('token1');
   if (token_user) {
     // puis exécute l'autorisation Deriv
     console.log("USER TOKEN : " + token_user);
