@@ -271,21 +271,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function startAutomation() {
-    if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN) {
-      return wsAutomation;
+
+    if (wsAutomation === null)
+    {
+      wsAutomation = new WebSocket(WS_URL);
     }
-
-    if (currentSymbol === null) {
-      console.log("Please select a symbol first.");
-      return wsAutomation;
-    }
-
-    wsAutomation = new WebSocket(WS_URL);
-
-    wsAutomation.onopen = () => {
+    
+    if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING)
+    {
       console.log("✅ Connecté au WebSocket Deriv");
-      wsAutomation.send(JSON.stringify({ authorize: TOKEN }));
-    };
+      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (wsAutomation && wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING)
+    {
+      wsAutomation = new WebSocket(WS_URL);
+      console.log("✅ Connecté au WebSocket Deriv");
+      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+    }
 
     wsAutomation.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
@@ -337,11 +340,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    ws.onclose = () => {
+    wsAutomation.onclose = () => {
       console.log("Disconnected");
     };
 
-    ws.onerror = (err) => {
+    wsAutomation.onerror = (err) => {
       console.error("WebSocket error:", err);
     };
   }
