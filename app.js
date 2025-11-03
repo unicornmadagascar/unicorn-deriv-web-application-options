@@ -27,6 +27,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const contractsPanelToggle = document.getElementById("contractsPanelToggle");
   const contractsPanel = document.getElementById("contractsPanel");
   const autoHistoryList = document.getElementById("autoHistoryList");
+  const tradeEvalToggle = document.getElementById("tradeEvalToggle");
+  const tradeEvalPanel = document.getElementById("tradeEvalPanel");
+  const circles = document.querySelectorAll(".circle-chart");
  
   let totalPL = 0; // cumul des profits et pertes
   let automationRunning = false;
@@ -1124,8 +1127,45 @@ closeAll.onclick=()=>{
     }
   });
 
-  document.getElementById("tradeEvalToggle").addEventListener("click", () => {
+  /* document.getElementById("tradeEvalToggle").addEventListener("click", () => {
      document.getElementById("tradeEvalPanel").classList.toggle("active");
+  }); */
+
+  tradeEvalToggle.addEventListener("click", () => {
+  tradeEvalPanel.classList.toggle("active");
+
+  if (tradeEvalPanel.classList.contains("active")) {
+    // Animation des cercles
+    circles.forEach(circle => {
+      let targetDeg = 0;
+      if (circle.classList.contains("red")) targetDeg = 72; // 20%
+      if (circle.classList.contains("blue")) targetDeg = 288; // 80%
+      if (circle.classList.contains("mix")) targetDeg = 216; // 60%
+
+      let currentDeg = 0;
+      const step = targetDeg / 60; // durée de 1s environ
+      const color =
+        circle.classList.contains("red")
+          ? "#ef4444"
+          : circle.classList.contains("blue")
+          ? "#3b82f6"
+          : "#10b981";
+
+      const interval = setInterval(() => {
+        if (currentDeg >= targetDeg) {
+          clearInterval(interval);
+        } else {
+          currentDeg += step;
+          circle.style.background = `conic-gradient(${color} ${currentDeg}deg, #e5e7eb ${currentDeg}deg)`;
+        }
+      }, 16); // ≈60 FPS
+    });
+  } else {
+    // Réinitialisation à la fermeture
+    circles.forEach(circle => {
+      circle.style.background = "conic-gradient(#e5e7eb 0deg, #e5e7eb 360deg)";
+    });
+  }
   });
   
   // Simulation : mise à jour toutes les 2 secondes
