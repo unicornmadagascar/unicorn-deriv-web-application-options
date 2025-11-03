@@ -336,7 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Application de la sigmoïde
             signal = sigmoid(delta); // delta*10 ou 10 = facteur de sensibilité
 
-            if (symbol_test === "BOO")
+            if (symbol_test.trim() === "BOO")
             {
              if (signal <= 0.35)
               {
@@ -347,7 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
                executeTrade_Automated(currentSymbol,"SELL");
               }
             }
-            else if (symbol_test === "CRA")
+            else if (symbol_test.trim()  === "CRA")
             {
               if (signal => 0.75)
               {
