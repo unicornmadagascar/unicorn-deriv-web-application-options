@@ -1192,7 +1192,7 @@ closeAll.onclick=()=>{
   function OAuthLink(){
     // sécurise la récupération des tokens ici
     const params = new URLSearchParams(window.location.search);
-    token_user = params.get('token1');
+    const token_user = params.get('token1');
     if (token_user) {
       // puis exécute l'autorisation Deriv
       console.log("TOKEN : " + token_user);
