@@ -347,7 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
               }
              else
               {
-               //executeTrade_Automated(currentSymbol,"SELL");
+               executeTrade_Automated(currentSymbol,"SELL");
                console.log("SELL");
               }
             }
