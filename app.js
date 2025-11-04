@@ -346,19 +346,19 @@ document.addEventListener("DOMContentLoaded", () => {
            const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
 
            tickHistory.push(price);
-           if (it >= 3 && tickHistory.length >= 3) // garder seulement les 3 derniers ticks
+           if (it >= 2) // garder seulement les 3 derniers ticks
            {  
               console.log("it :" + it);
-              // Calcul sur le vecteur des 3 derniers ticks
-              const p1 = tickHistory[0]; // → le plus ancien tick
-              const p2 = tickHistory[1]; // → le tick du milieu
-              const p3 = tickHistory[2]; // → le plus récent tick (le dernier ajouté)
+              Tick_arr.length = 3;
 
-              Tick_arr = [p1,p2,p3];
+              for (let i = 0; i < 3; i++)
+              {
+               Tick_arr[i] = tickHistory[Tick_arr.length - i];
+              }
               console.log(Tick_arr);
-           
+              
               // On peut aussi normaliser avec la moyenne
-              const mean = (p1 + p2 + p3) / 3;
+              const mean = (Tick_arr[0] + Tick_arr[1] + Tick_arr[2]) / 3;
               Dispersion = ecartType(Tick_arr);
               if (Dispersion !==0)
               {
