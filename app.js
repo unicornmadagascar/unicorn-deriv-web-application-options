@@ -1469,11 +1469,11 @@ closeAll.onclick=()=>{
 
   // Automation
   setInterval(() => {
-    if (toggleAutomationBtn.textContent.trim()==="Launch Automation")
+    if (toggleAutomationBtn.textContent.trim()==="Stop Automation")
     {
      startAutomation();
     }
-    else if (toggleAutomationBtn.textContent.trim()==="Stop Automation")
+    else if (toggleAutomationBtn.textContent.trim()==="Launch Automation")
     {
      stopAutomation();
     }
