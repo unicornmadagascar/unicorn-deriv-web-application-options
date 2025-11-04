@@ -1440,5 +1440,5 @@ closeAll.onclick=()=>{
   // Subscribing Tables
       connectDeriv_table();
     }
-  }, 1000);
+  }, 300);
 });
