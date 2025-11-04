@@ -81,6 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { symbol: "CRASH900", name: "Crash 900" },
     { symbol: "BOOM600", name: "Boom 600" },
     { symbol: "CRASH600", name: "Crash 600" },
+    { symbol: "BTCUSD", name: "BTCUSD" },
     { symbol: "R_100", name: "VIX 100" },
     { symbol: "R_75", name: "VIX 75" },
     { symbol: "R_50", name: "VIX 50" },
@@ -185,12 +186,12 @@ document.addEventListener("DOMContentLoaded", () => {
      wspl = new WebSocket(WS_URL);
     }
   
-    if (wspl && wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING)
+    if (wspl && (wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING))
     {
      wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wspl && wspl.readyState === WebSocket.CLOSED || wspl.readyState === WebSocket.CLOSING)
+    if (wspl && (wspl.readyState === WebSocket.CLOSED || wspl.readyState === WebSocket.CLOSING))
     {
       wspl = new WebSocket(WS_URL);
       wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
