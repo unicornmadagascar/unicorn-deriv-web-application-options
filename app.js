@@ -343,14 +343,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (symbol_test.trim() === "BOO")  
             {
-             if (signal < 0.35)
+             if (signal < 0.37)
               {
                setTimeout(() => {
                  executeTrade_Automated(currentSymbol,"BUY");
                },5000);
               }
 
-              if (signal > 0.35)
+              if (signal > 0.37)
               {
                Autoclose();
               }
@@ -1336,12 +1336,12 @@ closeAll.onclick=()=>{
       toggleAutomationBtn.textContent = "Stop Automation";
       toggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       toggleAutomationBtn.style.color = "white";
-      //startAutomation();
+      startAutomation();
     } else {
       toggleAutomationBtn.textContent = "Launch Automation";
       toggleAutomationBtn.style.background = "white";
       toggleAutomationBtn.style.color = "gray";
-      //stopAutomation();
+      stopAutomation();
     }
   });
 
@@ -1475,7 +1475,7 @@ closeAll.onclick=()=>{
   }, 300);
 
   // Automation
-  setInterval(() => {
+  /*setInterval(() => {
     if (toggleAutomationBtn.textContent.trim()==="Stop Automation")
     {
      startAutomation();
@@ -1484,5 +1484,5 @@ closeAll.onclick=()=>{
     {
      stopAutomation();
     }
-  },700);
+  },700);*/
 });
