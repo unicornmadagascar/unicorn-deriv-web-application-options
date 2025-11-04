@@ -1232,17 +1232,6 @@ closeAll.onclick=()=>{
     document.querySelectorAll(".rowSelect").forEach(cb => cb.checked = checked);
   });
 
-// --- Écouteur de réponse du WebSocket (facultatif, pour debug) ---
-  wsContracts.addEventListener("message", (event) => {
-    const data = JSON.parse(event.data);
-
-    if (data.msg_type === "sell") {
-      console.log(`✅ Contrat ${data.sell.contract_id} fermé avec succès`);
-    } else if (data.error) {
-      console.error("❌ Erreur fermeture contrat :", data.error.message);
-    }
-  });
-  
   function OAuthLink(){
     // sécurise la récupération des tokens ici
     const params = new URLSearchParams(window.location.search);
