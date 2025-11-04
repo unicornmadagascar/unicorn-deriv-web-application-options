@@ -874,7 +874,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    wsContracts_winning.onerror = (e) => {
+    wsContracts.onerror = (e) => {
       console.log("❌ WS Error: " + JSON.stringify(e));
     };
 
