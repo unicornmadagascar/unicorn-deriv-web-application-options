@@ -301,14 +301,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Autorisation réussie → abonnement aux ticks
         if (data.authorize) {
-         console.log("🔑 Autorisé, abonnement aux ticks...");
          wsAutomation.send(JSON.stringify({ ticks: currentSymbol, subscribe: 1 }));
         }
 
         // Sauvegarder l'ID d'abonnement
         if (data.subscription && data.subscription.id) {
           tickSubscriptionId = data.subscription.id;
-          console.log("🆔 ID abonnement:", tickSubscriptionId);
+          //console.log("🆔 ID abonnement:", tickSubscriptionId);
         }
 
         // Quand un tick arrive
