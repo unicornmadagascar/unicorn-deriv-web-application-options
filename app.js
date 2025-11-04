@@ -380,7 +380,8 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     wsAutomation.close();
-    
+    wsAutomation = null;
+
     wsAutomation.onclose = () => {
       console.log("Disconnected");
     };
