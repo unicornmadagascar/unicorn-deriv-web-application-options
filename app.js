@@ -405,7 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.portfolio) {
            const contracts = data.portfolio.contracts;
 
-           Contractsymbol = contracts.symbol;
+           Contractsymbol = contracts[0].symbol;
            console.log(Contractsymbol);
 
            if (type === "SELL")
