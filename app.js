@@ -943,7 +943,7 @@ closeAll.onclick=()=>{
      wsContracts__close = new WebSocket(WS_URL);
     }
   
-    if (wsContracts__close && wsContracts__close.readyState === WebSocket.OPEN)              // || wsContracts__close.readyState === WebSocket.CONNECTING
+    if (wsContracts__close && wsContracts__close.readyState === WebSocket.OPEN || wsContracts__close.readyState === WebSocket.CONNECTING)              // || wsContracts__close.readyState === WebSocket.CONNECTING
     {
      wsContracts__close.onopen=()=>{ wsContracts__close.send(JSON.stringify({ authorize: TOKEN })); };
     }
