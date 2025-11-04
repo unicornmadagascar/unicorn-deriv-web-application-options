@@ -515,7 +515,7 @@ document.addEventListener("DOMContentLoaded", () => {
 }
 
   // Fonction pour ouvrir un contrat SELL
-  function ouvrirContratSell(type,CurSymbol,ContSymbol) {
+  function ouvrirContratSell(type,CurSymbol) {
     const stake=parseFloat(stakeInput.value)||1;
     const multiplier=parseInt(multiplierInput.value)||50;
     if(wsAutomation && wsAutomation.readyState===WebSocket.OPEN || wsAutomation.readyState===WebSocket.CONNECTING){
@@ -532,7 +532,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       
       console.log("📤 Ouverture d'un nouveau contrat SELL...");
-      if (type === "SELL" && CurSymbol === ContSymbol)
+      if (type === "SELL" && CurSymbol === "BOOM1000")
       {
         numb_ = parseInt(sellNum.value)||1;
         for (let i=0;i < numb_; i++)
