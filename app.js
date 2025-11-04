@@ -280,10 +280,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const symbol_test = currentSymbol.slice(0,3);
 
-    wsAutomation = new WebSocket(WS_URL);
-    
-    console.log("✅ WebSocket Deriv ouvert");
-    wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+    if (wsAutomation === null)
+    {
+      wsAutomation = new WebSocket(WS_URL);
+    }
+
+    if (wsAutomation && wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING)
+    {
+      wsAutomation = new WebSocket(WS_URL);
+      console.log("✅ Connecté au WebSocket Deriv fermé");
+      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN && wsAutomation.readyState === WebSocket.CONNECTING)
+    {
+      console.log("✅ WebSocket Deriv ouvert");
+      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+    }
 
     wsAutomation.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
