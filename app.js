@@ -319,8 +319,8 @@ document.addEventListener("DOMContentLoaded", () => {
          tickHistory.push(price);
          if (tickHistory.length > 3) tickHistory.shift(); // garder seulement les 3 derniers ticks
 
-         console.clear();
-         console.log(`🕒 Tick reçu à ${time} | Prix : ${price}`);
+         //console.clear();
+         //console.log(`🕒 Tick reçu à ${time} | Prix : ${price}`);
 
          if (tickHistory.length === 3) {
             // Calcul sur le vecteur des 3 derniers ticks
