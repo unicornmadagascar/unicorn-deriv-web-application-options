@@ -292,10 +292,16 @@ document.addEventListener("DOMContentLoaded", () => {
       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN)
+    if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN && wsAutomation.readyState !== wsAutomation.CONNECTING)
     {
-      console.log("✅ WebSocket Deriv ouvert");
+      console.log("✅ WebSocket Deriv ouvert et non connecté");
       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (wsAutomation && wsAutomation.readyState === WebSocket.CONNECTING)
+    {
+      console.log("✅ Connecté au WebSocket Deriv");
+      //wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
     wsAutomation.onmessage = (msg) => {
