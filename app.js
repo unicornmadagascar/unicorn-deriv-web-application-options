@@ -496,6 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
         parameters: {
           contract_type: "MULTUP",
           symbol: CurSymbol,
+          currency: "USD",
           basis: "stake",
           amount: stake.toFixed(2),
           multiplier: multiplier,
@@ -503,7 +504,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       console.log("📤 Ouverture d'un nouveau contrat BUY...");
-      if (type === "BUY" && CurSymbol === "BOOM1000")
+      if (type === "BUY")
       {
         numb_ = parseInt(buyNum.value)||1;
         for (let i=0;i < numb_; i++)
@@ -525,6 +526,7 @@ document.addEventListener("DOMContentLoaded", () => {
         parameters: {
           contract_type: "MULTDOWN",
           symbol: CurSymbol,
+          currency: "USD",
           basis: "stake",
           amount: stake.toFixed(2),
           multiplier: multiplier,
