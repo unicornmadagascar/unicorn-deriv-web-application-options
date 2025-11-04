@@ -340,7 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Application de la sigmoïde
             signal = sigmoid(delta); // delta*10 ou 10 = facteur de sensibilité
 
-            if (symbol_test.trim() === "BOO")
+            if (symbol_test.trim() === "BOO")  
             {
              if (signal < 0.35)
               {
