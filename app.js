@@ -345,10 +345,17 @@ document.addEventListener("DOMContentLoaded", () => {
             {
              if (signal < 0.35)
               {
-               Autoclose("SELL");
-               executeTrade_Automated(currentSymbol,"BUY");
+               setTimeout(() => {
+                 executeTrade_Automated(currentSymbol,"BUY");
+               },5000);
               }
-             else
+
+              if (signal > 0.35)
+              {
+               Autoclose();
+              }
+            }
+             /*else
               {
                Autoclose("BUY");
                executeTrade_Automated(currentSymbol,"SELL");
@@ -366,7 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
                Autoclose("SELL");
                executeTrade_Automated(currentSymbol,"BUY");
               }
-            }
+            }*/
 
             //console.log(`📊 Derniers ticks : ${tickHistory.map(x => x.toFixed(3)).join(", ")}`);
             //console.log(`⚙️ Variation moyenne : ${variation.toFixed(6)}`);
@@ -1329,12 +1336,12 @@ closeAll.onclick=()=>{
       toggleAutomationBtn.textContent = "Stop Automation";
       toggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       toggleAutomationBtn.style.color = "white";
-      startAutomation();
+      //startAutomation();
     } else {
       toggleAutomationBtn.textContent = "Launch Automation";
       toggleAutomationBtn.style.background = "white";
       toggleAutomationBtn.style.color = "gray";
-      stopAutomation();
+      //stopAutomation();
     }
   });
 
@@ -1477,5 +1484,5 @@ closeAll.onclick=()=>{
     {
      stopAutomation();
     }
-  },300);
+  },700);
 });
