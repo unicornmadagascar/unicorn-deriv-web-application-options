@@ -39,7 +39,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsload = null;
   let wsContracts__close = null;
   let wsContracts_winning = null;
-  let wsAutomation = null;
+  let wsAutomation_sell = null;
+  let wsAutomation_buy = null;
   let wsContracts = null;
   let wsplContracts = null;
   let wsContracts__ = null;
@@ -343,12 +344,12 @@ document.addEventListener("DOMContentLoaded", () => {
             {
              if (signal < 0.35)
               {
-               //executeTrade_Automated(currentSymbol,"BUY");
+               executebuyTrade_Automated(currentSymbol,"BUY");
                console.log("BUY");
               }
              else
               {
-               executeTrade_Automated(currentSymbol,"SELL");
+               executesellTrade_Automated(currentSymbol,"SELL");
                console.log("SELL");
               }
             }
@@ -383,31 +384,31 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  function executeTrade_Automated(symbol,type)
+  function executesellTrade_Automated(symbol,type)
   {
-      if (wsAutomation === null)
+      if (wsAutomation_sell === null)
       {
-       wsAutomation = new WebSocket(WS_URL);
+       wsAutomation_sell = new WebSocket(WS_URL);
       }
   
-      if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING)
+      if (wsAutomation_sell && wsAutomation_sell.readyState === WebSocket.OPEN || wsAutomation_sell.readyState === WebSocket.CONNECTING)
       {
-       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+       wsAutomation_sell.onopen=()=>{ wsAutomation_sell.send(JSON.stringify({ authorize: TOKEN })); };
       }
 
-      if (wsAutomation  && wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING)
+      if (wsAutomation_sell  && wsAutomation_sell.readyState === WebSocket.CLOSED || wsAutomation_sell.readyState === WebSocket.CLOSING)
       {
-       wsAutomation = new WebSocket(WS_URL);
-       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+       wsAutomation_sell = new WebSocket(WS_URL);
+       wsAutomation_sell.onopen=()=>{ wsAutomation_sell.send(JSON.stringify({ authorize: TOKEN })); };
       }
 
-      wsAutomation.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-      wsAutomation.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-      wsAutomation.onmessage=msg=>{
+      wsAutomation_sell.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+      wsAutomation_sell.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+      wsAutomation_sell.onmessage=msg=>{
         const data=JSON.parse(msg.data);
         if (data.authorize) {
            console.log("✅ Connecté à Deriv API !");
-           wsAutomation.send(JSON.stringify({ portfolio: 1 }));
+           wsAutomation_sell.send(JSON.stringify({ portfolio: 1 }));
         }
 
         // Étape 3 : Réception du portefeuille
@@ -422,11 +423,12 @@ document.addEventListener("DOMContentLoaded", () => {
              console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
 
              Contractsymbol = contracts.symbol;
+             console.log(Contractsymbol);
 
              // Fermer chaque contrat
              buyContracts.forEach(c => {
                 console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                wsAutomation_sell.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
              });
 
              // Attendre un peu puis ouvrir un contrat SELL
@@ -434,7 +436,42 @@ document.addEventListener("DOMContentLoaded", () => {
                 ouvrirContratSell(type,symbol,Contractsymbol);
              }, 500);
           }
-          else if (type === "BUY")
+        }
+      };
+  }
+
+   function executebuyTrade_Automated(symbol,type)
+  {
+      if (wsAutomation_buy === null)
+      {
+       wsAutomation_buy = new WebSocket(WS_URL);
+      }
+  
+      if (wsAutomation_buy && wsAutomation_buy.readyState === WebSocket.OPEN || wsAutomation_buy.readyState === WebSocket.CONNECTING)
+      {
+       wsAutomation_buy.onopen=()=>{ wsAutomation_buy.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+
+      if (wsAutomation_buy  && wsAutomation_buy.readyState === WebSocket.CLOSED || wsAutomation_buy.readyState === WebSocket.CLOSING)
+      {
+       wsAutomation_sell = new WebSocket(WS_URL);
+       wsAutomation_sell.onopen=()=>{ wsAutomation_sell.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+
+      wsAutomation_buy.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+      wsAutomation_buy.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+      wsAutomation_buy.onmessage=msg=>{
+        const data=JSON.parse(msg.data);
+        if (data.authorize) {
+           console.log("✅ Connecté à Deriv API !");
+           wsAutomation_buy.send(JSON.stringify({ portfolio: 1 }));
+        }
+
+        // Étape 3 : Réception du portefeuille
+        if (data.portfolio) {
+           const contracts = data.portfolio.contracts;
+           
+          if (type === "BUY")
           {
             // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
             const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN");
@@ -442,6 +479,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
             
             Contractsymbol = contracts.symbol;
+            console.log(Contractsymbol);
 
             // Fermer chaque contrat SELL
             sellContracts.forEach(c => {
