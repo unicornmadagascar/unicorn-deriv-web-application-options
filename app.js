@@ -347,16 +347,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
            tickHistory.push(price);
            if (it > 3) // garder seulement les 3 derniers ticks
-           {
+           {  
+              console.log("it :" + it);
               // Calcul sur le vecteur des 3 derniers ticks
               p1 = tickHistory[0]; // → le plus ancien tick
               p2 = tickHistory[1]; // → le tick du milieu
               p3 = tickHistory[2]; // → le plus récent tick (le dernier ajouté)
 
               const Tick_arr = [p1,p2,p3];
-
-              // Exemple de "variation moyenne" locale
-              const variation = (p3 - p1) / 3; 
            
               // On peut aussi normaliser avec la moyenne
               const mean = (p1 + p2 + p3) / 3;
