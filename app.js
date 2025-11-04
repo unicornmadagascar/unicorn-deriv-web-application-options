@@ -946,30 +946,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
 closeAll.onclick=()=>{
 
-   if (wsContracts === null)
+   if (wsContracts__close === null)
     {
-     wsContracts = new WebSocket(WS_URL);
+     wsContracts__close = new WebSocket(WS_URL);
     }
   
-    if (wsContracts && wsContracts.readyState === WebSocket.OPEN || wsContracts.readyState === WebSocket.CONNECTING)
+    if (wsContracts__close && wsContracts__close.readyState === WebSocket.OPEN || wsContracts__close.readyState === WebSocket.CONNECTING)
     {
-     wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
+     wsContracts__close.onopen=()=>{ wsContracts__close.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wsContracts && wsContracts.readyState === WebSocket.CLOSED || wsContracts.readyState === WebSocket.CLOSING)
+    if (wsContracts__close && wsContracts__close.readyState === WebSocket.CLOSED || wsContracts__close.readyState === WebSocket.CLOSING)
     {
-      wsContracts = new WebSocket(WS_URL);
-      wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
+      wsContracts__close = new WebSocket(WS_URL);
+      wsContracts__close.onopen=()=>{ wsContracts__close.send(JSON.stringify({ authorize: TOKEN })); };
     }
     
-    wsContracts.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-    wsContracts.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-    wsContracts.onmessage = (msg) => {
+    wsContracts__close.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+    wsContracts__close.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+    wsContracts__close.onmessage = (msg) => {
        const data = JSON.parse(msg.data);
 
        // 2️⃣ Quand autorisé, on demande le portefeuille
        if (data.msg_type === 'authorize') {
-           wsContracts.send(JSON.stringify({ portfolio: 1 }));
+           wsContracts__close.send(JSON.stringify({ portfolio: 1 }));
        }
 
        // 3️⃣ Quand on reçoit les contrats ouverts
@@ -979,7 +979,7 @@ closeAll.onclick=()=>{
 
           // 4️⃣ Fermer chaque contrat
           contracts.forEach(c => {
-            wsContracts.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+            wsContracts__close.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
             console.log(`⛔ Fermeture du contrat ${c.contract_id} demandée`);
           });
        }
@@ -989,11 +989,11 @@ closeAll.onclick=()=>{
           console.log('✅ Contrat fermé:', data.sell.contract_id);
        }
 
-       if (wsContracts && wsContracts.readyState === WebSocket.OPEN)
+       if (wsContracts__close && wsContracts__close.readyState === WebSocket.OPEN)
        {
-         //wsContracts.close();
+         wsContracts__close.close();
          setTimeout(() => {
-           wsContracts = null;
+           wsContracts__close = null;
          },300);
        }
     };
