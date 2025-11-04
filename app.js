@@ -285,6 +285,12 @@ document.addEventListener("DOMContentLoaded", () => {
     
     if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN)
     {
+      console.log("✅ WebSocket Deriv ouvert");
+      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (wsAutomation && wsAutomation.readyState === WebSocket.CONNECTING)
+    {
       console.log("✅ Connecté au WebSocket Deriv");
       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
     }
@@ -292,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wsAutomation && wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING)
     {
       wsAutomation = new WebSocket(WS_URL);
-      console.log("✅ Connecté au WebSocket Deriv");
+      console.log("✅ Connecté au WebSocket Deriv fermé");
       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
