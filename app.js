@@ -41,6 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsContracts_winning = null;
   let wsAutomation_sell = null;
   let wsAutomation_buy = null;
+  let wsAutomation = null;
   let wsContracts = null;
   let wsplContracts = null;
   let wsContracts__ = null;
