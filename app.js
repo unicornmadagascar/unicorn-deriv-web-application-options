@@ -280,113 +280,102 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const symbol_test = currentSymbol.slice(0,3);
 
-    if (wsAutomation === null)
-    {
-      wsAutomation = new WebSocket(WS_URL);
-    }
+    if (!wsAutomation || wsAutomation.readyState === WebSocket.CLOSED) {
+        wsAutomation = new WebSocket(WS_URL);
 
-    if (wsAutomation && wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING)
-    {
-      console.log("✅ WebSocket Deriv fermé");
+    
+      console.log("✅ Overture du WebSocket Deriv");
       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-    }
 
-    if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === wsAutomation.CONNECTING)
-    {
-      console.log("✅ WebSocket Deriv ouvert ou connecté");
-      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-    }
+      wsAutomation.onmessage = (msg) => {
+        const data = JSON.parse(msg.data);
 
-    wsAutomation.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-
-      // Autorisation réussie → abonnement aux ticks
-      if (data.authorize) {
+        // Autorisation réussie → abonnement aux ticks
+        if (data.authorize) {
          console.log("🔑 Autorisé, abonnement aux ticks...");
          wsAutomation.send(JSON.stringify({ ticks: currentSymbol, subscribe: 1 }));
-      }
+        }
 
-      // Sauvegarder l'ID d'abonnement
-      if (data.subscription && data.subscription.id) {
-         tickSubscriptionId = data.subscription.id;
-         console.log("🆔 ID abonnement:", tickSubscriptionId);
-      }
+        // Sauvegarder l'ID d'abonnement
+        if (data.subscription && data.subscription.id) {
+          tickSubscriptionId = data.subscription.id;
+          console.log("🆔 ID abonnement:", tickSubscriptionId);
+        }
 
-      // Quand un tick arrive
-      if (data.tick) {
-         const price = parseFloat(data.tick.quote);
-         const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
+        // Quand un tick arrive
+        if (data.tick) {
+           const price = parseFloat(data.tick.quote);
+           const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
 
-         tickHistory.push(price);
-         if (tickHistory.length > 3) tickHistory.shift(); // garder seulement les 3 derniers ticks
+           tickHistory.push(price);
+           if (tickHistory.length > 3) tickHistory.shift(); // garder seulement les 3 derniers ticks
 
-         //console.clear();
-         //console.log(`🕒 Tick reçu à ${time} | Prix : ${price}`);
+           console.clear();
+           //console.log(`🕒 Tick reçu à ${time} | Prix : ${price}`);
 
-         if (tickHistory.length === 3) {
-            // Calcul sur le vecteur des 3 derniers ticks
-            const [p1, p2, p3] = tickHistory;
+           if (tickHistory.length === 3) {
+              // Calcul sur le vecteur des 3 derniers ticks
+              const [p1, p2, p3] = tickHistory;
 
-           // Exemple de "variation moyenne" locale
-           const variation = (p3 - p1) / 3; 
+              // Exemple de "variation moyenne" locale
+              const variation = (p3 - p1) / 3; 
            
-           // On peut aussi normaliser avec la moyenne
-           const mean = (p1 + p2 + p3) / 3;
-           Dispersion = ecartType(tickHistory);
-           if (Dispersion !==0)
-           {
-            const delta = (p3 - mean) / Dispersion; // variation relative
-            // Application de la sigmoïde
-            signal = sigmoid(delta); // delta*10 ou 10 = facteur de sensibilité
+              // On peut aussi normaliser avec la moyenne
+              const mean = (p1 + p2 + p3) / 3;
+              Dispersion = ecartType(tickHistory);
+              if (Dispersion !==0)
+              {
+               const delta = (p3 - mean) / Dispersion; // variation relative
+               // Application de la sigmoïde
+               signal = sigmoid(delta); // delta*10 ou 10 = facteur de sensibilité
 
-            if (symbol_test === "BOO")  
-            {
-             if (signal < 0.37)
-              {
-               Autoclose("SELL");
-               executeTrade_Automated(currentSymbol,"BUY");
-               setTimeout(() => {
-               },5000);
+               if (symbol_test === "BOO")  
+               {
+                if (signal < 0.37)
+                {
+                 Autoclose("SELL");
+                 executeTrade_Automated(currentSymbol,"BUY");
+                 setTimeout(() => {
+                 },5000);
+                }
+                else
+                {
+                 Autoclose("BUY");
+                 executeTrade_Automated(currentSymbol,"SELL");
+                }
               }
-             else
+              else if (symbol_test.trim()  === "CRA")
               {
-               Autoclose("BUY");
-               executeTrade_Automated(currentSymbol,"SELL");
-              }
-            }
-            else if (symbol_test.trim()  === "CRA")
-            {
-              if (signal > 0.75)
-              {
-               Autoclose("BUY");
-               executeTrade_Automated(currentSymbol,"SELL");
-               setTimeout(() => {
-               },5000);
-              }
-             else
-              {
-               Autoclose("SELL");
-               executeTrade_Automated(currentSymbol,"BUY");
-              }
-            }
+               if (signal > 0.75)
+               {
+                Autoclose("BUY");
+                executeTrade_Automated(currentSymbol,"SELL");
+                setTimeout(() => {
+                },5000);
+               }
+              else
+               {
+                Autoclose("SELL");
+                executeTrade_Automated(currentSymbol,"BUY");
+               }
+             }
 
             //console.log(`📊 Derniers ticks : ${tickHistory.map(x => x.toFixed(3)).join(", ")}`);
             //console.log(`⚙️ Variation moyenne : ${variation.toFixed(6)}`);
             console.log(`📈 Sigmoid : ${signal.toFixed(6)}`);
            }
-         }
-      }
-    };
+          }
+        }
+      };
 
-    wsAutomation = null;
+      wsAutomation.onclose = () => {
+        console.log("Disconnected");
+      };
 
-    wsAutomation.onclose = () => {
-      console.log("Disconnected");
-    };
-
-    wsAutomation.onerror = (err) => {
-      console.error("WebSocket error:", err);
-    };
+      wsAutomation.onerror = (err) => {
+        console.error("WebSocket error:", err);
+      };
+    }
   }
 
   function executeTrade_Automated(currentsymbol__,type)
