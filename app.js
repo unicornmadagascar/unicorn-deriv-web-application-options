@@ -278,6 +278,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function startAutomation() {
 
+    const symbol_test = currentSymbol.slice(0,3);
+
     if (wsAutomation === null)
     {
       wsAutomation = new WebSocket(WS_URL);
