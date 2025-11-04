@@ -285,17 +285,11 @@ document.addEventListener("DOMContentLoaded", () => {
       wsAutomation = new WebSocket(WS_URL);
     }
     
-    if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN)
-    {
-      console.log("✅ WebSocket Deriv ouvert");
-      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
-    /*if (wsAutomation && wsAutomation.readyState === WebSocket.CONNECTING)
+    if (wsAutomation && wsAutomation.readyState === WebSocket.CONNECTING)
     {
       console.log("✅ Connecté au WebSocket Deriv");
       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-    }*/
+    }
 
     if (wsAutomation && wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING)
     {
@@ -303,6 +297,13 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("✅ Connecté au WebSocket Deriv fermé");
       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
     }
+
+    if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN)
+    {
+      console.log("✅ WebSocket Deriv ouvert");
+      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
 
     wsAutomation.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
