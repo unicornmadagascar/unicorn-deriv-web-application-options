@@ -288,19 +288,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wsAutomation && wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING)
     {
       wsAutomation = new WebSocket(WS_URL);
-      console.log("✅ Connecté au WebSocket Deriv fermé");
+      console.log("✅ WebSocket Deriv fermé");
       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN && wsAutomation.readyState !== wsAutomation.CONNECTING)
+    if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === wsAutomation.CONNECTING)
     {
       console.log("✅ WebSocket Deriv ouvert et non connecté");
-      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
-    if (wsAutomation && wsAutomation.readyState === WebSocket.CONNECTING)
-    {
-      console.log("✅ Connecté au WebSocket Deriv");
       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
@@ -350,17 +344,12 @@ document.addEventListener("DOMContentLoaded", () => {
             {
              if (signal < 0.37)
               {
+               Autoclose("SELL");
+               executeTrade_Automated(currentSymbol,"BUY");
                setTimeout(() => {
-                  executeTrade_Automated(currentSymbol,"BUY");
                },5000);
               }
-
-              if (signal > 0.37)
-              {
-               Autoclose();
-              }
-            }
-             /*else
+             else
               {
                Autoclose("BUY");
                executeTrade_Automated(currentSymbol,"SELL");
@@ -372,13 +361,15 @@ document.addEventListener("DOMContentLoaded", () => {
               {
                Autoclose("BUY");
                executeTrade_Automated(currentSymbol,"SELL");
+               setTimeout(() => {
+               },5000);
               }
              else
               {
                Autoclose("SELL");
                executeTrade_Automated(currentSymbol,"BUY");
               }
-            }*/
+            }
 
             //console.log(`📊 Derniers ticks : ${tickHistory.map(x => x.toFixed(3)).join(", ")}`);
             //console.log(`⚙️ Variation moyenne : ${variation.toFixed(6)}`);
