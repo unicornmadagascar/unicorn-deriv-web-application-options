@@ -1235,17 +1235,6 @@ closeAll.onclick=()=>{
     }
   });
 
-  // === 📡 ÉCOUTE DES RÉPONSES DERIV (facultatif) ===
-  wsContracts.addEventListener("message", (event) => {
-    const data = JSON.parse(event.data);
-
-    if (data.msg_type === "sell") {
-      console.log(`✅ Contrat ${data.sell.contract_id} fermé avec succès`);
-    } else if (data.error) {
-      console.error("❌ Erreur fermeture contrat :", data.error.message);
-    }
-  });
-
   function OAuthLink(){
     // sécurise la récupération des tokens ici
     const params = new URLSearchParams(window.location.search);
