@@ -398,15 +398,14 @@ document.addEventListener("DOMContentLoaded", () => {
                }
              }
             }
-          }
+        }
 
-          it = it + 1;
-          if (it === 3000)
-           {
-            it = 0;
-            tickHistory.length = 0; 
-           }
-         }
+        it = it + 1;
+        if (it === 3000)
+        {
+         it = 0;
+         tickHistory.length = 0; 
+        }
     };
 
     wsAutomation.onclose = () => {
