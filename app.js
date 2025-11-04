@@ -287,7 +287,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (wsAutomation && wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING)
     {
-      wsAutomation = new WebSocket(WS_URL);
       console.log("✅ WebSocket Deriv fermé");
       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
     }
@@ -379,7 +378,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    wsAutomation.close();
     wsAutomation = null;
 
     wsAutomation.onclose = () => {
