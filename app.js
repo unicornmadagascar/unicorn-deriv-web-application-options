@@ -991,7 +991,7 @@ closeAll.onclick=()=>{
 
        if (wsContracts && wsContracts.readyState === WebSocket.OPEN)
        {
-         wsContracts.close();
+         //wsContracts.close();
          setTimeout(() => {
            wsContracts = null;
          },300);
