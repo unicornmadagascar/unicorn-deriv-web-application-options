@@ -346,7 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
            const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
 
            tickHistory.push(price);
-           if (it >= 2 && tickHistory >= 3) // garder seulement les 3 derniers ticks
+           if (it >= 2 && tickHistory.length >= 3) // garder seulement les 3 derniers ticks
            {  
               console.log("it :" + it);
               Tick_arr.length = 3;
