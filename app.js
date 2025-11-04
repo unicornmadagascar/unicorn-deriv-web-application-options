@@ -509,7 +509,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           wsAutomation.send(JSON.stringify(payload));
         }
-      }
+      }  
     }
   }
 
