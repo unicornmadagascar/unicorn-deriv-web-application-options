@@ -291,11 +291,11 @@ document.addEventListener("DOMContentLoaded", () => {
       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wsAutomation && wsAutomation.readyState === WebSocket.CONNECTING)
+    /*if (wsAutomation && wsAutomation.readyState === WebSocket.CONNECTING)
     {
       console.log("✅ Connecté au WebSocket Deriv");
       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-    }
+    }*/
 
     if (wsAutomation && wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING)
     {
