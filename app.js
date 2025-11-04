@@ -277,16 +277,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function startAutomation() {
-    
-    const symbol_test = currentSymbol.slice(0,3);
-    console.log(symbol_test);
 
     if (wsAutomation === null)
     {
       wsAutomation = new WebSocket(WS_URL);
     }
     
-    if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING)
+    if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN)
     {
       console.log("✅ Connecté au WebSocket Deriv");
       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
