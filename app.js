@@ -404,12 +404,12 @@ document.addEventListener("DOMContentLoaded", () => {
              if (type === "SELL")
              {
               // Attendre un peu puis ouvrir un contrat SELL
-              ouvrirContratSell(type,symbol);
+              ouvrirContratSell(type,currentsymbol__);
              }
              else if (type === "BUY")
              {
               // Attendre un peu puis ouvrir un contrat SELL
-              ouvrirContratBuy(type,symbol);             
+              ouvrirContratBuy(type,currentsymbol__);             
              }  
           },300);
          
