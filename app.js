@@ -389,21 +389,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function executeTrade_Automated(symbol,type)
   {
-      if (wsAutomation === null)
-      {
-       wsAutomation = new WebSocket(WS_URL);
-      }
-  
-      if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING)
-      {
-       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-
-      if (wsAutomation  && wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING)
-      {
-       wsAutomation = new WebSocket(WS_URL);
-       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-      }
+      wsAutomation = new WebSocket(WS_URL);
+      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
 
       wsAutomation.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
       wsAutomation.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
