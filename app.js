@@ -67,7 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let portfolioReceived = false;
   const token_user = "";
   let contractSymbol;
-  let p1,p2,p3;
 
   // --- NEW: current symbol & pending subscribe ---
   let currentSymbol = null;
@@ -347,15 +346,16 @@ document.addEventListener("DOMContentLoaded", () => {
            const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
 
            tickHistory.push(price);
-           if (it > 3) // garder seulement les 3 derniers ticks
+           if (it >= 3 && tickHistory.length >= 3) // garder seulement les 3 derniers ticks
            {  
               console.log("it :" + it);
               // Calcul sur le vecteur des 3 derniers ticks
-              p1 = tickHistory[0]; // → le plus ancien tick
-              p2 = tickHistory[1]; // → le tick du milieu
-              p3 = tickHistory[2]; // → le plus récent tick (le dernier ajouté)
+              const p1 = tickHistory[0]; // → le plus ancien tick
+              const p2 = tickHistory[1]; // → le tick du milieu
+              const p3 = tickHistory[2]; // → le plus récent tick (le dernier ajouté)
 
               Tick_arr = [p1,p2,p3];
+              console.log(Tick_arr);
            
               // On peut aussi normaliser avec la moyenne
               const mean = (p1 + p2 + p3) / 3;
