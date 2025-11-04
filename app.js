@@ -404,9 +404,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.portfolio) {
            const contracts = data.portfolio.contracts;
 
-           const Contractsymbol = contracts[0].symbol;
-           console.log(Contractsymbol);
-
            if (type === "SELL")
            {
               // Attendre un peu puis ouvrir un contrat SELL
