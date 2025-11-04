@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let contracts = {};
   let portfolioReceived = false;
   const token_user = "";
+  let contractSymbol;
 
   // --- NEW: current symbol & pending subscribe ---
   let currentSymbol = null;
@@ -403,23 +404,19 @@ document.addEventListener("DOMContentLoaded", () => {
         // Étape 3 : Réception du portefeuille
         if (data.portfolio) {
            const contracts = data.portfolio.contracts;
-
-           if (type === "SELL")
-           {
+           
+          setTimeout(() => {
+             if (type === "SELL")
+             {
               // Attendre un peu puis ouvrir un contrat SELL
-              setTimeout(() => {
-                 //ouvrirContratSell(type,symbol,Contractsymbol);
-                 console.log("SELL");
-              }, 300);
-           }
-           else if (type === "BUY")
-           {
+              ouvrirContratSell(type,symbol);
+             }
+             else if (type === "BUY")
+             {
               // Attendre un peu puis ouvrir un contrat SELL
-              setTimeout(() => {
-                 //ouvrirContratBuy(type,symbol,Contractsymbol);
-                 console.log("BUY");
-              }, 300);
-           }
+              ouvrirContratBuy(type,symbol);             
+             }  
+          },300);
          
         }
       };
@@ -455,39 +452,41 @@ document.addEventListener("DOMContentLoaded", () => {
         // Étape 3 : Réception du portefeuille
         if (data.portfolio) {
            const contracts = data.portfolio.contracts;
-           
-           if (type === "SELL")
-           {
-             // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
-            const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN");
+           if (contracts.length > 0)
+            {
+             if (type === "SELL")
+              {
+               // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
+               const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN");
 
-            console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
+               console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
 
-            // Fermer chaque contrat SELL
-            sellContracts.forEach(c => {
-              console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-              wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-            });
+               // Fermer chaque contrat SELL
+               sellContracts.forEach(c => {
+                 console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                 wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+               });
+              }
+             else if (type === "BUY")
+              {
+               // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
+               const buyContracts = contracts.filter(c => c.contract_type === "MULTUP");
+
+               console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
+
+               // Fermer chaque contrat
+               buyContracts.forEach(c => {
+                 console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                 wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+               });
+              }
            }
-          else if (type === "BUY")
-           {
-            // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
-             const buyContracts = contracts.filter(c => c.contract_type === "MULTUP");
-
-             console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
-
-             // Fermer chaque contrat
-             buyContracts.forEach(c => {
-                console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-             });
-          }
         }
     };
   }
 
   // 🚀 Fonction pour ouvrir un contrat BUY (MULTUP)
-  function ouvrirContratBuy(type,CurSymbol,ContSymbol) {
+  function ouvrirContratBuy(type,CurSymbol) {
     const stake=parseFloat(stakeInput.value)||1;
     const multiplier=parseInt(multiplierInput.value)||50;
     if(wsAutomation && wsAutomation.readyState===WebSocket.OPEN || wsAutomation.readyState===WebSocket.CONNECTING){
@@ -504,7 +503,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       console.log("📤 Ouverture d'un nouveau contrat BUY...");
-      if (type === "BUY" && CurSymbol === ContSymbol)
+      if (type === "BUY" && CurSymbol === "BOOM1000")
       {
         numb_ = parseInt(buyNum.value)||1;
         for (let i=0;i < numb_; i++)
