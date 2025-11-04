@@ -933,14 +933,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (data.msg_type === "portfolio" && (!data.portfolio || !data.portfolio.contracts.length)) {
       console.log("⚠️ No active contracts found.");
     }
-  
-    if (wsContracts_winning && wsContracts_winning.readyState === WebSocket.OPEN)
-    {
-      setTimeout(() => {
-         wsContracts_winning.close();
-         wsContracts_winning = null;
-      },300);
-    }
    };
  };
 
@@ -987,14 +979,6 @@ closeAll.onclick=()=>{
        // 5️⃣ Confirmation de fermeture
        if (data.msg_type === 'sell') {
           console.log('✅ Contrat fermé:', data.sell.contract_id);
-       }
-
-       if (wsContracts__close && wsContracts__close.readyState === WebSocket.OPEN)
-       {
-         wsContracts__close.close();
-         setTimeout(() => {
-           wsContracts__close = null;
-         },300);
        }
     };
   }; 
