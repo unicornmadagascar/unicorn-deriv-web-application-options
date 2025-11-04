@@ -340,7 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (symbol_test.trim() === "BOO")
             {
-             if (signal <= 0.35)
+             if (signal < 0.35)
               {
                //executeTrade_Automated(currentSymbol,"BUY");
                console.log("BUY");
@@ -353,7 +353,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             else if (symbol_test.trim()  === "CRA")
             {
-              if (signal => 0.75)
+              if (signal > 0.75)
               {
                //executeTrade_Automated(currentSymbol,"SELL");
                console.log("SELL");
