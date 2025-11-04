@@ -347,13 +347,13 @@ document.addEventListener("DOMContentLoaded", () => {
               {
                Autoclose("SELL");
                executeTrade_Automated(currentSymbol,"BUY");
-               console.log("BUY");
+               //console.log("BUY");
               }
              else
               {
                Autoclose("BUY");
                executeTrade_Automated(currentSymbol,"SELL");
-               console.log("SELL");
+               //console.log("SELL");
               }
             }
             else if (symbol_test.trim()  === "CRA")
