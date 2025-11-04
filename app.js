@@ -508,7 +508,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       };
 
-      console.log("📤 Ouverture d'un nouveau contrat BUY...");
+      console.log("📤 Ouverture d'un nouveau contrat BUY..."); 
       if (type === "BUY")
       {
         numb_ = parseInt(buyNum.value)||1;
