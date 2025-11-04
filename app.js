@@ -342,22 +342,26 @@ document.addEventListener("DOMContentLoaded", () => {
             {
              if (signal <= 0.35)
               {
-               executeTrade_Automated(currentSymbol,"BUY");
+               //executeTrade_Automated(currentSymbol,"BUY");
+               console.log("BUY");
               }
              else
               {
-               executeTrade_Automated(currentSymbol,"SELL");
+               //executeTrade_Automated(currentSymbol,"SELL");
+               console.log("SELL");
               }
             }
             else if (symbol_test.trim()  === "CRA")
             {
               if (signal => 0.75)
               {
-               executeTrade_Automated(currentSymbol,"SELL");
+               //executeTrade_Automated(currentSymbol,"SELL");
+               console.log("SELL");
               }
              else
               {
-               executeTrade_Automated(currentSymbol,"BUY");
+               //executeTrade_Automated(currentSymbol,"BUY");
+               console.log("BUY");
               }
             }
 
