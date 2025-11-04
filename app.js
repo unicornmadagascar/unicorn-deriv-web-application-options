@@ -535,7 +535,8 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       console.log("📤 Ouverture d'un nouveau contrat BUY...");
-      if (type === "BUY" && CurSymbol === "BOOM1000")
+      if (type === "BUY" && (CurSymbol === "BOOM1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500" ||
+          CurSymbol === "CRASH1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500"))
       {
         numb_ = parseInt(buyNum.value)||1;
         for (let i=0;i < numb_; i++)
@@ -565,7 +566,8 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       
       console.log("📤 Ouverture d'un nouveau contrat SELL...");
-      if (type === "SELL" && CurSymbol === "BOOM1000")
+      if (type === "SELL" && (CurSymbol === "BOOM1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500" ||
+          CurSymbol === "CRASH1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500"))
       {
         numb_ = parseInt(sellNum.value)||1;
         for (let i=0;i < numb_; i++)
