@@ -404,6 +404,7 @@ document.addEventListener("DOMContentLoaded", () => {
            const contracts = data.portfolio.contracts;
 
            const exists = contracts.some(c => c.symbol === currentsymbol__);
+           console.log(exists);
 
            if (exists === true) return;
            
