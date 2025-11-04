@@ -509,7 +509,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       console.log("📤 Ouverture d'un nouveau contrat BUY...");
-      if (type === "BUY")
+      if (type === "BUY" && CurSymbol === "BOOM1000")
       {
         numb_ = parseInt(buyNum.value)||1;
         for (let i=0;i < numb_; i++)
