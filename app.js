@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
 
   // --- SYMBOLS ---
-  function displaySymbols() {
+  /*function displaySymbols() {
     symbolList.innerHTML = "";
     SYMBOLS.forEach(s => {
       const el = document.createElement("div");
@@ -103,7 +103,35 @@ document.addEventListener("DOMContentLoaded", () => {
       el.addEventListener("click", () => subscribeSymbol(s.symbol));
       symbolList.appendChild(el);
     });
-  }
+  }*/
+
+  // --- SYMBOLS ---
+ function displaySymbols() {
+  symbolList.innerHTML = "";
+
+  SYMBOLS.forEach(s => {
+    const el = document.createElement("div");
+    el.className = "symbol-item";
+    el.textContent = s.name;
+    el.dataset.symbol = s.symbol;
+
+    el.addEventListener("click", () => {
+      // 🔹 Supprime la sélection sur tous les symboles
+      document.querySelectorAll("#SymbolList .symbol-item").forEach(item => {
+        item.classList.remove("selected");
+      });
+
+      // 🔹 Ajoute la sélection sur celui qu’on vient de cliquer
+      el.classList.add("selected");
+
+      // 🔹 Appelle ta fonction de souscription
+      subscribeSymbol(s.symbol);
+    });
+
+    symbolList.appendChild(el);
+  });
+ }
+
 
   // --- CHART INIT ---
   function initChart() {
