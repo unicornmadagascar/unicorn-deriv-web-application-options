@@ -347,26 +347,24 @@ document.addEventListener("DOMContentLoaded", () => {
               {
                Autoclose("SELL");
                executeTrade_Automated(currentSymbol,"BUY");
-               //console.log("BUY");
               }
              else
               {
                Autoclose("BUY");
                executeTrade_Automated(currentSymbol,"SELL");
-               //console.log("SELL");
               }
             }
             else if (symbol_test.trim()  === "CRA")
             {
               if (signal > 0.75)
               {
-               //executeTrade_Automated(currentSymbol,"SELL");
-               console.log("SELL");
+               Autoclose("BUY");
+               executeTrade_Automated(currentSymbol,"SELL");
               }
              else
               {
-               //executeTrade_Automated(currentSymbol,"BUY");
-               console.log("BUY");
+               Autoclose("SELL");
+               executeTrade_Automated(currentSymbol,"BUY");
               }
             }
 
@@ -1464,8 +1462,20 @@ closeAll.onclick=()=>{
         updatePLGauge(totalPL);
       });
   
-  // Subscribing Tables
+      // Subscribing Tables
       connectDeriv_table();
     }
   }, 300);
+
+  // Automation
+  setInterval(() => {
+    if (toggleAutomationBtn.textContent.trim()==="Launch Automation")
+    {
+     startAutomation();
+    }
+    else if (toggleAutomationBtn.textContent.trim()==="Stop Automation")
+    {
+     stopAutomation();
+    }
+  },300);
 });
