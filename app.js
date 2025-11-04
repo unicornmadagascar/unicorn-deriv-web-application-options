@@ -56,6 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let signal__;
   let Dispersion;
   let isConnect = false;
+  const it = 0;
   // Historique local des ticks
   let tickHistory = [];
   // Historique de profits
@@ -65,6 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let portfolioReceived = false;
   const token_user = "";
   let contractSymbol;
+  let p1,p2,p3;
 
   // --- NEW: current symbol & pending subscribe ---
   let currentSymbol = null;
@@ -344,21 +346,21 @@ document.addEventListener("DOMContentLoaded", () => {
            const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
 
            tickHistory.push(price);
-           if (tickHistory.length > 3) tickHistory.shift(); // garder seulement les 3 derniers ticks
-
-           //console.clear();
-           //console.log(`🕒 Tick reçu à ${time} | Prix : ${price}`);
-
-           if (tickHistory.length === 3) {
+           if (it > 3) // garder seulement les 3 derniers ticks
+           {
               // Calcul sur le vecteur des 3 derniers ticks
-              const [p1, p2, p3] = tickHistory;
+              p1 = tickHistory[0]; // → le plus ancien tick
+              p2 = tickHistory[1]; // → le tick du milieu
+              p3 = tickHistory[2]; // → le plus récent tick (le dernier ajouté)
+
+              const Tick_arr = [p1,p2,p3];
 
               // Exemple de "variation moyenne" locale
               const variation = (p3 - p1) / 3; 
            
               // On peut aussi normaliser avec la moyenne
               const mean = (p1 + p2 + p3) / 3;
-              Dispersion = ecartType(tickHistory);
+              Dispersion = ecartType(Tick_arr);
               if (Dispersion !==0)
               {
                const delta = (p3 - mean) / Dispersion; // variation relative
@@ -380,28 +382,33 @@ document.addEventListener("DOMContentLoaded", () => {
                  Autoclose("BUY");
                  executeTrade_Automated(currentSymbol,"SELL");
                 }
-              }
-              else if (symbol_test.trim()  === "CRA")
-              {
-               if (signal > 0.75)
-               {
-                Autoclose("BUY");
-                executeTrade_Automated(currentSymbol,"SELL");
-                setTimeout(() => {
-                },5000);
                }
-              else
+               else if (symbol_test.trim()  === "CRA")
                {
-                Autoclose("SELL");
-                executeTrade_Automated(currentSymbol,"BUY");
+                if (signal > 0.75)
+                {
+                 Autoclose("BUY");
+                 executeTrade_Automated(currentSymbol,"SELL");
+                 setTimeout(() => {
+                 },5000);
+                }
+                else
+                {
+                 Autoclose("SELL");
+                 executeTrade_Automated(currentSymbol,"BUY");
+                }
                }
              }
-
-            //console.log(`📊 Derniers ticks : ${tickHistory.map(x => x.toFixed(3)).join(", ")}`);
-            //console.log(`⚙️ Variation moyenne : ${variation.toFixed(6)}`);
-           }
+            }
           }
-        }
+
+          it = it + 1;
+          if (it === 3000)
+           {
+            it = 0;
+            tickHistory.length = 0; 
+           }
+         }
     };
 
     wsAutomation.onclose = () => {
@@ -415,8 +422,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function executeTrade_Automated(currentsymbol__,type)
   {
+     if (wsAutomation === null)
+     {
+      wsAutomation = new WebSocket(WS_URL);
+     }
+  
+     if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
+     {
+      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+     }
+
+     if (wsAutomation  && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING))
+     {
       wsAutomation = new WebSocket(WS_URL);
       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+     }
 
       wsAutomation.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
       wsAutomation.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
