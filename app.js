@@ -1184,6 +1184,24 @@ closeAll.onclick=()=>{
     wsContracts.onerror = (err) => console.error("❌ WebSocket error:", err);
     wsContracts.onclose = () => console.log("🔴 Disconnected");
   }
+
+   // === 🧹 ÉVÉNEMENTS SUR LES BOUTONS DELETE ===
+  document.addEventListener("click", (e) => {
+   // Si l’utilisateur clique sur un bouton Close
+   if (e.target.classList.contains("deleteRowBtn")) {
+    const tr = e.target.closest("tr");
+    const checkbox = tr.querySelector(".rowSelect");
+    const contract_id = tr.dataset.contract;
+
+    // On ne ferme que si la case est cochée
+    if (checkbox && checkbox.checked) {
+      closeContract(contract_id);
+      tr.remove(); // suppression immédiate de la ligne
+    } else {
+      alert("☑️ Veuillez cocher la case avant de fermer ce contrat.");
+    }
+   }
+  });
   
   function OAuthLink(){
     // sécurise la récupération des tokens ici
@@ -1308,13 +1326,6 @@ closeAll.onclick=()=>{
       cb.closest("tr").remove();
     });
     selectAll.checked = false;
-  });
-
-  // Supprimer une ligne individuelle
-  autoTradeBody.addEventListener("click", (e) => {
-    if (e.target.classList.contains("deleteRowBtn")) {
-      e.target.closest("tr").remove();
-    }
   });
 
   // resize handling
