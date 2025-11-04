@@ -457,7 +457,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function ouvrirContratBuy(type,CurSymbol,ContSymbol) {
     const stake=parseFloat(stakeInput.value)||1;
     const multiplier=parseInt(multiplierInput.value)||50;
-    if(authorized && wsAutomation && wsAutomation.readyState===WebSocket.OPEN){
+    if(wsAutomation && wsAutomation.readyState===WebSocket.OPEN || wsAutomation.readyState===WebSocket.CONNECTING){
       const payload = {
         buy: 1,
         price: stake.toFixed(2),
@@ -487,7 +487,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function ouvrirContratSell(type,CurSymbol,ContSymbol) {
     const stake=parseFloat(stakeInput.value)||1;
     const multiplier=parseInt(multiplierInput.value)||50;
-    if(authorized && wsAutomation && wsAutomation.readyState===WebSocket.OPEN){
+    if(wsAutomation && wsAutomation.readyState===WebSocket.OPEN || wsAutomation.readyState===WebSocket.CONNECTING){
      const payload = {
         buy: 1,
         price: stake.toFixed(2),
