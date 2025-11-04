@@ -425,14 +425,16 @@ document.addEventListener("DOMContentLoaded", () => {
            {
               // Attendre un peu puis ouvrir un contrat SELL
               setTimeout(() => {
-                 ouvrirContratSell(type,symbol,Contractsymbol);
+                 //ouvrirContratSell(type,symbol,Contractsymbol);
+                 console.log("SELL");
               }, 300);
            }
            else if (type === "BUY")
            {
               // Attendre un peu puis ouvrir un contrat SELL
               setTimeout(() => {
-                 ouvrirContratBuy(type,symbol,Contractsymbol);
+                 //ouvrirContratBuy(type,symbol,Contractsymbol);
+                 console.log("BUY");
               }, 300);
            }
          
