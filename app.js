@@ -455,8 +455,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (wsAutomation_buy  && wsAutomation_buy.readyState === WebSocket.CLOSED || wsAutomation_buy.readyState === WebSocket.CLOSING)
       {
-       wsAutomation_sell = new WebSocket(WS_URL);
-       wsAutomation_sell.onopen=()=>{ wsAutomation_sell.send(JSON.stringify({ authorize: TOKEN })); };
+       wsAutomation_buy = new WebSocket(WS_URL);
+       wsAutomation_buy.onopen=()=>{ wsAutomation_buy.send(JSON.stringify({ authorize: TOKEN })); };
       }
 
       wsAutomation_buy.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
