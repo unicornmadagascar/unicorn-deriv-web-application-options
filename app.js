@@ -345,12 +345,14 @@ document.addEventListener("DOMContentLoaded", () => {
             {
              if (signal < 0.35)
               {
-               executebuyTrade_Automated(currentSymbol,"BUY");
+               Autoclose("SELL");
+               executeTrade_Automated(currentSymbol,"BUY");
                console.log("BUY");
               }
              else
               {
-               executesellTrade_Automated(currentSymbol,"SELL");
+               Autoclose("BUY");
+               executeTrade_Automated(currentSymbol,"SELL");
                console.log("SELL");
               }
             }
@@ -385,96 +387,93 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  function executesellTrade_Automated(symbol,type)
+  function executeTrade_Automated(symbol,type)
   {
-      if (wsAutomation_sell === null)
+      if (wsAutomation === null)
       {
-       wsAutomation_sell = new WebSocket(WS_URL);
+       wsAutomation = new WebSocket(WS_URL);
       }
   
-      if (wsAutomation_sell && wsAutomation_sell.readyState === WebSocket.OPEN || wsAutomation_sell.readyState === WebSocket.CONNECTING)
+      if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING)
       {
-       wsAutomation_sell.onopen=()=>{ wsAutomation_sell.send(JSON.stringify({ authorize: TOKEN })); };
+       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
       }
 
-      if (wsAutomation_sell  && wsAutomation_sell.readyState === WebSocket.CLOSED || wsAutomation_sell.readyState === WebSocket.CLOSING)
+      if (wsAutomation  && wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING)
       {
-       wsAutomation_sell = new WebSocket(WS_URL);
-       wsAutomation_sell.onopen=()=>{ wsAutomation_sell.send(JSON.stringify({ authorize: TOKEN })); };
+       wsAutomation = new WebSocket(WS_URL);
+       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
       }
 
-      wsAutomation_sell.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-      wsAutomation_sell.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-      wsAutomation_sell.onmessage=msg=>{
+      wsAutomation.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+      wsAutomation.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+      wsAutomation.onmessage=msg=>{
         const data=JSON.parse(msg.data);
         if (data.authorize) {
            console.log("✅ Connecté à Deriv API !");
-           wsAutomation_sell.send(JSON.stringify({ portfolio: 1 }));
+           wsAutomation.send(JSON.stringify({ portfolio: 1 }));
         }
 
+        // Étape 3 : Réception du portefeuille
+        if (data.portfolio) {
+           const contracts = data.portfolio.contracts;
+
+           Contractsymbol = contracts.symbol;
+           console.log(Contractsymbol);
+
+           if (type === "SELL")
+           {
+              // Attendre un peu puis ouvrir un contrat SELL
+              setTimeout(() => {
+                 ouvrirContratSell(type,symbol,Contractsymbol);
+              }, 300);
+           }
+           else if (type === "BUY")
+           {
+              // Attendre un peu puis ouvrir un contrat SELL
+              setTimeout(() => {
+                 ouvrirContratBuy(type,symbol,Contractsymbol);
+              }, 300);
+           }
+         
+        }
+      };
+  }
+
+  function Autoclose(type)
+  {
+   if (wsAutomation === null)
+   {
+    wsAutomation = new WebSocket(WS_URL);
+   }
+  
+   if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING)
+   {
+    wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+   }
+
+   if (wsAutomation  && wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING)
+   {
+    wsAutomation = new WebSocket(WS_URL);
+    wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+   }
+
+   wsAutomation.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+   wsAutomation.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+   wsAutomation.onmessage=msg=>{
+        const data=JSON.parse(msg.data);
+        if (data.authorize) {
+           console.log("✅ Connecté à Deriv API !");
+           wsAutomation.send(JSON.stringify({ portfolio: 1 }));
+        }
+        
         // Étape 3 : Réception du portefeuille
         if (data.portfolio) {
            const contracts = data.portfolio.contracts;
            
            if (type === "SELL")
            {
-             // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
-             const buyContracts = contracts.filter(c => c.contract_type === "MULTUP");
-
-             console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
-
-             Contractsymbol = contracts.symbol;
-             console.log(Contractsymbol);
-
-             // Fermer chaque contrat
-             buyContracts.forEach(c => {
-                console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                wsAutomation_sell.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-             });
-
-             // Attendre un peu puis ouvrir un contrat SELL
-             setTimeout(() => {
-                ouvrirContratSell(type,symbol,Contractsymbol);
-             }, 500);
-          }
-        }
-      };
-  }
-
-   function executebuyTrade_Automated(symbol,type)
-  {
-      if (wsAutomation_buy === null)
-      {
-       wsAutomation_buy = new WebSocket(WS_URL);
-      }
-  
-      if (wsAutomation_buy && wsAutomation_buy.readyState === WebSocket.OPEN || wsAutomation_buy.readyState === WebSocket.CONNECTING)
-      {
-       wsAutomation_buy.onopen=()=>{ wsAutomation_buy.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-
-      if (wsAutomation_buy  && wsAutomation_buy.readyState === WebSocket.CLOSED || wsAutomation_buy.readyState === WebSocket.CLOSING)
-      {
-       wsAutomation_buy = new WebSocket(WS_URL);
-       wsAutomation_buy.onopen=()=>{ wsAutomation_buy.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-
-      wsAutomation_buy.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-      wsAutomation_buy.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-      wsAutomation_buy.onmessage=msg=>{
-        const data=JSON.parse(msg.data);
-        if (data.authorize) {
-           console.log("✅ Connecté à Deriv API !");
-           wsAutomation_buy.send(JSON.stringify({ portfolio: 1 }));
-        }
-
-        // Étape 3 : Réception du portefeuille
-        if (data.portfolio) {
-           const contracts = data.portfolio.contracts;
-           
-          if (type === "BUY")
-          {
-            // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
+             // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
             const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN");
 
             console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
@@ -487,14 +486,22 @@ document.addEventListener("DOMContentLoaded", () => {
               console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
               wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
             });
+           }
+          else if (type === "BUY")
+           {
+            // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
+             const buyContracts = contracts.filter(c => c.contract_type === "MULTUP");
 
-            // Après 3 secondes, ouvrir un nouveau contrat BUY
-            setTimeout(() => {
-               ouvrirContratBuy(type,symbol,Contractsymbol);
-            }, 500);
+             console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
+
+             // Fermer chaque contrat
+             buyContracts.forEach(c => {
+                console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+             });
           }
         }
-      };
+    };
   }
 
   // 🚀 Fonction pour ouvrir un contrat BUY (MULTUP)
@@ -508,7 +515,6 @@ document.addEventListener("DOMContentLoaded", () => {
         parameters: {
           contract_type: "MULTUP",
           symbol: CurSymbol,
-          currency: "USD",
           basis: "stake",
           amount: stake.toFixed(2),
           multiplier: multiplier,
@@ -538,7 +544,6 @@ document.addEventListener("DOMContentLoaded", () => {
         parameters: {
           contract_type: "MULTDOWN",
           symbol: CurSymbol,
-          currency: "USD",
           basis: "stake",
           amount: stake.toFixed(2),
           multiplier: multiplier,
