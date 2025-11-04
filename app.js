@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let signal__;
   let Dispersion;
   let isConnect = false;
-  const it = 0;
+  let it = 0;
   // Historique local des ticks
   let tickHistory = [];
   // Historique de profits
