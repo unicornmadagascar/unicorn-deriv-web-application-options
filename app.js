@@ -353,7 +353,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
               for (let i = 0; i < 3; i++)
               {
-               Tick_arr[i] = tickHistory[Tick_arr.length - i];
+               Tick_arr[i] = tickHistory[it - i];
               }
               console.log(Tick_arr);
               
@@ -362,7 +362,7 @@ document.addEventListener("DOMContentLoaded", () => {
               Dispersion = ecartType(Tick_arr);
               if (Dispersion !==0)
               {
-               const delta = (p3 - mean) / Dispersion; // variation relative
+               const delta = (Tick_arr[0] - mean) / Dispersion; // variation relative
                // Application de la sigmoïde
                signal = sigmoid(delta); // delta*10 ou 10 = facteur de sensibilité
                console.log(`📈 Sigmoid : ${signal.toFixed(6)}`);
