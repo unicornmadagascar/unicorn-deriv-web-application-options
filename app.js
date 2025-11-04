@@ -64,7 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let contracts = {};
   let portfolioReceived = false;
   const token_user = "";
-  let Contractsymbol;
 
   // --- NEW: current symbol & pending subscribe ---
   let currentSymbol = null;
@@ -405,7 +404,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.portfolio) {
            const contracts = data.portfolio.contracts;
 
-           Contractsymbol = contracts[0].symbol;
+           const Contractsymbol = contracts[0].symbol;
            console.log(Contractsymbol);
 
            if (type === "SELL")
@@ -466,9 +465,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN");
 
             console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
-            
-            Contractsymbol = contracts.symbol;
-            console.log(Contractsymbol);
 
             // Fermer chaque contrat SELL
             sellContracts.forEach(c => {
