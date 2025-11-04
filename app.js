@@ -1203,33 +1203,47 @@ closeAll.onclick=()=>{
    }
   });
 
-  // --- Bouton "Delete Selected" ---
-  document.getElementById("deleteSelected").addEventListener("click", () => {
-    const checkedBoxes = document.querySelectorAll(".rowSelect:checked");
+  // === 🧹 ÉVÉNEMENTS SUR LES BOUTONS DELETE ===
+  document.addEventListener("click", (e) => {
 
-    if (checkedBoxes.length === 0) {
-      alert("Veuillez sélectionner au moins un contrat à fermer.");
-      return;
+    // 🔹 Suppression multiple (bouton global "Delete Selected")
+    if (e.target.id === "deleteSelected") {
+      const checkedBoxes = document.querySelectorAll(".rowSelect:checked");
+
+      if (checkedBoxes.length === 0) {
+        alert("Veuillez sélectionner au moins un contrat à fermer.");
+        return;
+      }
+
+      checkedBoxes.forEach((checkbox) => {
+        const tr = checkbox.closest("tr");
+        const contract_id = tr.children[2].textContent.trim();
+
+        closeContract(contract_id);
+        tr.remove();
+      });
+
+      alert("🟢 Tous les contrats sélectionnés ont été envoyés pour fermeture !");
     }
-
-    checkedBoxes.forEach((checkbox) => {
-      const row = checkbox.closest("tr");
-      const contract_id = row.children[2].textContent.trim(); // colonne "Contract ID"
-
-      // Fermer le contrat via Deriv API (WebSocket déjà connecté)
-      closeContract(contract_id);
-
-      // Supprimer la ligne du tableau
-      row.remove();
-    });
-
-    alert("🟢 Tous les contrats sélectionnés ont été envoyés pour fermeture !");
   });
 
-  // --- Checkbox "Tout sélectionner" ---
-  document.getElementById("selectAll").addEventListener("change", (e) => {
-    const checked = e.target.checked;
-    document.querySelectorAll(".rowSelect").forEach(cb => cb.checked = checked);
+  // === 🔘 SÉLECTIONNER / DÉSÉLECTIONNER TOUT ===
+  document.addEventListener("change", (e) => {
+    if (e.target.id === "selectAll") {
+      const checked = e.target.checked;
+      document.querySelectorAll(".rowSelect").forEach(cb => cb.checked = checked);
+    }
+  });
+
+  // === 📡 ÉCOUTE DES RÉPONSES DERIV (facultatif) ===
+  wsContracts.addEventListener("message", (event) => {
+    const data = JSON.parse(event.data);
+
+    if (data.msg_type === "sell") {
+      console.log(`✅ Contrat ${data.sell.contract_id} fermé avec succès`);
+    } else if (data.error) {
+      console.error("❌ Erreur fermeture contrat :", data.error.message);
+    }
   });
 
   function OAuthLink(){
