@@ -280,14 +280,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const symbol_test = currentSymbol.slice(0,3);
 
-    if (!wsAutomation || wsAutomation.readyState === WebSocket.CLOSED) {
-        wsAutomation = new WebSocket(WS_URL);
+    if (wsAutomation === null)
+    {
+     wsAutomation = new WebSocket(WS_URL);
+    }
+  
+    if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
+    {
+     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+    }
 
-    
-      console.log("✅ Overture du WebSocket Deriv");
-      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-
-      wsAutomation.onmessage = (msg) => {
+    if (wsAutomation  && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING))
+    {
+     wsAutomation = new WebSocket(WS_URL);
+     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+ 
+    wsAutomation.onmessage = (msg) => {
         const data = JSON.parse(msg.data);
 
         // Autorisation réussie → abonnement aux ticks
@@ -328,6 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
                const delta = (p3 - mean) / Dispersion; // variation relative
                // Application de la sigmoïde
                signal = sigmoid(delta); // delta*10 ou 10 = facteur de sensibilité
+               console.log(`📈 Sigmoid : ${signal.toFixed(6)}`);
 
                if (symbol_test === "BOO")  
                {
@@ -362,20 +372,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
             //console.log(`📊 Derniers ticks : ${tickHistory.map(x => x.toFixed(3)).join(", ")}`);
             //console.log(`⚙️ Variation moyenne : ${variation.toFixed(6)}`);
-            console.log(`📈 Sigmoid : ${signal.toFixed(6)}`);
            }
           }
         }
-      };
+    };
 
-      wsAutomation.onclose = () => {
-        console.log("Disconnected");
-      };
+    wsAutomation.onclose = () => {
+      console.log("Disconnected");
+    };
 
-      wsAutomation.onerror = (err) => {
-        console.error("WebSocket error:", err);
-      };
-    }
+    wsAutomation.onerror = (err) => {
+      console.error("WebSocket error:", err);
+    };
   }
 
   function executeTrade_Automated(currentsymbol__,type)
@@ -424,12 +432,12 @@ document.addEventListener("DOMContentLoaded", () => {
     wsAutomation = new WebSocket(WS_URL);
    }
   
-   if (wsAutomation && wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING)
+   if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
    {
     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
    }
 
-   if (wsAutomation  && wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING)
+   if (wsAutomation  && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING))
    {
     wsAutomation = new WebSocket(WS_URL);
     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
