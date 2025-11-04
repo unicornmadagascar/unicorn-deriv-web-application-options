@@ -392,7 +392,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  function executeTrade_Automated(symbol,type)
+  function executeTrade_Automated(currentsymbol__,type)
   {
       wsAutomation = new WebSocket(WS_URL);
       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
@@ -409,6 +409,10 @@ document.addEventListener("DOMContentLoaded", () => {
         // Étape 3 : Réception du portefeuille
         if (data.portfolio) {
            const contracts = data.portfolio.contracts;
+
+           const exists = contracts.some(c => c.symbol === currentsymbol__);
+
+           if (exists === true) return;
            
           setTimeout(() => {
              if (type === "SELL")
