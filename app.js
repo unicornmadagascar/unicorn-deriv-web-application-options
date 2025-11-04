@@ -301,7 +301,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wsAutomation && wsAutomation.readyState === WebSocket.CONNECTING)
     {
       console.log("✅ Connecté au WebSocket Deriv");
-      //wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
     wsAutomation.onmessage = (msg) => {
