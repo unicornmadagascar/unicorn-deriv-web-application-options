@@ -858,33 +858,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log("Closing all profitable trades...");
 
-    if (wsContracts === null)
+    if (wsContracts_winning === null)
     {
-     wsContracts = new WebSocket(WS_URL);
+     wsContracts_winning  = new WebSocket(WS_URL);
     }
   
-    if (wsContracts && wsContracts.readyState === WebSocket.OPEN || wsContracts.readyState === WebSocket.CONNECTING)
+    if (wsContracts_winning && wsContracts_winning.readyState === WebSocket.OPEN || wsContracts_winning.readyState === WebSocket.CONNECTING)
     {
-     wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
+     wsContracts_winning.onopen=()=>{ wsContracts_winning.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wsContracts && wsContracts.readyState === WebSocket.CLOSED || wsContracts.readyState === WebSocket.CLOSING)
+    if (wsContracts_winning && wsContracts_winning.readyState === WebSocket.CLOSED || wsContracts_winning.readyState === WebSocket.CLOSING)
     {
-      wsContracts = new WebSocket(WS_URL);
-      wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
+      wsContracts_winning = new WebSocket(WS_URL);
+      wsContracts_winning.onopen=()=>{ wsContracts_winning.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    wsContracts.onerror = (e) => {
+    wsContracts_winning.onerror = (e) => {
       console.log("❌ WS Error: " + JSON.stringify(e));
     };
 
-    wsContracts.onmessage = (msg) => {
+    wsContracts_winning.onmessage = (msg) => {
        const data = JSON.parse(msg.data);
 
       // Authorization successful
       if (data.msg_type === "authorize") {
          console.log("✅ Authorized successfully. Fetching portfolio...");
-         wsContracts.send(JSON.stringify({ portfolio: 1 }));
+         wsContracts_winning.send(JSON.stringify({ portfolio: 1 }));
       }
 
       // Portfolio received
@@ -894,7 +894,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
          contracts.forEach((contract,i) => {
          setTimeout(() => {
-            wsContracts.send(
+            wsContracts_winning.send(
               JSON.stringify({
                  proposal_open_contract: 1,
                  contract_id: contract.contract_id,
@@ -914,7 +914,7 @@ document.addEventListener("DOMContentLoaded", () => {
           `💰 Closing profitable trade ${poc.contract_id} with profit ${profit.toFixed(2)}`
         );
 
-        wsContracts.send(
+        wsContracts_winning.send(
           JSON.stringify({
             sell: poc.contract_id,
             price: 0, // 0 = sell at market price
@@ -934,11 +934,11 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("⚠️ No active contracts found.");
     }
 
-    if (wsContracts && wsContracts.readyState === WebSocket.OPEN)
+    if (wsContracts_winning && wsContracts_winning.readyState === WebSocket.OPEN)
     {
       setTimeout(() => {
-         wsContracts.close();
-         wsContracts = null;
+         wsContracts_winning.close();
+         wsContracts_winning = null;
       },300);
     }
    };
