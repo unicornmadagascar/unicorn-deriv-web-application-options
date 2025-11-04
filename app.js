@@ -59,6 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let it = 0;
   // Historique local des ticks
   let tickHistory = [];
+  let Tick_arr = [];
   // Historique de profits
   let profitHistory = [];
   const contractsData = {}; // stockage des contrats {id: {profits: [], infos: {…}}}
@@ -354,7 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
               p2 = tickHistory[1]; // → le tick du milieu
               p3 = tickHistory[2]; // → le plus récent tick (le dernier ajouté)
 
-              const Tick_arr = [p1,p2,p3];
+              Tick_arr = [p1,p2,p3];
            
               // On peut aussi normaliser avec la moyenne
               const mean = (p1 + p2 + p3) / 3;
