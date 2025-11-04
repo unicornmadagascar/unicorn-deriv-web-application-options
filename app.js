@@ -933,7 +933,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (data.msg_type === "portfolio" && (!data.portfolio || !data.portfolio.contracts.length)) {
       console.log("⚠️ No active contracts found.");
     }
-
+  
     if (wsContracts_winning && wsContracts_winning.readyState === WebSocket.OPEN)
     {
       setTimeout(() => {
