@@ -361,8 +361,8 @@ document.addEventListener("DOMContentLoaded", () => {
               {
                const delta = (Tick_arr[2] - mean) / Dispersion; // variation relative
                // Application de la sigmoïde
-               signal = sigmoid(delta); // delta*10 ou 10 = facteur de sensibilité
-               console.log(`📈 Sigmoid : ${signal.toFixed(6)}`);
+               signal = (1 - 1 / (1 + Math.exp(-delta)));
+               console.log(`📈 Signal : ${signal.toFixed(6)}`);
 
                if (symbol_test === "BOO")  
                {
@@ -533,10 +533,6 @@ document.addEventListener("DOMContentLoaded", () => {
        wsAutomation.send(JSON.stringify({ forget_all: "ticks" }));
        wsAutomation.close();
     }
-  }
-
-  function sigmoid(x) {
-    return (1 - 1 / (1 + Math.exp(-x)));
   }
 
   // Fonction pour calculer l’écart-type (population)
