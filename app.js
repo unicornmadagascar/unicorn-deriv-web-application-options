@@ -346,15 +346,11 @@ document.addEventListener("DOMContentLoaded", () => {
            const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
 
            tickHistory.push(price);
-           if (it >= 3 && tickHistory.length >= 3) // garder seulement les 3 derniers ticks
+           if (it >= 3 && tickHistory.length > 3) // garder seulement les 3 derniers ticks
            {  
               console.log("it :" + it);
               Tick_arr.length = 3;
-
-              for (let i = 0; i < 3; i++)
-              {
-               Tick_arr[i] = tickHistory[it - i];
-              }
+              Tick_arr = tickHistory.slice(-3);
               console.log(Tick_arr);
               
               // On peut aussi normaliser avec la moyenne
@@ -362,7 +358,7 @@ document.addEventListener("DOMContentLoaded", () => {
               Dispersion = ecartType(Tick_arr);
               if (Dispersion !==0)
               {
-               const delta = (Tick_arr[0] - mean) / Dispersion; // variation relative
+               const delta = (Tick_arr[2] - mean) / Dispersion; // variation relative
                // Application de la sigmoïde
                signal = sigmoid(delta); // delta*10 ou 10 = facteur de sensibilité
                console.log(`📈 Sigmoid : ${signal.toFixed(6)}`);
