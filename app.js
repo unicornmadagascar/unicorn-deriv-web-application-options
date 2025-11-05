@@ -378,8 +378,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   if (contracts.length > 0) return;
                  
                   console.log("📤 Ouverture d'un nouveau contrat BUY...");
-                  if (CurSymbol === "BOOM1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500" ||
-                      CurSymbol === "CRASH1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500")
+                  if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
+                      currentSymbol === "CRASH1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500")
                   {
                     for (let i=0;i < parseInt(buyNum.value) || 1; i++)
                     {
@@ -413,8 +413,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   if (contracts.length > 0) return;
                   
                   console.log("📤 Ouverture d'un nouveau contrat SELL...");
-                  if (CurSymbol === "BOOM1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500" ||
-                      CurSymbol === "CRASH1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500")
+                  if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
+                      currentSymbol === "CRASH1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500")
                   {
                     for (let i=0;i < parseInt(sellNum.value) || 1; i++)
                     {
@@ -449,8 +449,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   if (contracts.length > 0) return;
 
                   console.log("📤 Ouverture d'un nouveau contrat SELL...");
-                  if (CurSymbol === "BOOM1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500" ||
-                      CurSymbol === "CRASH1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500")
+                  if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
+                      currentSymbol === "CRASH1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500")
                   {
                     for (let i=0;i < parseInt(sellNum.value) || 1; i++)
                     {
@@ -484,8 +484,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   if (contracts.length > 0) return;
 
                   console.log("📤 Ouverture d'un nouveau contrat BUY...");
-                  if (CurSymbol === "BOOM1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500" ||
-                      CurSymbol === "CRASH1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500")
+                  if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
+                      currentSymbol === "CRASH1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500")
                   {
                     for (let i=0;i < parseInt(buyNum.value) || 1; i++)
                     {
