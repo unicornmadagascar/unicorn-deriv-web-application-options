@@ -339,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (data.msg_type === "portfolio") {
-           const contracts = data.portfolio.contracts;
+           contracts = data.portfolio.contracts;
         }
 
         // Quand un tick arrive
