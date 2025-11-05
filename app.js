@@ -211,15 +211,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- CONNECT DERIV ---
   function connectDeriv() {
 
-    if (wspl === null)
+    if (ws === null)
     {
      authorized = false;
-     wspl = new WebSocket(WS_URL);
+     ws = new WebSocket(WS_URL);
     }
   
     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING))
     {
-     wspl.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
+     ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
     if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING))
@@ -227,7 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ws = new WebSocket(WS_URL);
       ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
-
+  
     ws.onmessage = (evt) => {
       try {
         const data = JSON.parse(evt.data);
