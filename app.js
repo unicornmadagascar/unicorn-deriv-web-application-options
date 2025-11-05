@@ -338,6 +338,10 @@ document.addEventListener("DOMContentLoaded", () => {
          wsAutomation.send(JSON.stringify({ portfolio: 1 }));
         }
 
+        if (data.msg_type === "portfolio") {
+           const contracts = data.portfolio.contracts;
+        }
+
         // Quand un tick arrive
         if (data.tick) {
            const price = parseFloat(data.tick.quote);
@@ -365,9 +369,87 @@ document.addEventListener("DOMContentLoaded", () => {
                {
                 if (signal < 0.37)
                 {
-                 if (data.portfolio)
+                 // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
+                  const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN" && c.symbol === currentSymbol);
+
+                  console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
+
+                  // Fermer chaque contrat SELL
+                  sellContracts.forEach(c => {
+                    console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                    wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                  });
+
+                  setTimeout(() => {
+                    //ouvrirContratBuy("BUY",currentSymbol); 
+                    console.log("BUY CONTRACT");
+                  },5000);
+                }
+                else
+                {
+                  // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
+                  const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
+
+                  console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
+
+                  // Fermer chaque contrat
+                  buyContracts.forEach(c => {
+                     console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                     wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                  });
+
+                  setTimeout(() => {
+                    //ouvrirContratSell("SELL",currentSymbol); 
+                    console.log("SELL CONTRACT");
+                  },1000);
+                }
+               }
+               else if (symbol_test === "CRA")
+               {
+                 if (signal > 0.75)
                  {
-                  /*const contracts = data.portfolio.contracts;
+                  // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
+                  const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
+
+                  console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
+
+                  // Fermer chaque contrat
+                  buyContracts.forEach(c => {
+                     console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                     wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                  });
+
+                  setTimeout(() => {
+                    //ouvrirContratSell("SELL",currentSymbol); 
+                    console.log("SELL CONTRACT");
+                  },5000);
+                 }
+                 else
+                 {
+                  // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
+                  const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN" && c.symbol === currentSymbol);
+
+                  console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
+
+                  // Fermer chaque contrat SELL
+                  sellContracts.forEach(c => {
+                    console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                    wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                  });
+
+                  setTimeout(() => {
+                    //ouvrirContratBuy("BUY",currentSymbol);
+                    console.log("BUY CONTRACT");
+                  },1000);
+                 }
+               }
+              }
+           }
+        }   
+               
+                /* if (data.portfolio)
+                 {
+                  const contracts = data.portfolio.contracts;
                   // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
                   const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN" && c.symbol === currentSymbol);
 
@@ -380,7 +462,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   });
 
                   existingContract = contracts.some(c => c.symbol === currentSymbol);
-                  console.log(existingContract);*/
+                  console.log(existingContract);
                   console.log("SELL CONTRACT CLOSE");
                  }
 
@@ -400,7 +482,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 {
                  if (data.portfolio)
                  {
-                  /*const contracts = data.portfolio.contracts;
+                  const contracts = data.portfolio.contracts;
                   // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
                   const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
 
@@ -413,7 +495,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   });
 
                   existingContract = contracts.some(c => c.symbol === currentSymbol);
-                  console.log(existingContract);*/
+                  console.log(existingContract);
                   console.log("BUY CONTRACT CLOSE");
                  }
 
@@ -436,7 +518,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 {
                  if (data.portfolio)
                  {
-                  /*const contracts = data.portfolio.contracts;
+                  const contracts = data.portfolio.contracts;
                   // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
                   const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
 
@@ -449,7 +531,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   });
 
                   existingContract = contracts.some(c => c.symbol === currentSymbol);
-                  console.log(existingContract);*/
+                  console.log(existingContract);
                   console.log("BUY CONTRACT CLOSE");
                  }
 
@@ -469,7 +551,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 {
                  if (data.portfolio)
                  {
-                  /*const contracts = data.portfolio.contracts;
+                  const contracts = data.portfolio.contracts;
                   // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
                   const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN" && c.symbol === currentSymbol);
 
@@ -482,7 +564,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   });
 
                   existingContract = contracts.some(c => c.symbol === currentSymbol);
-                  console.log(existingContract);*/
+                  console.log(existingContract);
                   console.log("SELL CONTRACT CLOSE");
                  }
 
@@ -499,9 +581,8 @@ document.addEventListener("DOMContentLoaded", () => {
                  },1000);
                 }
                }
-             }
             }
-        }
+        } */
 
         it = it + 1;
         if (it === 3000)
