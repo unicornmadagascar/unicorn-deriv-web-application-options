@@ -518,7 +518,8 @@ document.addEventListener("DOMContentLoaded", () => {
                  }
                }
               }
-           }
+            }
+          }
         }  
 
         it = it + 1;
