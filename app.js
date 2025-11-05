@@ -455,19 +455,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
            console.log("AFTER EXISTS CONTRACT");
            
-          setTimeout(() => {
-             if (type === "SELL")
-             {
-              // Attendre un peu puis ouvrir un contrat SELL
-              ouvrirContratSell(type,currentsymbol__);
-             }
-             else if (type === "BUY")
-             {
-              // Attendre un peu puis ouvrir un contrat SELL
-              ouvrirContratBuy(type,currentsymbol__);             
-             }  
-          },500);
-         
+           if (type === "SELL")
+           {
+             // Attendre un peu puis ouvrir un contrat SELL
+             setTimeout(() => {
+                ouvrirContratSell(type,currentsymbol__);  
+             },3000);
+           }
+           else if (type === "BUY")
+           {
+             // Attendre un peu puis ouvrir un contrat BUY
+             setTimeout(() => {
+               ouvrirContratBuy(type,currentsymbol__); 
+             },3000);            
+           }         
         }
       };
   }
