@@ -397,7 +397,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 else
                 {
-                  if (contracts.length > 0) {
+                  if (contracts && contracts.length > 0) {
                     // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
                     const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
 
