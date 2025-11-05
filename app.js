@@ -368,8 +368,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (signal < 0.37)
                 {
                  Autoclose("SELL");
-                 executeTrade_Automated(currentSymbol,"BUY");
                  setTimeout(() => {
+                   executeTrade_Automated(currentSymbol,"BUY");
                  },5000);
                 }
                 else
@@ -383,8 +383,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (signal > 0.75)
                 {
                  Autoclose("BUY");
-                 executeTrade_Automated(currentSymbol,"SELL");
                  setTimeout(() => {
+                   executeTrade_Automated(currentSymbol,"SELL");
                  },5000);
                 }
                 else
@@ -447,8 +447,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
            const exists = contracts.some(c => c.symbol === currentsymbol__);
            console.log(exists);
+           console.log("BEFORE EXISTS CONTRACT");
 
            if (exists === true) return;
+
+           console.log("AFTER EXISTS CONTRACT");
            
           setTimeout(() => {
              if (type === "SELL")
@@ -461,7 +464,7 @@ document.addEventListener("DOMContentLoaded", () => {
               // Attendre un peu puis ouvrir un contrat SELL
               ouvrirContratBuy(type,currentsymbol__);             
              }  
-          },300);
+          },500);
          
         }
       };
