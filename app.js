@@ -380,6 +380,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   });
                  }
 
+                 existingContract = contracts.some(c => c.symbol === currentSymbol);
+
                  console.log("BEFORE EXISTS CONTRACT");
 
                  if (contracts.length > 0) return;
@@ -394,6 +396,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 {
                  if (data.portfolio)
                  {
+                  const contracts = data.portfolio.contracts;
                   // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
                   const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
 
@@ -406,9 +409,11 @@ document.addEventListener("DOMContentLoaded", () => {
                   });
                  }
 
+                 existingContract = contracts.some(c => c.symbol === currentSymbol);
+
                  console.log("BEFORE EXISTS CONTRACT");
        
-                 if (contracts.length > 0) return;
+                 if (existingContract) return;
            
                  console.log("AFTER EXISTS CONTRACT");
 
@@ -423,6 +428,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 {
                  if (data.portfolio)
                  {
+                  const contracts = data.portfolio.contracts;
                   // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
                   const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
 
@@ -435,9 +441,11 @@ document.addEventListener("DOMContentLoaded", () => {
                   });
                  }
 
+                 existingContract = contracts.some(c => c.symbol === currentSymbol);
+
                  console.log("BEFORE EXISTS CONTRACT");
 
-                 if (contracts.length > 0) return;
+                 if (existingContract) return;
            
                  console.log("AFTER EXISTS CONTRACT");
 
@@ -462,9 +470,11 @@ document.addEventListener("DOMContentLoaded", () => {
                   });
                  }
 
+                 existingContract = contracts.some(c => c.symbol === currentSymbol);
+
                  console.log("BEFORE EXISTS CONTRACT");
 
-                 if (contracts.length > 0) return;
+                 if (existingContract) return;
            
                  console.log("AFTER EXISTS CONTRACT");
 
