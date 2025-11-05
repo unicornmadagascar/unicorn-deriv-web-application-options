@@ -437,6 +437,8 @@ document.addEventListener("DOMContentLoaded", () => {
            wsTradeAutomation.send(JSON.stringify({ portfolio: 1 }));
         }
 
+        console.clear();
+
         // Étape 3 : Réception du portefeuille
         if (data.portfolio) {
            const contracts = data.portfolio.contracts;
