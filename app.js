@@ -631,7 +631,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // try to auto-fit time scale (safe)
     try { chart.timeScale().fitContent(); } catch (e) {}
   }
-
+ 
   // --- GAUGES UPDATE ---
   function updateCircularGauges() {
     if (!recentChanges.length) return;
