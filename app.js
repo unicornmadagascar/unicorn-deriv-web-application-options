@@ -65,10 +65,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Historique de profits
   let profitHistory = [];
   const contractsData = {}; // stockage des contrats {id: {profits: [], infos: {…}}}
-  let contracts = [];
   let portfolioReceived = false;
   let existingContract = false;
   let contractSymbol;
+  const contracts = [];
 
 
   // --- NEW: current symbol & pending subscribe ---
@@ -333,17 +333,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = JSON.parse(msg.data);
 
         // Autorisation réussie → abonnement aux ticks
-        if (data.authorize) {
+        if (data.msg_type === "authorize") {
          wsAutomation.send(JSON.stringify({ ticks: currentSymbol, subscribe: 1 }));
          wsAutomation.send(JSON.stringify({ portfolio: 1 }));
         }
 
-        if (data.portfolio) {
+        if (data.msg_type === "portfolio") 
+        {
            contracts = data.portfolio.contracts;
-        }
-
-        // Quand un tick arrive
-        if (data.tick) {
+        } 
+        
+        if (data.msg_type === "tick")
+        {
            const price = parseFloat(data.tick.quote);
            const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
 
@@ -406,7 +407,7 @@ document.addEventListener("DOMContentLoaded", () => {
                        console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
                        wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                     });
-                    existingContract = true;
+                    existingContract = false;
                   }
                   else
                   {
@@ -483,7 +484,7 @@ document.addEventListener("DOMContentLoaded", () => {
                }
               }
            }
-        }   
+        }  
 
         it = it + 1;
         if (it === 3000)
