@@ -591,7 +591,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function stopAutomation() {
-    if (ws  && wsAutomation.readyState === WebSocket.OPEN) {
+    if (ws  && ws.readyState === WebSocket.OPEN) {
        // Envoyer unsubscribe avant de fermer
        ws.send(JSON.stringify({ forget_all: "ticks" }));
        ws.close();
