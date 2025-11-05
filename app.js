@@ -334,6 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Autorisation réussie → abonnement aux ticks
         if (data.authorize) {
          wsAutomation.send(JSON.stringify({ ticks: currentSymbol, subscribe: 1 }));
+         wsAutomation.send(JSON.stringify({ portfolio: 1 }));
         }
 
         // Quand un tick arrive
@@ -363,16 +364,43 @@ document.addEventListener("DOMContentLoaded", () => {
                {
                 if (signal < 0.37)
                 {
-                 Autoclose(currentSymbol,"SELL");
+                 if (data.portfolio)
+                 {
+                  const contracts = data.portfolio.contracts;
+                  // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
+                  const sellContracts = contracts.filter(c => c.symbol === currentSymbol);
+
+                  console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
+
+                  // Fermer chaque contrat SELL
+                  sellContracts.forEach(c => {
+                    console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                    wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                  });
+                 }
+
                  setTimeout(() => {
-                   executeTrade_Automated(currentSymbol,"BUY");
+                   ouvrirContratBuy("BUY",currentSymbol); 
                  },5000);
                 }
                 else
                 {
-                 Autoclose(currentSymbol,"BUY");
+                 if (data.portfolio)
+                 {
+                  // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
+                  const buyContracts = contracts.filter(c => c.symbol === currentSymbol);
+
+                  console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
+
+                  // Fermer chaque contrat
+                  buyContracts.forEach(c => {
+                     console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                     wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                  });
+                 }
+
                  setTimeout(() => {
-                    executeTrade_Automated(currentSymbol,"SELL");
+                    ouvrirContratSell("SELL",currentSymbol); 
                  },1000);
                 }
                }
@@ -380,16 +408,43 @@ document.addEventListener("DOMContentLoaded", () => {
                {
                 if (signal > 0.75)
                 {
-                 Autoclose(currentSymbol,"BUY");
+                 if (data.portfolio)
+                 {
+                  // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
+                  const buyContracts = contracts.filter(c => c.symbol === currentSymbol);
+
+                  console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
+
+                  // Fermer chaque contrat
+                  buyContracts.forEach(c => {
+                     console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                     wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                  });
+                 }
+
                  setTimeout(() => {
-                    executeTrade_Automated(currentSymbol,"SELL");
+                    ouvrirContratSell("SELL",currentSymbol); 
                  },5000);
                 }
                 else
                 {
-                 Autoclose(currentSymbol,"SELL");
+                 if (data.portfolio)
+                 {
+                  const contracts = data.portfolio.contracts;
+                  // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
+                  const sellContracts = contracts.filter(c => c.symbol === currentSymbol);
+
+                  console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
+
+                  // Fermer chaque contrat SELL
+                  sellContracts.forEach(c => {
+                    console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                    wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                  });
+                 }
+
                  setTimeout(() => {
-                    executeTrade_Automated(currentSymbol,"BUY");
+                    ouvrirContratBuy("BUY",currentSymbol);
                  },1000);
                 }
                }
@@ -469,69 +524,6 @@ document.addEventListener("DOMContentLoaded", () => {
            }         
         }
       };
-  }
-
-  function Autoclose(symbol__,type)
-  {
-   if (wsAutomation_autoclose === null)
-   {
-    wsAutomation_autoclose = new WebSocket(WS_URL);
-   }
-  
-   if (wsAutomation_autoclose && (wsAutomation_autoclose.readyState === WebSocket.OPEN || wsAutomation_autoclose.readyState === WebSocket.CONNECTING))
-   {
-    wsAutomation_autoclose.onopen=()=>{ wsAutomation_autoclose.send(JSON.stringify({ authorize: TOKEN })); };
-   }
-
-   if (wsAutomation_autoclose && (wsAutomation_autoclose.readyState === WebSocket.CLOSED || wsAutomation_autoclose.readyState === WebSocket.CLOSING))
-   {
-    wsAutomation_autoclose = new WebSocket(WS_URL);
-    wsAutomation_autoclose.onopen=()=>{ wsAutomation_autoclose.send(JSON.stringify({ authorize: TOKEN })); };
-   }
-
-   wsAutomation_autoclose.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-   wsAutomation_autoclose.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-   wsAutomation_autoclose.onmessage=msg=>{
-        const data=JSON.parse(msg.data);
-        if (data.authorize) {
-           console.log("✅ Connecté à Deriv API !");
-           wsAutomation_autoclose.send(JSON.stringify({ portfolio: 1 }));
-        }
-        
-        // Étape 3 : Réception du portefeuille
-        if (data.portfolio) {
-           const contracts = data.portfolio.contracts;
-           if (contracts.length > 0)
-            {
-             if (type === "SELL")
-              {
-               // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
-               const sellContracts = contracts.filter(c => c.symbol === symbol__);
-
-               console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
-
-               // Fermer chaque contrat SELL
-               sellContracts.forEach(c => {
-                 console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                 wsAutomation_autoclose.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-               });
-              }
-             else if (type === "BUY")
-              {
-               // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
-               const buyContracts = contracts.filter(c => c.symbol === symbol__);
-
-               console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
-
-               // Fermer chaque contrat
-               buyContracts.forEach(c => {
-                 console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                 wsAutomation_autoclose.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-               });
-              }
-           }
-        }
-    };
   }
 
   // 🚀 Fonction pour ouvrir un contrat BUY (MULTUP)
