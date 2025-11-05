@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let portfolioReceived = false;
   let existingContract = false;
   let contractSymbol;
-  const contracts = [];
+  let contracts = [];
 
 
   // --- NEW: current symbol & pending subscribe ---
