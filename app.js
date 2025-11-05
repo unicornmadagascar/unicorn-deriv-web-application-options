@@ -380,11 +380,9 @@ document.addEventListener("DOMContentLoaded", () => {
                   });
                  }
 
-                 existingContract = contracts.some(c => c.symbol === currentSymbol);
-
                  console.log("BEFORE EXISTS CONTRACT");
 
-                 if (existingContract) return;
+                 if (contracts.length > 0) return;
            
                  console.log("AFTER EXISTS CONTRACT");
 
@@ -408,11 +406,9 @@ document.addEventListener("DOMContentLoaded", () => {
                   });
                  }
 
-                 existingContract = contracts.some(c => c.symbol === currentSymbol);
-
                  console.log("BEFORE EXISTS CONTRACT");
        
-                 if (existingContract) return;
+                 if (contracts.length > 0) return;
            
                  console.log("AFTER EXISTS CONTRACT");
 
@@ -439,11 +435,9 @@ document.addEventListener("DOMContentLoaded", () => {
                   });
                  }
 
-                 existingContract = contracts.some(c => c.symbol === currentSymbol);
-
                  console.log("BEFORE EXISTS CONTRACT");
 
-                 if (existingContract) return;
+                 if (contracts.length > 0) return;
            
                  console.log("AFTER EXISTS CONTRACT");
 
@@ -467,8 +461,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                   });
                  }
-
-                 existingContract = contracts.some(c => c.symbol === currentSymbol);
 
                  console.log("BEFORE EXISTS CONTRACT");
 
