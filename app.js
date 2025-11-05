@@ -217,18 +217,18 @@ document.addEventListener("DOMContentLoaded", () => {
      wspl = new WebSocket(WS_URL);
     }
   
-    if (wspl && (wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING))
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING))
     {
-     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
+     wspl.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wspl && (wspl.readyState === WebSocket.CLOSED || wspl.readyState === WebSocket.CLOSING))
+    if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING))
     {
-      wspl = new WebSocket(WS_URL);
-      wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
+      ws = new WebSocket(WS_URL);
+      ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    wspl.onmessage = (evt) => {
+    ws.onmessage = (evt) => {
       try {
         const data = JSON.parse(evt.data);
 
@@ -242,15 +242,15 @@ document.addEventListener("DOMContentLoaded", () => {
           accountInfo.textContent = `Account: ${acc} | Balance: ${Number(bal).toFixed(2)} ${currency}`;
 
           // subscribe balance updates
-          wspl.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+          ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
 
           // if there was a pending subscribe requested earlier, do it now
           if (pendingSubscribe) {
             // small delay to ensure WS state consistent
             setTimeout(() => {
               if (wspl && wspl.readyState === WebSocket.OPEN) {
-                wspl.send(JSON.stringify({ forget_all: "ticks" }));
-                wspl.send(JSON.stringify({ ticks: pendingSubscribe }));
+                ws.send(JSON.stringify({ forget_all: "ticks" }));
+                ws.send(JSON.stringify({ ticks: pendingSubscribe }));
                 currentSymbol = pendingSubscribe;
                 pendingSubscribe = null;
               }
@@ -295,11 +295,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- CONNECT DERIV ---
   function DisconnectDeriv() {
     setTimeout(() => {
-      if (wspl && wspl.readyState === WebSocket.OPEN)
+      if (ws && ws.readyState === WebSocket.OPEN)
       {
-        wspl.send(JSON.stringify({ forget_all: "ticks" }));
-        wspl.close();
-        wspl = null;
+        ws.send(JSON.stringify({ forget_all: "ticks" }));
+        ws.close();
+        ws = null;
         connectBtn.textContent = "Connect";
         accountInfo.textContent = "";
         authorized = false;
@@ -312,34 +312,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const symbol_test = currentSymbol.slice(0,3);
 
-    if (wsAutomation === null)
+    if (ws === null)
     {
-     wsAutomation = new WebSocket(WS_URL);
+     ws = new WebSocket(WS_URL);
     }
   
-    if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING))
     {
-     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+     ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wsAutomation  && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING))
+    if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING))
     {
-     wsAutomation = new WebSocket(WS_URL);
-     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+     ws = new WebSocket(WS_URL);
+     ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
  
-    wsAutomation.onmessage = (msg) => {
+    ws.onmessage = (msg) => {
         const data = JSON.parse(msg.data);
 
         // Autorisation réussie → abonnement aux ticks
         if (data.authorize) {
-         wsAutomation.send(JSON.stringify({ ticks: currentSymbol, subscribe: 1 }));
-        }
-
-        // Sauvegarder l'ID d'abonnement
-        if (data.subscription && data.subscription.id) {
-          tickSubscriptionId = data.subscription.id;
-          //console.log("🆔 ID abonnement:", tickSubscriptionId);
+         ws.send(JSON.stringify({ ticks: currentSymbol, subscribe: 1 }));
         }
 
         // Quand un tick arrive
@@ -369,14 +363,14 @@ document.addEventListener("DOMContentLoaded", () => {
                {
                 if (signal < 0.37)
                 {
-                 Autoclose("SELL");
+                 Autoclose(currentSymbol,"SELL");
                  setTimeout(() => {
                    executeTrade_Automated(currentSymbol,"BUY");
                  },5000);
                 }
                 else
                 {
-                 Autoclose("BUY");
+                 Autoclose(currentSymbol,"BUY");
                  executeTrade_Automated(currentSymbol,"SELL");
                 }
                }
@@ -384,14 +378,14 @@ document.addEventListener("DOMContentLoaded", () => {
                {
                 if (signal > 0.75)
                 {
-                 Autoclose("BUY");
+                 Autoclose(currentSymbol,"BUY");
                  setTimeout(() => {
                    executeTrade_Automated(currentSymbol,"SELL");
                  },5000);
                 }
                 else
                 {
-                 Autoclose("SELL");
+                 Autoclose(currentSymbol,"SELL");
                  executeTrade_Automated(currentSymbol,"BUY");
                 }
                }
@@ -407,40 +401,40 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    wsAutomation.onclose = () => {
+    ws.onclose = () => {
       console.log("Disconnected");
     };
 
-    wsAutomation.onerror = (err) => {
+    ws.onerror = (err) => {
       console.error("WebSocket error:", err);
     };
   }
 
   function executeTrade_Automated(currentsymbol__,type)
   {
-     if (wsTradeAutomation === null)
+     if (ws === null)
      {
-      wsTradeAutomation = new WebSocket(WS_URL);
+      ws = new WebSocket(WS_URL);
      }
   
-     if (wsTradeAutomation && (wsTradeAutomation.readyState === WebSocket.OPEN || wsTradeAutomation.readyState === WebSocket.CONNECTING))
+     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING))
      {
-      wsTradeAutomation.onopen=()=>{ wsTradeAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+      ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
      }
 
-     if (wsTradeAutomation  && (wsTradeAutomation.readyState === WebSocket.CLOSED || wsTradeAutomation.readyState === WebSocket.CLOSING))
+     if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING))
      {
-      wsTradeAutomation = new WebSocket(WS_URL);
-      wsTradeAutomation.onopen=()=>{ wsTradeAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+      ws = new WebSocket(WS_URL);
+      ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
      }
 
-      wsTradeAutomation.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-      wsTradeAutomation.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-      wsTradeAutomation.onmessage=msg=>{
+      ws.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+      ws.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+      ws.onmessage=msg=>{
         const data=JSON.parse(msg.data);
         if (data.authorize) {
            console.log("✅ Connecté à Deriv API !");
-           wsTradeAutomation.send(JSON.stringify({ portfolio: 1 }));
+           ws.send(JSON.stringify({ portfolio: 1 }));
         }
 
         // Étape 3 : Réception du portefeuille
@@ -471,31 +465,31 @@ document.addEventListener("DOMContentLoaded", () => {
       };
   }
 
-  function Autoclose(type)
+  function Autoclose(symbol__,type)
   {
-   if (wsAutomation_autoclose === null)
+   if (ws === null)
    {
-    wsAutomation_autoclose = new WebSocket(WS_URL);
+    ws = new WebSocket(WS_URL);
    }
   
-   if (wsAutomation_autoclose && (wsAutomation_autoclose.readyState === WebSocket.OPEN || wsAutomation_autoclose.readyState === WebSocket.CONNECTING))
+   if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING))
    {
-    wsAutomation_autoclose.onopen=()=>{ wsAutomation_autoclose.send(JSON.stringify({ authorize: TOKEN })); };
+    ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
    }
 
-   if (wsAutomation_autoclose  && (wsAutomation_autoclose.readyState === WebSocket.CLOSED || wsAutomation_autoclose.readyState === WebSocket.CLOSING))
+   if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING))
    {
-    wsAutomation_autoclose = new WebSocket(WS_URL);
-    wsAutomation_autoclose.onopen=()=>{ wsAutomation_autoclose.send(JSON.stringify({ authorize: TOKEN })); };
+    ws = new WebSocket(WS_URL);
+    ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
    }
 
-   wsAutomation_autoclose.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-   wsAutomation_autoclose.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-   wsAutomation_autoclose.onmessage=msg=>{
+   ws.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+   ws.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+   ws.onmessage=msg=>{
         const data=JSON.parse(msg.data);
         if (data.authorize) {
            console.log("✅ Connecté à Deriv API !");
-           wsAutomation_autoclose.send(JSON.stringify({ portfolio: 1 }));
+           ws.send(JSON.stringify({ portfolio: 1 }));
         }
         
         // Étape 3 : Réception du portefeuille
@@ -506,27 +500,27 @@ document.addEventListener("DOMContentLoaded", () => {
              if (type === "SELL")
               {
                // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
-               const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN");
+               const sellContracts = contracts.filter(c => c.symbol === symbol__);
 
                console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
 
                // Fermer chaque contrat SELL
                sellContracts.forEach(c => {
                  console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                 wsAutomation_autoclose.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                 ws.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                });
               }
              else if (type === "BUY")
               {
                // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
-               const buyContracts = contracts.filter(c => c.contract_type === "MULTUP");
+               const buyContracts = contracts.filter(c => c.symbol === symbol__);
 
                console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
 
                // Fermer chaque contrat
                buyContracts.forEach(c => {
                  console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                 wsAutomation_autoclose.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                 ws.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                });
               }
            }
@@ -559,7 +553,7 @@ document.addEventListener("DOMContentLoaded", () => {
         numb_ = parseInt(buyNum.value)||1;
         for (let i=0;i < numb_; i++)
          {
-          wsAutomation.send(JSON.stringify(payload));
+          ws.send(JSON.stringify(payload));
          }
       }
     }
@@ -590,17 +584,17 @@ document.addEventListener("DOMContentLoaded", () => {
         numb_ = parseInt(sellNum.value)||1;
         for (let i=0;i < numb_; i++)
         {
-          wsAutomation.send(JSON.stringify(payload));
+          ws.send(JSON.stringify(payload));
         }
       }  
     }
   }
 
   function stopAutomation() {
-    if (wsAutomation  && wsAutomation.readyState === WebSocket.OPEN) {
+    if (ws  && wsAutomation.readyState === WebSocket.OPEN) {
        // Envoyer unsubscribe avant de fermer
-       wsAutomation.send(JSON.stringify({ forget_all: "ticks" }));
-       wsAutomation.close();
+       ws.send(JSON.stringify({ forget_all: "ticks" }));
+       ws.close();
     }
   }
 
@@ -620,7 +614,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- SUBSCRIBE SYMBOL ---
   function subscribeSymbol(symbol) {
 
-    if (wspl === null)
+    if (ws === null)
     {
      pendingSubscribe = symbol;
      return;
@@ -630,16 +624,16 @@ document.addEventListener("DOMContentLoaded", () => {
     currentSymbol = symbol;
     initChart(); // reinit chart so areaSeries exists before ticks arrive
 
-    if (!wspl || wspl.readyState === WebSocket.CLOSED)
+    if (!ws || ws.readyState === WebSocket.CLOSED)
      {
       pendingSubscribe = symbol;
       connectDeriv();
      }
 
-    if (wspl && wspl.readyState === WebSocket.OPEN && authorized)
+    if (ws && ws.readyState === WebSocket.OPEN && authorized)
      {
-      wspl.send(JSON.stringify({ forget_all: "ticks" }));
-      wspl.send(JSON.stringify({ ticks: symbol }));
+      ws.send(JSON.stringify({ forget_all: "ticks" }));
+      ws.send(JSON.stringify({ ticks: symbol }));
      }
   }
 
@@ -789,9 +783,9 @@ document.addEventListener("DOMContentLoaded", () => {
    let portfolioReceived = false;
    let contracts = {};
 
-   if (wsplgauge === null)
+   if (ws === null)
     {
-     wsplgauge = new WebSocket(WS_URL);
+     ws = new WebSocket(WS_URL);
     }
 
     if (!TOKEN) {
@@ -799,24 +793,24 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
   
-    if (wsplgauge && wsplgauge.readyState === WebSocket.OPEN || wsplgauge.readyState === WebSocket.CONNECTING)
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING))
     {
-     wsplgauge.onopen=()=>{ wsplgauge.send(JSON.stringify({ authorize: TOKEN })); };
+     ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wsplgauge && wsplgauge.readyState === WebSocket.CLOSED || wsplgauge.readyState === WebSocket.CLOSING)
+    if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING))
     {
-      wsplgauge = new WebSocket(WS_URL);
-      wsplgauge.onopen=()=>{ wsplgauge.send(JSON.stringify({ authorize: TOKEN })); };
+      ws = new WebSocket(WS_URL);
+      ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-   wsplgauge.onmessage = (msg) => {
+   ws.onmessage = (msg) => {
     const data = JSON.parse(msg.data);
 
     // Étape 1️⃣ : autorisation OK → on demande le portefeuille
     if (data.msg_type === "authorize" && !authorized) {
       authorized = true;
-      wsplgauge.send(JSON.stringify({ portfolio: 1 }));
+      ws.send(JSON.stringify({ portfolio: 1 }));
     }
 
     // Étape 2️⃣ : réception du portefeuille (liste des contrats ouverts)
@@ -833,7 +827,7 @@ document.addEventListener("DOMContentLoaded", () => {
         contracts[c.contract_id] = 0;
 
         // On s’abonne en continu à chaque contrat ouvert
-        wsplgauge.send(JSON.stringify({
+        ws.send(JSON.stringify({
           proposal_open_contract: 1,
           contract_id: c.contract_id,
           subscribe: 1
@@ -860,8 +854,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
    };
 
-   wsplgauge.onerror = (err) => console.error("WebSocket error:", err);
-   wsplgauge.onclose = () => console.log("Disconnected from Deriv WebSocket.");
+   ws.onerror = (err) => console.error("WebSocket error:", err);
+   ws.onclose = () => console.log("Disconnected from Deriv WebSocket.");
 
    return totalPL;
   }
@@ -883,23 +877,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const tp_contract = Number(takeProfitInput.value)||0;
     const sl_contract = Number(stopLossInput.value)||0;
 
-    if (wsContracts === null)
+    if (ws === null)
     {
-     wsContracts = new WebSocket(WS_URL);
+     ws = new WebSocket(WS_URL);
     }
   
-    if (wsContracts && wsContracts.readyState === WebSocket.OPEN || wsContracts.readyState === WebSocket.CONNECTING)
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING))
     {
-     wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
+     ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wsContracts && wsContracts.readyState === WebSocket.CLOSED || wsContracts.readyState === WebSocket.CLOSING)
+    if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING))
     {
-      wsContracts = new WebSocket(WS_URL);
-      wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
+      ws = new WebSocket(WS_URL);
+      ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if(authorized && wsContracts && wsContracts.readyState===WebSocket.OPEN){
+    if(authorized && ws && ws.readyState===WebSocket.OPEN){
        const payload = {
         buy: 1,
         price: stake.toFixed(2),
@@ -925,14 +919,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       for (let i=0;i < numb_; i++)
        {
-         wsContracts.send(JSON.stringify(payload));
-       }
-
-       if(wsContracts && wsContracts.readyState===WebSocket.OPEN){
-          setTimeout(() => {
-            wsContracts.close();
-            wsContracts = null;
-         },300);
+         ws.send(JSON.stringify(payload));
        }
     }
   }
@@ -941,33 +928,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log("Closing all profitable trades...");
 
-    if (wsContracts_winning === null)
+    if (ws === null)
     {
-     wsContracts_winning  = new WebSocket(WS_URL);
+     ws  = new WebSocket(WS_URL);
     }
   
-    if (wsContracts_winning && wsContracts_winning.readyState === WebSocket.OPEN || wsContracts_winning.readyState === WebSocket.CONNECTING)
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING))
     {
-     wsContracts_winning.onopen=()=>{ wsContracts_winning.send(JSON.stringify({ authorize: TOKEN })); };
+     ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wsContracts_winning && wsContracts_winning.readyState === WebSocket.CLOSED || wsContracts_winning.readyState === WebSocket.CLOSING)
+    if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING))
     {
-      wsContracts_winning = new WebSocket(WS_URL);
-      wsContracts_winning.onopen=()=>{ wsContracts_winning.send(JSON.stringify({ authorize: TOKEN })); };
+      ws = new WebSocket(WS_URL);
+      ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    wsContracts_winning.onerror = (e) => {
+    ws.onerror = (e) => {
       console.log("❌ WS Error: " + JSON.stringify(e));
     };
 
-    wsContracts_winning.onmessage = (msg) => {
+    ws.onmessage = (msg) => {
        const data = JSON.parse(msg.data);
 
       // Authorization successful
       if (data.msg_type === "authorize") {
          console.log("✅ Authorized successfully. Fetching portfolio...");
-         wsContracts_winning.send(JSON.stringify({ portfolio: 1 }));
+         ws.send(JSON.stringify({ portfolio: 1 }));
       }
 
       // Portfolio received
@@ -977,7 +964,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
          contracts.forEach((contract,i) => {
          setTimeout(() => {
-            wsContracts_winning.send(
+            ws.send(
               JSON.stringify({
                  proposal_open_contract: 1,
                  contract_id: contract.contract_id,
@@ -997,7 +984,7 @@ document.addEventListener("DOMContentLoaded", () => {
           `💰 Closing profitable trade ${poc.contract_id} with profit ${profit.toFixed(2)}`
         );
 
-        wsContracts_winning.send(
+        ws.send(
           JSON.stringify({
             sell: poc.contract_id,
             price: 0, // 0 = sell at market price
@@ -1021,30 +1008,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
 closeAll.onclick=()=>{
 
-   if (wsContracts__close === null)
+   if (ws === null)
     {
-     wsContracts__close = new WebSocket(WS_URL);
+     ws = new WebSocket(WS_URL);
     }
   
-    if (wsContracts__close && wsContracts__close.readyState === WebSocket.OPEN || wsContracts__close.readyState === WebSocket.CONNECTING)              // || wsContracts__close.readyState === WebSocket.CONNECTING
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING))              // || wsContracts__close.readyState === WebSocket.CONNECTING
     {
-     wsContracts__close.onopen=()=>{ wsContracts__close.send(JSON.stringify({ authorize: TOKEN })); };
+     ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wsContracts__close && wsContracts__close.readyState === WebSocket.CLOSED || wsContracts__close.readyState === WebSocket.CLOSING)
+    if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING))
     {
-      wsContracts__close = new WebSocket(WS_URL);
-      wsContracts__close.onopen=()=>{ wsContracts__close.send(JSON.stringify({ authorize: TOKEN })); };
+      ws = new WebSocket(WS_URL);
+      ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
     
-    wsContracts__close.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-    wsContracts__close.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-    wsContracts__close.onmessage = (msg) => {
+    ws.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+    ws.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+    ws.onmessage = (msg) => {
        const data = JSON.parse(msg.data);
 
        // 2️⃣ Quand autorisé, on demande le portefeuille
        if (data.msg_type === 'authorize') {
-           wsContracts__close.send(JSON.stringify({ portfolio: 1 }));
+           ws.send(JSON.stringify({ portfolio: 1 }));
        }
 
        // 3️⃣ Quand on reçoit les contrats ouverts
@@ -1054,7 +1041,7 @@ closeAll.onclick=()=>{
 
           // 4️⃣ Fermer chaque contrat
           contracts.forEach(c => {
-            wsContracts__close.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+            ws.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
             console.log(`⛔ Fermeture du contrat ${c.contract_id} demandée`);
           });
        }
@@ -1123,19 +1110,19 @@ closeAll.onclick=()=>{
 // ==========================
 // --- 🔍 Récupère tous les contrats ouverts
   function fetchOpenContracts() {
-    if (wsplContracts && wsplContracts.readyState === WebSocket.OPEN) {
-      wsplContracts.send(JSON.stringify({ portfolio: 1 }));
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ portfolio: 1 }));
     }
   }
 
   // --- 🔄 S’abonne aux détails d’un contrat
   function subscribeContractDetails(contract_id) {
-     wsplContracts.send(JSON.stringify({ proposal_open_contract: 1, contract_id : contract_id, subscribe: 1 }));
+     ws.send(JSON.stringify({ proposal_open_contract: 1, contract_id : contract_id, subscribe: 1 }));
   }
 
   // --- 💰 Ferme un contrat
   function closeContract(contract_id) {
-    wsplContracts.send(JSON.stringify({ sell: contract_id.trim(), price: 0 }));
+    ws.send(JSON.stringify({ sell: contract_id.trim(), price: 0 }));
     console.log("🚪 Closing contract:", contract_id);
   }
 
@@ -1224,25 +1211,25 @@ closeAll.onclick=()=>{
    // --- 🧱 Connexion WebSocket
   function connectDeriv_table() {   
 
-    if (wsplContracts === null)
+    if (ws === null)
     {
-     wsplContracts = new WebSocket(WS_URL);
+     ws = new WebSocket(WS_URL);
     }
   
-    if (wsplContracts && wsplContracts.readyState === WebSocket.OPEN || wsplContracts.readyState === WebSocket.CONNECTING)
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING))
     {
-     wsplContracts.onopen=()=>{ wsplContracts.send(JSON.stringify({ authorize: TOKEN })); };
+     ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wsplContracts && wsplContracts.readyState === WebSocket.CLOSED || wsplContracts.readyState === WebSocket.CLOSING)
+    if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING))
     {
-      wsplContracts = new WebSocket(WS_URL);
-      wsplContracts.onopen=()=>{ wsplContracts.send(JSON.stringify({ authorize: TOKEN })); };
+      ws = new WebSocket(WS_URL);
+      ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
     }
     
-    wsplContracts.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-    wsplContracts.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-    wsplContracts.onmessage=msg=>{
+    ws.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+    ws.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+    ws.onmessage=msg=>{
       const data=JSON.parse(msg.data);
       switch (data.msg_type) {
         case "authorize":
@@ -1263,8 +1250,8 @@ closeAll.onclick=()=>{
       }
     };
 
-    wsplContracts.onerror = (err) => console.error("❌ WebSocket error:", err);
-    wsplContracts.onclose = () => console.log("🔴 Disconnected");
+    ws.onerror = (err) => console.error("❌ WebSocket error:", err);
+    ws.onclose = () => console.log("🔴 Disconnected");
   }
 
    // === 🧹 ÉVÉNEMENTS SUR LES BOUTONS DELETE ===
