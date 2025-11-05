@@ -371,7 +371,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 else
                 {
                  Autoclose(currentSymbol,"BUY");
-                 executeTrade_Automated(currentSymbol,"SELL");
+                 setTimeout(() => {
+                    executeTrade_Automated(currentSymbol,"SELL");
+                 },1000);
                 }
                }
                else if (symbol_test.trim()  === "CRA")
@@ -380,13 +382,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 {
                  Autoclose(currentSymbol,"BUY");
                  setTimeout(() => {
-                   executeTrade_Automated(currentSymbol,"SELL");
+                    executeTrade_Automated(currentSymbol,"SELL");
                  },5000);
                 }
                 else
                 {
                  Autoclose(currentSymbol,"SELL");
-                 executeTrade_Automated(currentSymbol,"BUY");
+                 setTimeout(() => {
+                    executeTrade_Automated(currentSymbol,"BUY");
+                 },1000);
                 }
                }
              }
@@ -1519,5 +1523,5 @@ closeAll.onclick=()=>{
     {
      stopAutomation();
     }
-  },700);
+  },1000);
 });
