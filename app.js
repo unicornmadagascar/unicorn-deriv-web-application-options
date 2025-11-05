@@ -381,18 +381,21 @@ document.addEventListener("DOMContentLoaded", () => {
                   if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
                       currentSymbol === "CRASH1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500")
                   {
-                    for (let i=0;i < parseInt(buyNum.value) || 1; i++)
+                    const stake = parseFloat(stakeInput.value) || 1;
+                    const multiplier = parseInt(multiplierInput.value)||50;
+                    numb_ = parseInt(buyNum.value) || 1;
+                    for (let i=0;i < numb_; i++)
                     {
                       wsAutomation.send(JSON.stringify({
                            buy: 1,
-                           price: parseFloat(stakeInput.value).toFixed(2)||1,
+                           price: stake.toFixed(2),
                            parameters: {
                              contract_type: "MULTUP",
                              symbol: currentSymbol,
                              currency: "USD",
                              basis: "stake",
-                             amount: parseFloat(stakeInput.value).toFixed(2)||1,
-                             multiplier: parseInt(multiplierInput.value)||50,
+                             amount: stake.toFixed(2),
+                             multiplier: multiplier,
                            }
                         }
                       ));
@@ -416,18 +419,21 @@ document.addEventListener("DOMContentLoaded", () => {
                   if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
                       currentSymbol === "CRASH1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500")
                   {
-                    for (let i=0;i < parseInt(sellNum.value) || 1; i++)
+                    const stake = parseFloat(stakeInput.value) || 1;
+                    const multiplier = parseInt(multiplierInput.value)||50;
+                    numb_ = parseInt(sellNum.value) || 1;
+                    for (let i=0;i < numb_; i++)
                     {
-                       wsAutomation.send(JSON.stringify({
+                      wsAutomation.send(JSON.stringify({
                            buy: 1,
-                           price: parseFloat(stakeInput.value).toFixed(2)||1,
+                           price: stake.toFixed(2),
                            parameters: {
                              contract_type: "MULTDOWN",
                              symbol: currentSymbol,
                              currency: "USD",
                              basis: "stake",
-                             amount: parseFloat(stakeInput.value).toFixed(2)||1,
-                             multiplier: parseInt(multiplierInput.value)||50,
+                             amount: stake.toFixed(2),
+                             multiplier: multiplier,
                            }
                         }
                       ));
@@ -452,18 +458,21 @@ document.addEventListener("DOMContentLoaded", () => {
                   if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
                       currentSymbol === "CRASH1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500")
                   {
-                    for (let i=0;i < parseInt(sellNum.value) || 1; i++)
+                    const stake = parseFloat(stakeInput.value) || 1;
+                    const multiplier = parseInt(multiplierInput.value)||50;
+                    numb_ = parseInt(sellNum.value) || 1;
+                    for (let i=0;i < numb_; i++)
                     {
-                       wsAutomation.send(JSON.stringify({
+                      wsAutomation.send(JSON.stringify({
                            buy: 1,
-                           price: parseFloat(stakeInput.value).toFixed(2)||1,
+                           price: stake.toFixed(2),
                            parameters: {
                              contract_type: "MULTDOWN",
                              symbol: currentSymbol,
                              currency: "USD",
                              basis: "stake",
-                             amount: parseFloat(stakeInput.value).toFixed(2)||1,
-                             multiplier: parseInt(multiplierInput.value)||50,
+                             amount: stake.toFixed(2),
+                             multiplier: multiplier,
                            }
                         }
                       ));
@@ -487,23 +496,25 @@ document.addEventListener("DOMContentLoaded", () => {
                   if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
                       currentSymbol === "CRASH1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500")
                   {
-                    for (let i=0;i < parseInt(buyNum.value) || 1; i++)
+                    const stake = parseFloat(stakeInput.value) || 1;
+                    const multiplier = parseInt(multiplierInput.value)||50;
+                    numb_ = parseInt(buyNum.value) || 1;
+                    for (let i=0;i < numb_; i++)
                     {
                       wsAutomation.send(JSON.stringify({
                            buy: 1,
-                           price: parseFloat(stakeInput.value).toFixed(2)||1,
+                           price: stake.toFixed(2),
                            parameters: {
                              contract_type: "MULTUP",
                              symbol: currentSymbol,
                              currency: "USD",
                              basis: "stake",
-                             amount: parseFloat(stakeInput.value).toFixed(2)||1,
-                             multiplier: parseInt(multiplierInput.value)||50,
+                             amount: stake.toFixed(2),
+                             multiplier: multiplier,
                            }
                         }
                       ));
                     }
-                  }
                  }
                }
               }
