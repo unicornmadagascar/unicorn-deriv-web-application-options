@@ -351,10 +351,8 @@ document.addEventListener("DOMContentLoaded", () => {
            tickHistory.push(price);
            if (it >= 3 && tickHistory.length > 3) // garder seulement les 3 derniers ticks
            {  
-              console.log("it :" + it);
               Tick_arr.length = 3;
               Tick_arr = tickHistory.slice(-3);
-              console.log(Tick_arr);
               
               // On peut aussi normaliser avec la moyenne
               const mean = (Tick_arr[0] + Tick_arr[1] + Tick_arr[2]) / 3;
