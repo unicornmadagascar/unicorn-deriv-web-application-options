@@ -381,7 +381,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                   });
 
-                 if (contracts && contracts.length > 0) return;
+                 if (contracts.length > 0) return;
                 
                   setTimeout(() => {
                     //ouvrirContratBuy("BUY",currentSymbol); 
@@ -401,7 +401,7 @@ document.addEventListener("DOMContentLoaded", () => {
                      wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                   });
 
-                  if (contracts && contracts.length > 0) return;
+                  if (contracts.length > 0) return;
 
                   setTimeout(() => {
                     //ouvrirContratSell("SELL",currentSymbol); 
