@@ -369,7 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
                {
                 if (signal < 0.37)
                 {
-                 if (Array.isArray(contracts) && contracts.length > 0) {
+                 if (contracts.length > 0) {
                    // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
                    const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN" && c.symbol === currentSymbol);
 
@@ -395,7 +395,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 else
                 {
-                  if (Array.isArray(contracts) && contracts.length > 0) {
+                  if (contracts.length > 0) {
                     // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
                     const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
 
@@ -426,7 +426,7 @@ document.addEventListener("DOMContentLoaded", () => {
                {
                  if (signal > 0.75)
                  {
-                  if (Array.isArray(contracts) && contracts.length > 0) {
+                  if (contracts.length > 0) {
                     // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
                     const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
 
@@ -454,7 +454,7 @@ document.addEventListener("DOMContentLoaded", () => {
                  }
                  else
                  {
-                  if (Array.isArray(contracts) && contracts.length > 0) {
+                  if (contracts.length > 0) {
                     // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
                     const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN" && c.symbol === currentSymbol);
 
