@@ -338,7 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
          wsAutomation.send(JSON.stringify({ portfolio: 1 }));
         }
 
-        if (data.msg_type === "portfolio") {
+        if (data.portfolio) {
            contracts = data.portfolio.contracts;
         }
 
@@ -382,7 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
                    });
                    existingContract = true;
                  } else {
-                   console.log("⚠️ contracts n'est pas un tableau : " + contracts);
+                   //console.log("⚠️ contracts n'est pas un tableau : " + contracts);
                    existingContract = false;
                  }
 
@@ -410,7 +410,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   }
                   else
                   {
-                    console.log("⚠️ contracts n'est pas un tableau : " + contracts);
+                    //console.log("⚠️ contracts n'est pas un tableau : " + contracts);
                     existingContract = false;
                   }
 
@@ -441,7 +441,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   }
                   else
                   {
-                    console.log("⚠️ contracts n'est pas un tableau : " + contracts);
+                    //console.log("⚠️ contracts n'est pas un tableau : " + contracts);
                     existingContract = false;
                   }
 
@@ -469,7 +469,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   }
                   else
                   {
-                    console.log("⚠️ contracts n'est pas un tableau : " + contracts);
+                    //console.log("⚠️ contracts n'est pas un tableau : " + contracts);
                     existingContract = false;
                   }
 
