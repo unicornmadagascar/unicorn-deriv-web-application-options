@@ -455,14 +455,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function ouvrirContratBuy(type,CurSymbol) {
     const stake=parseFloat(stakeInput.value)||1;
     const multiplier=parseInt(multiplierInput.value)||50;
-    if(wsAutomation && (wsAutomation.readyState===WebSocket.OPEN || wsAutomation.readyState===WebSocket.CONNECTING))
-     {
-      console.log("📤 Ouverture d'un nouveau contrat BUY...");
-      if (type === "BUY" && (CurSymbol === "BOOM1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500" ||
-          CurSymbol === "CRASH1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500"))
-      {
-        numb_ = parseInt(buyNum.value)||1;
-        for (let i=0;i < numb_; i++)
+
+    console.log("📤 Ouverture d'un nouveau contrat BUY...");
+    if (type === "BUY" && (CurSymbol === "BOOM1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500" ||
+        CurSymbol === "CRASH1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500"))
+    {
+        for (let i=0;i < parseInt(buyNum.value) || 1; i++)
          {
            wsAutomation.send(JSON.stringify({
                 buy: 1,
@@ -478,22 +476,19 @@ document.addEventListener("DOMContentLoaded", () => {
               }
            ));
          }
-      }
     }
-}
+  }
 
   // Fonction pour ouvrir un contrat SELL
   function ouvrirContratSell(type,CurSymbol) {
     const stake=parseFloat(stakeInput.value)||1;
     const multiplier=parseInt(multiplierInput.value)||50;
-    if(wsAutomation && (wsAutomation.readyState===WebSocket.OPEN || wsAutomation.readyState===WebSocket.CONNECTING))
-     {
-      console.log("📤 Ouverture d'un nouveau contrat SELL...");
-      if (type === "SELL" && (CurSymbol === "BOOM1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500" ||
-          CurSymbol === "CRASH1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500"))
-      {
-        numb_ = parseInt(sellNum.value)||1;
-        for (let i=0;i < numb_; i++)
+
+    console.log("📤 Ouverture d'un nouveau contrat SELL...");
+    if (type === "SELL" && (CurSymbol === "BOOM1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500" ||
+       CurSymbol === "CRASH1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500"))
+    {
+        for (let i=0;i < parseInt(sellNum.value) || 1 ; i++)
         {
           wsAutomation.send(JSON.stringify({
                buy: 1,
@@ -509,8 +504,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           ));
         }
-      }  
-    }
+    }  
   }
 
   function stopAutomation() {
