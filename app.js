@@ -416,29 +416,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function executeTrade_Automated(currentsymbol__,type)
   {
-     if (wsTradeAutomation === null)
+     if (wsAutomation === null)
      {
-      wsTradeAutomation = new WebSocket(WS_URL);
+      wsAutomation = new WebSocket(WS_URL);
      }
   
-     if (wsTradeAutomation && (wsTradeAutomation.readyState === WebSocket.OPEN || wsTradeAutomation.readyState === WebSocket.CONNECTING))
+     if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
      {
-      wsTradeAutomation.onopen=()=>{ wsTradeAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
      }
 
-     if (wsTradeAutomation  && (wsTradeAutomation.readyState === WebSocket.CLOSED || wsTradeAutomation.readyState === WebSocket.CLOSING))
+     if (wsAutomation  && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING))
      {
-      wsTradeAutomation = new WebSocket(WS_URL);
-      wsTradeAutomation.onopen=()=>{ wsTradeAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+      wsAutomation = new WebSocket(WS_URL);
+      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
      }
 
-      wsTradeAutomation.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-      wsTradeAutomation.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-      wsTradeAutomation.onmessage=msg=>{
+      wsAutomation.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+      wsAutomation.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+      wsAutomation.onmessage=msg=>{
         const data=JSON.parse(msg.data);
         if (data.authorize) {
            console.log("✅ Connecté à Deriv API !");
-           wsTradeAutomation.send(JSON.stringify({ portfolio: 1 }));
+           wsAutomation.send(JSON.stringify({ portfolio: 1 }));
         }
 
         console.clear();
