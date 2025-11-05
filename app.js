@@ -384,8 +384,8 @@ document.addEventListener("DOMContentLoaded", () => {
                  if (contracts.length > 0) return;
                 
                   setTimeout(() => {
-                    //ouvrirContratBuy("BUY",currentSymbol); 
-                    console.log("BUY CONTRACT");
+                    ouvrirContratBuy("BUY",currentSymbol); 
+                    //console.log("BUY CONTRACT");
                   },5000);
                 }
                 else
@@ -404,8 +404,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   if (contracts.length > 0) return;
 
                   setTimeout(() => {
-                    //ouvrirContratSell("SELL",currentSymbol); 
-                    console.log("SELL CONTRACT");
+                    ouvrirContratSell("SELL",currentSymbol); 
+                    //console.log("SELL CONTRACT");
                   },500); 
                 }
                }
