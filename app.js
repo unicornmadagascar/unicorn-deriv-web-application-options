@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Historique de profits
   let profitHistory = [];
   const contractsData = {}; // stockage des contrats {id: {profits: [], infos: {…}}}
-  let contracts = {};
+  let contracts = [];
   let portfolioReceived = false;
   let existingContract = false;
   let contractSymbol;
