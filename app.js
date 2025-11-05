@@ -377,7 +377,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   if (contracts.length > 0) return;
                  
-                  ouvrirContratBuy("BUY",currentSymbol);
+                  console.log("📤 Ouverture d'un nouveau contrat BUY...");
+                  if (CurSymbol === "BOOM1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500" ||
+                      CurSymbol === "CRASH1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500")
+                  {
+                    for (let i=0;i < parseInt(buyNum.value) || 1; i++)
+                    {
+                      wsAutomation.send(JSON.stringify({
+                           buy: 1,
+                           price: parseFloat(stakeInput.value).toFixed(2)||1,
+                           parameters: {
+                             contract_type: "MULTUP",
+                             symbol: CurSymbol,
+                             currency: "USD",
+                             basis: "stake",
+                             amount: parseFloat(stakeInput.value).toFixed(2)||1,
+                             multiplier: parseInt(multiplierInput.value)||50,
+                           }
+                        }
+                      ));
+                    }
+                  }
                   setTimeout(() => {   
                   },5000);
                 }
@@ -392,9 +412,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   if (contracts.length > 0) return;
                   
-                  ouvrirContratSell("SELL",currentSymbol); 
-                  setTimeout(() => {
-                  },500); 
+                  console.log("📤 Ouverture d'un nouveau contrat SELL...");
+                  if (CurSymbol === "BOOM1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500" ||
+                      CurSymbol === "CRASH1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500")
+                  {
+                    for (let i=0;i < parseInt(sellNum.value) || 1; i++)
+                    {
+                       wsAutomation.send(JSON.stringify({
+                           buy: 1,
+                           price: parseFloat(stakeInput.value).toFixed(2)||1,
+                           parameters: {
+                             contract_type: "MULTDOWN",
+                             symbol: CurSymbol,
+                             currency: "USD",
+                             basis: "stake",
+                             amount: parseFloat(stakeInput.value).toFixed(2)||1,
+                             multiplier: parseInt(multiplierInput.value)||50,
+                           }
+                        }
+                      ));
+                    }
+                  }
                 }
                }
                else if (symbol_test === "CRA")
@@ -410,7 +448,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   if (contracts.length > 0) return;
 
-                  ouvrirContratSell("SELL",currentSymbol); 
+                  console.log("📤 Ouverture d'un nouveau contrat SELL...");
+                  if (CurSymbol === "BOOM1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500" ||
+                      CurSymbol === "CRASH1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500")
+                  {
+                    for (let i=0;i < parseInt(sellNum.value) || 1; i++)
+                    {
+                       wsAutomation.send(JSON.stringify({
+                           buy: 1,
+                           price: parseFloat(stakeInput.value).toFixed(2)||1,
+                           parameters: {
+                             contract_type: "MULTDOWN",
+                             symbol: CurSymbol,
+                             currency: "USD",
+                             basis: "stake",
+                             amount: parseFloat(stakeInput.value).toFixed(2)||1,
+                             multiplier: parseInt(multiplierInput.value)||50,
+                           }
+                        }
+                      ));
+                    }
+                  }
                   setTimeout(() => {
                   },5000);
                  }
@@ -424,10 +482,28 @@ document.addEventListener("DOMContentLoaded", () => {
                      });
 
                   if (contracts.length > 0) return;
-                  
-                  ouvrirContratBuy("BUY",currentSymbol);
-                  setTimeout(() => {
-                  },500);
+
+                  console.log("📤 Ouverture d'un nouveau contrat BUY...");
+                  if (CurSymbol === "BOOM1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500" ||
+                      CurSymbol === "CRASH1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500")
+                  {
+                    for (let i=0;i < parseInt(buyNum.value) || 1; i++)
+                    {
+                      wsAutomation.send(JSON.stringify({
+                           buy: 1,
+                           price: parseFloat(stakeInput.value).toFixed(2)||1,
+                           parameters: {
+                             contract_type: "MULTUP",
+                             symbol: CurSymbol,
+                             currency: "USD",
+                             basis: "stake",
+                             amount: parseFloat(stakeInput.value).toFixed(2)||1,
+                             multiplier: parseInt(multiplierInput.value)||50,
+                           }
+                        }
+                      ));
+                    }
+                  }
                  }
                }
               }
@@ -449,34 +525,6 @@ document.addEventListener("DOMContentLoaded", () => {
     wsAutomation.onerror = (err) => {
       console.error("WebSocket error:", err);
     };
-  }
-
-  // 🚀 Fonction pour ouvrir un contrat BUY (MULTUP)
-  function ouvrirContratBuy(type,CurSymbol) {
-    const stake=parseFloat(stakeInput.value)||1;
-    const multiplier=parseInt(multiplierInput.value)||50;
-
-    console.log("📤 Ouverture d'un nouveau contrat BUY...");
-    if (type === "BUY" && (CurSymbol === "BOOM1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500" ||
-        CurSymbol === "CRASH1000" || CurSymbol === "BOOM900" || CurSymbol === "BOOM600" || CurSymbol === "BOOM500"))
-    {
-        for (let i=0;i < parseInt(buyNum.value) || 1; i++)
-         {
-           wsAutomation.send(JSON.stringify({
-                buy: 1,
-                price: stake.toFixed(2),
-                parameters: {
-                  contract_type: "MULTUP",
-                  symbol: CurSymbol,
-                  currency: "USD",
-                  basis: "stake",
-                  amount: stake.toFixed(2),
-                  multiplier: multiplier,
-                }
-              }
-           ));
-         }
-    }
   }
 
   // Fonction pour ouvrir un contrat SELL
