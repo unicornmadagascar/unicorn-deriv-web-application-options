@@ -406,67 +406,50 @@ document.addEventListener("DOMContentLoaded", () => {
                   setTimeout(() => {
                     //ouvrirContratSell("SELL",currentSymbol); 
                     console.log("SELL CONTRACT");
-                  },1000); 
+                  },500); 
                 }
                }
                else if (symbol_test === "CRA")
                {
                  if (signal > 0.75)
                  {
-                  if (contracts && contracts.length > 0) {
-                    // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
-                    const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
+                  // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
+                  const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
 
-                    console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
+                  console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
 
-                    // Fermer chaque contrat
-                    buyContracts.forEach(c => {
-                       console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                       wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-                    });
-                    existingContract = true;
-                    console.log("SELL CONTRACT : " + existingContract);
-                  }
-                  else
-                  {
-                    //console.log("⚠️ contracts n'est pas un tableau : " + contracts);
-                    existingContract = false;
-                  }
+                  // Fermer chaque contrat
+                  buyContracts.forEach(c => {
+                     console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                      wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                  });
 
-                  /*if (existingContract===true) return;
+                  if (contracts.length > 0) return;
 
                   setTimeout(() => {
                     //ouvrirContratSell("SELL",currentSymbol); 
                     console.log("SELL CONTRACT");
-                  },5000); */
+                  },5000);
                  }
                  else
                  {
-                  if (contracts.length > 0) {
-                    // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
-                    const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN" && c.symbol === currentSymbol);
+                  // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
+                  const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN" && c.symbol === currentSymbol);
 
-                    console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
+                  console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
 
-                    // Fermer chaque contrat SELL
-                    sellContracts.forEach(c => {
-                      console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                      wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-                    });
-                    existingContract = true;
-                  }
-                  else
-                  {
-                    //console.log("⚠️ contracts n'est pas un tableau : " + contracts);
-                    existingContract = false;
-                  }
+                  // Fermer chaque contrat SELL
+                  sellContracts.forEach(c => {
+                     console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                     wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                  });
 
-                  if (existingContract===true) return;
+                  if (contracts.length > 0) return;
 
                   setTimeout(() => {
                     //ouvrirContratBuy("BUY",currentSymbol);
                     console.log("BUY CONTRACT");
-                  },1000);
+                  },500);
                  }
                }
               }
