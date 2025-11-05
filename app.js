@@ -369,17 +369,25 @@ document.addEventListener("DOMContentLoaded", () => {
                {
                 if (signal < 0.37)
                 {
-                 // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
-                  const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN" && c.symbol === currentSymbol);
+                 if (Array.isArray(contracts) && contracts.length > 0) {
+                   // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
+                   const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN" && c.symbol === currentSymbol);
 
-                  console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
+                   console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
 
-                  // Fermer chaque contrat SELL
-                  sellContracts.forEach(c => {
-                    console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                    wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-                  });
+                   // Fermer chaque contrat SELL
+                   sellContracts.forEach(c => {
+                      console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                      wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                   });
+                   existingContract = true;
+                 } else {
+                   console.warn("⚠️ contracts n'est pas un tableau :", contracts);
+                   existingContract = false;
+                 }
 
+                 if (existingContract===true) return;
+                
                   setTimeout(() => {
                     //ouvrirContratBuy("BUY",currentSymbol); 
                     console.log("BUY CONTRACT");
@@ -387,16 +395,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 else
                 {
-                  // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
-                  const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
+                  if (Array.isArray(contracts) && contracts.length > 0) {
+                    // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
+                    const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
 
-                  console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
+                    console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
 
-                  // Fermer chaque contrat
-                  buyContracts.forEach(c => {
-                     console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                     wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-                  });
+                    // Fermer chaque contrat
+                    buyContracts.forEach(c => {
+                       console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                       wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                    });
+                    existingContract = true;
+                  }
+                  else
+                  {
+                    console.warn("⚠️ contracts n'est pas un tableau :", contracts);
+                    existingContract = false;
+                  }
+
+                  if (existingContract===true) return;
 
                   setTimeout(() => {
                     //ouvrirContratSell("SELL",currentSymbol); 
@@ -408,16 +426,26 @@ document.addEventListener("DOMContentLoaded", () => {
                {
                  if (signal > 0.75)
                  {
-                  // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
-                  const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
+                  if (Array.isArray(contracts) && contracts.length > 0) {
+                    // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
+                    const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
 
-                  console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
+                    console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
 
-                  // Fermer chaque contrat
-                  buyContracts.forEach(c => {
-                     console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                     wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-                  });
+                    // Fermer chaque contrat
+                    buyContracts.forEach(c => {
+                       console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                       wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                    });
+                    existingContract = true;
+                  }
+                  else
+                  {
+                    console.warn("⚠️ contracts n'est pas un tableau :", contracts);
+                    existingContract = false;
+                  }
+
+                  if (existingContract===true) return;
 
                   setTimeout(() => {
                     //ouvrirContratSell("SELL",currentSymbol); 
@@ -426,16 +454,26 @@ document.addEventListener("DOMContentLoaded", () => {
                  }
                  else
                  {
-                  // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
-                  const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN" && c.symbol === currentSymbol);
+                  if (Array.isArray(contracts) && contracts.length > 0) {
+                    // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
+                    const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN" && c.symbol === currentSymbol);
 
-                  console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
+                    console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
 
-                  // Fermer chaque contrat SELL
-                  sellContracts.forEach(c => {
-                    console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                    wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-                  });
+                    // Fermer chaque contrat SELL
+                    sellContracts.forEach(c => {
+                      console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
+                      wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                    });
+                    existingContract = true;
+                  }
+                  else
+                  {
+                    console.warn("⚠️ contracts n'est pas un tableau :", contracts);
+                    existingContract = false;
+                  }
+
+                  if (existingContract===true) return;
 
                   setTimeout(() => {
                     //ouvrirContratBuy("BUY",currentSymbol);
@@ -446,143 +484,6 @@ document.addEventListener("DOMContentLoaded", () => {
               }
            }
         }   
-               
-                /* if (data.portfolio)
-                 {
-                  const contracts = data.portfolio.contracts;
-                  // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
-                  const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN" && c.symbol === currentSymbol);
-
-                  console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
-
-                  // Fermer chaque contrat SELL
-                  sellContracts.forEach(c => {
-                    console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                    wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-                  });
-
-                  existingContract = contracts.some(c => c.symbol === currentSymbol);
-                  console.log(existingContract);
-                  console.log("SELL CONTRACT CLOSE");
-                 }
-
-                 //existingContract = contracts.some(c => c.symbol === currentSymbol);
-
-                // console.log("BEFORE EXISTS CONTRACT");
-
-                 //if (existingContract) return;
-           
-                 //console.log("AFTER EXISTS CONTRACT");
-
-                 setTimeout(() => {
-                   //ouvrirContratBuy("BUY",currentSymbol); 
-                 },5000);
-                }
-                else
-                {
-                 if (data.portfolio)
-                 {
-                  const contracts = data.portfolio.contracts;
-                  // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
-                  const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
-
-                  console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
-
-                  // Fermer chaque contrat
-                  buyContracts.forEach(c => {
-                     console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                     wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-                  });
-
-                  existingContract = contracts.some(c => c.symbol === currentSymbol);
-                  console.log(existingContract);
-                  console.log("BUY CONTRACT CLOSE");
-                 }
-
-                 //existingContract = contracts.some(c => c.symbol === currentSymbol);
-
-                 //console.log("BEFORE EXISTS CONTRACT");
-       
-                 //if (existingContract) return;
-           
-                 //console.log("AFTER EXISTS CONTRACT");
-
-                 setTimeout(() => {
-                    //ouvrirContratSell("SELL",currentSymbol); 
-                 },1000);
-                }
-               }
-               else if (symbol_test.trim()  === "CRA")
-               {
-                if (signal > 0.75)
-                {
-                 if (data.portfolio)
-                 {
-                  const contracts = data.portfolio.contracts;
-                  // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
-                  const buyContracts = contracts.filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol);
-
-                  console.log(`🟢 ${buyContracts.length} contrats BUY trouvés`);
-
-                  // Fermer chaque contrat
-                  buyContracts.forEach(c => {
-                     console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                     wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-                  });
-
-                  existingContract = contracts.some(c => c.symbol === currentSymbol);
-                  console.log(existingContract);
-                  console.log("BUY CONTRACT CLOSE");
-                 }
-
-                 //existingContract = contracts.some(c => c.symbol === currentSymbol);
-
-                 //console.log("BEFORE EXISTS CONTRACT");
-
-                 //if (existingContract) return;
-           
-                 //console.log("AFTER EXISTS CONTRACT");
-
-                 setTimeout(() => {
-                    //ouvrirContratSell("SELL",currentSymbol); 
-                 },5000);
-                }
-                else
-                {
-                 if (data.portfolio)
-                 {
-                  const contracts = data.portfolio.contracts;
-                  // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
-                  const sellContracts = contracts.filter(c => c.contract_type === "MULTDOWN" && c.symbol === currentSymbol);
-
-                  console.log(`🔴 ${sellContracts.length} contrats SELL trouvés.`);
-
-                  // Fermer chaque contrat SELL
-                  sellContracts.forEach(c => {
-                    console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                    wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-                  });
-
-                  existingContract = contracts.some(c => c.symbol === currentSymbol);
-                  console.log(existingContract);
-                  console.log("SELL CONTRACT CLOSE");
-                 }
-
-                 //existingContract = contracts.some(c => c.symbol === currentSymbol);
-
-                 //console.log("BEFORE EXISTS CONTRACT");
-
-                 //if (existingContract) return;
-           
-                 //console.log("AFTER EXISTS CONTRACT");
-
-                 setTimeout(() => {
-                    //ouvrirContratBuy("BUY",currentSymbol);
-                 },1000);
-                }
-               }
-            }
-        } */
 
         it = it + 1;
         if (it === 3000)
