@@ -381,19 +381,14 @@ document.addEventListener("DOMContentLoaded", () => {
                       console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
                       wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                    });
-                   existingContract = true;
-                   console.log("BUY CONTRACT :" + existingContract);
-                 } else {
-                   //console.log("⚠️ contracts n'est pas un tableau : " + contracts);
-                   existingContract = false;
-                 }
+                 } 
 
-                 /*if (existingContract===true) return;
+                 if (contracts && contracts.length > 0) return;
                 
                   setTimeout(() => {
                     //ouvrirContratBuy("BUY",currentSymbol); 
                     console.log("BUY CONTRACT");
-                  },5000);*/
+                  },5000);
                 }
                 else
                 {
@@ -408,21 +403,14 @@ document.addEventListener("DOMContentLoaded", () => {
                        console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
                        wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                     });
-                    existingContract = true;
-                    console.log("SELL CONTRACT :" + existingContract);
-                  }
-                  else
-                  {
-                    //console.log("⚠️ contracts n'est pas un tableau : " + contracts);
-                    existingContract = false;
                   }
 
-                  /*if (existingContract===true) return;
+                  if (contracts && contracts.length > 0) return;
 
                   setTimeout(() => {
                     //ouvrirContratSell("SELL",currentSymbol); 
                     console.log("SELL CONTRACT");
-                  },1000); */
+                  },1000); 
                 }
                }
                else if (symbol_test === "CRA")
