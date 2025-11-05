@@ -483,13 +483,13 @@ document.addEventListener("DOMContentLoaded", () => {
     wsAutomation_autoclose.onopen=()=>{ wsAutomation_autoclose.send(JSON.stringify({ authorize: TOKEN })); };
    }
 
-   ws.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-   ws.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-   ws.onmessage=msg=>{
+   wsAutomation_autoclose.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+   wsAutomation_autoclose.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+   wsAutomation_autoclose.onmessage=msg=>{
         const data=JSON.parse(msg.data);
         if (data.authorize) {
            console.log("✅ Connecté à Deriv API !");
-           ws.send(JSON.stringify({ portfolio: 1 }));
+           wsAutomation_autoclose.send(JSON.stringify({ portfolio: 1 }));
         }
         
         // Étape 3 : Réception du portefeuille
@@ -507,7 +507,7 @@ document.addEventListener("DOMContentLoaded", () => {
                // Fermer chaque contrat SELL
                sellContracts.forEach(c => {
                  console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                 ws.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                 wsAutomation_autoclose.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                });
               }
              else if (type === "BUY")
@@ -520,7 +520,7 @@ document.addEventListener("DOMContentLoaded", () => {
                // Fermer chaque contrat
                buyContracts.forEach(c => {
                  console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
-                 ws.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                 wsAutomation_autoclose.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                });
               }
            }
