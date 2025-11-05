@@ -41,6 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsContracts_winning = null;
   let wsAutomation_sell = null;
   let wsAutomation_buy = null;
+  let wsTradeAutomation = null;
   let wsAutomation = null;
   let wsContracts = null;
   let wsplContracts = null;
@@ -416,29 +417,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function executeTrade_Automated(currentsymbol__,type)
   {
-     if (wsAutomation === null)
+     if (wsTradeAutomation === null)
      {
-      wsAutomation = new WebSocket(WS_URL);
+      wsTradeAutomation = new WebSocket(WS_URL);
      }
   
-     if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
+     if (wsTradeAutomation && (wsTradeAutomation.readyState === WebSocket.OPEN || wsTradeAutomation.readyState === WebSocket.CONNECTING))
      {
-      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+      wsTradeAutomation.onopen=()=>{ wsTradeAutomation.send(JSON.stringify({ authorize: TOKEN })); };
      }
 
-     if (wsAutomation  && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING))
+     if (wsTradeAutomation  && (wsTradeAutomation.readyState === WebSocket.CLOSED || wsTradeAutomation.readyState === WebSocket.CLOSING))
      {
-      wsAutomation = new WebSocket(WS_URL);
-      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+      wsTradeAutomation = new WebSocket(WS_URL);
+      wsTradeAutomation.onopen=()=>{ wsTradeAutomation.send(JSON.stringify({ authorize: TOKEN })); };
      }
 
-      wsAutomation.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-      wsAutomation.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-      wsAutomation.onmessage=msg=>{
+      wsTradeAutomation.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+      wsTradeAutomation.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+      wsTradeAutomation.onmessage=msg=>{
         const data=JSON.parse(msg.data);
         if (data.authorize) {
            console.log("✅ Connecté à Deriv API !");
-           wsAutomation.send(JSON.stringify({ portfolio: 1 }));
+           wsTradeAutomation.send(JSON.stringify({ portfolio: 1 }));
         }
 
         // Étape 3 : Réception du portefeuille
