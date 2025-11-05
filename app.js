@@ -388,7 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
                            price: parseFloat(stakeInput.value).toFixed(2)||1,
                            parameters: {
                              contract_type: "MULTUP",
-                             symbol: CurSymbol,
+                             symbol: currentSymbol,
                              currency: "USD",
                              basis: "stake",
                              amount: parseFloat(stakeInput.value).toFixed(2)||1,
@@ -423,7 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
                            price: parseFloat(stakeInput.value).toFixed(2)||1,
                            parameters: {
                              contract_type: "MULTDOWN",
-                             symbol: CurSymbol,
+                             symbol: currentSymbol,
                              currency: "USD",
                              basis: "stake",
                              amount: parseFloat(stakeInput.value).toFixed(2)||1,
@@ -459,7 +459,7 @@ document.addEventListener("DOMContentLoaded", () => {
                            price: parseFloat(stakeInput.value).toFixed(2)||1,
                            parameters: {
                              contract_type: "MULTDOWN",
-                             symbol: CurSymbol,
+                             symbol: currentSymbol,
                              currency: "USD",
                              basis: "stake",
                              amount: parseFloat(stakeInput.value).toFixed(2)||1,
@@ -494,7 +494,7 @@ document.addEventListener("DOMContentLoaded", () => {
                            price: parseFloat(stakeInput.value).toFixed(2)||1,
                            parameters: {
                              contract_type: "MULTUP",
-                             symbol: CurSymbol,
+                             symbol: currentSymbol,
                              currency: "USD",
                              basis: "stake",
                              amount: parseFloat(stakeInput.value).toFixed(2)||1,
