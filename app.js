@@ -1497,5 +1497,5 @@ closeAll.onclick=()=>{
     {
      stopAutomation();
     }
-  },1000);
+  },500);
 });
