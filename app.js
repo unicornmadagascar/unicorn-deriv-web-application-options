@@ -446,13 +446,11 @@ document.addEventListener("DOMContentLoaded", () => {
         // Étape 3 : Réception du portefeuille
         if (data.portfolio) {
            const contracts = data.portfolio.contracts;
-
-           const exists = contracts.some(c => c.symbol === currentsymbol__);
-           console.log(exists);
+           
            console.log("BEFORE EXISTS CONTRACT");
 
-           if (exists === true) return;
-
+           if (contracts.length > 0) return;
+           
            console.log("AFTER EXISTS CONTRACT");
            
            if (type === "SELL")
