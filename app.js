@@ -378,18 +378,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
                     wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                   });
+
+                  existingContract = contracts.some(c => c.symbol === currentSymbol);
+                  console.log(existingContract);
                  }
 
-                 existingContract = contracts.some(c => c.symbol === currentSymbol);
+                 //existingContract = contracts.some(c => c.symbol === currentSymbol);
 
-                 console.log("BEFORE EXISTS CONTRACT");
+                // console.log("BEFORE EXISTS CONTRACT");
 
-                 if (contracts.length > 0) return;
+                 //if (existingContract) return;
            
-                 console.log("AFTER EXISTS CONTRACT");
+                 //console.log("AFTER EXISTS CONTRACT");
 
                  setTimeout(() => {
-                   ouvrirContratBuy("BUY",currentSymbol); 
+                   //ouvrirContratBuy("BUY",currentSymbol); 
                  },5000);
                 }
                 else
@@ -407,18 +410,21 @@ document.addEventListener("DOMContentLoaded", () => {
                      console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
                      wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                   });
+
+                  existingContract = contracts.some(c => c.symbol === currentSymbol);
+                  console.log(existingContract);
                  }
 
-                 existingContract = contracts.some(c => c.symbol === currentSymbol);
+                 //existingContract = contracts.some(c => c.symbol === currentSymbol);
 
-                 console.log("BEFORE EXISTS CONTRACT");
+                 //console.log("BEFORE EXISTS CONTRACT");
        
-                 if (existingContract) return;
+                 //if (existingContract) return;
            
-                 console.log("AFTER EXISTS CONTRACT");
+                 //console.log("AFTER EXISTS CONTRACT");
 
                  setTimeout(() => {
-                    ouvrirContratSell("SELL",currentSymbol); 
+                    //ouvrirContratSell("SELL",currentSymbol); 
                  },1000);
                 }
                }
@@ -439,18 +445,21 @@ document.addEventListener("DOMContentLoaded", () => {
                      console.log(`🟢 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
                      wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                   });
+
+                  existingContract = contracts.some(c => c.symbol === currentSymbol);
+                  console.log(existingContract);
                  }
 
-                 existingContract = contracts.some(c => c.symbol === currentSymbol);
+                 //existingContract = contracts.some(c => c.symbol === currentSymbol);
 
-                 console.log("BEFORE EXISTS CONTRACT");
+                 //console.log("BEFORE EXISTS CONTRACT");
 
-                 if (existingContract) return;
+                 //if (existingContract) return;
            
-                 console.log("AFTER EXISTS CONTRACT");
+                 //console.log("AFTER EXISTS CONTRACT");
 
                  setTimeout(() => {
-                    ouvrirContratSell("SELL",currentSymbol); 
+                    //ouvrirContratSell("SELL",currentSymbol); 
                  },5000);
                 }
                 else
@@ -468,18 +477,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     console.log(`🛑 Fermeture du contrat ${c.contract_id} (${c.symbol})`);
                     wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                   });
+
+                  existingContract = contracts.some(c => c.symbol === currentSymbol);
+                  console.log(existingContract);
                  }
 
-                 existingContract = contracts.some(c => c.symbol === currentSymbol);
+                 //existingContract = contracts.some(c => c.symbol === currentSymbol);
 
-                 console.log("BEFORE EXISTS CONTRACT");
+                 //console.log("BEFORE EXISTS CONTRACT");
 
-                 if (existingContract) return;
+                 //if (existingContract) return;
            
-                 console.log("AFTER EXISTS CONTRACT");
+                 //console.log("AFTER EXISTS CONTRACT");
 
                  setTimeout(() => {
-                    ouvrirContratBuy("BUY",currentSymbol);
+                    //ouvrirContratBuy("BUY",currentSymbol);
                  },1000);
                 }
                }
