@@ -1370,6 +1370,7 @@ closeAll.onclick=()=>{
   initChart();
   initPLGauge();
   initTable();
+  OAuthLink();
 
   // Gestion du "Select All"
   const selectAll = document.getElementById("selectAll");
