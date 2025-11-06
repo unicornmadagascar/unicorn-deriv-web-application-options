@@ -69,6 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let existingContract = false;
   let contractSymbol;
   let contracts = [];
+  let proposal__ = [];
 
 
   // --- NEW: current symbol & pending subscribe ---
@@ -335,12 +336,18 @@ document.addEventListener("DOMContentLoaded", () => {
         // Autorisation réussie → abonnement aux ticks
         if (data.msg_type === "authorize") {
          wsAutomation.send(JSON.stringify({ ticks: currentSymbol, subscribe: 1 }));
+         wsAutomation.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
          wsAutomation.send(JSON.stringify({ portfolio: 1 }));
         }
 
         if (data.msg_type === "portfolio") 
         {
            contracts = data.portfolio.contracts;
+        } 
+
+        if (data.msg_type === "proposal_open_contract") 
+        {
+           proposal__ = data.proposal_open_contract;
         } 
         
         if (data.msg_type === "tick")
@@ -375,7 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                      });
 
-                  if (contracts.length > 0) return;
+                  if (proposal__.contract_id) return;
                  
                   console.log("📤 Ouverture d'un nouveau contrat BUY...");
                   if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
@@ -413,7 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                      });
 
-                  if (contracts.length > 0) return;
+                  if (proposal__.contract_id) return;
                   
                   console.log("📤 Ouverture d'un nouveau contrat SELL...");
                   if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
@@ -452,7 +459,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                      });
 
-                  if (contracts.length > 0) return;
+                  if (proposal__.contract_id) return;
 
                   console.log("📤 Ouverture d'un nouveau contrat SELL...");
                   if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
@@ -490,7 +497,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                      });
 
-                  if (contracts.length > 0) return;
+                  if (proposal__.contract_id) return;
 
                   console.log("📤 Ouverture d'un nouveau contrat BUY...");
                   if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
