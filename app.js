@@ -1356,7 +1356,7 @@ closeAll.onclick=()=>{
       isConnect = true; 
       connectDeriv();
       displaySymbols();
-      OAuthLink()
+      OAuthLink();
     } else {
       connectBtn.textContent = "Disconnecting...";
       accountInfo.textContent = "Disconnecting...";
@@ -1370,7 +1370,6 @@ closeAll.onclick=()=>{
   initChart();
   initPLGauge();
   initTable();
-  //OAuthLink();
 
   // Gestion du "Select All"
   const selectAll = document.getElementById("selectAll");
