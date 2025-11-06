@@ -415,7 +415,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 {
                   // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
                   contracts
-                     .filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol)
+                     .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTUP")
                      .forEach(c => {
                         wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                      });
@@ -454,7 +454,7 @@ document.addEventListener("DOMContentLoaded", () => {
                  {
                   // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
                   contracts
-                     .filter(c => c.contract_type === "MULTUP" && c.symbol === currentSymbol)
+                     .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTUP")
                      .forEach(c => {
                         wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                      });
@@ -492,7 +492,7 @@ document.addEventListener("DOMContentLoaded", () => {
                  {
                   // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
                   contracts
-                     .filter(c => c.contract_type === "MULTDOWN" && c.symbol === currentSymbol)
+                     .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTDOWN")
                      .forEach(c => {
                         wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                      });
@@ -522,8 +522,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                       ));
                     }
-                 }
-               }
+                  }
+                }
               }
             }
           }
