@@ -1456,7 +1456,6 @@ window.addEventListener("error", function (e) {
 }, true);
 
   // startup
-  initDerivAccountManager();
   displaySymbols();
   initChart();
   initPLGauge();
@@ -1490,6 +1489,7 @@ window.addEventListener("error", function (e) {
   tradeEvalPanel.classList.toggle("active");
 
   if (tradeEvalPanel.classList.contains("active")) {
+    initDerivAccountManager();
     // Animation simultanée des cercles et des chiffres
     circles.forEach(circle => {
       let targetDeg = 0;
