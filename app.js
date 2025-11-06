@@ -1,7 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   const APP_ID = 109310;
   //const TOKEN = "n04kyiO7gVSyQuA";
-  const TOKEN = OAuthLink("token1");
+  // 🔧 Nom de la clé utilisée dans localStorage
+  const STORAGE_KEY = "deriv_accounts";
   const WS_URL = `wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`;
 
   // UI
@@ -1213,6 +1214,115 @@ closeAll.onclick=()=>{
     wsplContracts.onclose = () => console.log("🔴 Disconnected");
   }
 
+  // 🔹 Fonction utilitaire : obtenir tous les comptes depuis l’URL (après authorization Deriv)
+  function getAllAccountsFromURL() {
+   const urlParams = new URLSearchParams(window.location.search);
+   const accounts = [];
+
+   for (const [key, value] of urlParams.entries()) {
+     const match = key.match(/^acct(\d+)$/);
+     if (match) {
+       const index = match[1];
+       const account = value;
+       const token = urlParams.get(`token${index}`);
+       const currency = urlParams.get(`cur${index}`) || "USD";
+
+       if (token && account) {
+         accounts.push({
+           account,
+           token,
+           currency,
+           addedAt: new Date().toISOString()
+         });
+       }
+     }
+   }
+
+   return accounts;
+  }
+
+  // 🔹 Charger tous les comptes stockés
+  function getStoredAccounts() {
+    const data = localStorage.getItem(STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
+  }
+
+  // 🔹 Sauvegarder les comptes
+  function saveAccounts(accounts) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
+  }
+
+  // 🔹 Fusionner sans doublons
+  function mergeAccounts(newAccounts) {
+    const existing = getStoredAccounts();
+    newAccounts.forEach(acc => {
+      if (!existing.some(a => a.account === acc.account)) {
+         existing.push(acc);
+      }
+    });
+    saveAccounts(existing);
+    return existing;
+  }
+
+  // 🔹 Remplir automatiquement la combobox
+  function populateAccountCombo() {
+    const combo = document.getElementById("accountType");
+    if (!combo) return;
+
+    combo.innerHTML = '<option value="">Sélectionnez un compte</option>';
+
+    const accounts = getStoredAccounts();
+    accounts.forEach(acc => {
+      const option = document.createElement("option");
+      option.value = acc.token;
+      option.textContent = `${acc.account} (${acc.currency})`;
+      combo.appendChild(option);
+    });
+  }
+  
+  // 🔹 Nettoyer l’URL après extraction
+  function cleanURL() {
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  // 🔹 Initialisation principale
+  function initDerivAccountManager() {
+    const newAccounts = getAllAccountsFromURL();
+
+    if (newAccounts.length > 0) {
+       console.log("✅ Comptes détectés :", newAccounts);
+       mergeAccounts(newAccounts);
+       cleanURL();
+    }
+
+    populateAccountCombo();
+ }
+
+ // 🔹 Gérer le changement de compte dans la combobox
+ document.getElementById("accountType")?.addEventListener("change", (e) => {
+    const selectedToken = e.target.value;
+    const selectedAccount = getStoredAccounts().find(a => a.token === selectedToken);
+
+    if (selectedAccount) {
+      console.log("🔑 Compte sélectionné :", selectedAccount.account);
+      console.log("💰 Devise :", selectedAccount.currency);
+      console.log("🧾 Token :", selectedAccount.token);
+
+      // Exemple d'utilisation : connexion Deriv WebSocket
+      const connection = new WebSocket("wss://ws.derivws.com/websockets/v3?app_id=109310");
+      connection.onopen = () => {
+        connection.send(JSON.stringify({ authorize: selectedAccount.token }));
+      };
+      connection.onmessage = (msg) => {
+        const data = JSON.parse(msg.data);
+        if (data.msg_type === "authorize") {
+          console.log("✅ Authorized successfully :", data.authorize.loginid);
+        }
+      };
+    }
+  });
+
+  
    // === 🧹 ÉVÉNEMENTS SUR LES BOUTONS DELETE ===
   document.addEventListener("click", (e) => {
    // Si l’utilisateur clique sur un bouton Close
@@ -1262,12 +1372,6 @@ closeAll.onclick=()=>{
       document.querySelectorAll(".rowSelect").forEach(cb => cb.checked = checked);
     }
   });
-
-  function OAuthLink(parameter){
-    // sécurise la récupération des tokens ici
-   const urlParams = new URLSearchParams(window.location.search);
-   return urlParams.get(parameter);
-  }   
 
   contractsPanelToggle.addEventListener("click", () => {
   if (!contractsPanel.classList.contains("active")) {   
@@ -1352,6 +1456,7 @@ window.addEventListener("error", function (e) {
 }, true);
 
   // startup
+  initDerivAccountManager();
   displaySymbols();
   initChart();
   initPLGauge();
