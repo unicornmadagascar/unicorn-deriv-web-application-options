@@ -317,6 +317,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wsAutomation === null)
     {
      wsAutomation = new WebSocket(WS_URL);
+     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
     }
   
     if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
@@ -738,6 +739,7 @@ document.addEventListener("DOMContentLoaded", () => {
    if (wsplgauge === null)
     {
      wsplgauge = new WebSocket(WS_URL);
+     wsplgauge.onopen=()=>{ wsplgauge.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
     if (!TOKEN) {
@@ -832,6 +834,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wsContracts === null)
     {
      wsContracts = new WebSocket(WS_URL);
+     wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
     }
   
     if (wsContracts && (wsContracts.readyState === WebSocket.OPEN || wsContracts.readyState === WebSocket.CONNECTING))
@@ -883,6 +886,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wsContracts_winning === null)
     {
      wsContracts_winning  = new WebSocket(WS_URL);
+     wsContracts_winning.onopen=()=>{ wsContracts_winning.send(JSON.stringify({ authorize: TOKEN })); };
     }
   
     if (wsContracts_winning && (wsContracts_winning.readyState === WebSocket.OPEN || wsContracts_winning.readyState === WebSocket.CONNECTING))
@@ -963,6 +967,7 @@ closeAll.onclick=()=>{
    if (wsContracts__close === null)
     {
      wsContracts__close = new WebSocket(WS_URL);
+     wsContracts__close.onopen=()=>{ wsContracts__close.send(JSON.stringify({ authorize: TOKEN })); };
     }
   
     if (wsContracts__close && (wsContracts__close.readyState === WebSocket.OPEN || wsContracts__close.readyState === WebSocket.CONNECTING))              // || wsContracts__close.readyState === WebSocket.CONNECTING
@@ -1166,6 +1171,7 @@ closeAll.onclick=()=>{
     if (wsplContracts === null)
     {
      wsplContracts = new WebSocket(WS_URL);
+     wsplContracts.onopen=()=>{ wsplContracts.send(JSON.stringify({ authorize: TOKEN })); };
     }
   
     if (wsplContracts && (wsplContracts.readyState === WebSocket.OPEN || wsplContracts.readyState === WebSocket.CONNECTING))
