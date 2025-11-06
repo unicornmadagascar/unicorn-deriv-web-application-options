@@ -1365,6 +1365,12 @@ closeAll.onclick=()=>{
     }
   });
 
+  window.addEventListener('unhandledrejection', event => {
+  if (event.reason && event.reason.message && event.reason.message.includes("no ad")) {
+    event.preventDefault(); // ignorer cette erreur spécifique
+  }
+});
+
   // startup
   displaySymbols();
   initChart();
