@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const APP_ID = 109310;
   //const TOKEN = "n04kyiO7gVSyQuA";
+  const TOKEN = OAuthLink("token1");
   const WS_URL = `wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`;
 
   // UI
@@ -59,7 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let Dispersion;
   let isConnect = false;
   let it = 0;
-  const TOKEN = "";
   // Historique local des ticks
   let tickHistory = [];
   let Tick_arr = [];
@@ -1263,40 +1263,10 @@ closeAll.onclick=()=>{
     }
   });
 
-  function OAuthLink(){
+  function OAuthLink(parameter){
     // sécurise la récupération des tokens ici
-    const params = new URLSearchParams(window.location.search);
-    const token_user = params.get('token1');
-    if (token_user) {
-      // puis exécute l'autorisation Deriv
-      console.log("TOKEN : " + token_user);
-
-      /*if (wsload === null)
-      {
-       wsload = new WebSocket(WS_URL);
-      }
-    
-      if (wsload && wsload.readyState === WebSocket.OPEN || wsload.readyState === WebSocket.CONNECTING)
-      {
-       wsload.onopen=()=>{ wsload.send(JSON.stringify({ authorize: token_user })); };
-      }
-
-      if (wsload && wsload.readyState === WebSocket.CLOSED || wsload.readyState === WebSocket.CLOSING)
-      {
-        wsload = new WebSocket(WS_URL);
-        wsload.onopen=()=>{ wsload.send(JSON.stringify({ authorize: token_user })); };
-      }
-    
-      wsload.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-      wsload.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-      wsload.onmessage=msg=>{
-        const data = JSON.parse(msg.data);
-        if (data.msg_type === "authorized")
-         {
-          console.log("User Token : " + token_user + " authorized");  
-         }
-      };*/
-    }
+   const urlParams = new URLSearchParams(window.location.search);
+   return urlParams.get(parameter);
   }   
 
   contractsPanelToggle.addEventListener("click", () => {
@@ -1357,7 +1327,6 @@ closeAll.onclick=()=>{
       isConnect = true; 
       connectDeriv();
       displaySymbols();
-      OAuthLink();
     } else {
       connectBtn.textContent = "Disconnecting...";
       accountInfo.textContent = "Disconnecting...";
@@ -1459,7 +1428,7 @@ window.addEventListener("error", function (e) {
   }
 });
 
-  window.addEventListener('load', () => {
+ /* window.addEventListener('load', () => {
   // sécurise la récupération des tokens ici
   const params = new URLSearchParams(window.location.search);
   TOKEN = params.get('token1');
@@ -1467,7 +1436,8 @@ window.addEventListener("error", function (e) {
     // puis exécute l'autorisation Deriv
     console.log("USER TOKEN : " + TOKEN);
   }
-});
+}); */
+ 
   
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
