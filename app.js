@@ -1270,7 +1270,7 @@ closeAll.onclick=()=>{
       // puis exécute l'autorisation Deriv
       console.log("TOKEN : " + token_user);
 
-      if (wsload === null)
+      /*if (wsload === null)
       {
        wsload = new WebSocket(WS_URL);
       }
@@ -1294,7 +1294,7 @@ closeAll.onclick=()=>{
          {
           console.log("User Token : " + token_user + " authorized");  
          }
-      };
+      };*/
     }
   }   
 
