@@ -59,6 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let Dispersion;
   let isConnect = false;
   let it = 0;
+  const TOKEN = "";
   // Historique local des ticks
   let tickHistory = [];
   let Tick_arr = [];
@@ -1461,14 +1462,10 @@ window.addEventListener("error", function (e) {
   window.addEventListener('load', () => {
   // sécurise la récupération des tokens ici
   const params = new URLSearchParams(window.location.search);
-  const TOKEN1 = params.get('token1');
-  const TOKEN2 = params.get('token2');
-  const TOKEN3 = params.get('token3');
-  if (TOKEN1 && TOKEN2 && TOKEN3) {
+  TOKEN = params.get('token1');
+  if (TOKEN) {
     // puis exécute l'autorisation Deriv
-    console.log("USER TOKEN I: " + TOKEN1);
-    console.log("USER TOKEN II: " + TOKEN2);
-    console.log("USER TOKEN II: " + TOKEN3);
+    console.log("USER TOKEN : " + TOKEN);
   }
 });
   
