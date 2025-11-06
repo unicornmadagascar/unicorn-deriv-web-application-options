@@ -408,7 +408,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       ));
                     }
                   }
-                  setTimeout(() => {   
+                  setTimeout(() => {     
                   },5000);
                 }
                 else
