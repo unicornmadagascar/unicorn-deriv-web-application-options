@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const APP_ID = 109310;
-  const TOKEN = "n04kyiO7gVSyQuA";
+  //const TOKEN = "n04kyiO7gVSyQuA";
   const WS_URL = `wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`;
 
   // UI
@@ -1461,10 +1461,10 @@ window.addEventListener("error", function (e) {
   window.addEventListener('load', () => {
   // sécurise la récupération des tokens ici
   const params = new URLSearchParams(window.location.search);
-  const token = params.get('token1');
-  if (token) {
+  const TOKEN = params.get('token1');
+  if (TOKEN) {
     // puis exécute l'autorisation Deriv
-    console.log("USER TOKEN : " + token);
+    console.log("USER TOKEN : " + TOKEN);
   }
 });
   
