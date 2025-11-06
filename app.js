@@ -1461,10 +1461,14 @@ window.addEventListener("error", function (e) {
   window.addEventListener('load', () => {
   // sécurise la récupération des tokens ici
   const params = new URLSearchParams(window.location.search);
-  const TOKEN = params.get('token1');
-  if (TOKEN) {
+  const TOKEN1 = params.get('token1');
+  const TOKEN2 = params.get('token2');
+  const TOKEN3 = params.get('token3');
+  if (TOKEN1 && TOKEN2 && TOKEN3) {
     // puis exécute l'autorisation Deriv
-    console.log("USER TOKEN : " + TOKEN);
+    console.log("USER TOKEN I: " + TOKEN1);
+    console.log("USER TOKEN II: " + TOKEN2);
+    console.log("USER TOKEN II: " + TOKEN3);
   }
 });
   
