@@ -1266,7 +1266,7 @@ closeAll.onclick=()=>{
 
   // 🔹 Remplir automatiquement la combobox
   function populateAccountCombo() {
-    const combo = document.getElementById("accountType");
+    const combo = document.getElementById("accountSelect");
     if (!combo) return;
 
     combo.innerHTML = '<option value="">Sélectionnez un compte</option>';
@@ -1299,7 +1299,7 @@ closeAll.onclick=()=>{
  }
 
  // 🔹 Gérer le changement de compte dans la combobox
- document.getElementById("accountType")?.addEventListener("change", (e) => {
+ document.getElementById("accountSelect")?.addEventListener("change", (e) => {
     const selectedToken = e.target.value;
     const selectedAccount = getStoredAccounts().find(a => a.token === selectedToken);
 
@@ -1322,7 +1322,14 @@ closeAll.onclick=()=>{
     }
   });
 
-  
+  // 🔹 Bouton pour tout supprimer (optionnel)
+  document.getElementById("clearAccounts")?.addEventListener("click", () => {
+    localStorage.removeItem(STORAGE_KEY);
+    populateAccountCombo();
+    console.log("🗑️ Tous les comptes ont été supprimés.");
+  });
+
+
    // === 🧹 ÉVÉNEMENTS SUR LES BOUTONS DELETE ===
   document.addEventListener("click", (e) => {
    // Si l’utilisateur clique sur un bouton Close
