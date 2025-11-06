@@ -1365,11 +1365,49 @@ closeAll.onclick=()=>{
     }
   });
 
-  window.addEventListener('unhandledrejection', event => {
-  if (event.reason && event.reason.message && event.reason.message.includes("no ad")) {
-    event.preventDefault(); // ignorer cette erreur spécifique
+// 1️⃣ Intercepter les erreurs globales
+window.addEventListener("error", function (e) {
+  const msg = e.message || "";
+  if (
+    msg.includes("Unchecked runtime.lastError") ||
+    msg.includes("The message port closed before a response was received") ||
+    msg.includes("Error: no ad") ||
+    msg.includes("content.js") ||
+    msg.includes("iframe.js")
+  ) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    return false; // empêche l'affichage
+  }
+}, true);
+
+// 2️⃣ Intercepter les promesses non gérées
+window.addEventListener("unhandledrejection", function (event) {
+  const msg = event.reason?.message || "";
+  if (
+    msg.includes("Unchecked runtime.lastError") ||
+    msg.includes("The message port closed before a response was received") ||
+    msg.includes("Error: no ad")
+  ) {
+    event.preventDefault();
   }
 });
+
+// 3️⃣ Filtrer les console.error() parasites
+const originalError = console.error;
+console.error = function (...args) {
+  const first = args[0]?.toString() || "";
+  if (
+    first.includes("Unchecked runtime.lastError") ||
+    first.includes("The message port closed before a response was received") ||
+    first.includes("no ad") ||
+    first.includes("iframe.js") ||
+    first.includes("content.js")
+  ) {
+    return; // ignorer
+  }
+  originalError.apply(console, args);
+};
 
   // startup
   displaySymbols();
