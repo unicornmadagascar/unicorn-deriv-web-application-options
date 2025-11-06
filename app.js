@@ -1322,13 +1322,34 @@ closeAll.onclick=()=>{
     }
   });
 
-  // 🔹 Bouton pour tout supprimer (optionnel)
+  // 🔹 Bouton pour supprimer uniquement le compte sélectionné
   document.getElementById("clearAccounts")?.addEventListener("click", () => {
-    localStorage.removeItem(STORAGE_KEY);
-    populateAccountCombo();
-    console.log("🗑️ Tous les comptes ont été supprimés.");
-  });
+    const combo = document.getElementById("accountSelect");
+    const selectedToken = combo.value;
 
+    if (!selectedToken) {
+      alert("⚠️ Veuillez d’abord sélectionner un compte à supprimer.");
+      return;
+    }
+
+    let accounts = getStoredAccounts();
+    const beforeCount = accounts.length;
+
+    // Filtrer pour garder tous les comptes sauf celui sélectionné
+    accounts = accounts.filter(acc => acc.token !== selectedToken);
+
+    // Sauvegarder les changements
+    saveAccounts(accounts);
+
+    // Rafraîchir la combobox
+    populateAccountCombo();
+
+    if (accounts.length < beforeCount) {
+      console.log("🗑️ Compte supprimé avec succès !");
+    } else {
+      console.warn("❌ Aucun compte correspondant trouvé.");
+    }
+  });
 
    // === 🧹 ÉVÉNEMENTS SUR LES BOUTONS DELETE ===
   document.addEventListener("click", (e) => {
