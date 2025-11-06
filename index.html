@@ -102,11 +102,22 @@
       transition: all 0.2s ease;
     }
 
-    #controlFormPanel input:focus,
+    /*#controlFormPanel input:focus, */
     #controlFormPanel select:focus {
       outline: none;
       border-color: #007bff;
       box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
+    }
+
+    #controlFormPanel input {
+      width: 100px;
+      margin-top: 6px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+      transition: all 0.2s ease;
     }
 
     #controlPanelToggle {
