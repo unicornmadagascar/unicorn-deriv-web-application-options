@@ -1292,7 +1292,7 @@ closeAll.onclick=()=>{
     if (newAccounts.length > 0) {
        console.log("✅ Comptes détectés :", newAccounts);
        mergeAccounts(newAccounts);
-       cleanURL();
+       //cleanURL();
     }
 
     populateAccountCombo();
