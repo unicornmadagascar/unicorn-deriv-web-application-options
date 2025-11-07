@@ -1332,8 +1332,8 @@ closeAll.onclick=()=>{
 
         if (data.msg_type === "balance")
         {
-          const bal = data.authorize.balance;
-          const currency = selectedAccount.currency || "USD"; 
+          const bal = data.balance.balance;
+          const currency = data.balance.currency || "USD"; 
           balanceValue.textContent = bal.toString() + " " + currency;
           return;
         }
