@@ -1324,12 +1324,119 @@ closeAll.onclick=()=>{
             <th>Status</th>
           </tr>
         </thead>
-        <tbody id="autoHistoricalBody"></tbody>
+        <tbody id="autoHistoricalBody">
+          <tr><td colspan="10" style="text-align:center;">Aucun trade trouvé</td></tr>
+        </tbody>
       </table>
    `;
 
     const autoHistoricalBody = document.getElementById("autoHistoricalBody");
   }
+
+ // ==================================
+ // 🔹 Fonction de connexion WebSocket
+ // ==================================
+ function connectDeriv() {
+   wshistorical = new WebSocket(WS_URL);
+
+   wshistorical.onopen = () => {
+     wshistorical.send(JSON.stringify({ authorize: TOKEN }));
+   };
+
+   wshistorical.onmessage = (msg) => {
+     const data = JSON.parse(msg.data);
+
+     if (data.msg_type === "authorize") {
+       console.log("✅ Connecté à Deriv API");
+     }
+
+     // Quand on reçoit la profit_table
+     if (data.msg_type === "profit_table") {
+       updateTradeTable(data.profit_table.transactions || []);
+     }
+
+     if (data.error) {
+       console.error("⚠️ Erreur API :", data.error.message);
+       alert("Erreur : " + data.error.message);
+     }
+   };
+ }
+
+ // ==========================================
+ // 🔹 Fonction pour récupérer le profit_table
+ // ==========================================
+ function getProfitTable(fromTimestamp, toTimestamp) {
+  if (!wshistorical || wshistorical.readyState !== WebSocket.OPEN) {
+    console.error("❌ WebSocket non connecté.");
+    return;
+  }
+
+  wshistorical.send(JSON.stringify({
+    profit_table: 1,
+    description: 1,
+    from: fromTimestamp,
+    to: toTimestamp,
+    limit: 100
+  }));
+ }
+
+ // ===============================
+ // 🔹 Fonction pour mettre à jour le tableau
+ // ===============================
+ function updateTradeTable(trades) {
+   const tbody = document.getElementById("autoHistoricalBody");
+   tbody.innerHTML = "";
+
+   if (trades.length === 0) {
+     tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">Aucun trade trouvé</td></tr>';
+     return;
+   }
+
+   trades.forEach(trade => {
+     const tr = document.createElement("tr");
+     const time = trade.sell_time
+       ? new Date(trade.sell_time * 1000).toLocaleString()
+       : "-";
+
+     const status = trade.profit > 0 ? "Win" : (trade.profit < 0 ? "Loss" : "Even");
+
+     tr.innerHTML = `
+       <td>${time}</td>
+       <td>${trade.contract_id || "-"}</td>
+       <td>${trade.symbol || "-"}</td>
+       <td>${trade.contract_type || "-"}</td>
+       <td>${trade.buy_price?.toFixed(2) || "-"}</td>
+       <td>${trade.multiplier || "-"}</td>
+       <td>${trade.take_profit || "-"}</td>
+       <td>${trade.stop_loss || "-"}</td>
+       <td style="color:${trade.profit >= 0 ? 'limegreen' : 'red'};">${(trade.profit > 0 ? "+" : "") + trade.profit.toFixed(2)}</td>
+       <td>${status}</td>
+     `;
+     tbody.appendChild(tr);
+   });
+ }
+
+// ===============================
+// 🔹 Événement du bouton Rechercher
+// ===============================
+document.getElementById("fetchTrades").addEventListener("click", () => {
+  const startInput = document.getElementById("startDate").value;
+  const endInput = document.getElementById("endDate").value;
+
+  if (!startInput || !endInput) {
+    alert("Veuillez sélectionner une date de début et de fin.");
+    return;
+  }
+
+  const [d1, m1, y1] = startInput.split("/").map(Number);
+  const [d2, m2, y2] = endInput.split("/").map(Number);
+
+  const start = Math.floor(new Date(y1, m1 - 1, d1, 0, 0, 0).getTime() / 1000);
+  const end = Math.floor(new Date(y2, m2 - 1, d2, 23, 59, 59).getTime() / 1000);
+
+  console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
+  getProfitTable(start, end);
+});
 
  // 🔹 Gérer le changement de compte dans la combobox
  document.getElementById("accountSelect")?.addEventListener("change", (e) => {
