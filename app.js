@@ -1430,8 +1430,8 @@ closeAll.onclick=()=>{
      return;
    }
 
-   const start = Math.floor(new Date(startInput + "T00:00:00Z").getTime() / 1000);
-   const end = Math.floor(new Date(endInput + "T23:59:59Z").getTime() / 1000);
+   const start = startInput;     //Math.floor(new Date(startInput + "T00:00:00Z").getTime() / 1000);
+   const end = endInput;         //Math.floor(new Date(endInput + "T23:59:59Z").getTime() / 1000);
 
    console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
    getProfitTable(start, end);
