@@ -1338,13 +1338,13 @@ closeAll.onclick=()=>{
  // 🔹 Fonction de connexion WebSocket
  // ==================================
  function connectHistoricalDeriv() {
-   wshistorical = new WebSocket(WS_URL);
+   connection = new WebSocket(WS_URL);
 
-   wshistorical.onopen = () => {
-     wshistorical.send(JSON.stringify({ authorize: TOKEN }));
+   connection.onopen = () => {
+     connection.send(JSON.stringify({ authorize: TOKEN }));
    };
 
-   wshistorical.onmessage = (msg) => {
+   connection.onmessage = (msg) => {
      const data = JSON.parse(msg.data);
 
      if (data.msg_type === "authorize") {
@@ -1368,12 +1368,12 @@ closeAll.onclick=()=>{
  // 🔹 Fonction pour récupérer le profit_table
  // ==========================================
  function getProfitTable(fromTimestamp, toTimestamp) {
-  if (!wshistorical || wshistorical.readyState !== WebSocket.OPEN) {
+  if (!connection || connection.readyState !== WebSocket.OPEN) {
     console.error("❌ WebSocket non connecté.");
     return;
   }
 
-  wshistorical.send(JSON.stringify({
+  connection.send(JSON.stringify({
     profit_table: 1,
     description: 1,
     date_from: fromTimestamp,
