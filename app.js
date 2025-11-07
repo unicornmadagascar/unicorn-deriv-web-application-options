@@ -1029,7 +1029,7 @@ closeAll.onclick=()=>{
           <th><input type="checkbox" id="selectAll"></th>
           <th>Time of Trade</th>
           <th>Contract ID</th>
-          <th>Symbol</th>
+          <th>Symbol</th>  
           <th>Contract Type</th>
           <th>Stake</th>
           <th>Multiplier</th>
