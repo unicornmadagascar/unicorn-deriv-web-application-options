@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const tradeEvalPanel = document.getElementById("tradeEvalPanel");
   const circles = document.querySelectorAll(".circle-chart");
   const holdername = document.getElementById("accountHolder");
+  const balanceValue = document.getElementById("balanceValue");
  
   let totalPL = 0; // cumul des profits et pertes
   let automationRunning = false;
@@ -586,7 +587,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!wspl || wspl.readyState === WebSocket.CLOSED)
      {
       pendingSubscribe = symbol;
-      connectDeriv();
+      connectDeriv(wspl);
      }
 
     if (wspl && wspl.readyState === WebSocket.OPEN && authorized)
@@ -1337,8 +1338,9 @@ closeAll.onclick=()=>{
           const acc = selectedAccount.account;
           const bal = data.authorize.balance;
           const currency = selectedAccount.currency || "USD";
-          const fullname = '${data.get_settings.first_name} ${data.get_settings.last_name}';
+          const fullname = " " + data.get_settings.first_name + " " + data.get_settings.last_name;
           accountHolder.textContent = fullname.toString();
+          balanceValue.textContent = bal.toString();
           //connectBtn.textContent = "Disconnect";
           accountInfo.textContent = `Account: ${acc} | Balance: ${Number(bal).toFixed(2)} ${currency}`;
           setInterval(() => {
