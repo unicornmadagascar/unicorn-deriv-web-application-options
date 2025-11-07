@@ -1634,7 +1634,7 @@ window.addEventListener("error", function (e) {
     e.stopImmediatePropagation();
     return false; // empêche l'affichage
   }
-}, true);
+}, true);   
 
   // startup
   initDerivAccountManager();
