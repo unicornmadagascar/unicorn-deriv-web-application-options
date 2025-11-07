@@ -1426,7 +1426,7 @@ closeAll.onclick=()=>{
    const endInput = document.getElementById("endDate").value;
 
    if (!startInput || !endInput) {
-     alert("Veuillez sélectionner une date de début et de fin.");
+     alert("Veuillez sélectionner une date de début et de fin.");  
      return;
    }
 
