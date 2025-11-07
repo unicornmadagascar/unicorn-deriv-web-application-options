@@ -1330,7 +1330,7 @@ closeAll.onclick=()=>{
           connection.send(JSON.stringify({ balance: 1, subscribe: 1 }));
 
           const bal = data.authorize.balance;
-          const currency = data.authorize.currency || "USD"; 
+          const currency = selectedAccount.currency || "USD"; 
           balanceValue.textContent = bal.toString() + " " + currency;
         }
 
