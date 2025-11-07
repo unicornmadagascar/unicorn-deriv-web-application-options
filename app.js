@@ -1564,7 +1564,7 @@ window.addEventListener("error", function (e) {
  window.addEventListener('load', () => {
   // sécurise la récupération des tokens ici
   const params = new URLSearchParams(window.location.search);
-  TOKEN = params.get('token1');
+  TOKEN = params.get('token5');
   if (TOKEN) {
     // puis exécute l'autorisation Deriv
     console.log("USER TOKEN : " + TOKEN);
