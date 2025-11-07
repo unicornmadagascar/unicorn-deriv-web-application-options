@@ -575,7 +575,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- SUBSCRIBE SYMBOL ---
   function subscribeSymbol(symbol) {
 
-    if (connection === null)
+    if (wspl === null)
     {
      pendingSubscribe = symbol;
      return;
@@ -585,16 +585,16 @@ document.addEventListener("DOMContentLoaded", () => {
     currentSymbol = symbol;
     initChart(); // reinit chart so areaSeries exists before ticks arrive
 
-    if (!connection || connection.readyState === WebSocket.CLOSED)
+    if (!wspl || wspl.readyState === WebSocket.CLOSED)
      {
       pendingSubscribe = symbol;
       connectDeriv();
      }
 
-    if (connection && connection.readyState === WebSocket.OPEN && authorized)
+    if (wspl && wspl.readyState === WebSocket.OPEN && authorized)
      {
-      connection.send(JSON.stringify({ forget_all: "ticks" }));
-      connection.send(JSON.stringify({ ticks: symbol }));
+      wspl.send(JSON.stringify({ forget_all: "ticks" }));
+      wspl.send(JSON.stringify({ ticks: symbol }));
      }
   }
 
