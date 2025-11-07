@@ -1645,7 +1645,7 @@ window.addEventListener("error", function (e) {
   initHistoricalTable(); 
   connectHistoricalDeriv();
  
-  // Gestion du "Select All"
+  // Gestion du "Select All"  
   const selectAll = document.getElementById("selectAll");
   selectAll.addEventListener("change", () => {
     document.querySelectorAll(".rowSelect").forEach(cb => {
