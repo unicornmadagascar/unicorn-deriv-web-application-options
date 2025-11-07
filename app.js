@@ -303,13 +303,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- CONNECT DERIV ---
-  function DisconnectDeriv(wsTemporary) {
+  function DisconnectDeriv() {
     setTimeout(() => {
-      if (wsTemporary && wsTemporary.readyState === WebSocket.OPEN)
+      if (wspl && wspl.readyState === WebSocket.OPEN)
       {
-        wsTemporary.send(JSON.stringify({ forget_all: "ticks" }));
-        wsTemporary.close();
-        wsTemporary = null;
+        wspl.send(JSON.stringify({ forget_all: "ticks" }));
+        wspl.close();
+        wspl = null;
         connectBtn.textContent = "Connect";
         accountInfo.textContent = "";
         authorized = false;
@@ -1315,7 +1315,7 @@ closeAll.onclick=()=>{
       console.log("🧾 Token :", selectedAccount.token);
       //--- APP TOKEN 
       TOKEN = selectedAccount.token;
-      DisconnectDeriv(connection);
+      DisconnectDeriv();
 
       // Exemple d'utilisation : connexion Deriv WebSocket
       connection = new WebSocket("wss://ws.derivws.com/websockets/v3?app_id=109310");
@@ -1345,8 +1345,6 @@ closeAll.onclick=()=>{
           accountHolder.textContent = fullname.toString();
         }
       };
-
-      //connectDeriv(connection); 
     }
   });
 
