@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsAutomation_buy = null;
   let wsTradeAutomation = null;
   let wsAutomation_autoclose = null;
-  let wsTemporary = null;
+  let wshistorical = null;
   let wsAutomation = null;
   let wsContracts = null;
   let wsplContracts = null;
@@ -1428,11 +1428,8 @@ document.getElementById("fetchTrades").addEventListener("click", () => {
     return;
   }
 
-  const [d1, m1, y1] = startInput.split("/").map(Number);
-  const [d2, m2, y2] = endInput.split("/").map(Number);
-
-  const start = Math.floor(new Date(y1, m1 - 1, d1, 0, 0, 0).getTime() / 1000);
-  const end = Math.floor(new Date(y2, m2 - 1, d2, 23, 59, 59).getTime() / 1000);
+  const start = Math.floor(new Date(startInput + "T00:00:00Z").getTime() / 1000);
+  const end = Math.floor(new Date(endInput + "T23:59:59Z").getTime() / 1000);
 
   console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
   getProfitTable(start, end);
