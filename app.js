@@ -1324,28 +1324,23 @@ closeAll.onclick=()=>{
         const data = JSON.parse(msg.data);
         if (data.msg_type === "authorize") {
           console.log("✅ Authorized successfully :", data.authorize.loginid);
-          // 3) Si vous voulez des champs de profil supplémentaires, demandez get_settings
-          DisconnectDeriv(connection);
-
-          connection.onopen = () => {
-             connection.send(JSON.stringify({ authorize: selectedAccount.token }));
-          };
-
           connection.send(JSON.stringify({ get_settings: 1 }));
           connection.send(JSON.stringify({ balance: 1, subscribe: 1 }));
 
           authorized = true;
           const acc = selectedAccount.account;
           const bal = data.authorize.balance;
-          const currency = selectedAccount.currency || "USD";
-          const fullname = " " + data.get_settings.first_name + " " + data.get_settings.last_name;
-          accountHolder.textContent = fullname.toString();
+          const currency = selectedAccount.currency || "USD";        
           balanceValue.textContent = bal.toString();
           //connectBtn.textContent = "Disconnect";
           accountInfo.textContent = `Account: ${acc} | Balance: ${Number(bal).toFixed(2)} ${currency}`;
-          setInterval(() => {
-             connectDeriv(connection);
-          },500);
+        }
+
+        if (data.msg_type === "get_settings")
+        {
+          const user = data.get_settings;
+          const fullname = " " + data.get_settings.first_name + " " + data.get_settings.last_name;
+          accountHolder.textContent = fullname.toString();
         }
       };
     }
