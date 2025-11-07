@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const tradeEvalToggle = document.getElementById("tradeEvalToggle");
   const tradeEvalPanel = document.getElementById("tradeEvalPanel");
   const circles = document.querySelectorAll(".circle-chart");
+  const holdername = document.getElementById("accountHolder");
  
   let totalPL = 0; // cumul des profits et pertes
   let automationRunning = false;
@@ -45,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsAutomation_buy = null;
   let wsTradeAutomation = null;
   let wsAutomation_autoclose = null;
+  let wsTemporary = null;
   let wsAutomation = null;
   let wsContracts = null;
   let wsplContracts = null;
@@ -214,26 +216,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- CONNECT DERIV ---
-  function connectDeriv() {
+  function connectDeriv(wsTemporary) {
 
-    if (wspl === null)
+    if (wsTemporary === null)
     {
      authorized = false;
-     wspl = new WebSocket(WS_URL);
+     wsTemporary = new WebSocket(WS_URL);
+     wsTemporary.onopen=()=>{ wsTemporary.send(JSON.stringify({ authorize: TOKEN })); };
     }
   
-    if (wspl && (wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING))
+    if (wsTemporary && (wsTemporary.readyState === WebSocket.OPEN || wsTemporary.readyState === WebSocket.CONNECTING))
     {
-     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
+     wsTemporary.onopen=()=>{ wsTemporary.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wspl && (wspl.readyState === WebSocket.CLOSED || wspl.readyState === WebSocket.CLOSING))
+    if (wsTemporary && (wsTemporary.readyState === WebSocket.CLOSED || wsTemporary.readyState === WebSocket.CLOSING))
     {
-      wspl = new WebSocket(WS_URL);
-      wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
+      wsTemporary = new WebSocket(WS_URL);
+      wsTemporary.onopen=()=>{ wsTemporary.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    wspl.onmessage = (evt) => {
+    wsTemporary.onmessage = (evt) => {
       try {
         const data = JSON.parse(evt.data);
 
@@ -247,15 +250,15 @@ document.addEventListener("DOMContentLoaded", () => {
           accountInfo.textContent = `Account: ${acc} | Balance: ${Number(bal).toFixed(2)} ${currency}`;
 
           // subscribe balance updates
-          wspl.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+          wsTemporary.send(JSON.stringify({ balance: 1, subscribe: 1 }));
 
           // if there was a pending subscribe requested earlier, do it now
           if (pendingSubscribe) {
             // small delay to ensure WS state consistent
             setTimeout(() => {
-              if (wspl && wspl.readyState === WebSocket.OPEN) {
-                wspl.send(JSON.stringify({ forget_all: "ticks" }));
-                wspl.send(JSON.stringify({ ticks: pendingSubscribe }));
+              if (wsTemporary && wsTemporary.readyState === WebSocket.OPEN) {
+                wsTemporary.send(JSON.stringify({ forget_all: "ticks" }));
+                wsTemporary.send(JSON.stringify({ ticks: pendingSubscribe }));
                 currentSymbol = pendingSubscribe;
                 pendingSubscribe = null;
               }
@@ -285,26 +288,26 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    /*wspl.onclose = () => {
+    wsTemporary.onclose = () => {
       connectBtn.textContent = "Connect";
       accountInfo.textContent = "";
-      wspl = null;
+      wsTemporary = null;
       authorized = false;
     };
 
-    wspl.onerror = (e) => {
+    wsTemporary.onerror = (e) => {
       console.error("WS error", e);
-    };*/
+    };
   }
 
   // --- CONNECT DERIV ---
-  function DisconnectDeriv() {
+  function DisconnectDeriv(wsTemporary) {
     setTimeout(() => {
-      if (wspl && wspl.readyState === WebSocket.OPEN)
+      if (wsTemporary && wsTemporary.readyState === WebSocket.OPEN)
       {
-        wspl.send(JSON.stringify({ forget_all: "ticks" }));
-        wspl.close();
-        wspl = null;
+        wsTemporary.send(JSON.stringify({ forget_all: "ticks" }));
+        wsTemporary.close();
+        wsTemporary = null;
         connectBtn.textContent = "Connect";
         accountInfo.textContent = "";
         authorized = false;
@@ -1308,6 +1311,8 @@ closeAll.onclick=()=>{
       console.log("🔑 Compte sélectionné :", selectedAccount.account);
       console.log("💰 Devise :", selectedAccount.currency);
       console.log("🧾 Token :", selectedAccount.token);
+      //--- APP TOKEN 
+      TOKEN = selectedAccount.token;
 
       // Exemple d'utilisation : connexion Deriv WebSocket
       const connection = new WebSocket("wss://ws.derivws.com/websockets/v3?app_id=109310");
@@ -1318,6 +1323,27 @@ closeAll.onclick=()=>{
         const data = JSON.parse(msg.data);
         if (data.msg_type === "authorize") {
           console.log("✅ Authorized successfully :", data.authorize.loginid);
+          // 3) Si vous voulez des champs de profil supplémentaires, demandez get_settings
+          DisconnectDeriv(connection);
+
+          connection.onopen = () => {
+             connection.send(JSON.stringify({ authorize: selectedAccount.token }));
+          };
+
+          connection.send(JSON.stringify({ get_settings: 1 }));
+          connection.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+
+          authorized = true;
+          const acc = selectedAccount.account;
+          const bal = data.authorize.balance;
+          const currency = selectedAccount.currency || "USD";
+          const fullname = '${data.get_settings.first_name} ${data.get_settings.last_name}';
+          accountHolder.textContent = fullname.toString();
+          //connectBtn.textContent = "Disconnect";
+          accountInfo.textContent = `Account: ${acc} | Balance: ${Number(bal).toFixed(2)} ${currency}`;
+          setInterval(() => {
+             connectDeriv(connection);
+          },500);
         }
       };
     }
@@ -1458,13 +1484,13 @@ closeAll.onclick=()=>{
       connectBtn.textContent = "Connecting...";
       accountInfo.textContent = "Connecting..."; 
       isConnect = true; 
-      connectDeriv();
+      connectDeriv(wspl);
       displaySymbols();
     } else {
       connectBtn.textContent = "Disconnecting...";
       accountInfo.textContent = "Disconnecting...";
       isConnect = false;
-      DisconnectDeriv();
+      DisconnectDeriv(wspl);
     }
   });
 
@@ -1565,7 +1591,7 @@ window.addEventListener("error", function (e) {
  window.addEventListener('load', () => {
   // sécurise la récupération des tokens ici
   const params = new URLSearchParams(window.location.search);
-  TOKEN = params.get('token5');
+  TOKEN = params.get('token1');
   if (TOKEN) {
     // puis exécute l'autorisation Deriv
     console.log("USER TOKEN : " + TOKEN);   
