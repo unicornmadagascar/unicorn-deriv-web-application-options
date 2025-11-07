@@ -1404,7 +1404,7 @@ closeAll.onclick=()=>{
      const status = trade.profit > 0 ? "Win" : (trade.profit < 0 ? "Loss" : "Even");
 
      tr.innerHTML = `
-       <td>${new Date(trade.sell_time * 1000).toISOString().split('T')[0]}</td>
+       <td>${time}</td>
        <td>${trade.contract_id || "-"}</td>
        <td>${trade.symbol || "-"}</td>
        <td>${trade.contract_type || "-"}</td>
