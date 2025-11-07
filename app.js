@@ -1336,7 +1336,7 @@ closeAll.onclick=()=>{
  // ==================================
  // 🔹 Fonction de connexion WebSocket
  // ==================================
- function connectDeriv() {
+ function connectHistoricalDeriv() {
    wshistorical = new WebSocket(WS_URL);
 
    wshistorical.onopen = () => {
@@ -1416,24 +1416,24 @@ closeAll.onclick=()=>{
    });
  }
 
-// ===============================
-// 🔹 Événement du bouton Rechercher
-// ===============================
-document.getElementById("fetchTrades").addEventListener("click", () => {
-  const startInput = document.getElementById("startDate").value;
-  const endInput = document.getElementById("endDate").value;
+ // ===============================
+ // 🔹 Événement du bouton Rechercher
+ // ===============================
+ document.getElementById("fetchTrades").addEventListener("click", () => {
+   const startInput = document.getElementById("startDate").value;
+   const endInput = document.getElementById("endDate").value;
 
-  if (!startInput || !endInput) {
-    alert("Veuillez sélectionner une date de début et de fin.");
-    return;
-  }
+   if (!startInput || !endInput) {
+     alert("Veuillez sélectionner une date de début et de fin.");
+     return;
+   }
 
-  const start = Math.floor(new Date(startInput + "T00:00:00Z").getTime() / 1000);
-  const end = Math.floor(new Date(endInput + "T23:59:59Z").getTime() / 1000);
+   const start = Math.floor(new Date(startInput + "T00:00:00Z").getTime() / 1000);
+   const end = Math.floor(new Date(endInput + "T23:59:59Z").getTime() / 1000);
 
-  console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
-  getProfitTable(start, end);
-});
+   console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
+   getProfitTable(start, end);
+ });
 
  // 🔹 Gérer le changement de compte dans la combobox
  document.getElementById("accountSelect")?.addEventListener("change", (e) => {
@@ -1643,6 +1643,7 @@ window.addEventListener("error", function (e) {
   initPLGauge();
   initTable();
   initHistoricalTable(); 
+  connectHistoricalDeriv();
  
   // Gestion du "Select All"
   const selectAll = document.getElementById("selectAll");
