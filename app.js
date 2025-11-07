@@ -1435,6 +1435,7 @@ closeAll.onclick=()=>{
 
    console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
    getProfitTable(start, end);
+   connectHistoricalDeriv();
  });
 
  // 🔹 Gérer le changement de compte dans la combobox
@@ -1645,7 +1646,7 @@ window.addEventListener("error", function (e) {
   initPLGauge();
   initTable();
   initHistoricalTable(); 
-  connectHistoricalDeriv();
+  //connectHistoricalDeriv();
    
   // Gestion du "Select All"  
   const selectAll = document.getElementById("selectAll");
