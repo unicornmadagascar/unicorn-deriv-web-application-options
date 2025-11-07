@@ -1538,8 +1538,8 @@ window.addEventListener("error", function (e) {
   initChart();
   initPLGauge();
   initTable();
-  initHistoricalTable();
-
+  initHistoricalTable(); 
+ 
   // Gestion du "Select All"
   const selectAll = document.getElementById("selectAll");
   selectAll.addEventListener("change", () => {
