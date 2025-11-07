@@ -588,7 +588,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!connection || connection.readyState === WebSocket.CLOSED)
      {
       pendingSubscribe = symbol;
-      connectDeriv(connection);
+      connectDeriv();
      }
 
     if (connection && connection.readyState === WebSocket.OPEN && authorized)
