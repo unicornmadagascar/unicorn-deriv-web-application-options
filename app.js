@@ -1404,7 +1404,7 @@ closeAll.onclick=()=>{
      const status = trade.profit > 0 ? "Win" : (trade.profit < 0 ? "Loss" : "Even");
 
      tr.innerHTML = `
-       <td>${time}</td>
+       <td>${new Date(trade.sell_time * 1000).toISOString().split('T')[0]}</td>
        <td>${trade.contract_id || "-"}</td>
        <td>${trade.symbol || "-"}</td>
        <td>${trade.contract_type || "-"}</td>
@@ -1412,7 +1412,7 @@ closeAll.onclick=()=>{
        <td>${trade.multiplier || "-"}</td>
        <td>${trade.take_profit || "-"}</td>
        <td>${trade.stop_loss || "-"}</td>
-       <td style="color:${trade.profit >= 0 ? 'limegreen' : 'red'};">${(trade.profit > 0 ? "+" : "") + trade.profit}</td>
+       <td style="color:${trade.sell_price.toFixed(2) >= 0 ? 'limegreen' : 'red'};">${(trade.sell_price.toFixed(2) > 0 ? "+" : "") + trade.sell_price.toFixed(2)}</td>
        <td>${status}</td>
      `; 
      tbody.appendChild(tr);
