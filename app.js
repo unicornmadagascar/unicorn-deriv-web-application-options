@@ -1401,12 +1401,12 @@ closeAll.onclick=()=>{
        ? new Date(trade.sell_time * 1000).toLocaleString()
        : "-";
 
-     const status = trade.profit > 0 ? "Win" : (trade.profit < 0 ? "Loss" : "Even");
+     const status = trade.sell_price.toFixed(2) > 0 ? "Win" : (trade.sell_price.toFixed(2) < 0 ? "Loss" : "Even");
 
      tr.innerHTML = `
        <td>${time}</td>
        <td>${trade.contract_id || "-"}</td>
-       <td>${trade.symbol || "-"}</td>
+       <td>${trade.underlying_symbol || "-"}</td>
        <td>${trade.contract_type || "-"}</td>
        <td>${trade.buy_price?.toFixed(2) || "-"}</td>
        <td>${trade.multiplier || "-"}</td>
