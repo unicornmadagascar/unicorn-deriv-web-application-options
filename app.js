@@ -1412,7 +1412,7 @@ closeAll.onclick=()=>{
        <td>${trade.multiplier || "-"}</td>
        <td>${trade.take_profit || "-"}</td>
        <td>${trade.stop_loss || "-"}</td>
-       <td style="color:${trade.profit >= 0 ? 'limegreen' : 'red'};">${(trade.profit > 0 ? "+" : "") + trade.profit.toFixed(2)}</td>
+       <td style="color:${trade.profit >= 0 ? 'limegreen' : 'red'};">${(trade.profit > 0 ? "+" : "") + trade.profit}</td>
        <td>${status}</td>
      `; 
      tbody.appendChild(tr);
