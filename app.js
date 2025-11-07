@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let smoothVol = 0;
   let smoothTrend = 0;
   let ws = null;
+  let connection = null;
   let wsload = null;
   let wsContracts__close = null;
   let wsContracts_winning = null;
@@ -574,7 +575,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- SUBSCRIBE SYMBOL ---
   function subscribeSymbol(symbol) {
 
-    if (wspl === null)
+    if (connection === null)
     {
      pendingSubscribe = symbol;
      return;
@@ -584,16 +585,16 @@ document.addEventListener("DOMContentLoaded", () => {
     currentSymbol = symbol;
     initChart(); // reinit chart so areaSeries exists before ticks arrive
 
-    if (!wspl || wspl.readyState === WebSocket.CLOSED)
+    if (!connection || connection.readyState === WebSocket.CLOSED)
      {
       pendingSubscribe = symbol;
-      connectDeriv(wspl);
+      connectDeriv(connection);
      }
 
-    if (wspl && wspl.readyState === WebSocket.OPEN && authorized)
+    if (connection && connection.readyState === WebSocket.OPEN && authorized)
      {
-      wspl.send(JSON.stringify({ forget_all: "ticks" }));
-      wspl.send(JSON.stringify({ ticks: symbol }));
+      connection.send(JSON.stringify({ forget_all: "ticks" }));
+      connection.send(JSON.stringify({ ticks: symbol }));
      }
   }
 
@@ -1317,7 +1318,7 @@ closeAll.onclick=()=>{
       DisconnectDeriv(connection);
 
       // Exemple d'utilisation : connexion Deriv WebSocket
-      const connection = new WebSocket("wss://ws.derivws.com/websockets/v3?app_id=109310");
+      connection = new WebSocket("wss://ws.derivws.com/websockets/v3?app_id=109310");
       connection.onopen = () => {
         connection.send(JSON.stringify({ authorize: selectedAccount.token }));
       };
@@ -1484,13 +1485,13 @@ closeAll.onclick=()=>{
       connectBtn.textContent = "Connecting...";
       accountInfo.textContent = "Connecting..."; 
       isConnect = true; 
-      connectDeriv(wspl);
+      connectDeriv(connection);
       displaySymbols();
     } else {
       connectBtn.textContent = "Disconnecting...";
       accountInfo.textContent = "Disconnecting...";
       isConnect = false;
-      DisconnectDeriv(wspl);
+      DisconnectDeriv(connection);
     }
   });
 
