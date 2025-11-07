@@ -1414,7 +1414,7 @@ closeAll.onclick=()=>{
        <td>${trade.stop_loss || "-"}</td>
        <td style="color:${trade.profit >= 0 ? 'limegreen' : 'red'};">${(trade.profit > 0 ? "+" : "") + trade.profit.toFixed(2)}</td>
        <td>${status}</td>
-     `;
+     `; 
      tbody.appendChild(tr);
    });
  }
@@ -1426,8 +1426,6 @@ closeAll.onclick=()=>{
    const startInput = document.getElementById("startDate").value;
    const endInput = document.getElementById("endDate").value;
 
-   connectHistoricalDeriv();
-
    if (!startInput || !endInput) {
      alert("Veuillez sélectionner une date de début et de fin.");  
      return;
@@ -1438,6 +1436,7 @@ closeAll.onclick=()=>{
 
    console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
    getProfitTable(start, end);
+   connectHistoricalDeriv();
  });
 
  // 🔹 Gérer le changement de compte dans la combobox
