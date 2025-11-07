@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let contractSymbol;  
   let contracts = [];
   let proposal__ = [];
-  let transactions = [];
+  let transactions__ = [];
 
 
   // --- NEW: current symbol & pending subscribe ---
@@ -1352,9 +1352,9 @@ closeAll.onclick=()=>{
      }
 
      // Quand on reçoit la profit_table
-     if (data.msg_type === "profit_table") {
-       transactions = data.profit_table.transactions || [];
-       updateTradeTable(transactions);
+     if (data.msg_type === "profit_table") {  
+       transactions__ = data.profit_table.transactions || [];
+       updateTradeTable(transactions__);
      }
 
      if (data.error) {
