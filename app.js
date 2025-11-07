@@ -218,27 +218,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- CONNECT DERIV ---
-  function connectDeriv(wsTemporary) {
+  function connectDeriv() {
 
-    if (wsTemporary === null)
+    if (wspl === null)
     {
      authorized = false;
-     wsTemporary = new WebSocket(WS_URL);
-     wsTemporary.onopen=()=>{ wsTemporary.send(JSON.stringify({ authorize: TOKEN })); };
+     wspl = new WebSocket(WS_URL);
+     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
     }
   
-    if (wsTemporary && (wsTemporary.readyState === WebSocket.OPEN || wsTemporary.readyState === WebSocket.CONNECTING))
+    if (wspl && (wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING))
     {
-     wsTemporary.onopen=()=>{ wsTemporary.send(JSON.stringify({ authorize: TOKEN })); };
+     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wsTemporary && (wsTemporary.readyState === WebSocket.CLOSED || wsTemporary.readyState === WebSocket.CLOSING))
+    if (wspl && (wspl.readyState === WebSocket.CLOSED || wspl.readyState === WebSocket.CLOSING))
     {
-      wsTemporary = new WebSocket(WS_URL);
-      wsTemporary.onopen=()=>{ wsTemporary.send(JSON.stringify({ authorize: TOKEN })); };
+      wspl = new WebSocket(WS_URL);
+      wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    wsTemporary.onmessage = (evt) => {
+    wspl.onmessage = (evt) => {
       try {
         const data = JSON.parse(evt.data);
 
@@ -252,15 +252,15 @@ document.addEventListener("DOMContentLoaded", () => {
           accountInfo.textContent = `Account: ${acc} | Balance: ${Number(bal).toFixed(2)} ${currency}`;
 
           // subscribe balance updates
-          wsTemporary.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+          wspl.send(JSON.stringify({ balance: 1, subscribe: 1 }));
 
           // if there was a pending subscribe requested earlier, do it now
           if (pendingSubscribe) {
             // small delay to ensure WS state consistent
             setTimeout(() => {
-              if (wsTemporary && wsTemporary.readyState === WebSocket.OPEN) {
-                wsTemporary.send(JSON.stringify({ forget_all: "ticks" }));
-                wsTemporary.send(JSON.stringify({ ticks: pendingSubscribe }));
+              if (wspl && wspl.readyState === WebSocket.OPEN) {
+                wspl.send(JSON.stringify({ forget_all: "ticks" }));
+                wspl.send(JSON.stringify({ ticks: pendingSubscribe }));
                 currentSymbol = pendingSubscribe;
                 pendingSubscribe = null;
               }
@@ -290,14 +290,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    wsTemporary.onclose = () => {
+    wspl.onclose = () => {
       connectBtn.textContent = "Connect";
       accountInfo.textContent = "";
-      wsTemporary = null;
+      wspl = null;
       authorized = false;
     };
 
-    wsTemporary.onerror = (e) => {
+    wspl.onerror = (e) => {
       console.error("WS error", e);
     };
   }
@@ -1328,14 +1328,14 @@ closeAll.onclick=()=>{
           console.log("✅ Authorized successfully :", data.authorize.loginid);
           connection.send(JSON.stringify({ get_settings: 1 }));
           connection.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+        }
 
-          authorized = true;
-          const acc = selectedAccount.account;
+        if (data.msg_type === "balance")
+        {
           const bal = data.authorize.balance;
-          const currency = selectedAccount.currency || "USD";        
-          balanceValue.textContent = bal.toString();
-          //connectBtn.textContent = "Disconnect";
-          accountInfo.textContent = `Account: ${acc} | Balance: ${Number(bal).toFixed(2)} ${currency}`;
+          const currency = selectedAccount.currency || "USD"; 
+          balanceValue.textContent = bal.toString() + " " + currency;
+          return;
         }
 
         if (data.msg_type === "get_settings")
@@ -1485,13 +1485,13 @@ closeAll.onclick=()=>{
       connectBtn.textContent = "Connecting...";
       accountInfo.textContent = "Connecting..."; 
       isConnect = true; 
-      connectDeriv(connection);
+      connectDeriv();
       displaySymbols();
     } else {
       connectBtn.textContent = "Disconnecting...";
       accountInfo.textContent = "Disconnecting...";
       isConnect = false;
-      DisconnectDeriv(connection);
+      DisconnectDeriv();
     }
   });
 
