@@ -1314,6 +1314,7 @@ closeAll.onclick=()=>{
       console.log("🧾 Token :", selectedAccount.token);
       //--- APP TOKEN 
       TOKEN = selectedAccount.token;
+      DisconnectDeriv(wspl);
 
       // Exemple d'utilisation : connexion Deriv WebSocket
       const connection = new WebSocket("wss://ws.derivws.com/websockets/v3?app_id=109310");
