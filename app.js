@@ -61,6 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let Dispersion;
   let isConnect = false;
   let it = 0;
+  let TOKEN;
   // Historique local des ticks
   let tickHistory = [];
   let Tick_arr = [];
@@ -69,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const contractsData = {}; // stockage des contrats {id: {profits: [], infos: {…}}}
   let portfolioReceived = false;
   let existingContract = false;
-  let contractSymbol;
+  let contractSymbol;  
   let contracts = [];
   let proposal__ = [];
 
@@ -1567,7 +1568,7 @@ window.addEventListener("error", function (e) {
   TOKEN = params.get('token5');
   if (TOKEN) {
     // puis exécute l'autorisation Deriv
-    console.log("USER TOKEN : " + TOKEN);
+    console.log("USER TOKEN : " + TOKEN);   
   }
  }); 
  
