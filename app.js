@@ -1328,12 +1328,9 @@ closeAll.onclick=()=>{
           console.log("✅ Authorized successfully :", data.authorize.loginid);
           connection.send(JSON.stringify({ get_settings: 1 }));
           connection.send(JSON.stringify({ balance: 1, subscribe: 1 }));
-        }
 
-        if (data.msg_type === "balance")
-        {
-          const bal = data.balance.balance;
-          const currency = data.balance.currency || "USD"; 
+          const bal = data.authorize.balance;
+          const currency = data.authorize.currency || "USD"; 
           balanceValue.textContent = bal.toString() + " " + currency;
         }
 
