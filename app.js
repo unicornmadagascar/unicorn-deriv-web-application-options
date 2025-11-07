@@ -1352,7 +1352,7 @@ closeAll.onclick=()=>{
      }
 
      // Quand on reçoit la profit_table
-     if (data.msg_type === "profit_table") {  
+     if (data.msg_type === "profit_table") {     
        transactions__ = data.profit_table.transactions || [];
        updateTradeTable(transactions__);
      }
