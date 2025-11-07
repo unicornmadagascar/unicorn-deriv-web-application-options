@@ -1561,7 +1561,7 @@ window.addEventListener("error", function (e) {
   }
 });
 
- /* window.addEventListener('load', () => {
+ window.addEventListener('load', () => {
   // sécurise la récupération des tokens ici
   const params = new URLSearchParams(window.location.search);
   TOKEN = params.get('token1');
@@ -1569,7 +1569,7 @@ window.addEventListener("error", function (e) {
     // puis exécute l'autorisation Deriv
     console.log("USER TOKEN : " + TOKEN);
   }
-}); */
+ }); 
  
   
   // Simulation : mise à jour toutes les 2 secondes
