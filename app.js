@@ -34,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const circles = document.querySelectorAll(".circle-chart");
   const holdername = document.getElementById("accountHolder");
   const balanceValue = document.getElementById("balanceValue");
+  const HistoricalContract = document.getElementById("HistoricalContract");
  
   let totalPL = 0; // cumul des profits et pertes
   let automationRunning = false;
@@ -1304,6 +1305,32 @@ closeAll.onclick=()=>{
     populateAccountCombo();
  }
 
+ function initHistoricalTable()
+  {
+   // Construction du tableau HTML
+   HistoricalContract.innerHTML = `
+    <table class="trade-table" id = "autoHistoricalTrade">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Contract ID</th>
+            <th>Symbol</th>
+            <th>Contract Type</th>
+            <th>Stake</th>
+            <th>Multiplier</th>
+            <th>TP</th>
+            <th>SL</th>
+            <th>Profit</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="autoHistoricalBody"></tbody>
+      </table>
+   `;
+
+    const autoHistoricalBody = document.getElementById("autoHistoricalBody");
+  }
+
  // 🔹 Gérer le changement de compte dans la combobox
  document.getElementById("accountSelect")?.addEventListener("change", (e) => {
     const selectedToken = e.target.value;
@@ -1511,6 +1538,7 @@ window.addEventListener("error", function (e) {
   initChart();
   initPLGauge();
   initTable();
+  initHistoricalTable();
 
   // Gestion du "Select All"
   const selectAll = document.getElementById("selectAll");
