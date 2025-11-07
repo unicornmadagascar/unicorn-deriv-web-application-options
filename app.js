@@ -1030,7 +1030,7 @@ closeAll.onclick=()=>{
           <th>Time of Trade</th>
           <th>Contract ID</th>
           <th>Symbol</th>  
-          <th>Contract Type</th>
+          <th>Contract Type</th>  
           <th>Stake</th>
           <th>Multiplier</th>
           <th>Entry Spot</th>
