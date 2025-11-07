@@ -1335,7 +1335,6 @@ closeAll.onclick=()=>{
           const bal = data.balance.balance;
           const currency = data.balance.currency || "USD"; 
           balanceValue.textContent = bal.toString() + " " + currency;
-          return;
         }
 
         if (data.msg_type === "get_settings")
