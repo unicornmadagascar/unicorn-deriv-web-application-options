@@ -78,6 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let contractSymbol;  
   let contracts = [];
   let proposal__ = [];
+  let transactions = [];
 
 
   // --- NEW: current symbol & pending subscribe ---
@@ -1352,7 +1353,8 @@ closeAll.onclick=()=>{
 
      // Quand on reçoit la profit_table
      if (data.msg_type === "profit_table") {
-       updateTradeTable(data.profit_table.transactions || []);
+       transactions = data.profit_table.transactions || [];
+       updateTradeTable(transactions);
      }
 
      if (data.error) {
@@ -1374,8 +1376,8 @@ closeAll.onclick=()=>{
   wshistorical.send(JSON.stringify({
     profit_table: 1,
     description: 1,
-    from: fromTimestamp,
-    to: toTimestamp,
+    date_from: fromTimestamp,
+    date_to: toTimestamp,
     limit: 100
   }));
  }
