@@ -1353,7 +1353,7 @@ closeAll.onclick=()=>{
 
      // Quand on reçoit la profit_table
      if (data.msg_type === "profit_table") {     
-       transactions__ = data.profit_table.transactions || [];
+       transactions__ = data.profit_table.transactions;
        updateTradeTable(transactions__);
      }
 
@@ -1425,17 +1425,18 @@ closeAll.onclick=()=>{
    const startInput = document.getElementById("startDate").value;
    const endInput = document.getElementById("endDate").value;
 
+   connectHistoricalDeriv();
+
    if (!startInput || !endInput) {
      alert("Veuillez sélectionner une date de début et de fin.");  
      return;
    }
 
-   const start = startInput;     //Math.floor(new Date(startInput + "T00:00:00Z").getTime() / 1000);
-   const end = endInput;         //Math.floor(new Date(endInput + "T23:59:59Z").getTime() / 1000);
+   const start = startInput.toString();     //Math.floor(new Date(startInput + "T00:00:00Z").getTime() / 1000);
+   const end = endInput.toString();         //Math.floor(new Date(endInput + "T23:59:59Z").getTime() / 1000);
 
    console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
    getProfitTable(start, end);
-   connectHistoricalDeriv();
  });
 
  // 🔹 Gérer le changement de compte dans la combobox
@@ -1646,7 +1647,6 @@ window.addEventListener("error", function (e) {
   initPLGauge();
   initTable();
   initHistoricalTable(); 
-  //connectHistoricalDeriv();
    
   // Gestion du "Select All"  
   const selectAll = document.getElementById("selectAll");
