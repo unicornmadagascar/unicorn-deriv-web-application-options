@@ -461,6 +461,27 @@ footer {
   font-weight: bold;
 }
 
+#tradeHistory {
+  position: relative;
+}
+
+#tradeHistory button {
+  height: 42px;
+  padding: 0 16px;
+  border: none;
+  background: white;
+  color: gray;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+ #tradeHistory button:hover {
+   transform: translateY(-2px);
+   box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+ }
 
   </style>
 </head>
@@ -602,7 +623,7 @@ footer {
 
     <div id="tradeHistory">
       <h3>Trade History</h3>
-      <button id="fetchTrades">Refresh Trable</button>
+      <button id="fetchTrades" class="absolute-btn">Refresh Table</button>
       <table class="trade-table">
         <thead>
           <tr>
