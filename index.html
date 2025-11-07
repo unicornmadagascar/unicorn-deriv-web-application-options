@@ -461,27 +461,34 @@ footer {
   font-weight: bold;
 }
 
-#tradeHistory {
-  position: relative;
+#.trade-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
-#tradeHistory button {
-  height: 42px;
-  padding-bottom: 16px;
-  border: none;
-  background: white;
+.trade-header h3 {
+  color: white;
+  margin: 0;
+}
+
+.trade-header button {
+  background-color: transparent;
   color: gray;
-  border-radius: 8px;
-  font-weight: 600;
+  background: white;
+  border: 1px solid white;
+  padding: 6px 12px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  font-weight: bold;
+  transition: all 0.3s ease;
 }
 
- #tradeHistory button:hover {
-   transform: translateY(-2px);
-   box-shadow: 0 6px 14px rgba(0,0,0,0.12);
- }  
+.trade-header button:hover {
+  background-color: white;
+  color: gray;
+}
 
   </style>
 </head>
@@ -622,8 +629,10 @@ footer {
     </div>
 
     <div id="tradeHistory">
-      <h3>Trade History</h3>
-      <button id="fetchTrades" class="absolute-btn">Refresh Table</button>
+      <div class="trade-header">
+         <h3>Trade History</h3>
+         <button id="fetchTrades">Refresh Table</button>
+      </div>
       <table class="trade-table">
         <thead>
           <tr>
