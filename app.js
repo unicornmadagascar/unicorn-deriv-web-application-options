@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let contracts = [];
   let proposal__ = [];
   let transactions__ = [];
-  let structresponse = {};
+  let structresponse = [];
   let datapercent = {};
 
 
@@ -1484,8 +1484,8 @@ closeAll.onclick=()=>{
      if (data.msg_type === "profit_table") {     
         structresponse =  getProfitStats(data);
         console.log("Response : " + structresponse);
-       // Animation simultanée des cercles et des chiffres
-       circles.forEach(circle => {
+        // Animation simultanée des cercles et des chiffres
+        circles.forEach(circle => {
            let targetDeg = 0;
            let targetPercent = 0;
 
@@ -1571,7 +1571,9 @@ function getProfitStats(response) {
 
    console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
    getProfitTable(start, end);
-   connectHistoricalDeriv();
+   setTimeout(() => {
+     connectHistoricalDeriv();
+   },1000);
    GetProfitConnection();      
  });
 
