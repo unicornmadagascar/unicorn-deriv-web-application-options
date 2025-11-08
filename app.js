@@ -1570,6 +1570,7 @@ function getProfitStats(response) {
    console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
    getProfitTable(start, end);
    connectHistoricalDeriv();
+   GetProfitConnection();
  });
 
  // 🔹 Gérer le changement de compte dans la combobox
