@@ -1400,9 +1400,10 @@ closeAll.onclick=()=>{
      const time = trade.sell_time
        ? new Date(trade.sell_time * 1000).toLocaleString()
        : "-";
- 
-     const status = trade.sell_price.toFixed(2) > 0 ? "Win" : (trade.sell_price.toFixed(2) < 0 ? "Loss" : "Even");
+     
      const profit = trade.sell_price - trade.buy_price;
+     const status = profit.toFixed(2) > 0 ? "Win" : (profit.toFixed(2) < 0 ? "Loss" : "Even");
+     
 
      tr.innerHTML = `
        <td>${time}</td>
