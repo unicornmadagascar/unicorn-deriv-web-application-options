@@ -1805,7 +1805,7 @@ window.addEventListener("error", function (e) {
           span.textContent = targetPercent + "%";
         } else {
           currentDeg += stepDeg;
-          currentPercent += stepPercent;
+          currentPercent += stepPercent;  
           circle.style.background = `conic-gradient(${color} ${currentDeg}deg, #e5e7eb ${currentDeg}deg)`;
           span.textContent = Math.round(currentPercent) + "%";
         }
