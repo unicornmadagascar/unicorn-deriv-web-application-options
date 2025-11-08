@@ -1394,8 +1394,8 @@ closeAll.onclick=()=>{
     description: 1,
     date_from: fromTimestamp,
     date_to: toTimestamp,
-    limit: 100,
-    sort : "ASC"
+    limit: 500,
+    sort : "DESC"
   }));
  }
 
