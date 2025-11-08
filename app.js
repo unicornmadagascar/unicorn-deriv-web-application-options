@@ -1584,9 +1584,9 @@ function getProfitStats(response) {
    const end = endInput.toString();         //Math.floor(new Date(endInput + "T23:59:59Z").getTime() / 1000);
 
    console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
-   getProfitTable(start, end);
-   GetProfitConnection();  
+   getProfitTable(start, end); 
    connectHistoricalDeriv();   
+   GetProfitConnection(); 
  });
 
  // 🔹 Gérer le changement de compte dans la combobox
