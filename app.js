@@ -1496,9 +1496,6 @@ closeAll.onclick=()=>{
         profitvalue.textContent = structresponse.totalprofitprice;
         lossvalue.textContent = structresponse.totallossprice;
         plvalue.textContent = structresponse.totalPNLprice;   
-        profitcurrency.textContent = CURRENCY.toString();
-        plcurrency.textContent = CURRENCY.toString();
-        losscurrency.textContent = CURRENCY.toString();
         circles.forEach(circle => {
            let targetDeg = 0;
            let targetPercent = 0;
@@ -1601,6 +1598,9 @@ function getProfitStats(response) {
       //--- APP TOKEN 
       TOKEN = selectedAccount.token;
       CURRENCY = selectedAccount.currency;
+      profitcurrency.textContent = selectedAccount.currency;
+      plcurrency.textContent = selectedAccount.currency;
+     losscurrency.textContent = selectedAccount.currency;
       DisconnectDeriv();
 
       // Exemple d'utilisation : connexion Deriv WebSocket
