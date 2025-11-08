@@ -1441,6 +1441,9 @@ closeAll.onclick=()=>{
 
  function GetProfitConnection()
  {
+  const startInput = document.getElementById("startDate").value;
+  const endInput = document.getElementById("endDate").value;
+
   if (connection===null)
    {
     connection = new WebSocket(WS_URL);
@@ -1467,8 +1470,6 @@ closeAll.onclick=()=>{
 
       if (data.msg_type === "authorize")
       {
-       const startInput = document.getElementById("startDate").value;
-       const endInput = document.getElementById("endDate").value;
        connection.send(JSON.stringify({
           profit_table: 1,
           description: 1,
@@ -1482,6 +1483,7 @@ closeAll.onclick=()=>{
        // Quand on reçoit la profit_table
      if (data.msg_type === "profit_table") {     
         structresponse =  getProfitStats(data);
+        console.log("Response : " + structresponse);
        // Animation simultanée des cercles et des chiffres
        circles.forEach(circle => {
            let targetDeg = 0;
