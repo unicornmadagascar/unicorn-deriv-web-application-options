@@ -79,6 +79,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let contracts = [];
   let proposal__ = [];
   let transactions__ = [];
+  let structresponse = {};
+  let datapercent = {};
 
 
   // --- NEW: current symbol & pending subscribe ---
@@ -1437,6 +1439,86 @@ closeAll.onclick=()=>{
    });
  }
 
+ function GetProfitConnection()
+ {
+  if (connection===null)
+   {
+    connection = new WebSocket(WS_URL);
+    connection.onopen = () => {
+       connection.send(JSON.stringify({ authorize: TOKEN }));
+    };
+   }
+   
+   if (connection && (connection.readyState === WebSocket.OPEN || connection.readyState === WebSocket.CONNECTING))
+   {
+    connection.onopen=()=>{ connection.send(JSON.stringify({ authorize: TOKEN })); };
+   }
+
+   if (connection && (connection.readyState === WebSocket.CLOSED || connection.readyState === WebSocket.CLOSING))
+   {
+    connection = new WebSocket(WS_URL);
+    connection.onopen=()=>{ connection.send(JSON.stringify({ authorize: TOKEN })); };
+   }
+    
+   connection.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+   connection.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+   connection.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+
+      if (data.msg_type === "authorize")
+      {
+       connection.send(JSON.stringify({
+          profit_table: 1,
+          description: 1,
+          date_from: fromTimestamp,
+          date_to: toTimestamp,
+          limit: 500,
+           sort : "DESC"
+       }));
+      }
+
+       // Quand on reçoit la profit_table
+     if (data.msg_type === "profit_table") {     
+        structresponse =  getProfitStats(data);
+     }
+   };
+
+   return structresponse;
+ }
+
+ // 🔹 Fonction de calcul PNL, WinRate, LossRate
+function getProfitStats(response) {
+  const transactions = response?.profit_table?.transactions || [];
+  if (!transactions.length) return { pnlPercent: '0', winRate: '0', lossRate: '0' };
+
+  let totalProfit = 0, totalBuy = 0, wins = 0, losses = 0, totalprofitprice = 0, totallossprice = 0;
+
+  for (const c of transactions) {
+    if (!c.sell_price || !c.buy_price) continue;
+    const profit = c.sell_price - c.buy_price;
+    totalProfit += profit;
+    totalBuy += c.buy_price;
+    if (profit > 0) 
+    {
+      wins++;
+      totalprofitprice += profit;
+    }
+    else if (profit < 0)
+    {
+      losses++;
+      totallossprice += profit;
+    }
+  }
+  
+  const totalPNLprice = totalProfit;
+  const total = wins + losses;
+  const pnlPercent = totalBuy > 0 ? ((totalProfit / totalBuy) * 100).toFixed(2) : 0;
+  const winRate = total > 0 ? ((wins / total) * 100).toFixed(2) : 0;
+  const lossRate = total > 0 ? ((losses / total) * 100).toFixed(2) : 0;
+
+  return { pnlPercent, winRate, lossRate, totalPNLprice, totalprofitprice, totallossprice };
+}
+
  // ===============================
  // 🔹 Événement du bouton Rechercher
  // ===============================
@@ -1455,6 +1537,7 @@ closeAll.onclick=()=>{
    console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
    getProfitTable(start, end);
    connectHistoricalDeriv();
+
  });
 
  // 🔹 Gérer le changement de compte dans la combobox
@@ -1471,7 +1554,7 @@ closeAll.onclick=()=>{
       DisconnectDeriv();
 
       // Exemple d'utilisation : connexion Deriv WebSocket
-      connection = new WebSocket("wss://ws.derivws.com/websockets/v3?app_id=109310");
+      connection = new WebSocket(WS_URL);
       connection.onopen = () => {
         connection.send(JSON.stringify({ authorize: selectedAccount.token }));
       };
@@ -1694,14 +1777,15 @@ window.addEventListener("error", function (e) {
   tradeEvalPanel.classList.toggle("active");
 
   if (tradeEvalPanel.classList.contains("active")) {
+    datapercent = GetProfitConnection();
     // Animation simultanée des cercles et des chiffres
     circles.forEach(circle => {
       let targetDeg = 0;
       let targetPercent = 0;
 
-      if (circle.classList.contains("red")) { targetDeg = 72; targetPercent = 20; }
-      if (circle.classList.contains("blue")) { targetDeg = 288; targetPercent = 80; }
-      if (circle.classList.contains("mix")) { targetDeg = 216; targetPercent = 60; }
+      if (circle.classList.contains("red")) { targetDeg = datapercent.lossRate * 3.6; targetPercent = datapercent.lossRate; }
+      if (circle.classList.contains("blue")) { targetDeg = datapercent.winRate * 3.6; targetPercent = datapercent.winRate; }
+      if (circle.classList.contains("mix")) { targetDeg = datapercent.pnlPercent * 3.6; targetPercent = datapercent.pnlPercent; }
 
       let currentDeg = 0;
       let currentPercent = 0;
