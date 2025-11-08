@@ -1477,14 +1477,7 @@ closeAll.onclick=()=>{
 
       if (data.msg_type === "authorize")
       {
-       connection.send(JSON.stringify({
-          profit_table: 1,
-          description: 1,
-          date_from: startInput.toString(),
-          date_to: endInput.toString(),
-          limit: 500,
-           sort : "DESC"
-       }));
+       
       }
 
        // Quand on reçoit la profit_table
