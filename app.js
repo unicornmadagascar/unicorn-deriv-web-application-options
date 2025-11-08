@@ -1492,9 +1492,9 @@ closeAll.onclick=()=>{
         structresponse =  getProfitStats(data);
         console.log("Response : " + structresponse);
         // Animation simultanée des cercles et des chiffres 
-        profitvalue.textContent = structresponse.totalprofitprice;
-        lossvalue.textContent = structresponse.totallossprice;
-        plvalue.textContent = structresponse.totalPNLprice;
+        profitvalue.textContent = structresponse.totalprofitprice.toFixed(3);
+        lossvalue.textContent = structresponse.totallossprice.toFixed(3);
+        plvalue.textContent = structresponse.totalPNLprice.toFixed(3);
         profitcurrency.textContent = CURRENCY;
         plcurrency.textContent = CURRENCY;
         losscurrency.textContent = CURRENCY;
