@@ -1492,9 +1492,9 @@ closeAll.onclick=()=>{
         structresponse =  getProfitStats(data);
         console.log("Response : " + structresponse);
         // Animation simultanée des cercles et des chiffres 
-        profitvalue.textContent = structresponse.totalprofitprice.toFixed(2);
-        lossvalue.textContent = structresponse.totallossprice.toFixed(2);
-        plvalue.textContent = structresponse.totalPNLprice.toFixed(2);
+        profitvalue.textContent = structresponse.totalprofitprice;
+        lossvalue.textContent = structresponse.totallossprice;
+        plvalue.textContent = structresponse.totalPNLprice;
         profitcurrency.textContent = CURRENCY;
         plcurrency.textContent = CURRENCY;
         losscurrency.textContent = CURRENCY;
@@ -1564,7 +1564,7 @@ function getProfitStats(response) {
   const winRate = total > 0 ? ((wins / total) * 100).toFixed(2) : 0;
   const lossRate = total > 0 ? ((losses / total) * 100).toFixed(2) : 0;
 
-  return { pnlPercent, winRate, lossRate, totalPNLprice, totalprofitprice, totallossprice };
+  return { pnlPercent, winRate, lossRate, totalPNLprice.toFixed(2), totalprofitprice.toFixed(2), totallossprice.toFixed(2) };
 }
 
  // ===============================
