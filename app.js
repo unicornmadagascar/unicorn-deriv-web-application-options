@@ -1420,7 +1420,7 @@ closeAll.onclick=()=>{
    }
 
    connection.onmessage = (msg) => {
-     const data = JSON.parse(msg.data);
+     const data = JSON.parse(msg.data);   
 
      if (data.msg_type === "authorize") {
        console.log("✅ Connecté à Deriv API");
