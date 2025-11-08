@@ -1555,7 +1555,7 @@ function getProfitStats(response) {
          const stepPercent = targetPercent / 60;
          const span = circle.querySelector("span");
          const color =
-         circle.classList.contains("red")
+         circle.classList.contains("red")   
             ? "#ef4444"
             : circle.classList.contains("blue")
             ? "#3b82f6"
