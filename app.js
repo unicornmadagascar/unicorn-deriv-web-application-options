@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { symbol: "CRASH1000", name: "Crash 1000" },
     { symbol: "BOOM500", name: "Boom 500" },
     { symbol: "CRASH500", name: "Crash 500" },
-    { symbol: "BOOM900", name: "Boom 900" },
+    { symbol: "BOOM900", name: "Boom 900" },      
     { symbol: "CRASH900", name: "Crash 900" },
     { symbol: "BOOM600", name: "Boom 600" },
     { symbol: "CRASH600", name: "Crash 600" },
