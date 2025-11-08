@@ -1504,7 +1504,7 @@ closeAll.onclick=()=>{
    connection.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
 
-      /*if (data.msg_type === "authorize")
+      if (data.msg_type === "authorize")
       {
        connection.send(JSON.stringify({
           profit_table: 1,
@@ -1514,7 +1514,7 @@ closeAll.onclick=()=>{
           limit: 500,
            sort : "DESC"
        }));
-      }*/
+      }
 
        // Quand on reçoit la profit_table
      if (data.msg_type === "profit_table") {     
