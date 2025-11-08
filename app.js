@@ -1477,13 +1477,12 @@ closeAll.onclick=()=>{
 
       if (data.msg_type === "authorize")
       {
-       
+       console.log("Authorized connexion"); 
       }
 
        // Quand on reçoit la profit_table
      if (data.msg_type === "profit_table") {     
         structresponse =  getProfitStats(data);
-        console.log("Response : " + structresponse);
         // Animation simultanée des cercles et des chiffres 
         profitvalue.textContent = structresponse.totalprofitprice;
         lossvalue.textContent = structresponse.totallossprice;
