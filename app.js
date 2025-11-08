@@ -1477,16 +1477,23 @@ closeAll.onclick=()=>{
 
       if (data.msg_type === "authorize")
       {
-       console.log("Authorized connexion"); 
+       connection.send(JSON.stringify({
+          profit_table: 1,
+          description: 1,
+          date_from: startInput.toString(),
+          date_to: endInput.toString(),   
+          limit: 500,
+           sort : "DESC"
+       }));
       }
 
-      // Quand on reçoit la profit_table
-      if (data.msg_type === "profit_table") {     
+       // Quand on reçoit la profit_table
+     if (data.msg_type === "profit_table") {     
         structresponse =  getProfitStats(data);
         // Animation simultanée des cercles et des chiffres 
         profitvalue.textContent = structresponse.totalprofitprice;
         lossvalue.textContent = structresponse.totallossprice;
-        plvalue.textContent = structresponse.totalPNLprice;
+        plvalue.textContent = structresponse.totalPNLprice;   
         profitcurrency.textContent = CURRENCY;
         plcurrency.textContent = CURRENCY;
         losscurrency.textContent = CURRENCY;
