@@ -35,7 +35,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const holdername = document.getElementById("accountHolder");
   const balanceValue = document.getElementById("balanceValue");
   const HistoricalContract = document.getElementById("HistoricalContract");
- 
+  const losscurrency = document.getElementById("losscurrency");
+  const profitcurrency = document.getElementById("profitcurrency");
+  const plcurrency = document.getElementById("plcurrency");
+  const plvalue = document.getElementById("plvalue");
+  const lossvalue = document.getElementById("lossvalue");
+  const profitvalue = document.getElementById("profitvalue");
+
   let totalPL = 0; // cumul des profits et pertes
   let automationRunning = false;
   let smoothVol = 0;
@@ -67,6 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let isConnect = false;
   let it = 0;
   let TOKEN;
+  let CURRENCY;
   // Historique local des ticks
   let tickHistory = [];
   let Tick_arr = [];
@@ -1484,7 +1491,13 @@ closeAll.onclick=()=>{
      if (data.msg_type === "profit_table") {     
         structresponse =  getProfitStats(data);
         console.log("Response : " + structresponse);
-        // Animation simultanée des cercles et des chiffres
+        // Animation simultanée des cercles et des chiffres 
+        profitvalue.textContent = structresponse.totalprofitprice;
+        lossvalue.textContent = structresponse.totallossprice;
+        plvalue.textContent = structresponse.totalPNLprice;
+        profitcurrency.textContent = CURRENCY;
+        plcurrency.textContent = CURRENCY;
+        losscurrency.textContent = CURRENCY;
         circles.forEach(circle => {
            let targetDeg = 0;
            let targetPercent = 0;
@@ -1588,6 +1601,7 @@ function getProfitStats(response) {
       console.log("🧾 Token :", selectedAccount.token);
       //--- APP TOKEN 
       TOKEN = selectedAccount.token;
+      CURRENCY = selectedAccount.currency;
       DisconnectDeriv();
 
       // Exemple d'utilisation : connexion Deriv WebSocket
