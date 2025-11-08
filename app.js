@@ -1597,7 +1597,7 @@ function getProfitStats(response) {
 
     if (selectedAccount) {
       console.log("🔑 Compte sélectionné :", selectedAccount.account);
-      console.log("💰 Devise :", selectedAccount.currency);
+      console.log("💰 Devise :", selectedAccount.currency);  
       console.log("🧾 Token :", selectedAccount.token);
       //--- APP TOKEN 
       TOKEN = selectedAccount.token;
