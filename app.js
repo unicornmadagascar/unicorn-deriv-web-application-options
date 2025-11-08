@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsContracts_winning = null;
   let wsAutomation_sell = null;
   let wsAutomation_buy = null;
-  let wsTradeAutomation = null;
+  let connection_ws = null;
   let wsAutomation_autoclose = null; 
   let wshistorical = null;
   let wsAutomation = null;
@@ -1453,33 +1453,33 @@ closeAll.onclick=()=>{
   const startInput = document.getElementById("startDate").value;
   const endInput = document.getElementById("endDate").value;
 
-  if (connection===null)
+  if (connection_ws===null)
    {
-    connection = new WebSocket(WS_URL);
-    connection.onopen = () => {
-       connection.send(JSON.stringify({ authorize: TOKEN }));
+    connection_ws = new WebSocket(WS_URL);
+    connection_ws.onopen = () => {
+       connection_ws.send(JSON.stringify({ authorize: TOKEN }));
     };
    }
    
-   if (connection && (connection.readyState === WebSocket.OPEN || connection.readyState === WebSocket.CONNECTING))
+   if (connection_ws && (connection_ws.readyState === WebSocket.OPEN || connection_ws.readyState === WebSocket.CONNECTING))
    {
-    connection.onopen=()=>{ connection.send(JSON.stringify({ authorize: TOKEN })); };
+    connection_ws.onopen=()=>{ connection_ws.send(JSON.stringify({ authorize: TOKEN })); };
    }
 
-   if (connection && (connection.readyState === WebSocket.CLOSED || connection.readyState === WebSocket.CLOSING))
+   if (connection_ws && (connection_ws.readyState === WebSocket.CLOSED || connection_ws.readyState === WebSocket.CLOSING))
    {
-    connection = new WebSocket(WS_URL);
-    connection.onopen=()=>{ connection.send(JSON.stringify({ authorize: TOKEN })); };
+    connection_ws = new WebSocket(WS_URL);
+    connection_ws.onopen=()=>{ connection_ws.send(JSON.stringify({ authorize: TOKEN })); };
    }
     
-   connection.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-   connection.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-   connection.onmessage = (msg) => {
+   connection_ws.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+   connection_ws.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+   connection_ws.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
 
       if (data.msg_type === "authorize")
       {
-       connection.send(JSON.stringify({
+       connection_ws.send(JSON.stringify({
           profit_table: 1,
           description: 1,
           date_from: startInput.toString(),
@@ -1493,9 +1493,9 @@ closeAll.onclick=()=>{
      if (data.msg_type === "profit_table") {     
         structresponse =  getProfitStats(data);
         // Animation simultanée des cercles et des chiffres 
-        profitvalue.textContent = structresponse.totalProfitPrice__;
-        lossvalue.textContent = structresponse.totalLossPrice__;
-        plvalue.textContent = structresponse.totalPNLprice__;   
+        profitvalue.textContent = " " + structresponse.totalProfitPrice__+ " " + CURRENCY.toString() ;
+        lossvalue.textContent = " " + structresponse.totalLossPrice__+ " " + CURRENCY.toString() ;
+        plvalue.textContent = " " + structresponse.totalPNLprice__+ " " + CURRENCY.toString() ;   
         circles.forEach(circle => {
            let targetDeg = 0;
            let targetPercent = 0;
