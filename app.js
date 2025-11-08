@@ -1551,7 +1551,7 @@ function getProfitStats(response) {
 
          let currentDeg = 0;
          let currentPercent = 0;
-         const stepDeg = targetDeg / 60;       // 60 frames (≈ 1 sec)
+         const stepDeg = targetDeg / 60;       // 60 frames (≈ 1 sec)   
          const stepPercent = targetPercent / 60;
          const span = circle.querySelector("span");
          const color =
