@@ -1467,11 +1467,13 @@ closeAll.onclick=()=>{
 
       if (data.msg_type === "authorize")
       {
+       const startInput = document.getElementById("startDate").value;
+       const endInput = document.getElementById("endDate").value;
        connection.send(JSON.stringify({
           profit_table: 1,
           description: 1,
-          date_from: fromTimestamp,
-          date_to: toTimestamp,
+          date_from: startInput.toString(),
+          date_to: endInput.toString(),
           limit: 500,
            sort : "DESC"
        }));
