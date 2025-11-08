@@ -1477,7 +1477,7 @@ closeAll.onclick=()=>{
    connection.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
 
-      if (data.msg_type === "authorize")
+      /*if (data.msg_type === "authorize")
       {
        connection.send(JSON.stringify({
           profit_table: 1,
@@ -1487,7 +1487,7 @@ closeAll.onclick=()=>{
           limit: 500,
            sort : "DESC"
        }));
-      }
+      }*/
 
        // Quand on reçoit la profit_table
      if (data.msg_type === "profit_table") {     
@@ -1600,7 +1600,7 @@ function getProfitStats(response) {
       CURRENCY = selectedAccount.currency;
       profitcurrency.textContent = selectedAccount.currency;
       plcurrency.textContent = selectedAccount.currency;
-     losscurrency.textContent = selectedAccount.currency;
+      losscurrency.textContent = selectedAccount.currency;
       DisconnectDeriv();
 
       // Exemple d'utilisation : connexion Deriv WebSocket
