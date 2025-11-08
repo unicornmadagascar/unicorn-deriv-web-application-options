@@ -1338,12 +1338,28 @@ closeAll.onclick=()=>{
  // 🔹 Fonction de connexion WebSocket
  // ==================================
  function connectHistoricalDeriv() {
-   connection = new WebSocket(WS_URL);
 
-   connection.onopen = () => {
-     connection.send(JSON.stringify({ authorize: TOKEN }));
-   };
+   if (connection===null)
+   {
+    connection = new WebSocket(WS_URL);
+    connection.onopen = () => {
+       connection.send(JSON.stringify({ authorize: TOKEN }));
+    };
+   }
+   
+   if (connection && (connection.readyState === WebSocket.OPEN || connection.readyState === WebSocket.CONNECTING))
+   {
+    connection.onopen=()=>{ connection.send(JSON.stringify({ authorize: TOKEN })); };
+   }
 
+   if (connection && (connection.readyState === WebSocket.CLOSED || connection.readyState === WebSocket.CLOSING))
+   {
+    connection = new WebSocket(WS_URL);
+    connection.onopen=()=>{ connection.send(JSON.stringify({ authorize: TOKEN })); };
+   }
+    
+   connection.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+   connection.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
    connection.onmessage = (msg) => {
      const data = JSON.parse(msg.data);
 
