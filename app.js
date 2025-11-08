@@ -1543,7 +1543,7 @@ function getProfitStats(response) {
 
   for (const c of transactions) {
     if (!c.sell_price || !c.buy_price) continue;
-    const profit = c.sell_price - c.buy_price;
+    const profit = c.sell_price.toFixed(2) - c.buy_price.toFixed(2);
     totalProfit += profit;
     totalBuy += c.buy_price;
     if (profit > 0) 
@@ -1564,7 +1564,7 @@ function getProfitStats(response) {
   const winRate = total > 0 ? ((wins / total) * 100).toFixed(2) : 0;
   const lossRate = total > 0 ? ((losses / total) * 100).toFixed(2) : 0;
 
-  return { pnlPercent, winRate, lossRate, totalPNLprice.toFixed(2), totalprofitprice.toFixed(2), totallossprice.toFixed(2) };
+  return { pnlPercent, winRate, lossRate, totalPNLprice, totalprofitprice, totallossprice };
 }
 
  // ===============================
