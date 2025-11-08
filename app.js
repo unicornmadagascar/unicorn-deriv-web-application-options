@@ -1539,7 +1539,41 @@ function getProfitStats(response) {
    console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
    getProfitTable(start, end);
    connectHistoricalDeriv();
+   GetProfitConnection(datapercent => {
+      // Animation simultanée des cercles et des chiffres
+      circles.forEach(circle => {
+         let targetDeg = 0;
+         let targetPercent = 0;
 
+         if (circle.classList.contains("red")) { targetDeg = parseFloat(datapercent.lossRate) * 3.6; targetPercent = parseFloat(datapercent.lossRate); }
+         if (circle.classList.contains("blue")) { targetDeg = parseFloat(datapercent.winRate) * 3.6; targetPercent = parseFloat(datapercent.winRate); }
+         if (circle.classList.contains("mix")) { targetDeg = parseFloat(datapercent.pnlPercent) * 3.6; targetPercent = parseFloat(datapercent.pnlPercent); }
+
+         let currentDeg = 0;
+         let currentPercent = 0;
+         const stepDeg = targetDeg / 60;       // 60 frames (≈ 1 sec)
+         const stepPercent = targetPercent / 60;
+         const span = circle.querySelector("span");
+         const color =
+         circle.classList.contains("red")
+            ? "#ef4444"
+            : circle.classList.contains("blue")
+            ? "#3b82f6"
+            : "#10b981";
+
+         const interval = setInterval(() => {
+           if (currentDeg >= targetDeg) {
+             clearInterval(interval);
+             span.textContent = targetPercent + "%";
+           } else {
+             currentDeg += stepDeg;
+             currentPercent += stepPercent;  
+             circle.style.background = `conic-gradient(${color} ${currentDeg}deg, #e5e7eb ${currentDeg}deg)`;
+             span.textContent = Math.round(currentPercent) + "%";
+           }
+         }, 16); // 60 FPS
+      });  
+    });
  });
 
  // 🔹 Gérer le changement de compte dans la combobox
@@ -1570,42 +1604,6 @@ function getProfitStats(response) {
           const bal = data.authorize.balance;
           const currency = selectedAccount.currency || "USD"; 
           balanceValue.textContent = bal.toString() + " " + currency;
-
-          GetProfitConnection(datapercent => {
-            // Animation simultanée des cercles et des chiffres
-            circles.forEach(circle => {
-            let targetDeg = 0;
-            let targetPercent = 0;
-
-            if (circle.classList.contains("red")) { targetDeg = parseFloat(datapercent.lossRate) * 3.6; targetPercent = parseFloat(datapercent.lossRate); }
-            if (circle.classList.contains("blue")) { targetDeg = parseFloat(datapercent.winRate) * 3.6; targetPercent = parseFloat(datapercent.winRate); }
-            if (circle.classList.contains("mix")) { targetDeg = parseFloat(datapercent.pnlPercent) * 3.6; targetPercent = parseFloat(datapercent.pnlPercent); }
-
-            let currentDeg = 0;
-            let currentPercent = 0;
-            const stepDeg = targetDeg / 60;       // 60 frames (≈ 1 sec)
-            const stepPercent = targetPercent / 60;
-            const span = circle.querySelector("span");
-            const color =
-            circle.classList.contains("red")
-               ? "#ef4444"
-               : circle.classList.contains("blue")
-               ? "#3b82f6"
-               : "#10b981";
-
-           const interval = setInterval(() => {
-             if (currentDeg >= targetDeg) {
-               clearInterval(interval);
-               span.textContent = targetPercent + "%";
-             } else {
-               currentDeg += stepDeg;
-               currentPercent += stepPercent;  
-               circle.style.background = `conic-gradient(${color} ${currentDeg}deg, #e5e7eb ${currentDeg}deg)`;
-               span.textContent = Math.round(currentPercent) + "%";
-             }
-           }, 16); // 60 FPS
-          });  
-         });
         }
 
         if (data.msg_type === "get_settings")
@@ -1821,8 +1819,8 @@ window.addEventListener("error", function (e) {
         let targetPercent = 0;
 
         if (circle.classList.contains("red")) { targetDeg = 70; targetPercent = 20; }
-        if (circle.classList.contains("blue")) { targetDeg = 280; targetPercent = 80; }
-        if (circle.classList.contains("mix")) { targetDeg = 120; targetPercent = 60; }
+        if (circle.classList.contains("blue")) { targetDeg = 280; targetPercent = 70; }
+        if (circle.classList.contains("mix")) { targetDeg = 120; targetPercent = 50; }
 
         let currentDeg = 0;
         let currentPercent = 0;   
