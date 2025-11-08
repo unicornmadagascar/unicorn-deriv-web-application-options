@@ -1493,9 +1493,9 @@ closeAll.onclick=()=>{
      if (data.msg_type === "profit_table") {     
         structresponse =  getProfitStats(data);
         // Animation simultanée des cercles et des chiffres 
-        profitvalue.textContent = structresponse.totalprofitprice;
-        lossvalue.textContent = structresponse.totallossprice;
-        plvalue.textContent = structresponse.totalPNLprice;   
+        profitvalue.textContent = structresponse.totalProfitPrice__;
+        lossvalue.textContent = structresponse.totalLossPrice__;
+        plvalue.textContent = structresponse.totalPNLprice__;   
         circles.forEach(circle => {
            let targetDeg = 0;
            let targetPercent = 0;
@@ -1541,7 +1541,7 @@ function getProfitStats(response) {
 
   for (const c of transactions) {
     if (!c.sell_price || !c.buy_price) continue;
-    const profit = parseFloat(c.sell_price.toFixed(2)) - parseFloat(c.buy_price.toFixed(2));
+    const profit = c.sell_price - c.buy_price;
     totalProfit += profit;
     totalBuy += c.buy_price;
     if (profit > 0) 
@@ -1556,13 +1556,15 @@ function getProfitStats(response) {
     }
   }
   
-  const totalPNLprice = totalProfit;
+  const totalPNLprice__ = totalProfit.toFixed(2);
+  const totalProfitPrice__ = totalprofitprice.toFixed(2);
+  const totalLossPrice__ = totallossprice.toFixed(2);
   const total = wins + losses;
   const pnlPercent = totalBuy > 0 ? ((totalProfit / totalBuy) * 100).toFixed(2) : 0;
   const winRate = total > 0 ? ((wins / total) * 100).toFixed(2) : 0;
   const lossRate = total > 0 ? ((losses / total) * 100).toFixed(2) : 0;
 
-  return { pnlPercent, winRate, lossRate, totalPNLprice, totalprofitprice, totallossprice };
+  return { pnlPercent, winRate, lossRate, totalPNLprice__, totalProfitPrice__, totalLossPrice__ };
 }
 
  // ===============================
