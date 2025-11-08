@@ -1395,46 +1395,19 @@ closeAll.onclick=()=>{
  // 🔹 Fonction pour récupérer le profit_table
  // ==========================================
  function getProfitTable(fromTimestamp, toTimestamp) {
-  /*if (!connection || connection.readyState !== WebSocket.OPEN) {
+  if (!connection || connection.readyState !== WebSocket.OPEN) {
     console.error("❌ WebSocket non connecté.");
     return;
-  }*/
+  }
 
-  if (connection===null)
-   {
-    connection = new WebSocket(WS_URL);
-    connection.onopen = () => {
-       connection.send(JSON.stringify({ authorize: TOKEN }));
-    };
-   }
-   
-   if (connection && (connection.readyState === WebSocket.OPEN || connection.readyState === WebSocket.CONNECTING))
-   {
-    connection.onopen=()=>{ connection.send(JSON.stringify({ authorize: TOKEN })); };
-   }
-
-   if (connection && (connection.readyState === WebSocket.CLOSED || connection.readyState === WebSocket.CLOSING))
-   {
-    connection = new WebSocket(WS_URL);
-    connection.onopen=()=>{ connection.send(JSON.stringify({ authorize: TOKEN })); };
-   }
-
-   connection.onmessage = (msg) => {
-     const data = JSON.parse(msg.data);   
-
-     if (data.msg_type === "authorize") {
-       console.log("✅ Connecté à Deriv API");
-
-       connection.send(JSON.stringify({
-          profit_table: 1,
-          description: 1,
-          date_from: fromTimestamp,
-          date_to: toTimestamp,
-          limit: 500,
-          sort : "DESC"
-       }));
-     }
-   };
+  connection.send(JSON.stringify({
+     profit_table: 1,
+     description: 1,
+     date_from: fromTimestamp,
+     date_to: toTimestamp,
+     limit: 500,
+     sort : "DESC"
+  }));
  }
 
  // ===============================
