@@ -1395,10 +1395,10 @@ closeAll.onclick=()=>{
  // 🔹 Fonction pour récupérer le profit_table
  // ==========================================
  function getProfitTable(fromTimestamp, toTimestamp) {
-  if (!connection || connection.readyState !== WebSocket.OPEN) {
+  /*if (!connection || connection.readyState !== WebSocket.OPEN) {
     console.error("❌ WebSocket non connecté.");
     return;
-  }
+  }*/
 
   if (connection===null)
    {
