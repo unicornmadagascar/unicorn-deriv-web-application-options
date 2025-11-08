@@ -1783,9 +1783,9 @@ window.addEventListener("error", function (e) {
       let targetDeg = 0;
       let targetPercent = 0;
 
-      if (circle.classList.contains("red")) { targetDeg = datapercent.lossRate * 3.6; targetPercent = datapercent.lossRate; }
-      if (circle.classList.contains("blue")) { targetDeg = datapercent.winRate * 3.6; targetPercent = datapercent.winRate; }
-      if (circle.classList.contains("mix")) { targetDeg = datapercent.pnlPercent * 3.6; targetPercent = datapercent.pnlPercent; }
+      if (circle.classList.contains("red")) { targetDeg = parseFloat(datapercent.lossRate) * 3.6; targetPercent = parseFloat(datapercent.lossRate); }
+      if (circle.classList.contains("blue")) { targetDeg = parseFloat(datapercent.winRate) * 3.6; targetPercent = parseFloat(datapercent.winRate); }
+      if (circle.classList.contains("mix")) { targetDeg = parseFloat(datapercent.pnlPercent) * 3.6; targetPercent = parseFloat(datapercent.pnlPercent); }
 
       let currentDeg = 0;
       let currentPercent = 0;
@@ -1810,7 +1810,7 @@ window.addEventListener("error", function (e) {
           span.textContent = Math.round(currentPercent) + "%";
         }
       }, 16); // 60 FPS
-    });
+    });  
   } else {
     // Réinitialisation des cercles à la fermeture
     circles.forEach(circle => {
