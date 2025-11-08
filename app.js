@@ -1825,13 +1825,13 @@ window.addEventListener("error", function (e) {
         if (circle.classList.contains("mix")) { targetDeg = 120; targetPercent = 60; }
 
         let currentDeg = 0;
-        let currentPercent = 0;
+        let currentPercent = 0;   
         const stepDeg = targetDeg / 60;       // 60 frames (≈ 1 sec)
         const stepPercent = targetPercent / 60;
         const span = circle.querySelector("span");
         const color =
           circle.classList.contains("red")
-            ? "#ef4444"
+            ? "#ef4444"  
             : circle.classList.contains("blue")
             ? "#3b82f6"
             : "#10b981";
