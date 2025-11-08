@@ -1543,7 +1543,7 @@ function getProfitStats(response) {
 
   for (const c of transactions) {
     if (!c.sell_price || !c.buy_price) continue;
-    const profit = c.sell_price.toFixed(2) - c.buy_price.toFixed(2);
+    const profit = parseFloat(c.sell_price.toFixed(2)) - parseFloat(c.buy_price.toFixed(2));
     totalProfit += profit;
     totalBuy += c.buy_price;
     if (profit > 0) 
@@ -1584,10 +1584,10 @@ function getProfitStats(response) {
 
    console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
    getProfitTable(start, end);
+   GetProfitConnection();  
    setTimeout(() => {
      connectHistoricalDeriv();
-   },1000);
-   GetProfitConnection();      
+   },1000);    
  });
 
  // 🔹 Gérer le changement de compte dans la combobox
@@ -1875,6 +1875,7 @@ window.addEventListener("error", function (e) {
   // sécurise la récupération des tokens ici
   const params = new URLSearchParams(window.location.search);
   TOKEN = params.get('token1');
+  CURRENCY = params.get('cur1');
   if (TOKEN) {
     // puis exécute l'autorisation Deriv
     console.log("USER TOKEN : " + TOKEN);   
