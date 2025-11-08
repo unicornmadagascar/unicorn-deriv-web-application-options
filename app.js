@@ -1482,10 +1482,41 @@ closeAll.onclick=()=>{
        // Quand on reçoit la profit_table
      if (data.msg_type === "profit_table") {     
         structresponse =  getProfitStats(data);
-     }
-   };
+       // Animation simultanée des cercles et des chiffres
+       circles.forEach(circle => {
+           let targetDeg = 0;
+           let targetPercent = 0;
 
-   return structresponse;
+           if (circle.classList.contains("red")) { targetDeg = parseFloat(structresponse.lossRate) * 3.6; targetPercent = parseFloat(structresponse.lossRate); }
+           if (circle.classList.contains("blue")) { targetDeg = parseFloat(structresponse.winRate) * 3.6; targetPercent = parseFloat(structresponse.winRate); }
+           if (circle.classList.contains("mix")) { targetDeg = parseFloat(structresponse.pnlPercent) * 3.6; targetPercent = parseFloat(structresponse.pnlPercent); }
+
+           let currentDeg = 0;
+           let currentPercent = 0;
+           const stepDeg = targetDeg / 60;       // 60 frames (≈ 1 sec)   
+           const stepPercent = targetPercent / 60;
+           const span = circle.querySelector("span");
+           const color =
+           circle.classList.contains("red")   
+              ? "#ef4444"
+              : circle.classList.contains("blue")
+              ? "#3b82f6"
+              : "#10b981";
+
+           const interval = setInterval(() => {
+            if (currentDeg >= targetDeg) {
+               clearInterval(interval);
+               span.textContent = targetPercent + "%";
+             } else {
+               currentDeg += stepDeg;
+               currentPercent += stepPercent;  
+               circle.style.background = `conic-gradient(${color} ${currentDeg}deg, #e5e7eb ${currentDeg}deg)`;
+              span.textContent = Math.round(currentPercent) + "%";
+             }
+           }, 16); // 60 FPS
+        });  
+      }
+    };
  }
 
  // 🔹 Fonction de calcul PNL, WinRate, LossRate
@@ -1539,41 +1570,6 @@ function getProfitStats(response) {
    console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
    getProfitTable(start, end);
    connectHistoricalDeriv();
-   GetProfitConnection(datapercent => {
-      // Animation simultanée des cercles et des chiffres
-      circles.forEach(circle => {
-         let targetDeg = 0;
-         let targetPercent = 0;
-
-         if (circle.classList.contains("red")) { targetDeg = parseFloat(datapercent.lossRate) * 3.6; targetPercent = parseFloat(datapercent.lossRate); }
-         if (circle.classList.contains("blue")) { targetDeg = parseFloat(datapercent.winRate) * 3.6; targetPercent = parseFloat(datapercent.winRate); }
-         if (circle.classList.contains("mix")) { targetDeg = parseFloat(datapercent.pnlPercent) * 3.6; targetPercent = parseFloat(datapercent.pnlPercent); }
-
-         let currentDeg = 0;
-         let currentPercent = 0;
-         const stepDeg = targetDeg / 60;       // 60 frames (≈ 1 sec)   
-         const stepPercent = targetPercent / 60;
-         const span = circle.querySelector("span");
-         const color =
-         circle.classList.contains("red")   
-            ? "#ef4444"
-            : circle.classList.contains("blue")
-            ? "#3b82f6"
-            : "#10b981";
-
-         const interval = setInterval(() => {
-           if (currentDeg >= targetDeg) {
-             clearInterval(interval);
-             span.textContent = targetPercent + "%";
-           } else {
-             currentDeg += stepDeg;
-             currentPercent += stepPercent;  
-             circle.style.background = `conic-gradient(${color} ${currentDeg}deg, #e5e7eb ${currentDeg}deg)`;
-             span.textContent = Math.round(currentPercent) + "%";
-           }
-         }, 16); // 60 FPS
-      });  
-    });
  });
 
  // 🔹 Gérer le changement de compte dans la combobox
