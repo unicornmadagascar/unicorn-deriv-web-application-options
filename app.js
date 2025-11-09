@@ -463,14 +463,14 @@ document.addEventListener("DOMContentLoaded", () => {
                   }
                }
              }
-        }  
 
-        iu = iu + 1;
-        if (iu > 1200)    
-        {
-         tickHistory__.shift();
-         ROC.shift(); 
-        }
+             iu = iu + 1;
+             if (iu > 1200)    
+             {
+              tickHistory__.shift();
+              ROC.shift(); 
+             }
+       }  
     };
 
     wsROC.onclose = () => {
