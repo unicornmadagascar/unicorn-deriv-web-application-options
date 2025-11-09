@@ -74,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let it = 0;
   let iu = 0;
   let ROC = [];
+  let roc_;
   let TOKEN;
   let CURRENCY;
   // Historique local des ticks
@@ -111,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { symbol: "BOOM600", name: "Boom 600" },
     { symbol: "CRASH600", name: "Crash 600" },
     { symbol: "cryBTCUSD", name: "BTCUSD" },
-    { symbol: "frxGBPUSD", name: "GBPUSD" },
+    { symbol: "comXAUUSD", name: "XAUUSD" },
     { symbol: "R_100", name: "VIX 100" },
     { symbol: "R_75", name: "VIX 75" },
     { symbol: "R_50", name: "VIX 50" },
@@ -383,14 +384,14 @@ document.addEventListener("DOMContentLoaded", () => {
            const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
 
            tickHistory__.push(price);
+           console.log("TICK HISTORY : " + tickHistory__);
            if (iu >= 20) // garder seulement les 3 derniers ticks
            {  
+               roc_ = 100 * ((tickHistory__[iu] - tickHistory__[iu - 20])/tickHistory__[iu - 20]);
+               ROC.push(roc_);
+              console.log("ROC : " + roc_);
                if (symbol_test === "BTC" || symbol_test === "XAU")  
                {
-                  const roc_ = 100 * ((tickHistory__[iu] - tickHistory__[iu - 20])/tickHistory__[iu - 20]);
-                  ROC.push(roc_);
-                  console.log("ROC : " + roc_);
-
                   if (ROC[iu-20] > 0.01)
                    {
                      // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
@@ -462,14 +463,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                   }
                }
-             }
+            }
 
-             iu = iu + 1;
-             if (iu > 1200)    
-             {
+           iu = iu + 1;
+           if (iu > 1200)    
+           {
               tickHistory__.shift();
               ROC.shift(); 
-             }
+            }
        }  
     };
 
