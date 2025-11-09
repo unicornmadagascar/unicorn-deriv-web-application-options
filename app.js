@@ -392,7 +392,7 @@ document.addEventListener("DOMContentLoaded", () => {
                console.log("Sub symbol : " + symbol_test);
                if (symbol_test === "cryBTC" || symbol_test === "comGOL")  
                {
-                  if (ROC[Iu__] > 0.01)
+                  if (ROC[Iu__] > 0.01)   
                    {
                      // Les contrats BUY (BTCUSD → MULTUP)
                      roccontracts
