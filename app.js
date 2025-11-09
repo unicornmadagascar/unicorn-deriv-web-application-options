@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { symbol: "cryBTCUSD", name: "BTCUSD" },
     { symbol: "comGOLDUSD", name: "XAUUSD" },
     { symbol: "R_100", name: "VIX 100" },
-    { symbol: "R_75", name: "VIX 75" },
+    { symbol: "R_75", name: "VIX 75" },   
     { symbol: "R_50", name: "VIX 50" },
     { symbol: "R_25", name: "VIX 25" },
     { symbol: "R_10", name: "VIX 10" }
