@@ -466,7 +466,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }  
 
         iu = iu + 1;
-        if (iu > 2200)    
+        if (iu > 1200)    
         {
          tickHistory__.shift();
          ROC.shift(); 
@@ -489,8 +489,6 @@ document.addEventListener("DOMContentLoaded", () => {
        wsROC.close();
     }
   }
-
-
 
   function startAutomation() {
 
@@ -1765,7 +1763,6 @@ function getProfitStats(response) {
       plcurrency.textContent = selectedAccount.currency;
       losscurrency.textContent = selectedAccount.currency;
       DisconnectDeriv();
-      wspl = null;
 
       // Exemple d'utilisation : connexion Deriv WebSocket
       connection = new WebSocket(WS_URL);
@@ -1902,12 +1899,12 @@ function getProfitStats(response) {
       toggleAutomationBtn.textContent = "Stop Automation";
       toggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       toggleAutomationBtn.style.color = "white";
-      //startAutomation();
+      automationRunning = true;
     } else {
       toggleAutomationBtn.textContent = "Launch Automation";
       toggleAutomationBtn.style.background = "white";
       toggleAutomationBtn.style.color = "gray";
-      //stopAutomation();
+      automationRunning = false;
     }
   });
 
@@ -1919,10 +1916,12 @@ function getProfitStats(response) {
       ROCtoggleAutomationBtn.textContent = "Stop ROC Automation";
       ROCtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       ROCtoggleAutomationBtn.style.color = "white";
+      automationRunning = true;
     } else {
       ROCtoggleAutomationBtn.textContent = "Launch ROC Automation";
       ROCtoggleAutomationBtn.style.background = "white";
       ROCtoggleAutomationBtn.style.color = "gray";
+      automationRunning = false;
     }
   });
 
