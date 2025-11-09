@@ -339,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
   function RocstartAutomation() {
 
-    const symbol_test = currentSymbol.slice(0,3);
+    const symbol_test = currentSymbol.slice(0,6);
 
     if (wsROC === null)
     {
@@ -391,7 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
                roc_ = 100 * ((tickHistory__[iu] - tickHistory__[Iu__])/tickHistory__[Iu__]);
                ROC.push(roc_);
                console.log("Sub symbol : " + symbol_test);
-               if (symbol_test === "BTC")  
+               if (symbol_test === "cryBTC" || symbol_test === "frxXAU")  
                {
                   if (ROC[Iu__] > 0.01)
                    {
