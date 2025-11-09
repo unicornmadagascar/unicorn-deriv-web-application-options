@@ -390,7 +390,7 @@ document.addEventListener("DOMContentLoaded", () => {
                roc_ = 100 * ((tickHistory__[iu] - tickHistory__[Iu__])/tickHistory__[Iu__]);
                ROC.push(roc_);
                console.log("Sub symbol : " + symbol_test);
-               if (symbol_test === "cryBTC" || symbol_test === "frxXAU")  
+               if (symbol_test === "cryBTC" || symbol_test === "comGOL")  
                {
                   if (ROC[Iu__] > 0.01)
                    {
@@ -404,7 +404,7 @@ document.addEventListener("DOMContentLoaded", () => {
                      if (rocproposal__.contract_id) return;
 
                      console.log("📤 Ouverture d'un nouveau contrat BUY...");
-                     if (currentSymbol === "cryBTCUSD" || currentSymbol === "frxXAUUSD")
+                     if (currentSymbol === "cryBTCUSD" || currentSymbol === "comGOLDUSD")
                      {
                       const stake = parseFloat(stakeInput.value) || 1;
                       const multiplier = parseInt(multiplierInput.value)||50;
@@ -439,7 +439,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (rocproposal__.contract_id) return;
 
                     console.log("📤 Ouverture d'un nouveau contrat SELL...");
-                    if (currentSymbol === "cryBTCUSD" || currentSymbol === "frxXAUUSD")
+                    if (currentSymbol === "cryBTCUSD" || currentSymbol === "comGOLDUSD")
                     {
                       const stake = parseFloat(stakeInput.value) || 1;
                       const multiplier = parseInt(multiplierInput.value)||50;
@@ -466,7 +466,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
            iu = iu + 1;
-           if (iu > 1200)    
+           if (iu > 1000)    
            {
               tickHistory__.shift();
               ROC.shift(); 
