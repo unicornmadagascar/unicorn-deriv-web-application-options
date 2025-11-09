@@ -60,6 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsContracts = null;
   let wsplContracts = null;
   let wsContracts__ = null;
+  let wsopencontractlines = null;
   let wspl = null;
   let wsplgauge = null;
   let chart = null;
@@ -820,6 +821,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // try to auto-fit time scale (safe)
     try { chart.timeScale().fitContent(); } catch (e) {}
+
+    Openpositionlines();
+  }
+
+  function Openpositionlines()
+  {
+    const priceLines = {}; // Stocke les lignes actives (clé = contract_id)
+    const tickHistory = []; // Historique des ticks
+
+    if (wsopencontractlines === null)
+    {
+     wsopencontractlines = new WebSocket(WS_URL);
+     wsopencontractlines.onopen=()=>{ wsopencontractlines.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+  
+    if (wsopencontractlines && (wsopencontractlines.readyState === WebSocket.OPEN || wsopencontractlines.readyState === WebSocket.CONNECTING))
+    {
+     wsopencontractlines.onopen=()=>{ wsopencontractlines.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (wsopencontractlines && (wsopencontractlines.readyState === WebSocket.CLOSED || wsopencontractlines.readyState === WebSocket.CLOSING))
+    {
+      wsopencontractlines = new WebSocket(WS_URL);
+      wsopencontractlines.onopen=()=>{ wsopencontractlines.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    
   }
  
   // --- GAUGES UPDATE ---
