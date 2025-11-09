@@ -428,7 +428,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       }
                     }
                    }
-                   else if (ROC[iu-20] < -0.01)
+                   else if (ROC[Iu__] < -0.01)
                    {
                     // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
                     roccontracts
