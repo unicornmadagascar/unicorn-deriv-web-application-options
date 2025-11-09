@@ -1901,11 +1901,13 @@ function getProfitStats(response) {
       toggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       toggleAutomationBtn.style.color = "white";
       automationRunning = true;
+      ROCtoggleAutomationBtn.disabled = true;
     } else {
       toggleAutomationBtn.textContent = "Launch Automation";
       toggleAutomationBtn.style.background = "white";
       toggleAutomationBtn.style.color = "gray";
       automationRunning = false;
+      ROCtoggleAutomationBtn.disabled = false;
     }
   });
 
@@ -1918,11 +1920,13 @@ function getProfitStats(response) {
       ROCtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       ROCtoggleAutomationBtn.style.color = "white";
       automationRunning = true;
+      toggleAutomationBtn.disabled = true;
     } else {
       ROCtoggleAutomationBtn.textContent = "Launch ROC Automation";
       ROCtoggleAutomationBtn.style.background = "white";
       ROCtoggleAutomationBtn.style.color = "gray";
       automationRunning = false;
+      toggleAutomationBtn.disabled = false;
     }
   });
 
