@@ -386,13 +386,14 @@ document.addEventListener("DOMContentLoaded", () => {
            tickHistory__.push(price);
            console.log("TICK HISTORY : " + tickHistory__);
            if (iu >= 20) // garder seulement les 3 derniers ticks
-           {  
-               roc_ = 100 * ((tickHistory__[iu] - tickHistory__[iu - 20])/tickHistory__[iu - 20]);
+           {   
+               const Iu__ = iu - 20;
+               roc_ = 100 * ((tickHistory__[iu] - tickHistory__[Iu__])/tickHistory__[Iu__]);
                ROC.push(roc_);
-              console.log("ROC : " + roc_);
-               if (symbol_test === "BTC" || symbol_test === "XAU")  
+               console.log("Sub symbol : " + symbol_test);
+               if (symbol_test === "BTC")  
                {
-                  if (ROC[iu-20] > 0.01)
+                  if (ROC[Iu__] > 0.01)
                    {
                      // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
                      roccontracts
