@@ -394,7 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
                {
                   if (ROC[Iu__] > 0.01)
                    {
-                     // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
+                     // Les contrats BUY (BTCUSD → MULTUP)
                      roccontracts
                         .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTDOWN")
                         .forEach(c => {
@@ -429,7 +429,7 @@ document.addEventListener("DOMContentLoaded", () => {
                    }
                    else if (ROC[Iu__] < -0.01)
                    {
-                    // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
+                    // Les contrats SELL
                     roccontracts
                        .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTUP")
                        .forEach(c => {
