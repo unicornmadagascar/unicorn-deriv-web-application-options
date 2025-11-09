@@ -633,7 +633,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }  
 
         it = it + 1;
-        if (it > 2200)
+        if (it > 2200)    
         {
          tickHistory.shift();
          ROC.shift(); 
