@@ -629,7 +629,7 @@ document.addEventListener("DOMContentLoaded", () => {
                  }
                }
              }
-          }
+           }   // if (it)
         }  
 
         it = it + 1;
@@ -1685,6 +1685,7 @@ function getProfitStats(response) {
       plcurrency.textContent = selectedAccount.currency;
       losscurrency.textContent = selectedAccount.currency;
       DisconnectDeriv();
+      wspl = null;
 
       // Exemple d'utilisation : connexion Deriv WebSocket
       connection = new WebSocket(WS_URL);
@@ -1827,6 +1828,21 @@ function getProfitStats(response) {
       toggleAutomationBtn.style.background = "white";
       toggleAutomationBtn.style.color = "gray";
       //stopAutomation();
+    }
+  });
+
+  // === Automation Toggle ===
+  const ROCtoggleAutomationBtn = document.getElementById("ROCtoggleAutomation");
+  ROCtoggleAutomationBtn.addEventListener("click", () => {
+    automationRunning = !automationRunning;
+    if (automationRunning) {
+      ROCtoggleAutomationBtn.textContent = "Stop ROC Automation";
+      ROCtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
+      ROCtoggleAutomationBtn.style.color = "white";
+    } else {
+      ROCtoggleAutomationBtn.textContent = "Launch ROC Automation";
+      ROCtoggleAutomationBtn.style.background = "white";
+      ROCtoggleAutomationBtn.style.color = "gray";
     }
   });
 
