@@ -355,7 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wsROC  && (wsROC.readyState === WebSocket.CLOSED || wsROC.readyState === WebSocket.CLOSING))
     {
      wsROC = new WebSocket(WS_URL);
-     wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };
+     wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };  
     }
  
     wsROC.onmessage = (msg) => {
