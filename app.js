@@ -2086,7 +2086,7 @@ window.addEventListener("error", function (e) {
     }
     else if (toggleAutomationBtn.textContent.trim()==="Launch Automation")
     {
-     stopAutomation();
+     stopAutomation();   
     }
   },500);
 
