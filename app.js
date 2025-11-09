@@ -72,6 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let Dispersion;
   let isConnect = false;
   let it = 0;
+  let iu = 0;
+  let ROC = [];
   let TOKEN;
   let CURRENCY;
   // Historique local des ticks
@@ -546,16 +548,95 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                   }
                 }
-              }
-            }
+               }
+               else if (symbol_test === "BTC" || symbol_test === "XAU")  
+               {
+                 if (it >= 20)
+                 {
+                  const roc_ = 100 * ((tickHistory[it] - tickHistory[it - 20])/tickHistory[it - 20]);
+                  ROC.push(roc_);
+                  console.log(roc_);
+                  if (ROC[it-20] > 0.01)
+                   {
+                     // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
+                     contracts
+                        .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTDOWN")
+                        .forEach(c => {
+                           wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                        });
+
+                     if (proposal__.contract_id) return;
+
+                     console.log("📤 Ouverture d'un nouveau contrat BUY...");
+                     if (currentSymbol === "cryBTCUSD" || currentSymbol === "frxXAUUSD")
+                     {
+                      const stake = parseFloat(stakeInput.value) || 1;
+                      const multiplier = parseInt(multiplierInput.value)||50;
+                      numb_ = parseInt(buyNum.value) || 1;
+                      for (let i=0;i < numb_; i++)
+                      {
+                        wsAutomation.send(JSON.stringify({
+                            buy: 1,
+                            price: stake.toFixed(2),
+                            parameters: {
+                              contract_type: "MULTUP",
+                              symbol: currentSymbol,
+                              currency: "USD",
+                              basis: "stake",
+                              amount: stake.toFixed(2),
+                              multiplier: multiplier,
+                            }
+                         }
+                        ));
+                      }
+                     }
+                   }
+                   else if (ROC[it-20] < -0.01)
+                   {
+                    // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
+                    contracts
+                       .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTUP")
+                       .forEach(c => {
+                          wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                       });
+
+                    if (proposal__.contract_id) return;
+
+                    console.log("📤 Ouverture d'un nouveau contrat SELL...");
+                    if (currentSymbol === "cryBTCUSD" || currentSymbol === "frxXAUUSD")
+                    {
+                      const stake = parseFloat(stakeInput.value) || 1;
+                      const multiplier = parseInt(multiplierInput.value)||50;
+                      numb_ = parseInt(sellNum.value) || 1;
+                      for (let i=0;i < numb_; i++)
+                      {
+                        wsAutomation.send(JSON.stringify({
+                            buy: 1,
+                            price: stake.toFixed(2),
+                            parameters: {
+                              contract_type: "MULTDOWN",
+                              symbol: currentSymbol,
+                              currency: "USD",
+                              basis: "stake",
+                              amount: stake.toFixed(2),
+                              multiplier: multiplier,
+                           }
+                          }
+                        ));
+                      }
+                    }
+                   }
+                 }
+               }
+             }
           }
         }  
 
         it = it + 1;
-        if (it === 3000)
+        if (it > 2200)
         {
-         it = 0;
-         tickHistory.length = 0; 
+         tickHistory.shift();
+         ROC.shift(); 
         }
     };
 
