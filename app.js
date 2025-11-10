@@ -879,7 +879,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Supprimer les lignes des contrats fermés
         for (const id in priceLines4openlines) {
-          const stillOpen = contractsopenprice.some(c => c.contract_id == id);
+          const stillOpen = contractsopenprice.some((c) => String(c.contract_id) === id && c.status === "open");
           if (!stillOpen) {
             areaSeries.removePriceLine(priceLines4openlines[id]);
             delete priceLines4openlines[id];    
@@ -888,7 +888,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Ajouter les lignes des nouveaux contrats
         if (!proposal4openpricelines) return;
-        
+
         contractsopenprice.forEach(c => {
           if (!priceLines[c.contract_id]) {
             const entryPrice = parseFloat(c.buy_price);
