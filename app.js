@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { symbol: "BOOM600", name: "Boom 600" },
     { symbol: "CRASH600", name: "Crash 600" },
     { symbol: "cryBTCUSD", name: "BTCUSD" },   
-    { symbol: "comGOLD", name: "XAUUSD" },   
+    { symbol: "frxXAUUSD", name: "XAUUSD" },   
     { symbol: "R_100", name: "VIX 100" },
     { symbol: "R_75", name: "VIX 75" },   
     { symbol: "R_50", name: "VIX 50" },
@@ -847,7 +847,50 @@ document.addEventListener("DOMContentLoaded", () => {
       wsopencontractlines.onopen=()=>{ wsopencontractlines.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    
+    wsopencontractlines.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+    wsopencontractlines.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+    wsopencontractlines.onmessage = (msg) => {
+       const data = JSON.parse(msg.data);
+       
+       if (data.msg_type === "authorize")
+       {
+        wsopencontractlines.send(JSON.parse({ portfolio: 1, subscribe: 1 }));
+       }
+
+       if (data.msg_type === "portfolio" && data.portfolio)
+       {
+        const contractsopenprice = data.portfolio.contracts;
+
+        // Supprimer les lignes des contrats fermés
+        for (const id in priceLines) {
+          const stillOpen = contracts.some(c => c.contract_id == id);
+          if (!stillOpen) {
+            areaSeries.removePriceLine(priceLines[id]);
+            delete priceLines[id];
+          }
+        }
+
+        // Ajouter les lignes des nouveaux contrats
+        contractsopenprice.forEach(c => {
+          if (!priceLines[c.contract_id]) {
+            const entryPrice = parseFloat(c.buy_price);
+            const type = c.contract_type;
+            const color = type.includes("CALL") ? "#00ff80" : "#ff4d4d";
+
+            const line = areaSeries.createPriceLine({
+              price: entryPrice,
+              color: color,
+              lineWidth: 2,
+              lineStyle: LightweightCharts.LineStyle.Solid,
+              axisLabelVisible: true,
+              title: `${type} @ ${entryPrice.toFixed(2)}`
+            });
+
+            priceLines[c.contract_id] = line;
+          }
+        });
+       }
+    };
   }
  
   // --- GAUGES UPDATE ---
