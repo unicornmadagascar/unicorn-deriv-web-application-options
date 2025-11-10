@@ -1928,6 +1928,7 @@ function initCalendarTable() {
     if (impactValue >= 4) impactColor = "#ff4444";       // fort impact → rouge
     else if (impactValue >= 2) impactColor = "#ffaa00";  // moyen → orange
     else if (impactValue > 0) impactColor = "#22cc22";   // faible → vert
+    const impactClass = `impact-${Math.min(Math.max(impactValue, 1), 5)}`;
 
     rows += `
       <tr>
@@ -1938,10 +1939,13 @@ function initCalendarTable() {
         <td>${indicator}</td>
         <td>-</td>
         <td>${currency}</td>
+        <td>
+          <span class="importance-box ${impactClass}"></span>
+          ${impactValue ? `Impact ${impactValue}` : ""}
+        </td>
         <td style="color:${impactColor}; font-weight:bold;" data-sort="${impactValue}">
           ${impactValue}
         </td>
-        <td>${impactValue}</td>
         <td>${actual}</td>
         <td>${previous}</td>
         <td>${forecast}</td>
