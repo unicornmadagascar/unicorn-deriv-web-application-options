@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let automationRunning = false;
   let smoothVol = 0;
   let smoothTrend = 0;
-  let ws;
+  let ws=null;
   let connection = null;
   let wsROC = null;
   let wsContracts__close = null;
