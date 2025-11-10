@@ -201,45 +201,44 @@ document.addEventListener("DOMContentLoaded", () => {
     return chart;
   }
 
-  // === LIGNES DES CONTRATS OUVERTS ===
+  // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
   function Openpositionlines(areaSeries) {
     if (wsOpenLines && wsOpenLines.readyState <= 1) return;
 
     wsOpenLines = new WebSocket(WS_URL);
 
     wsOpenLines.onopen = () => {
-      console.log("✅ WS open for open contract lines");
+      console.log("✅ WS open for open contract lines");  
       wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));
     };
 
     wsOpenLines.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
 
+      // Étape 1 : Authentification
       if (data.msg_type === "authorize") {
-        wsOpenLines.send(JSON.stringify({ portfolio: 1, subscribe: 1 }));
+        wsOpenLines.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
         return;
       }
 
-      if (data.msg_type === "portfolio" && data.portfolio) {
-        const contracts = data.portfolio.contracts || [];
-        console.log("📦 Contracts reçus :", contracts);
+      // Étape 2 : Réception d’un contrat
+      if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
+        const c = data.proposal_open_contract;
 
-        // Supprimer les lignes des contrats fermés
-        for (const id in priceLines4openlines) {
-          const stillOpen = contracts.some(
-            (c) => String(c.contract_id) === id && c.status === "open"
-          );
-          if (!stillOpen) {
+        // Si le contrat est clos → supprimer la ligne
+        if (c.status === "sold") {
+          const id = c.contract_id;
+          if (priceLines4openlines[id]) {
             try { areaSeries.removePriceLine(priceLines4openlines[id]); } catch {}
             delete priceLines4openlines[id];
+            console.log(`❌ Ligne supprimée pour contrat ${id}`);
           }
+          return;
         }
 
-        // Ajouter les nouvelles lignes
-        contracts.forEach((c) => {
-          if (c.status !== "open") return;
-          if (priceLines4openlines[c.contract_id]) return;
-
+        // Si c’est un nouveau contrat ouvert
+        const id = c.contract_id;
+        if (!priceLines4openlines[id]) {
           const entryPrice = parseFloat(c.entry_tick_display_value || c.buy_price);
           if (!entryPrice || isNaN(entryPrice)) return;
 
@@ -255,15 +254,15 @@ document.addEventListener("DOMContentLoaded", () => {
             title: `${type} @ ${entryPrice.toFixed(2)}`,
           });
 
-          priceLines4openlines[c.contract_id] = line;
-          console.log(`📍 Ligne ajoutée pour ${type} à ${entryPrice}`);
-        });
+          priceLines4openlines[id] = line;
+          console.log(`📍 Ligne ajoutée pour ${type} @ ${entryPrice}`);
+        }
       }
     };
 
-    wsOpenLines.onclose = () => console.log("❌ WS closed for open lines");
     wsOpenLines.onerror = (e) => console.log("⚠️ WS error:", e);
-  } 
+    wsOpenLines.onclose = () => console.log("❌ WS closed for open lines");
+  }
 
   // --- GAUGES ---
   function positionGauges() {
