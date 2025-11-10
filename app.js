@@ -193,7 +193,8 @@ document.addEventListener("DOMContentLoaded", () => {
     chartData = [];
     recentChanges = [];
     lastPrices = {};
-
+    
+    Openpositionlines(areaSeries);
     positionGauges();   
   }
 
@@ -888,8 +889,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // try to auto-fit time scale (safe)
     try { chart.timeScale().fitContent(); } catch (e) {}
-   
-    Openpositionlines(areaSeries);
+
   }
  
   // --- GAUGES UPDATE ---   
