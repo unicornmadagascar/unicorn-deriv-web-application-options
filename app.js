@@ -239,7 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const line = areaSeries.createPriceLine({
             price: entryPrice,
             color: color,
-            lineWidth: 2,
+            lineWidth: 2,   
             lineStyle: LightweightCharts.LineStyle.Solid,
             axisLabelVisible: true,
             title: `${type} @ ${entryPrice.toFixed(2)}`,
