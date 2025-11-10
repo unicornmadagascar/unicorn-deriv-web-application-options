@@ -1954,7 +1954,6 @@ function sortCalendarTable(columnIndex) {
     "actual",
     "previous",
     "forecast",
-    "revision",
   ];
 
   const key = columns[columnIndex];
@@ -2015,7 +2014,7 @@ function extractValue(event, key) {
 
      let matchDate = true;
      if (start || end) {
-       const ts = Number(e.date || e.time || 0) * 1000;
+       const ts = Number(e.date || e.time || 0) * 1000;   
        if (ts) {
          const d = new Date(ts);
          if (start && d < new Date(start)) matchDate = false;
