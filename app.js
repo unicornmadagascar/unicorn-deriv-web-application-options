@@ -206,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wsOpenLines && wsOpenLines.readyState <= 1) return;
 
     wsOpenLines = new WebSocket(WS_URL);
-
+    
     wsOpenLines.onopen = () => {
       console.log("✅ WS open for open contract lines");  
       wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));
