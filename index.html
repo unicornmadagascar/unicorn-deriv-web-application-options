@@ -7,7 +7,7 @@
 
  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <script defer src="app.js"></script>
+ <script defer src="app.js"></script>
 
   <style>
      :root{--panel-height:800px;--gap:7px;--bg:#0f1724;--card:#ffffff;--muted:#94a3b8}
@@ -703,10 +703,25 @@ footer {
    <div class="toolbar">
      <label class="muted small">Token Deriv:</label>
      <input type="text" id="tokencalendar" placeholder="Entrez votre token..." style="min-width:200px" />
+
+     <label class="muted small">Devise:</label>
+     <select id="currency">
+        <option value="USD">USD</option>
+        <option value="CNH">CNH</option>
+        <option value="EUR">EUR</option>
+        <option value="JPY">JPY</option>
+        <option value="GBP">GBP</option>
+        <option value="AUD">AUD</option>
+        <option value="ZAR">ZAR</option>
+        <option value="NZD">NZD</option>
+        <option value="INR">INR</option>
+     </select>
+
      <label class="muted small">Début:</label>
      <input type="date" id="startDate" />
      <label class="muted small">Fin:</label>
      <input type="date" id="endDate" />
+
      <label class="muted small">Filtre:</label>
      <input type="text" id="search" placeholder="Rechercher un mot-clé" />
      <select id="impactFilter">
@@ -715,33 +730,16 @@ footer {
         <option value="Medium">Moyen</option>
         <option value="Low">Faible</option>
      </select>
-     <button id="refresh">Rafraîchir</button>
+     <button id="fetchCalendar">📅 Charger</button>
+     <button id="refresh">🔁 Rafraîchir</button>
      <div style="flex:1"></div>
      <span id="status" class="muted small">statut: prêt</span>
    </div>
-
-
+   
    <div class="table-wrap">
-   <table id="eventsTable">
-   <thead id="thead">
-     <tr>
-       <th>Time</th>
-       <th>Country Code</th>
-       <th>Country Name</th>
-       <th>Indicator Type</th>
-       <th>Sector</th>
-       <th>Currency</th>
-       <th>Importance</th>
-       <th>Impact</th>
-       <th>Actual</th>
-       <th>Previous</th>
-       <th>Forecast</th>
-       <th>Revision</th>
-     </tr>
-   </thead>
-   <tbody id="tbody"></tbody>
-   </table>
+      <div id="CalendarList"></div>
    </div>
+   
    </div>
   </div>
 
@@ -758,96 +756,6 @@ footer {
         controlPanelToggle.textContent = "⚙️ Show Controls";
       }
     });
-
-   let ws;
-   let allEvents = [];
-
-   const statusEl = document.getElementById('status');
-   const tbody = document.getElementById('tbody');
-
-   document.getElementById('refresh').addEventListener('click', connectAndFetch);
-   document.getElementById('search').addEventListener('input', filterTable);
-   document.getElementById('impactFilter').addEventListener('change', filterTable);
-
-   function connectAndFetch(){
-      const token = document.getElementById('token').value.trim();
-      const req = {economic_calendar: 1};
-      statusEl.textContent = 'statut: connexion...';
-      if(ws) ws.close();
-      ws = new WebSocket(endpoint);
-
-      ws.onopen = ()=>{
-         if(token) ws.send(JSON.stringify({authorize: token}));
-         setTimeout(()=>ws.send(JSON.stringify(req)), 500);
-      };
-
-      ws.onmessage = (ev)=>{
-          const data = JSON.parse(ev.data);
-          if(data.error){ statusEl.textContent = 'Erreur: '+data.error.message; return; }
-          if(data.authorize){ statusEl.textContent = 'Autorisé comme '+(data.authorize.loginid||''); }
-          const events = findEventsArray(data);
-          if(events && events.length){
-            allEvents = events;
-            renderTable(events);
-            statusEl.textContent = events.length+' événements chargés';
-          }
-      };
-
-      ws.onerror = ()=>statusEl.textContent='Erreur WebSocket';
-      ws.onclose = ()=>statusEl.textContent='Connexion fermée';
-   }
-
-  function findEventsArray(obj){
-     if(obj.economic_calendar && Array.isArray(obj.economic_calendar.events)) return obj.economic_calendar.events;
-     const queue=[obj];
-     while(queue.length){
-        const cur=queue.shift();
-        if(Array.isArray(cur)&&cur.length&&typeof cur[0]==='object')return cur;
-        if(typeof cur==='object'&&cur)Object.values(cur).forEach(v=>queue.push(v));
-     }
-     return null;
-  }
-
-  function renderTable(events){
-     const rows = events.map(e=>{
-     const t = escapeHtml(e.time || e.timestamp || '—');
-     const cc = escapeHtml(e.country_code || '—');
-     const cn = escapeHtml(e.country_name || '—');
-     const ind = escapeHtml(e.indicator_type || '—');
-     const sector = escapeHtml(e.sector || '—');
-     const cur = escapeHtml(e.currency || '—');
-     const imp = escapeHtml(e.importance || '—');
-     const impact = formatImpact(e.impact);
-     const actual = escapeHtml(e.actual || '—');
-     const prev = escapeHtml(e.previous || '—');
-     const forecast = escapeHtml(e.forecast || '—');
-     const rev = escapeHtml(e.revision || '—');
-     return `<tr><td>${t}</td><td>${cc}</td><td>${cn}</td><td>${ind}</td><td>${sector}</td><td>${cur}</td><td>${imp}</td><td>${impact}</td><td>${actual}</td><td>${prev}</td><td>${forecast}</td><td>${rev}</td></tr>`;
-   }).join('');
-   tbody.innerHTML = rows;
- }
-
- function formatImpact(v){
-   if(!v) return '<span class="muted">—</span>';
-   const val = String(v).toLowerCase();
-   if(val.includes('high')) return `<span class='impact-high'>${v}</span>`;
-   if(val.includes('medium')) return `<span class='impact-medium'>${v}</span>`;
-   if(val.includes('low')) return `<span class='impact-low'>${v}</span>`;
-   return escapeHtml(v);
- }
-
- function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
- function filterTable(){
-   const q=document.getElementById('search').value.toLowerCase();
-   const imp=document.getElementById('impactFilter').value.toLowerCase();
-   const filtered=allEvents.filter(e=>{
-   const matchQ=!q||JSON.stringify(e).toLowerCase().includes(q);
-   const matchI=!imp||String(e.impact||'').toLowerCase().includes(imp);
-   return matchQ&&matchI;
-  });
-  renderTable(filtered);   
- }
   
   </script>
 </body>

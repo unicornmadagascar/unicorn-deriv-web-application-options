@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const lossvalue = document.getElementById("lossvalue");
   const profitvalue = document.getElementById("profitvalue");
   const tokencalendar = document.getElementById("tokencalendar");
+  const statusEl = document.getElementById('status');
 
   let totalPL = 0; // cumul des profits et pertes
   let automationRunning = false;
@@ -79,6 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let roc_;
   let TOKEN;
   let CURRENCY;
+  let allEvents = [];
   // Historique local des ticks
   let tickHistory = [];
   let tickHistory__ = [];
@@ -1801,6 +1803,147 @@ function getProfitStats(response) {
   return { pnlPercent, winRate, lossRate, totalPNLprice__, totalProfitPrice__, totalLossPrice__ };
 }
 
+function initCalendarTable() {
+  const CalendarList = document.getElementById("CalendarList");
+
+  CalendarList.innerHTML = `
+    <table id="calendarTable">
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="selectAll"></th>
+          <th>Time</th>
+          <th>Country Code</th>
+          <th>Country Name</th>
+          <th>Indicator Type</th>
+          <th>Sector</th>
+          <th>Currency</th>
+          <th>Importance</th>
+          <th>Impact</th>
+          <th>Actual</th>
+          <th>Previous</th>
+          <th>Forecast</th>
+          <th>Revision</th>
+        </tr>
+      </thead>
+      <tbody id="calendarBody">
+        <tr>
+          <td colspan="13" style="text-align:center; color:gray;">
+            Aucun événement trouvé
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+ }
+ 
+ // ✅ Requête WS Deriv API
+ function fetchEconomicCalendar() {
+   const token = document.getElementById('token').value.trim();
+   if (!token) { alert('Veuillez entrer votre token Deriv.'); return; }
+
+   statusEl.textContent = 'statut: connexion...';
+   if (ws) ws.close();
+   ws = new WebSocket(endpoint);
+
+   ws.onopen = () => ws.send(JSON.stringify({ authorize: token }));
+
+   ws.onmessage = (msg) => {
+     const data = JSON.parse(msg.data);
+     if (data.error) { statusEl.textContent = 'Erreur: ' + data.error.message; return; }
+
+     if (data.authorize) { 
+       statusEl.textContent = 'Autorisé: ' + (data.authorize.loginid || '');
+       sendCalendarRequest(); 
+       return; 
+     }
+
+     if (data.economic_calendar && Array.isArray(data.economic_calendar.events)) {
+       allEvents = data.economic_calendar.events;
+       filterTable();
+       statusEl.textContent = allEvents.length + ' événements chargés';
+     }
+   };
+
+   ws.onerror = (e) => { statusEl.textContent = 'Erreur WebSocket'; console.error(e); };
+   ws.onclose = () => { statusEl.textContent = 'Connexion fermée'; };
+ }
+
+ // ✅ Envoi du payload calendrier
+ function sendCalendarRequest() {
+   const currency = document.getElementById('currency').value || undefined;
+   const start = document.getElementById('startDate').value;
+   const end = document.getElementById('endDate').value;
+   const payload = { economic_calendar: 1 };
+
+   if (currency) payload.currency = currency;
+   if (start) payload.start_date = Math.floor(new Date(start).getTime() / 1000);
+   if (end) payload.end_date = Math.floor(new Date(end).getTime() / 1000);
+
+   ws.send(JSON.stringify(payload));
+   statusEl.textContent = 'statut: requête envoyée';
+ }
+
+ // ✅ Met à jour les lignes du tableau
+ function updateCalendarTable(events) {
+  const tableBody = document.getElementById('calendarBody');
+  tableBody.innerHTML = '';
+
+  if (!events || !events.length) {
+    tableBody.innerHTML = `<tr><td colspan="13" style="text-align:center; color:gray;">Aucun événement trouvé</td></tr>`;
+    return;
+  }
+
+  events.forEach(event => {
+    const timestamp = Number(event.date || event.time || event.timestamp || 0);
+    const eventDate = timestamp ? new Date(timestamp * 1000).toLocaleString() : '-';
+    const row = `
+      <tr>
+        <td><input type="checkbox" class="rowCheck"></td>
+        <td>${eventDate}</td>
+        <td>${event.country_code || '-'}</td>
+        <td>${event.country_name || '-'}</td>
+        <td>${event.indicator_type || '-'}</td>
+        <td>${event.sector || '-'}</td>
+        <td>${event.currency || '-'}</td>
+        <td>${event.importance || '-'}</td>
+        <td>${event.impact || '-'}</td>
+        <td>${event.actual ?? '-'}</td>
+        <td>${event.previous ?? '-'}</td>
+        <td>${event.forecast ?? '-'}</td>
+        <td>${event.revision ?? '-'}</td>
+       </tr>`;
+     tableBody.insertAdjacentHTML('beforeend', row);
+   });
+ }
+
+ // ✅ Filtrage du tableau
+ function filterTable() {
+   const q = document.getElementById('search').value.toLowerCase();
+   const imp = document.getElementById('impactFilter').value.toLowerCase();
+   const start = document.getElementById('startDate').value;
+   const end = document.getElementById('endDate').value;
+
+   const filtered = allEvents.filter(e => {
+     const raw = JSON.stringify(e).toLowerCase();
+     const matchQ = !q || raw.includes(q);
+     const matchI = !imp || String(e.importance || '').toLowerCase().includes(imp);
+
+     let matchDate = true;
+     if (start || end) {
+       const ts = Number(e.date || e.time || 0) * 1000;
+       if (ts) {
+         const d = new Date(ts);
+         if (start && d < new Date(start)) matchDate = false;
+         if (end && d > new Date(end)) matchDate = false;
+       }
+     }
+
+     return matchQ && matchI && matchDate;
+   });
+
+   updateCalendarTable(filtered);
+ }
+
  // ===============================
  // 🔹 Événement du bouton Rechercher
  // ===============================
@@ -2138,9 +2281,32 @@ window.addEventListener("error", function (e) {
     console.log("USER TOKEN : " + TOKEN);
     tokencalendar.value = TOKEN;   
   }   
- });     
+ });   
  
-  
+   // ✅ Initialisation du tableau à la création
+  initCalendarTable();
+
+  document.getElementById('fetchCalendar').addEventListener('click', fetchEconomicCalendar);
+  document.getElementById('refresh').addEventListener('click', () => {
+    if (ws && ws.readyState === WebSocket.OPEN) sendCalendarRequest();
+    else fetchEconomicCalendar();
+  });
+  document.getElementById('search').addEventListener('input', filterTable);
+  document.getElementById('impactFilter').addEventListener('change', filterTable);
+  document.getElementById('startDate').addEventListener('change', filterTable);
+  document.getElementById('endDate').addEventListener('change', filterTable);
+ 
+  // ✅ Définir des dates par défaut (1 semaine)
+  (function initDates(){
+    const today = new Date();
+    const start = new Date(today); start.setDate(today.getDate()-3);
+    const end = new Date(today); end.setDate(today.getDate()+3);
+    document.getElementById('startDate').value = start.toISOString().slice(0,10);
+    document.getElementById('endDate').value = end.toISOString().slice(0,10);
+  })();
+
+  window.addEventListener('beforeunload', () => { try { if (ws) ws.close(); } catch (e) {} });
+
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
     if (connectBtn.textContent !== "Connect")
