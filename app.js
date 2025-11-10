@@ -866,7 +866,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const stillOpen = contracts.some(c => c.contract_id == id);
           if (!stillOpen) {
             areaSeries.removePriceLine(priceLines[id]);
-            delete priceLines[id];
+            delete priceLines[id];    
           }
         }
 
