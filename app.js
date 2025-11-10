@@ -1837,7 +1837,7 @@ function getProfitStats(response) {
       profitcurrency.textContent = selectedAccount.currency;
       plcurrency.textContent = selectedAccount.currency;
       losscurrency.textContent = selectedAccount.currency;
-      tokencalendar.textContent = selectedAccount.token;
+      tokencalendar.value = selectedAccount.token;
       DisconnectDeriv();
 
       // Exemple d'utilisation : connexion Deriv WebSocket
@@ -2136,7 +2136,7 @@ window.addEventListener("error", function (e) {
   if (TOKEN) {
     // puis exécute l'autorisation Deriv
     console.log("USER TOKEN : " + TOKEN);
-    document.getElementById("tokencalendar").textContent = TOKEN.toString();   
+    tokencalendar.value = TOKEN;   
   }
  }); 
  
