@@ -233,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
        // Ajouter les nouvelles lignes
        contracts.forEach((c) => {
-         if (c.status !== "open") return;
+         //if (c.status !== "open") return;
          if (priceLines4openlines[c.contract_id]) return;
 
          const entryPrice = parseFloat(c.entry_tick_display_value || c.buy_price);
