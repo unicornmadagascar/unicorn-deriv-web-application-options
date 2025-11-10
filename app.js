@@ -102,6 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let transactions__ = [];
   let structresponse = [];
   let datapercent = {};
+  let response;
 
 
   // --- NEW: current symbol & pending subscribe ---
@@ -1931,8 +1932,8 @@ function initCalendarTable() {
       <tr>
         <td><input type="checkbox"></td>
         <td data-sort="${e.release_date || 0}">${releaseDate}</td>
-        <td>-</td>
-        <td>-</td>
+        <td>${GetCountrycode(currency).toString()}</td>
+        <td>${GetCountryname(currency).toString()}</td>
         <td>${indicator}</td>
         <td>-</td>
         <td>${currency}</td>
@@ -1956,6 +1957,114 @@ function initCalendarTable() {
 
   attachSortHandlers(); // On attache les événements de tri après mise à jour
 }
+
+function GetCountryname(currency)
+ {
+   for (let i = 0; i < 9; i++)
+    {
+      if (currency === "EUR")
+       {
+          response = "Europe (EU)";
+          break;
+       }
+      else if (currency === "USD")
+       {
+          response = "United States (US)";
+          break;
+       }
+      else if (currency === "CAD")
+       {
+          response = "Canada (CA)";
+          break;
+       }
+      else if (currency === "AUD")
+       {
+          response = "Australia (AU)";
+          break;
+       }
+      else if (currency === "JPY")
+       {
+          response = "Japan (JP)";
+          break;
+       }
+      else if (currency === "CNY")
+       {
+          response = "China (CN)";
+          break;
+       }
+      else if (currency === "GBP")
+       {
+          response = "United-Kingdom (GB)";
+          break;
+       }
+      else if (currency === "MXN")
+       {
+          response = "Mexico (MX)";
+          break;
+       }
+      else if (currency === "CHF")
+       {
+          response = "Switzerland (CH)";
+          break;
+       }
+    }
+    
+   return(response);
+ }
+
+ function GetCountrycode(currency)
+ {
+   for (let i = 0; i < 9; i++)
+    {
+      if (currency === "EUR")
+       {
+          response = "EU";
+          break;
+       }
+      else if (currency === "USD")
+       {
+          response = "US";
+          break;
+       }
+      else if (currency === "CAD")
+       {
+          response = "CA";
+          break;
+       }
+      else if (currency === "AUD")
+       {
+          response = "AU";
+          break;
+       }
+      else if (currency === "JPY")
+       {
+          response = "JP";
+          break;
+       }
+      else if (currency === "CNY")
+       {
+          response = "CN";
+          break;
+       }
+      else if (currency === "GBP")
+       {
+          response = "GB";
+          break;
+       }
+      else if (currency === "MXN")
+       {
+          response = "MX";
+          break;
+       }
+      else if (currency === "CHF")
+       {
+          response = "CH";
+          break;
+       }
+    }
+    
+   return(response);
+ }
 
 function attachSortHandlers() {
   const headers = document.querySelectorAll("#calendarTable thead th");
