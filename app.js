@@ -828,7 +828,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function Openpositionlines()
   {
     const priceLines = {}; // Stocke les lignes actives (clé = contract_id)
-    const tickHistory = []; // Historique des ticks
 
     if (wsopencontractlines === null)
     {
@@ -863,7 +862,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Supprimer les lignes des contrats fermés
         for (const id in priceLines) {
-          const stillOpen = contracts.some(c => c.contract_id == id);
+          const stillOpen = contractsopenprice.some(c => c.contract_id == id);
           if (!stillOpen) {
             areaSeries.removePriceLine(priceLines[id]);
             delete priceLines[id];    
