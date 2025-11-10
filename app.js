@@ -1838,7 +1838,7 @@ function initCalendarTable() {
  
  // ✅ Requête WS Deriv API
  function fetchEconomicCalendar() {
-   const token = document.getElementById('tokencalendar').value.trim();
+   const token = TOKEN;
    if (!token) { alert('Veuillez entrer votre token Deriv.'); return; }
 
    statusEl.textContent = 'statut: connexion...';
