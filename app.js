@@ -1806,32 +1806,52 @@ function getProfitStats(response) {
 }
 
 function initCalendarTable() {
-  const CalendarList = document.getElementById("CalendarList");
+   const CalendarList = document.getElementById("CalendarList");
 
-  CalendarList.innerHTML = `
-    <table id="calendarTable">
-      <thead>
-        <tr>
-          <th><input type="checkbox" id="selectAll"></th>
-          <th>Time</th>
-          <th>Indicator Type</th>
-          <th>Currency</th>
-          <th>Impact</th>
-          <th>Actual</th>
-          <th>Previous</th>
-          <th>Forecast</th>
-          <th>Revision</th>
-        </tr>
-      </thead>
-      <tbody id="calendarBody">
-        <tr>
+   // Construction du tableau HTML
+   CalendarList.innerHTML = `
+     <table id="calendarTable" class="calendar-table">
+       <thead>
+         <tr>
+           <th><input type="checkbox" id="selectAll"></th>
+           <th>Time</th>
+           <th>Country Code</th>
+           <th>Country Name</th>
+           <th>Indicator Type</th>
+           <th>Sector</th>
+           <th>Currency</th>
+           <th>Importance</th>
+           <th>Impact</th>
+           <th>Actual</th>
+           <th>Previous</th>
+           <th>Forecast</th>
+           <th>Revision</th>
+         </tr>
+       </thead>
+       <tbody id="calendarBody">
+         <tr>
           <td colspan="13" style="text-align:center; color:gray;">
-            Aucun événement trouvé
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  `;
+             Aucun événement trouvé
+           </td>
+         </tr>
+       </tbody>
+     </table>
+   `;
+
+   // 🧩 Ajout des gestionnaires pour le tri si nécessaires
+   const headers = CalendarList.querySelectorAll("th");
+   headers.forEach((th, i) => {
+     th.addEventListener("click", () => sortCalendarTable(i));
+   });
+
+   // 🧩 Bouton "Tout sélectionner"
+   const selectAll = document.getElementById("selectAll");
+   if (selectAll) {
+     selectAll.addEventListener("change", e => {
+       const checkboxes = CalendarList.querySelectorAll("#calendarBody input[type='checkbox']");
+       checkboxes.forEach(cb => cb.checked = e.target.checked);
+     });
+   }
  }
  
  // ✅ Requête WS Deriv API
@@ -1911,7 +1931,10 @@ function initCalendarTable() {
       <tr>
         <td><input type="checkbox"></td>
         <td data-sort="${e.release_date || 0}">${releaseDate}</td>
+        <td>-</td>
+        <td>-</td>
         <td>${indicator}</td>
+        <td>-</td>
         <td>${currency}</td>
         <td style="color:${impactColor}; font-weight:bold;" data-sort="${impactValue}">
           ${impactValue}
@@ -1948,12 +1971,17 @@ function sortCalendarTable(columnIndex) {
   const columns = [
     "checkbox",
     "release_date",
+    "country_code",
+    "country_name",
     "event_name",
+    "sector",
     "currency",
+    "importance",
     "impact",
     "actual",
     "previous",
     "forecast",
+    "revision",
   ];
 
   const key = columns[columnIndex];
