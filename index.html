@@ -754,13 +754,102 @@ footer {
         controlPanelToggle.textContent = "⚙️ Show Controls";
       }
     });
+
+   let ws;
+   let allEvents = [];
+
+   const statusEl = document.getElementById('status');
+   const tbody = document.getElementById('tbody');
+
+
+   document.getElementById('refresh').addEventListener('click', connectAndFetch);
+   document.getElementById('search').addEventListener('input', filterTable);
+   document.getElementById('impactFilter').addEventListener('change', filterTable);
+
+
+   function connectAndFetch(){
+      const token = document.getElementById('token').value.trim();
+      const req = {economic_calendar: 1};
+      statusEl.textContent = 'statut: connexion...';
+      if(ws) ws.close();
+      ws = new WebSocket(endpoint);
+
+      ws.onopen = ()=>{
+         if(token) ws.send(JSON.stringify({authorize: token}));
+         setTimeout(()=>ws.send(JSON.stringify(req)), 500);
+      };
+
+      ws.onmessage = (ev)=>{
+          const data = JSON.parse(ev.data);
+          if(data.error){ statusEl.textContent = 'Erreur: '+data.error.message; return; }
+          if(data.authorize){ statusEl.textContent = 'Autorisé comme '+(data.authorize.loginid||''); }
+          const events = findEventsArray(data);
+          if(events && events.length){
+            allEvents = events;
+            renderTable(events);
+            statusEl.textContent = events.length+' événements chargés';
+          }
+      };
+
+      ws.onerror = ()=>statusEl.textContent='Erreur WebSocket';
+      ws.onclose = ()=>statusEl.textContent='Connexion fermée';
+   }
+
+  function findEventsArray(obj){
+     if(obj.economic_calendar && Array.isArray(obj.economic_calendar.events)) return obj.economic_calendar.events;
+     const queue=[obj];
+     while(queue.length){
+        const cur=queue.shift();
+        if(Array.isArray(cur)&&cur.length&&typeof cur[0]==='object')return cur;
+        if(typeof cur==='object'&&cur)Object.values(cur).forEach(v=>queue.push(v));
+     }
+     return null;
+  }
+
+  function renderTable(events){
+     const rows = events.map(e=>{
+     const t = escapeHtml(e.time || e.timestamp || '—');
+     const cc = escapeHtml(e.country_code || '—');
+     const cn = escapeHtml(e.country_name || '—');
+     const ind = escapeHtml(e.indicator_type || '—');
+     const sector = escapeHtml(e.sector || '—');
+     const cur = escapeHtml(e.currency || '—');
+     const imp = escapeHtml(e.importance || '—');
+     const impact = formatImpact(e.impact);
+     const actual = escapeHtml(e.actual || '—');
+     const prev = escapeHtml(e.previous || '—');
+     const forecast = escapeHtml(e.forecast || '—');
+     const rev = escapeHtml(e.revision || '—');
+     return `<tr><td>${t}</td><td>${cc}</td><td>${cn}</td><td>${ind}</td><td>${sector}</td><td>${cur}</td><td>${imp}</td><td>${impact}</td><td>${actual}</td><td>${prev}</td><td>${forecast}</td><td>${rev}</td></tr>`;
+   }).join('');
+   tbody.innerHTML = rows;
+ }
+
+ function formatImpact(v){
+   if(!v) return '<span class="muted">—</span>';
+   const val = String(v).toLowerCase();
+   if(val.includes('high')) return `<span class='impact-high'>${v}</span>`;
+   if(val.includes('medium')) return `<span class='impact-medium'>${v}</span>`;
+   if(val.includes('low')) return `<span class='impact-low'>${v}</span>`;
+   return escapeHtml(v);
+ }
+
+ function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+ function filterTable(){
+   const q=document.getElementById('search').value.toLowerCase();
+   const imp=document.getElementById('impactFilter').value.toLowerCase();
+   const filtered=allEvents.filter(e=>{
+   const matchQ=!q||JSON.stringify(e).toLowerCase().includes(q);
+   const matchI=!imp||String(e.impact||'').toLowerCase().includes(imp);
+   return matchQ&&matchI;
+  });
+  renderTable(filtered);
+ }
   
   </script>
-
 </body>
-
 <footer>
     <p>© 2025 World Unicorn — All rights reserved </p>
 </footer>
-
 </html>
