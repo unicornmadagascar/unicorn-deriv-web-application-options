@@ -166,7 +166,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
  }
 
-
   // --- CHART INIT ---
   function initChart() {
     try { if (chart) chart.remove(); } catch (e) {}
@@ -235,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!entryPrice || isNaN(entryPrice)) return;
 
           const type = c.contract_type;
-          const color = type.includes("CALL") || type.includes("UP") ? "#00ff80" : "#ff4d4d";
+          const color = type.includes("MULTUP") ? "#00ff80" : "#ff4d4d";
 
           const line = areaSeries.createPriceLine({
             price: entryPrice,
