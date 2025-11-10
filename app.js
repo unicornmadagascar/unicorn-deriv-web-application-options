@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsContracts = null;
   let wsplContracts = null;
   let wsContracts__ = null;
-  let wsopencontractlines = null;
+  let wsOpenLines = null;
   let wspl = null;
   let wsplgauge = null;
   let chart = null;
@@ -190,6 +190,66 @@ document.addEventListener("DOMContentLoaded", () => {
     lastPrices = {};
 
     positionGauges();
+    Openpositionlines(areaSeries);
+  }
+
+  function Openpositionlines(areaSeries) {
+    if (wsOpenLines && wsOpenLines.readyState <= 1) return; // Déjà connecté
+
+    wsOpenLines = new WebSocket(WS_URL);
+
+    wsOpenLines.onopen = () => {
+      console.log("✅ WS open for open contract lines");
+      wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));
+    };
+
+    wsOpenLines.onclose = () => console.log("❌ WS closed for open lines");
+    wsOpenLines.onerror = (e) => console.log("⚠️ WS error:", e);
+
+    wsOpenLines.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+
+      if (data.msg_type === "authorize") {
+        wsOpenLines.send(JSON.stringify({ portfolio: 1, subscribe: 1 }));
+      }
+
+      // --- Gestion du portefeuille ---
+      if (data.msg_type === "portfolio" && data.portfolio) {
+        const contracts = data.portfolio.contracts || [];
+
+        // Supprimer les lignes des contrats fermés
+        for (const id in priceLines4openlines) {
+          const stillOpen = contracts.some((c) => String(c.contract_id) === id && c.status === "open");
+          if (!stillOpen) {
+            try { areaSeries.removePriceLine(priceLines4openlines[id]); } catch {}
+            delete priceLines4openlines[id];
+          }
+        }
+
+        // Ajouter ou mettre à jour les lignes des contrats ouverts
+        contracts.forEach((c) => {
+          if (c.status !== "open") return;
+          if (priceLines4openlines[c.contract_id]) return;
+
+          const entryPrice = parseFloat(c.entry_tick_display_value || c.buy_price);
+          if (!entryPrice || isNaN(entryPrice)) return;
+
+          const type = c.contract_type;
+          const color = type.includes("CALL") || type.includes("UP") ? "#00ff80" : "#ff4d4d";
+
+          const line = areaSeries.createPriceLine({
+            price: entryPrice,
+            color: color,
+            lineWidth: 2,
+            lineStyle: LightweightCharts.LineStyle.Solid,
+            axisLabelVisible: true,
+            title: `${type} @ ${entryPrice.toFixed(2)}`,
+          });
+
+          priceLines4openlines[c.contract_id] = line;
+        });
+      }
+    };
   }
 
   // --- GAUGES ---
@@ -823,82 +883,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // try to auto-fit time scale (safe)
     try { chart.timeScale().fitContent(); } catch (e) {}
-
-    Openpositionlines();
-  }
-
-  function Openpositionlines(areaSeries)
-  {
-    if (wsopencontractlines === null)
-    {
-     wsopencontractlines = new WebSocket(WS_URL);
-     wsopencontractlines.onopen=()=>{ wsopencontractlines.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-  
-    if (wsopencontractlines && (wsopencontractlines.readyState === WebSocket.OPEN || wsopencontractlines.readyState === WebSocket.CONNECTING))
-    {
-     wsopencontractlines.onopen=()=>{ wsopencontractlines.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
-    if (wsopencontractlines && (wsopencontractlines.readyState === WebSocket.CLOSED || wsopencontractlines.readyState === WebSocket.CLOSING))
-    {
-      wsopencontractlines = new WebSocket(WS_URL);
-      wsopencontractlines.onopen=()=>{ wsopencontractlines.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
-    wsopencontractlines.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-    wsopencontractlines.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-    wsopencontractlines.onmessage = (msg) => {
-       const data = JSON.parse(msg.data);
-       
-       if (data.msg_type === "authorize")
-       {
-        wsopencontractlines.send(JSON.stringify({ portfolio: 1, subscribe: 1 }));
-       }
-
-       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract)
-       {
-        const proposal4openpricelines = data.proposal_open_contract;
-       }
-
-       if (data.msg_type === "portfolio" && data.portfolio)
-       {
-        const contractsopenprice = data.portfolio.contracts;
-
-        // Supprimer les lignes des contrats fermés
-        for (const id in priceLines4openlines) {
-          const stillOpen = contractsopenprice.some((c) => String(c.contract_id) === id && c.status === "open");
-          if (!stillOpen) {
-            areaSeries.removePriceLine(priceLines4openlines[id]);
-            delete priceLines4openlines[id];    
-          }
-        }
-
-        // Ajouter les lignes des nouveaux contrats
-        if (!proposal4openpricelines && !proposal4openpricelines.length) return;
-
-        contractsopenprice.forEach(c => {
-          if (c.status !== "open") return;
-          if (!priceLines4openlines[c.contract_id]) {
-            const entryPrice = parseFloat(c.buy_price);
-            if (!entryPrice || isNaN(entryPrice)) return;
-            const type = c.contract_type;
-            const color = type.includes("MULTUP") ? "#00ff80" : "#ff4d4d";
-
-            const line = areaSeries.createPriceLine({
-              price: entryPrice,
-              color: color,
-              lineWidth: 2,
-              lineStyle: LightweightCharts.LineStyle.Solid,
-              axisLabelVisible: true,   
-              title: `${type} @ ${entryPrice.toFixed(2)}`
-            });
-
-            priceLines4openlines[c.contract_id] = line;
-          }
-        });
-       }
-    };
   }
  
   // --- GAUGES UPDATE ---
