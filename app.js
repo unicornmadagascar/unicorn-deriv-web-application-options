@@ -194,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
     recentChanges = [];
     lastPrices = {};
 
-    positionGauges();
+    positionGauges();   
   }
 
   function Openpositionlines(areaSeries) {
