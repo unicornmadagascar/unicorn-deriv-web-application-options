@@ -1843,7 +1843,7 @@ function getProfitStats(response) {
       // Exemple d'utilisation : connexion Deriv WebSocket
       connection = new WebSocket(WS_URL);
       connection.onopen = () => {
-        connection.send(JSON.stringify({ authorize: selectedAccount.token }));
+        connection.send(JSON.stringify({ authorize: selectedAccount.token }));   
       };
       connection.onmessage = (msg) => {
         const data = JSON.parse(msg.data);
