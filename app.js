@@ -1867,7 +1867,7 @@ function initCalendarTable() {
 
    ws.onopen = () => ws.send(JSON.stringify({ authorize: token }));
 
-   ws.onmessage = (msg) => {
+   ws.onmessage = (msg) => {  
      const data = JSON.parse(msg.data);
      if (data.error) { statusEl.textContent = 'Erreur: ' + data.error.message; return; }
 
