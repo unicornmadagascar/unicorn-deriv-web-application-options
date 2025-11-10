@@ -2137,8 +2137,8 @@ window.addEventListener("error", function (e) {
     // puis exécute l'autorisation Deriv
     console.log("USER TOKEN : " + TOKEN);
     tokencalendar.value = TOKEN;   
-  }
- }); 
+  }   
+ });     
  
   
   // Simulation : mise à jour toutes les 2 secondes
