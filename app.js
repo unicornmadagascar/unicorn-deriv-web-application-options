@@ -1815,7 +1815,7 @@ function initCalendarTable() {
      <table id="calendarTable" class="calendar-table">
        <thead>
          <tr>
-           <th><input type="checkbox" id="selectAll"></th>
+           <th><input type="checkbox" id="selectAll__"></th>
            <th>Time</th>
            <th>Country Code</th>
            <th>Country Name</th>
@@ -1847,11 +1847,11 @@ function initCalendarTable() {
    });
 
    // 🧩 Bouton "Tout sélectionner"
-   const selectAll = document.getElementById("selectAll");
-   if (selectAll) {
-     selectAll.addEventListener("change", e => {
-       const checkboxes = CalendarList.querySelectorAll("#calendarBody input[type='checkbox']");
-       checkboxes.forEach(cb => cb.checked = e.target.checked);
+   const selectAll__ = document.getElementById("selectAll__");
+   if (selectAll__) {
+     selectAll__.addEventListener("change", e => {
+       const checkboxes__ = CalendarList.querySelectorAll("#calendarBody input[type='checkbox']");
+       checkboxes__.forEach(cb => cb.checked = e.target.checked);
      });
    }
  }
