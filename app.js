@@ -888,6 +888,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Ajouter les lignes des nouveaux contrats
         if (!proposal4openpricelines) return;
+        
         contractsopenprice.forEach(c => {
           if (!priceLines[c.contract_id]) {
             const entryPrice = parseFloat(c.buy_price);
