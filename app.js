@@ -81,6 +81,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let TOKEN;
   let CURRENCY;
   let allEvents = [];
+  let currentSort = { column: null, ascending: true };
+  let displayedEvents = []; // Liste filtrée actuellement visible
   // Historique local des ticks
   let tickHistory = [];
   let tickHistory__ = [];
@@ -1812,12 +1814,8 @@ function initCalendarTable() {
         <tr>
           <th><input type="checkbox" id="selectAll"></th>
           <th>Time</th>
-          <th>Country Code</th>
-          <th>Country Name</th>
           <th>Indicator Type</th>
-          <th>Sector</th>
           <th>Currency</th>
-          <th>Importance</th>
           <th>Impact</th>
           <th>Actual</th>
           <th>Previous</th>
@@ -1885,37 +1883,124 @@ function initCalendarTable() {
 
  // ✅ Met à jour les lignes du tableau
  function updateCalendarTable(events) {
-  const tableBody = document.getElementById('calendarBody');
-  tableBody.innerHTML = '';
+  const body = document.getElementById("calendarBody");
+  if (!body) return;
 
-  if (!events || !events.length) {
-    tableBody.innerHTML = `<tr><td colspan="13" style="text-align:center; color:gray;">Aucun événement trouvé</td></tr>`;
-    return;
+  displayedEvents = events; // On garde la liste affichée pour le tri
+  let rows = "";
+
+  events.forEach(e => {
+    const actual = e.actual?.display_value || "-";
+    const previous = e.previous?.display_value || "-";
+    const forecast = e.forecast?.display_value || "-";
+    const revision = e.revision?.display_value || "-";
+    const impactValue = e.impact ?? "-";
+    const releaseDate = e.release_date
+      ? new Date(e.release_date * 1000).toLocaleString()
+      : "-";
+    const currency = e.currency || "-";
+    const indicator = e.event_name || "-";
+
+    // 🎨 Couleur selon l'impact
+    let impactColor = "gray";
+    if (impactValue >= 4) impactColor = "#ff4444";       // fort impact → rouge
+    else if (impactValue >= 2) impactColor = "#ffaa00";  // moyen → orange
+    else if (impactValue > 0) impactColor = "#22cc22";   // faible → vert
+
+    rows += `
+      <tr>
+        <td><input type="checkbox"></td>
+        <td data-sort="${e.release_date || 0}">${releaseDate}</td>
+        <td>${indicator}</td>
+        <td>${currency}</td>
+        <td style="color:${impactColor}; font-weight:bold;" data-sort="${impactValue}">
+          ${impactValue}
+        </td>
+        <td>${impactValue}</td>
+        <td>${actual}</td>
+        <td>${previous}</td>
+        <td>${forecast}</td>
+        <td>${revision}</td>
+      </tr>
+    `;
+  });
+
+  body.innerHTML =
+    rows ||
+    `<tr><td colspan="13" style="text-align:center; color:gray;">
+       Aucun événement trouvé pour cette période
+     </td></tr>`;
+
+  attachSortHandlers(); // On attache les événements de tri après mise à jour
+}
+
+function attachSortHandlers() {
+  const headers = document.querySelectorAll("#calendarTable thead th");
+  headers.forEach((th, index) => {
+    th.style.cursor = "pointer";
+    th.onclick = () => sortCalendarTable(index);
+  });
+}
+
+function sortCalendarTable(columnIndex) {
+  if (!displayedEvents.length) return;
+
+  const columns = [
+    "checkbox",
+    "release_date",
+    "event_name",
+    "currency",
+    "impact",
+    "actual",
+    "previous",
+    "forecast",
+    "revision",
+  ];
+
+  const key = columns[columnIndex];
+  if (!key) return;
+
+  // Inversion du sens de tri si on reclique sur la même colonne
+  if (currentSort.column === key) {
+    currentSort.ascending = !currentSort.ascending;
+  } else {
+    currentSort = { column: key, ascending: true };
   }
 
-  events.forEach(event => {
-    const timestamp = Number(event.date || event.time || event.timestamp || 0);
-    const eventDate = timestamp ? new Date(timestamp * 1000).toLocaleString() : '-';
-    const row = `
-      <tr>
-        <td><input type="checkbox" class="rowCheck"></td>
-        <td>${eventDate}</td>
-        <td>${event.country_code || '-'}</td>
-        <td>${event.country_name || '-'}</td>
-        <td>${event.indicator_type || '-'}</td>
-        <td>${event.sector || '-'}</td>
-        <td>${event.currency || '-'}</td>
-        <td>${event.importance || '-'}</td>
-        <td>${event.impact || '-'}</td>
-        <td>${event.actual ?? '-'}</td>
-        <td>${event.previous ?? '-'}</td>
-        <td>${event.forecast ?? '-'}</td>
-        <td>${event.revision ?? '-'}</td>
-       </tr>`;
-     tableBody.insertAdjacentHTML('beforeend', row);
-   });
- }
+  displayedEvents.sort((a, b) => {
+    const valA = extractValue(a, key);
+    const valB = extractValue(b, key);
 
+    if (typeof valA === "number" && typeof valB === "number")
+      return currentSort.ascending ? valA - valB : valB - valA;
+    return currentSort.ascending
+      ? String(valA).localeCompare(String(valB))
+      : String(valB).localeCompare(String(valA));
+  });
+
+  updateCalendarTable(displayedEvents);
+}
+
+function extractValue(event, key) {
+  switch (key) {
+    case "release_date":
+      return event.release_date || 0;
+    case "impact":
+      return event.impact || 0;
+    case "event_name":
+      return event.event_name || "";
+    case "currency":
+      return event.currency || "";
+    case "actual":
+      return parseFloat(event.actual?.display_value || 0);
+    case "previous":
+      return parseFloat(event.previous?.display_value || 0);
+    case "forecast":
+      return parseFloat(event.forecast?.display_value || 0);
+    default:
+      return "-";
+  }
+ }
  // ✅ Filtrage du tableau
  function filterTable() {
    const q = document.getElementById('search').value.toLowerCase();
@@ -1941,6 +2026,7 @@ function initCalendarTable() {
      return matchQ && matchI && matchDate;
    });
 
+   displayedEvents = filtered; // garde la liste filtrée pour le tri
    updateCalendarTable(filtered);
  }
 
