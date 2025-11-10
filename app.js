@@ -854,7 +854,7 @@ document.addEventListener("DOMContentLoaded", () => {
        
        if (data.msg_type === "authorize")
        {
-        wsopencontractlines.send(JSON.parse({ portfolio: 1, subscribe: 1 }));
+        wsopencontractlines.send(JSON.stringify({ portfolio: 1, subscribe: 1 }));
        }
 
        if (data.msg_type === "portfolio" && data.portfolio)
@@ -875,7 +875,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!priceLines[c.contract_id]) {
             const entryPrice = parseFloat(c.buy_price);
             const type = c.contract_type;
-            const color = type.includes("CALL") ? "#00ff80" : "#ff4d4d";
+            const color = type.includes("MULTUP") ? "#00ff80" : "#ff4d4d";
 
             const line = areaSeries.createPriceLine({
               price: entryPrice,
