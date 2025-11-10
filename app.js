@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let automationRunning = false;
   let smoothVol = 0;
   let smoothTrend = 0;
-  let ws = null;
+  let ws;
   let connection = null;
   let wsROC = null;
   let wsContracts__close = null;
@@ -1861,7 +1861,7 @@ function initCalendarTable() {
        allEvents = data.economic_calendar.events;
        filterTable();
        statusEl.textContent = allEvents.length + ' événements chargés';
-     }
+     }   
    };
 
    ws.onerror = (e) => { statusEl.textContent = 'Erreur WebSocket'; console.error(e); };
