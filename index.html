@@ -703,6 +703,10 @@ footer {
    <div class="toolbar">
      <label class="muted small">Token Deriv:</label>
      <input type="text" id="tokencalendar" placeholder="Entrez votre token..." style="min-width:200px" />
+     <label class="muted small">Début:</label>
+     <input type="date" id="startDate" />
+     <label class="muted small">Fin:</label>
+     <input type="date" id="endDate" />
      <label class="muted small">Filtre:</label>
      <input type="text" id="search" placeholder="Rechercher un mot-clé" />
      <select id="impactFilter">
@@ -761,11 +765,9 @@ footer {
    const statusEl = document.getElementById('status');
    const tbody = document.getElementById('tbody');
 
-
    document.getElementById('refresh').addEventListener('click', connectAndFetch);
    document.getElementById('search').addEventListener('input', filterTable);
    document.getElementById('impactFilter').addEventListener('change', filterTable);
-
 
    function connectAndFetch(){
       const token = document.getElementById('token').value.trim();
