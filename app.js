@@ -1935,7 +1935,7 @@ function initCalendarTable() {
         <td><input type="checkbox"></td>
         <td data-sort="${e.release_date || 0}">${releaseDate}</td>
         <td>${GetCountrycode(currency).toString()}</td>
-        <td>${GetCountryname(currency).toString()}</td>
+        <td>${GetCountryname(currency).toString()}</td>   
         <td>${indicator}</td>
         <td>-</td>
         <td>${currency}</td>
