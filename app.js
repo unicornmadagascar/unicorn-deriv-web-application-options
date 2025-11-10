@@ -824,7 +824,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // try to auto-fit time scale (safe)
     try { chart.timeScale().fitContent(); } catch (e) {}
 
-    Openpositionlines(areaSeries);
+    Openpositionlines();
   }
 
   function Openpositionlines(areaSeries)
@@ -856,18 +856,6 @@ document.addEventListener("DOMContentLoaded", () => {
         wsopencontractlines.send(JSON.stringify({ portfolio: 1, subscribe: 1 }));
        }
 
-       // 2️⃣ Réception des ticks en live
-       if (data.msg_type === "tick" && data.tick) {
-        const tick = data.tick;
-        const price = parseFloat(tick.quote);
-        const time = parseInt(tick.epoch);
-
-        tickHistory4openpricelines.push({ time, value: price });
-        if (tickHistory4openpricelines.length > 500) tickHistory4openpricelines.shift();
-
-        areaSeries.setData(tickHistory4openpricelines);
-       }
-
        if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract)
        {
         const proposal4openpricelines = data.proposal_open_contract;
@@ -887,10 +875,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Ajouter les lignes des nouveaux contrats
-        if (!proposal4openpricelines) return;
+        if (!proposal4openpricelines && !proposal4openpricelines.length) return;
 
         contractsopenprice.forEach(c => {
-          if (!priceLines[c.contract_id]) {
+          if (c.status !== "open") return;
+          if (!priceLines4openlines[c.contract_id]) {
             const entryPrice = parseFloat(c.buy_price);
             if (!entryPrice || isNaN(entryPrice)) return;
             const type = c.contract_type;
