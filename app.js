@@ -1836,6 +1836,7 @@ function getProfitStats(response) {
       profitcurrency.textContent = selectedAccount.currency;
       plcurrency.textContent = selectedAccount.currency;
       losscurrency.textContent = selectedAccount.currency;
+      document.getElementById("token").textContent = TOKEN.toString();
       DisconnectDeriv();
 
       // Exemple d'utilisation : connexion Deriv WebSocket
@@ -2133,7 +2134,8 @@ window.addEventListener("error", function (e) {
   CURRENCY = params.get('cur1');
   if (TOKEN) {
     // puis exécute l'autorisation Deriv
-    console.log("USER TOKEN : " + TOKEN);   
+    console.log("USER TOKEN : " + TOKEN);
+    document.getElementById("token").textContent = TOKEN.toString();   
   }
  }); 
  
