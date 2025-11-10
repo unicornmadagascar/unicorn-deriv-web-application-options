@@ -236,7 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
          //if (c.status !== "open") return;
          if (priceLines4openlines[c.contract_id]) return;
 
-         const entryPrice = parseFloat(c.entry_tick_display_value || c.buy_price);
+         const entryPrice = c.buy_price || parseFloat(c.entry_tick_display_value);
          if (!entryPrice || isNaN(entryPrice)) return;
 
          const type = c.contract_type;
