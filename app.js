@@ -901,7 +901,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const volProb = Math.min(100, (stdDev / 0.07) * 100);
 
     const sum = recentChanges.reduce((a, b) => a + b, 0);
-    const trendRaw = Math.min(100, Math.abs(sum) * 1000);
+    const trendRaw = Math.min(100, Math.abs(sum) * 1000);   
 
     const pos = recentChanges.filter(v => v > 0).length;
     const neg = recentChanges.filter(v => v < 0).length;
