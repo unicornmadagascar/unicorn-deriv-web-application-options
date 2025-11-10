@@ -234,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!entryPrice || isNaN(entryPrice)) return;
 
           const type = c.contract_type;
-          const color = type.includes("MULTUP") ? "#00ff80" : "#ff4d4d";
+          const color = type === "MULTUP" ? "#00ff80" : "#ff4d4d";
 
           const line = areaSeries.createPriceLine({
             price: entryPrice,
@@ -1717,7 +1717,18 @@ closeAll.onclick=()=>{
         // Animation simultanée des cercles et des chiffres 
         profitvalue.textContent = " " + structresponse.totalProfitPrice__+ " " + CURRENCY.toString() ;
         lossvalue.textContent = " " + structresponse.totalLossPrice__+ " " + CURRENCY.toString() ;
-        plvalue.textContent = " " + structresponse.totalPNLprice__+ " " + CURRENCY.toString() ;   
+        
+        if (structresponse.totalPNLprice__ > 0)
+        {
+          plvalue.style.color = "#10b981";
+          plvalue.textContent = " " + structresponse.totalPNLprice__+ " " + CURRENCY.toString() ; 
+        }
+       else
+       {
+         plvalue.style.color = "#ff4d4d";
+         plvalue.textContent = " " + structresponse.totalPNLprice__+ " " + CURRENCY.toString() ; 
+       }
+
         circles.forEach(circle => {
            let targetDeg = 0;
            let targetPercent = 0;
