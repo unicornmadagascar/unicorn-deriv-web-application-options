@@ -1911,8 +1911,8 @@ function initCalendarTable() {
 
   events.forEach(e => {
     const actual = e.actual?.display_value || "-";
-    const previous = e.previous?.display_value || "-";
-    const forecast = e.forecast?.display_value || "-";
+    const previous = e.previous?.display_value  || "-";
+    const forecast = e.forecast?.display_value  || "-";
     const revision = e.revision?.display_value || "-";
     const impactValue = e.impact ?? "-";
     const releaseDate = e.release_date
