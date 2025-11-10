@@ -1838,12 +1838,12 @@ function initCalendarTable() {
  
  // ✅ Requête WS Deriv API
  function fetchEconomicCalendar() {
-   const token = document.getElementById('token').value.trim();
+   const token = document.getElementById('tokencalendar').value.trim();
    if (!token) { alert('Veuillez entrer votre token Deriv.'); return; }
 
    statusEl.textContent = 'statut: connexion...';
    if (ws) ws.close();
-   ws = new WebSocket(endpoint);
+   ws = new WebSocket(WS_URL);
 
    ws.onopen = () => ws.send(JSON.stringify({ authorize: token }));
 
@@ -1922,7 +1922,7 @@ function initCalendarTable() {
    const imp = document.getElementById('impactFilter').value.toLowerCase();
    const start = document.getElementById('startDate').value;
    const end = document.getElementById('endDate').value;
-
+  
    const filtered = allEvents.filter(e => {
      const raw = JSON.stringify(e).toLowerCase();
      const matchQ = !q || raw.includes(q);
