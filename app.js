@@ -81,6 +81,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Historique local des ticks
   let tickHistory = [];
   let tickHistory__ = [];
+  let tickHistory4openpricelines = [];
+  const priceLines4openlines = {}; // Stocke les lignes actives (clé = contract_id)
   let Tick_arr = [];
   // Historique de profits
   let profitHistory = [];
@@ -822,13 +824,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // try to auto-fit time scale (safe)
     try { chart.timeScale().fitContent(); } catch (e) {}
 
-    Openpositionlines();
+    Openpositionlines(areaSeries);
   }
 
-  function Openpositionlines()
+  function Openpositionlines(areaSeries)
   {
-    const priceLines = {}; // Stocke les lignes actives (clé = contract_id)
-
     if (wsopencontractlines === null)
     {
      wsopencontractlines = new WebSocket(WS_URL);
@@ -856,23 +856,42 @@ document.addEventListener("DOMContentLoaded", () => {
         wsopencontractlines.send(JSON.stringify({ portfolio: 1, subscribe: 1 }));
        }
 
+       // 2️⃣ Réception des ticks en live
+       if (data.msg_type === "tick" && data.tick) {
+        const tick = data.tick;
+        const price = parseFloat(tick.quote);
+        const time = parseInt(tick.epoch);
+
+        tickHistory4openpricelines.push({ time, value: price });
+        if (tickHistory4openpricelines.length > 500) tickHistory4openpricelines.shift();
+
+        areaSeries.setData(tickHistory4openpricelines);
+       }
+
+       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract)
+       {
+        const proposal4openpricelines = data.proposal_open_contract;
+       }
+
        if (data.msg_type === "portfolio" && data.portfolio)
        {
         const contractsopenprice = data.portfolio.contracts;
 
         // Supprimer les lignes des contrats fermés
-        for (const id in priceLines) {
+        for (const id in priceLines4openlines) {
           const stillOpen = contractsopenprice.some(c => c.contract_id == id);
           if (!stillOpen) {
-            areaSeries.removePriceLine(priceLines[id]);
-            delete priceLines[id];    
+            areaSeries.removePriceLine(priceLines4openlines[id]);
+            delete priceLines4openlines[id];    
           }
         }
 
         // Ajouter les lignes des nouveaux contrats
+        if (!proposal4openpricelines) return;
         contractsopenprice.forEach(c => {
           if (!priceLines[c.contract_id]) {
             const entryPrice = parseFloat(c.buy_price);
+            if (!entryPrice || isNaN(entryPrice)) return;
             const type = c.contract_type;
             const color = type.includes("MULTUP") ? "#00ff80" : "#ff4d4d";
 
@@ -885,7 +904,7 @@ document.addEventListener("DOMContentLoaded", () => {
               title: `${type} @ ${entryPrice.toFixed(2)}`
             });
 
-            priceLines[c.contract_id] = line;
+            priceLines4openlines[c.contract_id] = line;
           }
         });
        }
