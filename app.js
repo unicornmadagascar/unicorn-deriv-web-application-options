@@ -1843,7 +1843,7 @@ function initCalendarTable() {
 
    statusEl.textContent = 'statut: connexion...';
    if (ws) ws.close();
-   ws = new WebSocket(WS_URL);
+   ws = new WebSocket(WS_URL);   
 
    ws.onopen = () => ws.send(JSON.stringify({ authorize: token }));
 
