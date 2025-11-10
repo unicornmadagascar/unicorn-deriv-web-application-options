@@ -2082,7 +2082,7 @@ function sortCalendarTable(columnIndex) {
     "release_date",
     "country_code",
     "country_name",
-    "event_name",
+    "event_name",    
     "sector",
     "currency",
     "importance",
