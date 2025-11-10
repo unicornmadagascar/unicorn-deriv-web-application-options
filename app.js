@@ -212,7 +212,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
      if (data.msg_type === "authorize") {
        wsOpenLines.send(JSON.stringify({ portfolio: 1, subscribe: 1 }));
-       return;
      }
 
      if (data.msg_type === "portfolio" && data.portfolio) {
