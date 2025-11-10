@@ -216,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
      if (data.msg_type === "portfolio" && data.portfolio) {
        const contracts = data.portfolio.contracts || [];
-       console.log("📦 Contracts reçus :", contracts);
+       console.log("📦 Contracts reçus :", contracts);     
 
        // Supprimer les lignes fermées
        for (const id in priceLines4openlines) {
@@ -231,7 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
        // Ajouter les nouvelles lignes
        contracts.forEach((c) => {
-         //if (c.status !== "open") return;
+         if (c.status !== "open") return;
          if (priceLines4openlines[c.contract_id]) return;
 
          const entryPrice = c.buy_price;               // || parseFloat(c.entry_tick_display_value)
