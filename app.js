@@ -244,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
            price: entryPrice,
            color,
            lineWidth: 2,
-           lineStyle: LightweightCharts.LineStyle.Solid,
+           lineStyle: LightweightCharts.LineStyle.Solid,     
            axisLabelVisible: true,
            title: `${type} @ ${entryPrice.toFixed(2)}`,   
          });
