@@ -193,68 +193,77 @@ document.addEventListener("DOMContentLoaded", () => {
     chartData = [];
     recentChanges = [];
     lastPrices = {};
+
+    Openpositionlines(areaSeries);
     
     positionGauges();   
+
+    return chart;
   }
 
+  // === LIGNES DES CONTRATS OUVERTS ===
   function Openpositionlines(areaSeries) {
-   if (wsOpenLines && wsOpenLines.readyState <= 1) return;
+    if (wsOpenLines && wsOpenLines.readyState <= 1) return;
 
-   wsOpenLines = new WebSocket(WS_URL);
+    wsOpenLines = new WebSocket(WS_URL);
 
-   wsOpenLines.onopen = () => {
-     console.log("✅ WS open for open contract lines");
-     wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));
-   };
+    wsOpenLines.onopen = () => {
+      console.log("✅ WS open for open contract lines");
+      wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));
+    };
 
-   wsOpenLines.onmessage = (msg) => {
-     const data = JSON.parse(msg.data);
+    wsOpenLines.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
 
-     if (data.msg_type === "authorize") {
-       wsOpenLines.send(JSON.stringify({ portfolio: 1, subscribe: 1 }));
-     }
+      if (data.msg_type === "authorize") {
+        wsOpenLines.send(JSON.stringify({ portfolio: 1, subscribe: 1 }));
+        return;
+      }
 
-     if (data.msg_type === "portfolio" && data.portfolio) {
-       const contracts = data.portfolio.contracts || [];
-       console.log("📦 Contracts reçus :", contracts);     
+      if (data.msg_type === "portfolio" && data.portfolio) {
+        const contracts = data.portfolio.contracts || [];
+        console.log("📦 Contracts reçus :", contracts);
 
-       // Supprimer les lignes fermées
-       for (const id in priceLines4openlines) {
-         const stillOpen = contracts.some(
-           (c) => String(c.contract_id) === id && c.status === "open"
-         );
-         if (!stillOpen) {
-           try { areaSeries.removePriceLine(priceLines4openlines[id]); } catch {}
-           delete priceLines4openlines[id];
-         }
-       }
+        // Supprimer les lignes des contrats fermés
+        for (const id in priceLines4openlines) {
+          const stillOpen = contracts.some(
+            (c) => String(c.contract_id) === id && c.status === "open"
+          );
+          if (!stillOpen) {
+            try { areaSeries.removePriceLine(priceLines4openlines[id]); } catch {}
+            delete priceLines4openlines[id];
+          }
+        }
 
-       // Ajouter les nouvelles lignes
-       contracts.forEach((c) => {
-         if (c.status !== "open") return;
-         if (priceLines4openlines[c.contract_id]) return;
+        // Ajouter les nouvelles lignes
+        contracts.forEach((c) => {
+          if (c.status !== "open") return;
+          if (priceLines4openlines[c.contract_id]) return;
 
-         const entryPrice = c.buy_price;               // || parseFloat(c.entry_tick_display_value)
-         if (!entryPrice || isNaN(entryPrice)) return;
+          const entryPrice = parseFloat(c.entry_tick_display_value || c.buy_price);
+          if (!entryPrice || isNaN(entryPrice)) return;
 
-         const type = c.contract_type;
-         const color = type === "MULTUP" ? "#00ff80" : "#ff4d4d";  
+          const type = c.contract_type;
+          const color = type === "MULTUP" ? "#00ff80" : "#ff4d4d";
 
-         const line = areaSeries.createPriceLine({
-           price: entryPrice,
-           color,
-           lineWidth: 2,
-           lineStyle: LightweightCharts.LineStyle.Solid,     
-           axisLabelVisible: true,
-           title: `${type} @ ${entryPrice.toFixed(2)}`,       
-         });
+          const line = areaSeries.createPriceLine({
+            price: entryPrice,
+            color,
+            lineWidth: 2,
+            lineStyle: LightweightCharts.LineStyle.Solid,
+            axisLabelVisible: true,
+            title: `${type} @ ${entryPrice.toFixed(2)}`,
+          });
 
-         priceLines4openlines[c.contract_id] = line;
-         console.log(`📈 Ligne ajoutée pour ${type} à ${entryPrice}`);
-       });
-     }
-   };
-  }
+          priceLines4openlines[c.contract_id] = line;
+          console.log(`📍 Ligne ajoutée pour ${type} à ${entryPrice}`);
+        });
+      }
+    };
+
+    wsOpenLines.onclose = () => console.log("❌ WS closed for open lines");
+    wsOpenLines.onerror = (e) => console.log("⚠️ WS error:", e);
+  } 
 
   // --- GAUGES ---
   function positionGauges() {
