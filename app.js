@@ -195,7 +195,6 @@ document.addEventListener("DOMContentLoaded", () => {
     lastPrices = {};
 
     positionGauges();
-    Openpositionlines(areaSeries);
   }
 
   function Openpositionlines(areaSeries) {
@@ -888,6 +887,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // try to auto-fit time scale (safe)
     try { chart.timeScale().fitContent(); } catch (e) {}
+
+    Openpositionlines(areaSeries);
   }
  
   // --- GAUGES UPDATE ---
