@@ -41,6 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const plvalue = document.getElementById("plvalue");
   const lossvalue = document.getElementById("lossvalue");
   const profitvalue = document.getElementById("profitvalue");
+  const tokencalendar = document.getElementById("tokencalendar");
 
   let totalPL = 0; // cumul des profits et pertes
   let automationRunning = false;
@@ -1836,7 +1837,7 @@ function getProfitStats(response) {
       profitcurrency.textContent = selectedAccount.currency;
       plcurrency.textContent = selectedAccount.currency;
       losscurrency.textContent = selectedAccount.currency;
-      document.getElementById("token").textContent = TOKEN.toString();
+      tokencalendar.textContent = selectedAccount.token;
       DisconnectDeriv();
 
       // Exemple d'utilisation : connexion Deriv WebSocket
@@ -2135,7 +2136,7 @@ window.addEventListener("error", function (e) {
   if (TOKEN) {
     // puis exécute l'autorisation Deriv
     console.log("USER TOKEN : " + TOKEN);
-    document.getElementById("token").textContent = TOKEN.toString();   
+    document.getElementById("tokencalendar").textContent = TOKEN.toString();   
   }
  }); 
  
