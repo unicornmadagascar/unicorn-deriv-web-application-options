@@ -891,7 +891,7 @@ document.addEventListener("DOMContentLoaded", () => {
     Openpositionlines(areaSeries);
   }
  
-  // --- GAUGES UPDATE ---
+  // --- GAUGES UPDATE ---   
   function updateCircularGauges() {
     if (!recentChanges.length) return;
     const mean = recentChanges.reduce((a, b) => a + b, 0) / recentChanges.length;
