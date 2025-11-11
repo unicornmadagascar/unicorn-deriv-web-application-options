@@ -2506,7 +2506,7 @@ window.addEventListener("error", function (e) {
   (function initDates(){
     const today = new Date();
     const start = new Date(today); start.setDate(today.getDate()-3);
-    const end = new Date(today); end.setDate(today.getDate()+3);
+    const end = new Date(today); end.setDate(today.getDate()+3);   
     document.getElementById('startDate').value = start.toISOString().slice(0,10);
     document.getElementById('endDate').value = end.toISOString().slice(0,10);
   })();
