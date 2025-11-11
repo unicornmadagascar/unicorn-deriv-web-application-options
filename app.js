@@ -879,7 +879,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       // append and update
       chartData.push(point);
-      if (chartData.length > 600) chartData.shift();
+      if (chartData.length > 600) chartData.shift();    
 
       // Prefer update (faster); fallback to setData if update throws
       try {
