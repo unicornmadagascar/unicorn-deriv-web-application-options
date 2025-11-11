@@ -199,9 +199,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
   function Openpositionlines(areaSeries) {
-    if (wsOpenLines && wsOpenLines.readyState <= 1) return;
+    //if (wsOpenLines && wsOpenLines.readyState <= 1) return;
 
-    wsOpenLines = new WebSocket(WS_URL);
+    if (wsOpenLines === null)
+    {
+     wsOpenLines = new WebSocket(WS_URL);
+     wsOpenLines.onopen=()=>{ wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+  
+    if (wsOpenLines && (wsOpenLines.readyState === WebSocket.OPEN || wsOpenLines.readyState === WebSocket.CONNECTING))
+    {
+     wsOpenLines.onopen=()=>{ wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (wsOpenLines && (wsOpenLines.readyState === WebSocket.CLOSED || wsOpenLines.readyState === WebSocket.CLOSING))
+    {
+      wsOpenLines = new WebSocket(WS_URL);
+      wsOpenLines.onopen=()=>{ wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    //wsOpenLines = new WebSocket(WS_URL);
     
     wsOpenLines.onopen = () => {
       console.log("✅ WS open for open contract lines");  
@@ -214,7 +231,6 @@ document.addEventListener("DOMContentLoaded", () => {
       // Étape 1 : Authentification
       if (data.msg_type === "authorize") {
         wsOpenLines.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
-        return;
       }
 
       // Étape 2 : Réception d’un contrat
