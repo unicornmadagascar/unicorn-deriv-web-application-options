@@ -120,7 +120,7 @@
 
     #toggleAutomation { background: white; color: #4d4747; }
     #ROCtoggleAutomation { background: white; color: #4d4747; }
-    #chartTypeBtn { background: white; color: #4d4747; }
+    /*#chartTypeBtn { background: white; color: #4d4747; } */
     #buyBtn { background-color: white; color: #4d4747; }
     #sellBtn { background-color: white; color: #4d4747; }
     #closeWinning { background-color: white; color: #4d4747; }
@@ -552,6 +552,22 @@ footer {
   margin-bottom : 40px;
 }
 
+ /* === Bouton flottant === */
+    #chartTypeBtn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 20;
+      font-size: 16px;
+    }
+    #chartTypeBtn:hover { background: #1d4ed8; }
+
 /* === Popup === */
     .modal {
       display: none;
@@ -661,7 +677,9 @@ footer {
 
   <div id="container">
     <div id="chartArea">
-      <div id="chartInner"></div>
+      <div id="chartInner">
+         <button id="chartTypeBtn">📊</button>
+      </div>
     </div>
 
     <!-- Gauges top-right (statiques dans HTML) -->
@@ -823,6 +841,50 @@ footer {
         controlFormPanel.style.display = "none";
         controlPanelToggle.textContent = "⚙️ Show Controls";
       }
+    });
+
+    // === Popup logique ===
+    const modal = document.getElementById("chartTypeModal");
+    const btn = document.getElementById("chartTypeBtn");
+    const closeModal = document.getElementById("closeModal");
+    const buttons = document.querySelectorAll(".chart-type-btn");
+
+    btn.onclick = () => (modal.style.display = "block");
+    closeModal.onclick = () => (modal.style.display = "none");
+    window.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
+
+    // === Changement de type de graphique ===
+    buttons.forEach((b) => {
+      b.addEventListener("click", (e) => {
+        const type = e.target.dataset.type;
+        const lastData = tickData;
+
+        chart.removeSeries(currentSeries);
+
+        if (type === "line") {
+          currentSeries = chart.addLineSeries({ color: "#60a5fa" });
+        } else if (type === "area") {
+          currentSeries = chart.addAreaSeries({
+            topColor: "#3b82f688",
+            bottomColor: "#3b82f622",
+            lineColor: "#3b82f6"
+          });
+        } else if (type === "candlestick") {
+          currentSeries = chart.addCandlestickSeries({
+            upColor: "#16a34a",
+            downColor: "#ef4444",
+            borderVisible: false,
+          });
+          // 🔸 transformer les ticks en structure OHLC approximative
+          const ohlc = convertTicksToOHLC(tickData);
+          currentSeries.setData(ohlc);
+          modal.style.display = "none";
+          return;
+        }
+
+        currentSeries.setData(lastData);
+        modal.style.display = "none";
+      });
     });
   
   </script>
