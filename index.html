@@ -833,26 +833,26 @@ footer {
       }
     });
 
-  const openBtn = document.getElementById("openPopup");
-  const popup = document.getElementById("popup");
-  const closeBtn = document.querySelector(".close-btn");
+    const openBtn = document.getElementById("openPopup");
+    const popup = document.getElementById("popup");
+    const closeBtn = document.querySelector(".close-btn");
 
-  // Ouvrir le popup
-  openBtn.addEventListener("click", () => {
-    popup.style.display = "flex";
-  });    
+    // Ouvrir le popup
+    openBtn.addEventListener("click", () => {
+      popup.style.display = "flex";
+    });    
 
-  // Fermer le popup
-  closeBtn.addEventListener("click", () => {
-    popup.style.display = "none";
-  });
-
-  // Fermer si on clique en dehors du contenu
-  popup.addEventListener("click", (e) => {
-    if (e.target === popup) {
+    // Fermer le popup
+    closeBtn.addEventListener("click", () => {
       popup.style.display = "none";
-    }
-  });
+    });
+
+    // Fermer si on clique en dehors du contenu
+    popup.addEventListener("click", (e) => {
+      if (e.target === popup) {
+        popup.style.display = "none";
+      }
+    });
   
   </script>
 </body>
