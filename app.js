@@ -247,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!entryPrice || isNaN(entryPrice)) return;
 
           const type = c.contract_type;
-          const color = type === "MULTUP" ? "#00ff80" : "#ff4d4d";   
+          const color = type === "MULTUP" ? "#00ff80" : "#ff4d4d";      
 
           const line = areaSeries.createPriceLine({
             price: entryPrice,
