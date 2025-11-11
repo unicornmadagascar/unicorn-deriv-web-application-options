@@ -553,132 +553,125 @@ footer {
 }
 
   /* === Overlay === */
-  /* === Overlay === */
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.35);
-    justify-content: center;
-    align-items: center;
-  }
+  /* === Structure de base === */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.4);
+  justify-content: center;
+  align-items: center;
+  font-family: 'Segoe UI', sans-serif;
+}
 
-  /* === Popup === */
-  .modal-content {
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    width: 450px;
-    padding: 0;
-    overflow: hidden;
-    animation: popupAppear 0.25s ease;
-  }
+/* === Contenu du popup === */
+.modal-content {
+  background: #fff;
+  width: 550px;
+  max-width: 90%;
+  padding: 25px 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 25px rgba(0,0,0,0.15);
+  position: relative;
+  animation: fadeIn 0.25s ease;
+}
 
-  @keyframes popupAppear {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
+/* Animation */
+@keyframes fadeIn {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
 
-  /* === En-tête === */
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 18px;
-    border-bottom: 1px solid #e6e6e6;
-    background: #fafafa;
-  }
+/* === Titre et séparation === */
+.modal-content h3 {
+  margin: 10px 0;
+  font-size: 18px;
+  color: #222;
+}
 
-  .modal-header h3 {
-    margin: 0;
-    font-size: 17px;
-    color: #333;
-  }
+hr {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 15px 0;
+}
 
-  .close {
-    background: transparent;
-    border: none;
-    font-size: 20px;
-    color: #777;
-    cursor: pointer;
-    transition: color 0.2s;
-  }
+/* === Bouton de fermeture === */
+.close {
+  position: absolute;
+  right: 20px;
+  top: 18px;
+  font-size: 22px;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.close:hover { color: #000; }
 
-  .close:hover {
-    color: #000;
-  }
+/* === Boutons de type de graphique === */
+.chart-type-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
 
-  /* === Section contenu === */
-  .modal-body {
-    padding: 20px 25px;
-  }
+.chart-type-btn {
+  flex: 1;
+  min-width: 80px;
+  background: #f4f4f4;
+  border: 1px solid #dcdcdc;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
 
-  .section-title {
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 12px;
-    font-size: 15px;
-  }
+.chart-type-btn:hover {
+  background: #e9e9e9;
+  border-color: #c5c5c5;
+}
 
-  /* === Boutons de type de graphique === */
-  .chart-type-group {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
+.chart-type-btn.active {
+  background: #e6e8eb;
+  border: 1px solid #007aff;
+  color: #007aff;
+  font-weight: 600;
+}
 
-  .chart-type-btn {
-    flex: 1;
-    padding: 14px 0;
-    border: 1px solid #d0d0d0;
-    border-radius: 6px;
-    background: #fff;
-    cursor: pointer;
-    text-align: center;
-    font-size: 14px;
-    color: #333;
-    transition: all 0.2s ease;
-  }
+/* === Boutons d'intervalle === */
+.interval-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 
-  .chart-type-btn:hover {
-    background: #f3f3f3;
-  }
+.interval-btn {
+  background: #f4f4f4;
+  border: 1px solid #dcdcdc;
+  border-radius: 5px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
 
-  .chart-type-btn.active {
-    border: 2px solid #007bff;
-    background: #f0f7ff;
-  }
+.interval-btn:hover {
+  background: #e9e9e9;
+  border-color: #c5c5c5;
+}
 
-  /* === Section intervalle === */
-  .interval-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
+.interval-btn.active {
+  background: #e6e8eb;
+  border: 1px solid #007aff;
+  color: #007aff;
+  font-weight: 600;
+}
 
-  .interval-btn {
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background: #fff;
-    padding: 6px 12px;
-    font-size: 14px;
-    cursor: pointer;
-    color: #333;
-    transition: all 0.2s ease;
-  }
-
-  .interval-btn:hover {
-    background: #f3f3f3;
-  }
-
-  .interval-btn.active {
-    border-color: #007bff;
-    background: #f0f7ff;
-    color: #007bff;
-    font-weight: 600;
-  }
 
   </style>
 </head>
@@ -768,43 +761,36 @@ footer {
     </div>
   </div>
 
+  <!-- === Popup de sélection === -->
   <div id="chartTypeModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Chart settings</h3>
-      <button class="close" id="closeModal">&times;</button>
-    </div>
-    <div class="modal-body">
-      <!-- Chart type section -->
-      <div class="section">
-        <div class="section-title">Chart types</div>
-        <div class="chart-type-group">
-          <button class="chart-type-btn active" data-type="area">📉 Area</button>
-          <button class="chart-type-btn" data-type="candle">🕯️ Candle</button>
-          <button class="chart-type-btn" data-type="hollow">💠 Hollow</button>
-          <button class="chart-type-btn" data-type="ohlc">📊 OHLC</button>
-        </div>
+    <div class="modal-content">
+      <span class="close" id="closeModal">&times;</span>
+      <h3>Chart types</h3>
+      <div class="chart-type-section">
+        <button class="chart-type-btn" data-type="line">📈 Line</button>
+        <button class="chart-type-btn" data-type="area">🌊 Area</button>
+        <button class="chart-type-btn" data-type="candlestick">🕯️ Candlestick</button>
+        <button class="chart-type-btn" data-type="hollow">🕳️ Hollow</button>
+        <button class="chart-type-btn" data-type="ohlc">📊 OHLC</button>
       </div>
 
-      <!-- Time interval section -->
-      <div class="section">
-        <div class="section-title">Time interval</div>
-        <div class="interval-group">
-          <button class="interval-btn">1 tick</button>
-          <button class="interval-btn active">1 minute</button>
-            <button class="interval-btn">2 minutes</button>
-            <button class="interval-btn">3 minutes</button>
-            <button class="interval-btn">5 minutes</button>
-            <button class="interval-btn">10 minutes</button>
-            <button class="interval-btn">15 minutes</button>
-            <button class="interval-btn">30 minutes</button>
-            <button class="interval-btn">1 hour</button>
-            <button class="interval-btn">2 hours</button>
-            <button class="interval-btn">4 hours</button>
-            <button class="interval-btn">8 hours</button>
-            <button class="interval-btn">1 day</button>
-          </div>
-        </div>
+      <hr>
+
+      <h3>Time interval</h3>
+      <div class="interval-section">
+        <button class="interval-btn">1 tick</button>
+        <button class="interval-btn active">1 minute</button>
+        <button class="interval-btn">2 minutes</button>
+        <button class="interval-btn">3 minutes</button>
+        <button class="interval-btn">5 minutes</button>
+        <button class="interval-btn">10 minutes</button>
+        <button class="interval-btn">15 minutes</button>
+        <button class="interval-btn">30 minutes</button>
+        <button class="interval-btn">1 hour</button>
+        <button class="interval-btn">2 hours</button>
+        <button class="interval-btn">4 hours</button>
+        <button class="interval-btn">8 hours</button>
+        <button class="interval-btn">1 day</button>
       </div>
     </div>
   </div>
