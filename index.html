@@ -552,63 +552,57 @@ footer {
   margin-bottom : 40px;
 }
 
- /* === Bouton flottant === */
-    #chartTypeBtn {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      background: #2563eb;
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      z-index: 20;
-      font-size: 16px;
-    }
-    #chartTypeBtn:hover { background: #1d4ed8; }
+ /* Bouton principal */
+  #openPopup {
+    padding: 10px 20px;
+    background-color: #007bff;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+  }
 
-/* === Popup === */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 999;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
-      background-color: rgba(0, 0, 0, 0.6);
-    }
-    .modal-content {
-      background: #1e293b;
-      color: white;
-      border-radius: 10px;
-      padding: 20px;
-      width: 280px;
-      margin: 12% auto;
-      text-align: center;
-      box-shadow: 0 0 10px #000;
-    }
-    .modal-content h3 { margin-bottom: 15px; }
-    .chart-type-btn {
-      display: block;
-      width: 100%;
-      margin: 8px 0;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      background: #334155;
-      color: white;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .chart-type-btn:hover { background: #2563eb; }
-    .close {
-      float: right;
-      cursor: pointer;
-      color: #f87171;
-      font-size: 18px;
-      font-weight: bold;
-    }
-    .close:hover { color: #ef4444; }
+  /* Fond du popup (overlay semi-transparent) */
+  .popup-overlay {
+    display: none; /* caché par défaut */
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  /* Contenu du popup */
+  .popup-content {
+    background: white;
+    padding: 20px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    min-width: 300px;
+    position: relative;
+    text-align: center;
+  }
+
+  /* Bouton de fermeture */
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: #ff4d4d;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .close-btn:hover {
+    background: #ff1a1a;
+  }
 
   </style>
 </head>
@@ -631,7 +625,7 @@ footer {
         <button id="sellBtn">SELL</button>
         <button id="closeWinning">Close Winning</button>
         <button id="closeAll">Close All</button> 
-        <button id="chartTypeBtn">Chart Types</button> 
+        <button id="openPopup">Chart Types</button> 
         <button id="ROCtoggleAutomation">Launch ROC Automation</button>
       </div>
 
@@ -677,9 +671,7 @@ footer {
 
   <div id="container">
     <div id="chartArea">
-      <div id="chartInner">
-         <button id="chartTypeBtn">📊</button>
-      </div>
+      <div id="chartInner"></div>
     </div>
 
     <!-- Gauges top-right (statiques dans HTML) -->
@@ -700,14 +692,12 @@ footer {
     </div>
   </div>
 
-  <!-- === Popup de sélection === -->
-  <div id="chartTypeModal" class="modal">
-    <div class="modal-content">
-      <span class="close" id="closeModal">&times;</span>
-      <h3>🧩 Type de graphique</h3>
-      <button class="chart-type-btn" data-type="line">📈 Line</button>
-      <button class="chart-type-btn" data-type="area">🌊 Area</button>
-      <button class="chart-type-btn" data-type="candlestick">🕯️ Candlestick</button>
+  <!-- Structure du popup -->
+  <div id="popup" class="popup-overlay">
+    <div class="popup-content">
+      <button class="close-btn">&times;</button>
+      <h2>Bonjour 👋</h2>
+      <p>Ceci est un popup avec fond blanc.</p>
     </div>
   </div>
 
@@ -843,49 +833,26 @@ footer {
       }
     });
 
-    // === Popup logique ===
-    const modal = document.getElementById("chartTypeModal");
-    const btn = document.getElementById("chartTypeBtn");
-    const closeModal = document.getElementById("closeModal");
-    const buttons = document.querySelectorAll(".chart-type-btn");
+  const openBtn = document.getElementById("openPopup");
+  const popup = document.getElementById("popup");
+  const closeBtn = document.querySelector(".close-btn");
 
-    btn.onclick = () => (modal.style.display = "block");
-    closeModal.onclick = () => (modal.style.display = "none");
-    window.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
+  // Ouvrir le popup
+  openBtn.addEventListener("click", () => {
+    popup.style.display = "flex";
+  });
 
-    // === Changement de type de graphique ===
-    buttons.forEach((b) => {
-      b.addEventListener("click", (e) => {
-        const type = e.target.dataset.type;
-        const lastData = tickData;
+  // Fermer le popup
+  closeBtn.addEventListener("click", () => {
+    popup.style.display = "none";
+  });
 
-        chart.removeSeries(currentSeries);
-
-        if (type === "line") {
-          currentSeries = chart.addLineSeries({ color: "#60a5fa" });
-        } else if (type === "area") {
-          currentSeries = chart.addAreaSeries({
-            topColor: "#3b82f688",
-            bottomColor: "#3b82f622",
-            lineColor: "#3b82f6"
-          });
-        } else if (type === "candlestick") {
-          currentSeries = chart.addCandlestickSeries({
-            upColor: "#16a34a",
-            downColor: "#ef4444",
-            borderVisible: false,
-          });
-          // 🔸 transformer les ticks en structure OHLC approximative
-          const ohlc = convertTicksToOHLC(tickData);
-          currentSeries.setData(ohlc);
-          modal.style.display = "none";
-          return;
-        }
-
-        currentSeries.setData(lastData);
-        modal.style.display = "none";
-      });
-    });
+  // Fermer si on clique en dehors du contenu
+  popup.addEventListener("click", (e) => {
+    if (e.target === popup) {
+      popup.style.display = "none";
+    }
+  });
   
   </script>
 </body>

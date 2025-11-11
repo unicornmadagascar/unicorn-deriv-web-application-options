@@ -133,19 +133,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
 
   // --- SYMBOLS ---
-  /*function displaySymbols() {
-    symbolList.innerHTML = "";
-    SYMBOLS.forEach(s => {
-      const el = document.createElement("div");
-      el.className = "symbol-item";
-      el.textContent = s.name;
-      el.dataset.symbol = s.symbol;
-      el.addEventListener("click", () => subscribeSymbol(s.symbol));
-      symbolList.appendChild(el);
-    });
-  }*/
-
-  // --- SYMBOLS ---
  function displaySymbols() {
   symbolList.innerHTML = "";
 
