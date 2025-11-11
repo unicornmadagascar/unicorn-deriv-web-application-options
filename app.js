@@ -199,7 +199,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
   function Openpositionlines(areaSeries) {
-    //if (wsOpenLines && wsOpenLines.readyState <= 1) return;
 
     if (wsOpenLines === null)
     {
@@ -217,13 +216,6 @@ document.addEventListener("DOMContentLoaded", () => {
       wsOpenLines = new WebSocket(WS_URL);
       wsOpenLines.onopen=()=>{ wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
     }
-
-    //wsOpenLines = new WebSocket(WS_URL);
-    
-    /*wsOpenLines.onopen = () => {
-      console.log("✅ WS open for open contract lines");  
-      wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));
-    };*/
 
     wsOpenLines.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
@@ -251,7 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Si c’est un nouveau contrat ouvert
         const id = c.contract_id;
         if (!priceLines4openlines[id]) {
-          const entryPrice = parseFloat(c.entry_tick_display_value || c.buy_price);
+          const entryPrice = parseFloat(c.entry_tick_display_value);            // || c.buy_price
           if (!entryPrice || isNaN(entryPrice)) return;
 
           const type = c.contract_type;
