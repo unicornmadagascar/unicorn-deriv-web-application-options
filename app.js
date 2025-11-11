@@ -243,7 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Si c’est un nouveau contrat ouvert
         const id = c.contract_id;
         if (!priceLines4openlines[id]) {
-          const entryPrice = parseFloat(c.entry_tick_display_value);            // || c.buy_price
+          const entryPrice = parseFloat(c.entry_tick_display_value);              // || c.buy_price
           if (!entryPrice || isNaN(entryPrice)) return;
 
           const type = c.contract_type;
