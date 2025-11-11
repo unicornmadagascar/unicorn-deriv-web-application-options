@@ -552,97 +552,132 @@ footer {
   margin-bottom : 40px;
 }
 
-
-  /* --- Overlay flou --- */
+  /* === Overlay === */
+  /* === Overlay === */
   .modal {
     display: none;
     position: fixed;
     z-index: 1000;
     left: 0; top: 0;
     width: 100%; height: 100%;
-    backdrop-filter: blur(6px);
     background-color: rgba(0,0,0,0.35);
     justify-content: center;
     align-items: center;
-    animation: fadeIn 0.3s ease;
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  /* --- Contenu du popup --- */
+  /* === Popup === */
   .modal-content {
     background: #fff;
-    padding: 50px 60px;
-    border-radius: 18px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-    width: 420px;
-    min-height: 330px;
-    text-align: center;
-    position: relative;
-    transform: scale(0.85);
-    opacity: 0;
-    animation: popupAppear 0.35s ease forwards;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    width: 450px;
+    padding: 0;
+    overflow: hidden;
+    animation: popupAppear 0.25s ease;
   }
 
   @keyframes popupAppear {
-    to {
-      transform: scale(1);
-      opacity: 1;
-    }
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
   }
 
-  /* --- Bouton close --- */
+  /* === En-tête === */
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid #e6e6e6;
+    background: #fafafa;
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    font-size: 17px;
+    color: #333;
+  }
+
   .close {
-    position: absolute;
-    top: 14px;
-    right: 16px;
-    background: #ff4757;
+    background: transparent;
     border: none;
-    color: white;
     font-size: 20px;
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
+    color: #777;
     cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
+    transition: color 0.2s;
   }
 
   .close:hover {
-    background: #ff1a1a;
-    transform: rotate(90deg);
+    color: #000;
   }
 
-  /* --- Titre --- */
-  h3 {
-    margin-top: 10px;
-    color: #333;
+  /* === Section contenu === */
+  .modal-body {
+    padding: 20px 25px;
+  }
+
+  .section-title {
     font-weight: 600;
-    margin-bottom: 25px;
-    font-size: 20px;
+    color: #333;
+    margin-bottom: 12px;
+    font-size: 15px;
   }
 
-  /* --- Boutons gris --- */
+  /* === Boutons de type de graphique === */
+  .chart-type-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
   .chart-type-btn {
-    display: inline-block;
-    margin: 12px;
-    padding: 16px 30px;
-    border-radius: 10px;
-    border: none;
+    flex: 1;
+    padding: 14px 0;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    background: #fff;
     cursor: pointer;
-    font-size: 16px;
+    text-align: center;
+    font-size: 14px;
     color: #333;
-    background: linear-gradient(145deg, #e0e0e0, #cfcfcf);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.3s ease;
+    transition: all 0.2s ease;
   }
 
   .chart-type-btn:hover {
-    transform: translateY(-3px);
-    background: linear-gradient(145deg, #f1f1f1, #d9d9d9);
-    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+    background: #f3f3f3;
+  }
+
+  .chart-type-btn.active {
+    border: 2px solid #007bff;
+    background: #f0f7ff;
+  }
+
+  /* === Section intervalle === */
+  .interval-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .interval-btn {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #333;
+    transition: all 0.2s ease;
+  }
+
+  .interval-btn:hover {
+    background: #f3f3f3;
+  }
+
+  .interval-btn.active {
+    border-color: #007bff;
+    background: #f0f7ff;
+    color: #007bff;
+    font-weight: 600;
   }
 
   </style>
@@ -733,14 +768,44 @@ footer {
     </div>
   </div>
 
-  <!-- === Popup de sélection === -->
   <div id="chartTypeModal" class="modal">
-    <div class="modal-content">
-      <span class="close" id="closeModal">&times;</span>
-      <h3>Type de graphique</h3>   
-      <button class="chart-type-btn" data-type="line">Line</button>
-      <button class="chart-type-btn" data-type="area">Area</button>
-      <button class="chart-type-btn" data-type="candlestick">Candlestick</button>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Chart settings</h3>
+      <button class="close" id="closeModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Chart type section -->
+      <div class="section">
+        <div class="section-title">Chart types</div>
+        <div class="chart-type-group">
+          <button class="chart-type-btn active" data-type="area">📉 Area</button>
+          <button class="chart-type-btn" data-type="candle">🕯️ Candle</button>
+          <button class="chart-type-btn" data-type="hollow">💠 Hollow</button>
+          <button class="chart-type-btn" data-type="ohlc">📊 OHLC</button>
+        </div>
+      </div>
+
+      <!-- Time interval section -->
+      <div class="section">
+        <div class="section-title">Time interval</div>
+        <div class="interval-group">
+          <button class="interval-btn">1 tick</button>
+          <button class="interval-btn active">1 minute</button>
+            <button class="interval-btn">2 minutes</button>
+            <button class="interval-btn">3 minutes</button>
+            <button class="interval-btn">5 minutes</button>
+            <button class="interval-btn">10 minutes</button>
+            <button class="interval-btn">15 minutes</button>
+            <button class="interval-btn">30 minutes</button>
+            <button class="interval-btn">1 hour</button>
+            <button class="interval-btn">2 hours</button>
+            <button class="interval-btn">4 hours</button>
+            <button class="interval-btn">8 hours</button>
+            <button class="interval-btn">1 day</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -885,7 +950,7 @@ footer {
     modal.style.display = "flex";
   });
 
-  // Fermer le popup    
+  // Fermer le popup
   closeModal.addEventListener("click", () => {
     modal.style.display = "none";
   });
@@ -897,12 +962,19 @@ footer {
     }
   });
 
-  // Action au clic sur un bouton de type
+  // Sélection du type de graphique
   document.querySelectorAll(".chart-type-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-      const type = btn.dataset.type;
-      alert("Type de graphique choisi : " + type);
-      modal.style.display = "none";
+      document.querySelectorAll(".chart-type-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+    });
+  });
+
+  // Sélection de l’intervalle
+  document.querySelectorAll(".interval-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".interval-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
     });
   });
   
