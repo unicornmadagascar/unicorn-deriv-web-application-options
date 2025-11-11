@@ -2514,36 +2514,36 @@ window.addEventListener("error", function (e) {
   window.addEventListener('beforeunload', () => { try { if (ws) ws.close(); } catch (e) {} });
 
   // === CONTRÔLES POPUP ===
-openModalBtn.addEventListener("click", () => {
-  modal.style.display = "flex";
-});
+  openModalBtn.addEventListener("click", () => {
+    modal.style.display = "flex";
+  });
 
-closeModalBtn.addEventListener("click", () => {
-  modal.style.display = "none";
-});
-
-window.addEventListener("click", e => {
-  if (e.target === modal) modal.style.display = "none";
-});
-
-// === Changement du type de graphique ===
-document.querySelectorAll(".chart-type-btn").forEach(btn => {
-  btn.addEventListener("click", e => {
-    currentChartType = e.target.dataset.type;
-    initChart();
-    if (currentSymbol) subscribeSymbol(currentSymbol);
+  closeModalBtn.addEventListener("click", () => {
     modal.style.display = "none";
   });
-});
 
-// === Changement d’intervalle ===
-document.querySelectorAll(".interval-btn").forEach(btn => {
-  btn.addEventListener("click", e => {
-    currentInterval = e.target.dataset.interval;
-    console.log("⏱ Intervalle changé :", currentInterval);
-    // Ici, tu peux ajuster la fréquence des ticks ou fetcher des données historiques selon Deriv
+  window.addEventListener("click", e => {
+    if (e.target === modal) modal.style.display = "none";
   });
-});
+
+ // === Changement du type de graphique ===
+ document.querySelectorAll(".chart-type-btn").forEach(btn => {
+    btn.addEventListener("click", e => {
+      currentChartType = e.target.dataset.type;
+      initChart();
+      if (currentSymbol) subscribeSymbol(currentSymbol);
+      modal.style.display = "none";
+    });
+  });
+
+  // === Changement d’intervalle ===
+  document.querySelectorAll(".interval-btn").forEach(btn => {
+    btn.addEventListener("click", e => {
+      currentInterval = e.target.dataset.interval;
+      console.log("⏱ Intervalle changé :", currentInterval);
+      // Ici, tu peux ajuster la fréquence des ticks ou fetcher des données historiques selon Deriv
+    });
+  });
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
@@ -2552,7 +2552,7 @@ document.querySelectorAll(".interval-btn").forEach(btn => {
       contractentry(totalPL => {
         updatePLGauge(totalPL);
       });
-  
+    
       // Subscribing Tables
       connectDeriv_table();
     }
