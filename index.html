@@ -552,7 +552,7 @@ footer {
   margin-bottom : 40px;
 }
 
- /* Bouton principal */
+ /* Bouton principal pour ouvrir */
   #openPopup {
     padding: 10px 20px;
     background-color: #007bff;
@@ -562,21 +562,21 @@ footer {
     cursor: pointer;
   }
 
-  /* Fond du popup (overlay semi-transparent) */
-  .popup-overlay {
+  /* --- Overlay (fond noir semi-transparent) --- */
+  .modal {
     display: none; /* caché par défaut */
     position: fixed;
-    top: 0; left: 0;
+    z-index: 1000;
+    left: 0; top: 0;
     width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0,0,0,0.4);
     justify-content: center;
     align-items: center;
-    z-index: 1000;
   }
 
-  /* Contenu du popup */
-  .popup-content {
-    background: white;
+  /* --- Contenu blanc du popup --- */
+  .modal-content {
+    background-color: white;
     padding: 20px 30px;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
@@ -585,8 +585,8 @@ footer {
     text-align: center;
   }
 
-  /* Bouton de fermeture */
-  .close-btn {
+  /* --- Bouton de fermeture --- */
+  .close {
     position: absolute;
     top: 10px;
     right: 12px;
@@ -600,8 +600,23 @@ footer {
     line-height: 1;
   }
 
-  .close-btn:hover {
+  .close:hover {
     background: #ff1a1a;
+  }
+
+  /* Boutons de type de graphique (tu peux garder ton style existant) */
+  .chart-type-btn {
+    margin: 10px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    font-size: 15px;
+    background: #f0f0f0;
+  }
+
+  .chart-type-btn:hover {
+    background: #e0e0e0;
   }
 
   </style>
@@ -692,12 +707,14 @@ footer {
     </div>
   </div>
 
-  <!-- Structure du popup -->
-  <div id="popup" class="popup-overlay">
-    <div class="popup-content">
-      <button class="close-btn">&times;</button>
-      <h2>Bonjour 👋</h2>
-      <p>Ceci est un popup avec fond blanc.</p>
+  <!-- === Popup de sélection === -->
+  <div id="chartTypeModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="closeModal">&times;</span>
+      <h3>🧩 Type de graphique</h3>
+      <button class="chart-type-btn" data-type="line">📈 Line</button>
+      <button class="chart-type-btn" data-type="area">🌊 Area</button>
+      <button class="chart-type-btn" data-type="candlestick">🕯️ Candlestick</button>
     </div>
   </div>
 
@@ -833,26 +850,35 @@ footer {
       }
     });
 
-    const openBtn = document.getElementById("openPopup");   
-    const popup = document.getElementById("popup");
-    const closeBtn = document.querySelector(".close-btn");
+  const openPopup = document.getElementById("openPopup");
+  const modal = document.getElementById("chartTypeModal");
+  const closeModal = document.getElementById("closeModal");
 
-    // Ouvrir le popup
-    openBtn.addEventListener("click", () => {
-      popup.style.display = "flex";
-    });    
+  // Ouvrir le popup
+  openPopup.addEventListener("click", () => {
+    modal.style.display = "flex";
+  });
 
-    // Fermer le popup
-    closeBtn.addEventListener("click", () => {
-      popup.style.display = "none";
+  // Fermer le popup
+  closeModal.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+
+  // Fermer en cliquant à l’extérieur
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.style.display = "none";
+    }
+  });
+
+  // Exemple d’action au clic d’un bouton de type
+  document.querySelectorAll(".chart-type-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const type = btn.dataset.type;
+      alert("Type de graphique choisi : " + type);
+      modal.style.display = "none";
     });
-
-    // Fermer si on clique en dehors du contenu
-    popup.addEventListener("click", (e) => {
-      if (e.target === popup) {
-        popup.style.display = "none";
-      }
-    });
+  });
   
   </script>
 </body>
