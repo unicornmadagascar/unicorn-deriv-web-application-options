@@ -220,10 +220,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     //wsOpenLines = new WebSocket(WS_URL);
     
-    wsOpenLines.onopen = () => {
+    /*wsOpenLines.onopen = () => {
       console.log("✅ WS open for open contract lines");  
       wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));
-    };
+    };*/
 
     wsOpenLines.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
