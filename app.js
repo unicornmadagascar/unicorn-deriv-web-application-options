@@ -43,6 +43,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const profitvalue = document.getElementById("profitvalue");
   const tokencalendar = document.getElementById("tokencalendar");
   const statusEl = document.getElementById('status');
+  const modal = document.getElementById("chartTypeModal");
+  const openModalBtn = document.getElementById("openChartModal");
+  const closeModalBtn = document.getElementById("closeModal");
 
   let totalPL = 0; // cumul des profits et pertes
   let automationRunning = false;
@@ -103,10 +106,14 @@ document.addEventListener("DOMContentLoaded", () => {
   let structresponse = [];
   let datapercent = {};
   let response;
-
+  //------
+  let candleSeries;
+  let currentSymbol = null;
+  let currentChartType = "area"; // par défaut
+  let currentInterval = "tick";  // par défaut
 
   // --- NEW: current symbol & pending subscribe ---
-  let currentSymbol = null;
+  //let currentSymbol = null;
   let pendingSubscribe = null;
   let authorized = false;
   // Exemple de données
@@ -132,111 +139,167 @@ document.addEventListener("DOMContentLoaded", () => {
   const fmt = n => Number(n).toFixed(2);
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
 
-  // --- SYMBOLS ---
- function displaySymbols() {
-  symbolList.innerHTML = "";
-
-  SYMBOLS.forEach(s => {
-    const el = document.createElement("div");
-    el.className = "symbol-item";
-    el.textContent = s.name;
-    el.dataset.symbol = s.symbol;
-
-    el.addEventListener("click", () => {
-      // 🔹 Supprime la sélection sur tous les symboles
-      document.querySelectorAll("#SymbolList .symbol-item").forEach(item => {
-        item.classList.remove("selected");
+ // --- SYMBOLS ---
+  function displaySymbols() {
+    symbolList.innerHTML = "";
+    SYMBOLS.forEach(s => {
+      const el = document.createElement("div");
+      el.className = "symbol-item";
+      el.textContent = s.name;
+      el.dataset.symbol = s.symbol;
+      el.addEventListener("click", () => {
+        document.querySelectorAll("#SymbolList .symbol-item").forEach(item => {
+          item.classList.remove("selected");
+        });
+        el.classList.add("selected");
+        subscribeSymbol(s.symbol);
       });
-
-      // 🔹 Ajoute la sélection sur celui qu’on vient de cliquer
-      el.classList.add("selected");
-
-      // 🔹 Appelle ta fonction de souscription
-      subscribeSymbol(s.symbol);
+      symbolList.appendChild(el);
     });
+  }
 
-    symbolList.appendChild(el);
-  });
- }
-
-  // --- CHART INIT ---
+  // --- INIT CHART ---
   function initChart() {
     try { if (chart) chart.remove(); } catch (e) {}
     chartInner.innerHTML = "";
 
     chart = LightweightCharts.createChart(chartInner, {
-      layout: { textColor: "#333", background: { type: "solid", color: "#fff" } },
-      timeScale: { timeVisible: true, secondsVisible: true }
+      width: chartInner.clientWidth,
+      height: chartInner.clientHeight,
+      layout: {
+        textColor: "#333",
+        background: { type: "solid", color: "#fff" },
+      },
+      grid: {
+        vertLines: { color: "#f0f0f0" },
+        horzLines: { color: "#f0f0f0" },
+      },
+      timeScale: { timeVisible: true, secondsVisible: true },
     });
 
-    // use addAreaSeries (works with standalone bundle)
-    areaSeries = chart.addAreaSeries({
-      lineColor: "#2962FF",
-      topColor: "rgba(41,98,255,0.28)",
-      bottomColor: "rgba(41,98,255,0.05)",
-      lineWidth: 2
-    });
+    // === Type de graphique dynamique ===
+    if (currentChartType === "area") {
+      areaSeries = chart.addAreaSeries({
+        lineColor: "#2962FF",
+        topColor: "rgba(41,98,255,0.28)",
+        bottomColor: "rgba(41,98,255,0.05)",
+        lineWidth: 2,
+      });
+    } else if (currentChartType === "candlestick") {
+      candleSeries = chart.addCandlestickSeries({
+        upColor: "#26a69a",
+        borderUpColor: "#26a69a",
+        wickUpColor: "#26a69a",
+        downColor: "#ef5350",
+        borderDownColor: "#ef5350",
+        wickDownColor: "#ef5350",
+      });
+    } else if (currentChartType === "line") {
+      areaSeries = chart.addLineSeries({
+        color: "#2962FF",
+        lineWidth: 2,
+      });
+    }
 
     chartData = [];
     recentChanges = [];
     lastPrices = {};
-    
-    positionGauges();   
+    positionGauges();
   }
 
-  // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
-  function Openpositionlines(areaSeries) {
-
-    if (wsOpenLines === null)
-    {
-     wsOpenLines = new WebSocket(WS_URL);
-     wsOpenLines.onopen=()=>{ wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-  
-    if (wsOpenLines && (wsOpenLines.readyState === WebSocket.OPEN || wsOpenLines.readyState === WebSocket.CONNECTING))
-    {
-     wsOpenLines.onopen=()=>{ wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
+  // --- SUBSCRIBE SYMBOL ---
+  function subscribeSymbol(symbol) {
+    if (wspl === null) {
+      pendingSubscribe = symbol;
+      return;
     }
 
-    if (wsOpenLines && (wsOpenLines.readyState === WebSocket.CLOSED || wsOpenLines.readyState === WebSocket.CLOSING))
-    {
+    currentSymbol = symbol;
+    initChart();
+
+    if (!wspl || wspl.readyState === WebSocket.CLOSED) {
+      pendingSubscribe = symbol;
+      connectDeriv();
+    }
+
+    if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {
+      wspl.send(JSON.stringify({ forget_all: "ticks" }));
+      wspl.send(JSON.stringify({ ticks: symbol }));
+    }
+  }
+
+  // --- HANDLE TICK ---
+  function handleTick(tick) {
+    if (!tick || !tick.symbol) return;
+    if (currentSymbol && tick.symbol !== currentSymbol) return;
+
+    const quote = safe(Number(tick.quote));
+    const epoch = Number(tick.epoch) || Math.floor(Date.now() / 1000);
+
+    const prev = lastPrices[tick.symbol] ?? quote;
+    lastPrices[tick.symbol] = quote;
+
+    const change = quote - prev;
+    recentChanges.push(change);
+    if (recentChanges.length > 60) recentChanges.shift();
+
+    updateCircularGauges();
+
+    const point = { time: epoch, value: quote };
+
+    if (!chart) return;
+    if (currentChartType === "candlestick") {
+      const candle = { time: epoch, open: quote, high: quote, low: quote, close: quote };
+      try { candleSeries.update(candle); } catch {}
+    } else if (areaSeries) {
+      if (!chartData.length) {
+        chartData.push(point);
+        try { areaSeries.setData(chartData); } catch {}
+      } else {
+        chartData.push(point);
+        if (chartData.length > 600) chartData.shift();
+        try { areaSeries.update(point); } catch {}
+      }
+    }
+
+    try { chart.timeScale().fitContent(); } catch (e) {}
+    Openpositionlines(areaSeries || candleSeries);
+  }
+
+  // === LIGNES DES CONTRATS OUVERTS ===
+  function Openpositionlines(series) {
+    if (!series) return;
+
+    if (wsOpenLines === null) {
       wsOpenLines = new WebSocket(WS_URL);
-      wsOpenLines.onopen=()=>{ wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
+      wsOpenLines.onopen = () => wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));
     }
 
-    wsOpenLines.onmessage = (msg) => {
+    wsOpenLines.onmessage = msg => {
       const data = JSON.parse(msg.data);
-
-      // Étape 1 : Authentification
       if (data.msg_type === "authorize") {
         wsOpenLines.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
       }
 
-      // Étape 2 : Réception d’un contrat
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
         const c = data.proposal_open_contract;
-
-        // Si le contrat est clos → supprimer la ligne
         if (c.status === "sold") {
           const id = c.contract_id;
           if (priceLines4openlines[id]) {
-            try { areaSeries.removePriceLine(priceLines4openlines[id]); } catch {}
+            try { series.removePriceLine(priceLines4openlines[id]); } catch {}
             delete priceLines4openlines[id];
-            console.log(`❌ Ligne supprimée pour contrat ${id}`);
           }
           return;
         }
 
-        // Si c’est un nouveau contrat ouvert
         const id = c.contract_id;
         if (!priceLines4openlines[id]) {
-          const entryPrice = parseFloat(c.entry_tick_display_value);              // || c.buy_price
+          const entryPrice = parseFloat(c.entry_tick_display_value);
           if (!entryPrice || isNaN(entryPrice)) return;
 
           const type = c.contract_type;
-          const color = type === "MULTUP" ? "#00ff80" : "#ff4d4d";      
-
-          const line = areaSeries.createPriceLine({
+          const color = type === "MULTUP" ? "#00ff80" : "#ff4d4d";
+          const line = series.createPriceLine({
             price: entryPrice,
             color,
             lineWidth: 2,
@@ -246,13 +309,9 @@ document.addEventListener("DOMContentLoaded", () => {
           });
 
           priceLines4openlines[id] = line;
-          console.log(`📍 Ligne ajoutée pour ${type} @ ${entryPrice}`);
         }
       }
     };
-
-    wsOpenLines.onerror = (e) => console.log("⚠️ WS error:", e);
-    wsOpenLines.onclose = () => console.log("❌ WS closed for open lines");
   }
 
   // --- GAUGES ---
@@ -809,85 +868,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const variance = values.map(x => (x - mean) ** 2).reduce((a, b) => a + b, 0) / values.length;
        
     return Math.sqrt(variance);
-  }
-
-  // --- SUBSCRIBE SYMBOL ---
-  function subscribeSymbol(symbol) {
-
-    if (wspl === null)
-    {
-     pendingSubscribe = symbol;
-     return;
-    }
-    
-    // set desired symbol and reinit chart immediately
-    currentSymbol = symbol;
-    initChart(); // reinit chart so areaSeries exists before ticks arrive
-
-    if (!wspl || wspl.readyState === WebSocket.CLOSED)
-     {
-      pendingSubscribe = symbol;
-      connectDeriv();
-     }
-
-    if (wspl && wspl.readyState === WebSocket.OPEN && authorized)
-     {
-      wspl.send(JSON.stringify({ forget_all: "ticks" }));
-      wspl.send(JSON.stringify({ ticks: symbol }));
-     }
-  }
-
-  // --- TICK HANDLER ---
-  function handleTick(tick) {
-    // ensure tick belongs to current symbol (or accept if no currentSymbol)
-    if (!tick || !tick.symbol) return;
-    if (currentSymbol && tick.symbol !== currentSymbol) return;
-
-    const quote = safe(Number(tick.quote));
-    // Deriv epoch is seconds; lightweight-charts accepts number seconds
-    const epoch = Number(tick.epoch) || Math.floor(Date.now() / 1000);
-
-    // update lastPrices per symbol key (keep generic)
-    const prev = lastPrices[tick.symbol] ?? quote;
-    lastPrices[tick.symbol] = quote;
-
-    const change = quote - prev;
-    recentChanges.push(change);
-    if (recentChanges.length > 60) recentChanges.shift();
-
-    updateCircularGauges();
-
-    // update chartData and series
-    if (!areaSeries || !chart) return;
-
-    const point = { time: epoch, value: quote };
-
-    // if first data point, setData with small array to initialize
-    if (!chartData.length) {
-      chartData.push(point);
-      try {
-        areaSeries.setData(chartData);
-      } catch (e) {
-        // fallback: try update
-        try { areaSeries.update(point); } catch (err) {}
-      }
-    } else {
-      // append and update
-      chartData.push(point);
-      if (chartData.length > 600) chartData.shift();    
-
-      // Prefer update (faster); fallback to setData if update throws
-      try {
-        areaSeries.update(point);
-      } catch (e) {
-        try { areaSeries.setData(chartData); } catch (err) {}
-      }
-    }
-
-    // try to auto-fit time scale (safe)
-    try { chart.timeScale().fitContent(); } catch (e) {}   
-    
-    Openpositionlines(areaSeries);  
   }
  
   // --- GAUGES UPDATE ---   
@@ -2532,6 +2512,38 @@ window.addEventListener("error", function (e) {
   })();
 
   window.addEventListener('beforeunload', () => { try { if (ws) ws.close(); } catch (e) {} });
+
+  // === CONTRÔLES POPUP ===
+openModalBtn.addEventListener("click", () => {
+  modal.style.display = "flex";
+});
+
+closeModalBtn.addEventListener("click", () => {
+  modal.style.display = "none";
+});
+
+window.addEventListener("click", e => {
+  if (e.target === modal) modal.style.display = "none";
+});
+
+// === Changement du type de graphique ===
+document.querySelectorAll(".chart-type-btn").forEach(btn => {
+  btn.addEventListener("click", e => {
+    currentChartType = e.target.dataset.type;
+    initChart();
+    if (currentSymbol) subscribeSymbol(currentSymbol);
+    modal.style.display = "none";
+  });
+});
+
+// === Changement d’intervalle ===
+document.querySelectorAll(".interval-btn").forEach(btn => {
+  btn.addEventListener("click", e => {
+    currentInterval = e.target.dataset.interval;
+    console.log("⏱ Intervalle changé :", currentInterval);
+    // Ici, tu peux ajuster la fréquence des ticks ou fetcher des données historiques selon Deriv
+  });
+});
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {

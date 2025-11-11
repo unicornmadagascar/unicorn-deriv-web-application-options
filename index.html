@@ -760,36 +760,22 @@ hr {
     </div>
   </div>
 
-  <!-- === Popup de sélection === -->
   <div id="chartTypeModal" class="modal">
     <div class="modal-content">
       <span class="close" id="closeModal">&times;</span>
-      <h3>Chart types</h3>
-      <div class="chart-type-section">
+      <h3>Type de graphique</h3>
+      <div class="chart-type-container">
         <button class="chart-type-btn" data-type="line">📈 Line</button>
         <button class="chart-type-btn" data-type="area">🌊 Area</button>
         <button class="chart-type-btn" data-type="candlestick">🕯️ Candlestick</button>
-        <button class="chart-type-btn" data-type="hollow">🕳️ Hollow</button>
-        <button class="chart-type-btn" data-type="ohlc">📊 OHLC</button>
       </div>
-
       <hr>
-
-      <h3>Time interval</h3>
-      <div class="interval-section">
-        <button class="interval-btn">1 tick</button>
-        <button class="interval-btn active">1 minute</button>
-        <button class="interval-btn">2 minutes</button>
-        <button class="interval-btn">3 minutes</button>
-        <button class="interval-btn">5 minutes</button>
-        <button class="interval-btn">10 minutes</button>
-        <button class="interval-btn">15 minutes</button>
-        <button class="interval-btn">30 minutes</button>
-        <button class="interval-btn">1 hour</button>
-        <button class="interval-btn">2 hours</button>
-        <button class="interval-btn">4 hours</button>
-        <button class="interval-btn">8 hours</button>
-        <button class="interval-btn">1 day</button>
+      <h3>Intervalle</h3>
+      <div class="interval-container">
+        <button class="interval-btn" data-interval="tick">1 Tick</button>
+        <button class="interval-btn" data-interval="1m">1 Minute</button>
+        <button class="interval-btn" data-interval="5m">5 Minutes</button>
+        <button class="interval-btn" data-interval="1h">1 Hour</button>
       </div>
     </div>
   </div>
