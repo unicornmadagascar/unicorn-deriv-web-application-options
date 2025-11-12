@@ -204,7 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chartData = [];
     recentChanges = [];
     lastPrices = {};
-    
+
     positionGauges();
   }
 
@@ -2553,7 +2553,7 @@ window.addEventListener("error", function (e) {
  // === Changement du type de graphique ===
  document.querySelectorAll(".chart-type-btn").forEach(btn => {
     btn.addEventListener("click", e => {
-      currentChartType = e.target.dataset.type;
+      currentChartType = e.target.dataset.type;     
       initChart();
       if (currentSymbol) subscribeSymbol(currentSymbol);
       modal.style.display = "none";
