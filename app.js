@@ -138,24 +138,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const fmt = n => Number(n).toFixed(2);
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
-
+ 
  // --- SYMBOLS ---
   function displaySymbols() {
-    symbolList.innerHTML = "";
-    SYMBOLS.forEach(s => {
-      const el = document.createElement("div");
-      el.className = "symbol-item";
-      el.textContent = s.name;
-      el.dataset.symbol = s.symbol;
-      el.addEventListener("click", () => {
-        document.querySelectorAll("#SymbolList .symbol-item").forEach(item => {
-          item.classList.remove("selected");
-        });
-        el.classList.add("selected");
-        subscribeSymbol(s.symbol);
-      });
-      symbolList.appendChild(el);
-    });
+   symbolList.innerHTML = "";
+
+   SYMBOLS.forEach(s => {
+     const el = document.createElement("div");
+     el.className = "symbol-item";
+     el.textContent = s.name;
+     el.dataset.symbol = s.symbol;
+
+     el.addEventListener("click", () => {
+       // 🔹 Supprime la sélection sur tous les symboles
+       document.querySelectorAll("#SymbolList .symbol-item").forEach(item => {
+         item.classList.remove("selected");
+       });
+
+       // 🔹 Ajoute la sélection sur celui qu’on vient de cliquer
+       el.classList.add("selected");
+
+       // 🔹 Appelle ta fonction de souscription
+       subscribeSymbol(s.symbol);
+     });
+
+     symbolList.appendChild(el);
+   });
   }
 
   // --- INIT CHART ---
@@ -2569,6 +2577,14 @@ window.addEventListener("error", function (e) {
       currentInterval = e.target.dataset.interval;
       console.log("⏱ Intervalle changé :", currentInterval);
       // Ici, tu peux ajuster la fréquence des ticks ou fetcher des données historiques selon Deriv
+    });
+  });
+
+  // === Changement de symbole  ===
+  document.querySelectorAll(".symbol-item").forEach(btn => {
+    btn.addEventListener("click", e => {
+      currentSymbol = e.target.dataset.symbol;
+      console.log("Current Symbol:", currentSymbol);
     });
   });
 
