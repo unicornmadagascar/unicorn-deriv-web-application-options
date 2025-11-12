@@ -2556,7 +2556,7 @@ window.addEventListener("error", function (e) {
  document.querySelectorAll(".chart-type-btn").forEach(btn => {
     btn.addEventListener("click", e => {
       currentChartType = e.target.dataset.type;   
-      console.log("Current Chart Type : " +currentChartType);  
+      console.log("Current Chart Type : " +currentChartType);    
       initChart();
       if (currentSymbol) subscribeSymbol(currentSymbol);
       modal.style.display = "none";
