@@ -2565,7 +2565,7 @@ window.addEventListener("error", function (e) {
 
   // === Changement d’intervalle ===
   document.querySelectorAll(".interval-btn").forEach(btn => {
-    btn.addEventListener("click", e => {
+    btn.addEventListener("click", e => {   
       currentInterval = e.target.dataset.interval;
       console.log("⏱ Intervalle changé :", currentInterval);
       // Ici, tu peux ajuster la fréquence des ticks ou fetcher des données historiques selon Deriv
