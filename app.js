@@ -204,6 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chartData = [];
     recentChanges = [];
     lastPrices = {};
+    
     positionGauges();
   }
 
@@ -266,40 +267,59 @@ document.addEventListener("DOMContentLoaded", () => {
     Openpositionlines(areaSeries || candleSeries);
   }
 
-  // === LIGNES DES CONTRATS OUVERTS ===
-  function Openpositionlines(series) {
-    if (!series) return;
+  // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
+  function Openpositionlines(areaSeries) {
 
-    if (wsOpenLines === null) {
-      wsOpenLines = new WebSocket(WS_URL);
-      wsOpenLines.onopen = () => wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));
+    if (wsOpenLines === null)
+    {
+     wsOpenLines = new WebSocket(WS_URL);
+     wsOpenLines.onopen=()=>{ wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+  
+    if (wsOpenLines && (wsOpenLines.readyState === WebSocket.OPEN || wsOpenLines.readyState === WebSocket.CONNECTING))
+    {
+     wsOpenLines.onopen=()=>{ wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    wsOpenLines.onmessage = msg => {
+    if (wsOpenLines && (wsOpenLines.readyState === WebSocket.CLOSED || wsOpenLines.readyState === WebSocket.CLOSING))
+    {
+      wsOpenLines = new WebSocket(WS_URL);
+      wsOpenLines.onopen=()=>{ wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    wsOpenLines.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
+
+      // Étape 1 : Authentification
       if (data.msg_type === "authorize") {
         wsOpenLines.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
       }
 
+      // Étape 2 : Réception d’un contrat
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
         const c = data.proposal_open_contract;
+
+        // Si le contrat est clos → supprimer la ligne
         if (c.status === "sold") {
           const id = c.contract_id;
           if (priceLines4openlines[id]) {
-            try { series.removePriceLine(priceLines4openlines[id]); } catch {}
+            try { areaSeries.removePriceLine(priceLines4openlines[id]); } catch {}
             delete priceLines4openlines[id];
+            console.log(`❌ Ligne supprimée pour contrat ${id}`);
           }
           return;
         }
 
+        // Si c’est un nouveau contrat ouvert
         const id = c.contract_id;
         if (!priceLines4openlines[id]) {
-          const entryPrice = parseFloat(c.entry_tick_display_value);
+          const entryPrice = parseFloat(c.entry_tick_display_value);              // || c.buy_price
           if (!entryPrice || isNaN(entryPrice)) return;
 
           const type = c.contract_type;
-          const color = type === "MULTUP" ? "#00ff80" : "#ff4d4d";
-          const line = series.createPriceLine({
+          const color = type === "MULTUP" ? "#00ff80" : "#ff4d4d";      
+
+          const line = areaSeries.createPriceLine({
             price: entryPrice,
             color,
             lineWidth: 2,
@@ -309,9 +329,13 @@ document.addEventListener("DOMContentLoaded", () => {
           });
 
           priceLines4openlines[id] = line;
+          console.log(`📍 Ligne ajoutée pour ${type} @ ${entryPrice}`);
         }
       }
     };
+
+    wsOpenLines.onerror = (e) => console.log("⚠️ WS error:", e);
+    wsOpenLines.onclose = () => console.log("❌ WS closed for open lines");
   }
 
   // --- GAUGES ---
