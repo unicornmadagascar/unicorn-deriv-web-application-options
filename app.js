@@ -179,14 +179,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // === Type de graphique dynamique ===
     if (currentChartType === "area") {
-      areaSeries = chart.addAreaSeries({
+      currentSeries = chart.addAreaSeries({
         lineColor: "#2962FF",
         topColor: "rgba(41,98,255,0.28)",
         bottomColor: "rgba(41,98,255,0.05)",
         lineWidth: 2,
       });
     } else if (currentChartType === "candlestick") {
-      candleSeries = chart.addCandlestickSeries({
+      currentSeries = chart.addCandlestickSeries({
         upColor: "#26a69a",
         borderUpColor: "#26a69a",
         wickUpColor: "#26a69a",
@@ -195,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
         wickDownColor: "#ef5350",
       });
     } else if (currentChartType === "line") {
-      areaSeries = chart.addLineSeries({
+      currentSeries = chart.addLineSeries({
         color: "#2962FF",
         lineWidth: 2,
       });
@@ -206,6 +206,8 @@ document.addEventListener("DOMContentLoaded", () => {
     lastPrices = {};
 
     positionGauges();
+
+    return currentChartType;
   }
 
   // --- SUBSCRIBE SYMBOL ---
@@ -2553,7 +2555,8 @@ window.addEventListener("error", function (e) {
  // === Changement du type de graphique ===
  document.querySelectorAll(".chart-type-btn").forEach(btn => {
     btn.addEventListener("click", e => {
-      currentChartType = e.target.dataset.type;     
+      currentChartType = e.target.dataset.type;   
+      console.log("Current Chart Type : " +currentChartType);  
       initChart();
       if (currentSymbol) subscribeSymbol(currentSymbol);
       modal.style.display = "none";
