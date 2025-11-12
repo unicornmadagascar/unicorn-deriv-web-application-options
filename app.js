@@ -2561,7 +2561,7 @@ window.addEventListener("error", function (e) {
       if (currentSymbol) subscribeSymbol(currentSymbol);
       modal.style.display = "none";
     });
-  });
+  });  
 
   // === Changement d’intervalle ===
   document.querySelectorAll(".interval-btn").forEach(btn => {
