@@ -303,11 +303,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.msg_type === "tick" && data.tick)
          {
           handleTick(data.tick);
-          return;
+          return;   
          }
        }
-       else if (styleType(currentChartType) === "candles")
-       {
+       else if (styleType(currentChartType) === "candles")     
+       {   
          if (data.msg_type === "history" && data.candles)
          {
           handleCandles(data.candles);
