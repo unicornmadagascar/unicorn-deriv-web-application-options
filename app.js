@@ -2575,7 +2575,7 @@ window.addEventListener("error", function (e) {
   document.querySelectorAll(".interval-btn").forEach(btn => {
     btn.addEventListener("click", e => {
       currentInterval = e.target.dataset.interval;
-      console.log("Current Interval:", currentInterval);
+      console.log("Current Interval:", currentInterval);   
 
       // Retirer "active" sur tous
       //document.querySelectorAll(".interval-btn").forEach(b => b.classList.remove("active"));
