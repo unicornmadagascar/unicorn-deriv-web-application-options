@@ -176,7 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chart = LightweightCharts.createChart(chartInner, {
       layout: {
         textColor: "#333",
-        background: { type: "solid", color: "#fff" },
+        background: { type: "solid", color: "#fff" },    
       },
       grid: { vertLines: { color: "rgba(255,255,255,0.05)" }, horzLines: { color: "rgba(255,255,255,0.05)" } },
       timeScale: { timeVisible: true, secondsVisible: true },   
@@ -347,24 +347,46 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function handleCandles(candlesArray) {
-    // Chargement initial : 500 bougies
-    candlesData = candlesArray.map(c => ({
-      time: Number(c.open_time),
-      open: Number(c.open),
-      high: Number(c.high),
-      low: Number(c.low),
-      close: Number(c.close)
-    }));
-    
-    if (!formatted.length) return;    
-    
+    if (!candlesArray || !Array.isArray(candlesArray) || !candlesArray.length) {
+      console.warn("Aucune donnée de bougies reçue");
+      return;
+    }
+
+    // Chargement initial : 500 bougies max
+    candlesData = candlesArray
+      .map(c => ({
+        time: Number(c.open_time),
+        open: Number(c.open),
+        high: Number(c.high),
+        low: Number(c.low),
+        close: Number(c.close)
+      }))
+      .filter(c =>
+        c.time &&
+        !isNaN(c.open) &&
+        !isNaN(c.high) &&
+        !isNaN(c.low) &&
+       !isNaN(c.close)
+      );
+
+    if (!candlesData.length) {
+      console.warn("Données OHLC invalides");
+      return;
+    }
+
     candlesData = candlesData.slice(-500);
-    currentSeries.setData(candlesData);
-    chart.timeScale().fitContent();
+
+    try {
+      currentSeries.setData(candlesData);
+      chart.timeScale().fitContent();
+    } catch (e) {
+      console.error("Erreur setData:", e);
+    }
   }
 
   function handleCandleLive(ohlc) {
-    // Bougie temps réel (une seule)
+    if (!ohlc) return;
+
     const newCandle = {
       time: Number(ohlc.open_time),
       open: Number(ohlc.open),
@@ -373,22 +395,33 @@ document.addEventListener("DOMContentLoaded", () => {
       close: Number(ohlc.close)
     };
 
-    if (!candlesData.length) return;
+    if (
+      !newCandle.time ||
+      [newCandle.open, newCandle.high, newCandle.low, newCandle.close].some(isNaN)
+    ) {
+      console.warn("Candle temps réel invalide:", newCandle);
+      return;
+    }
+
+    if (!candlesData || !candlesData.length) return;
 
     const last = candlesData[candlesData.length - 1];
 
     if (newCandle.time === last.time) {
-      // Met à jour la bougie actuelle
+      // Mise à jour de la bougie actuelle
       candlesData[candlesData.length - 1] = newCandle;
-      currentSeries.update(newCandle);
     } else if (newCandle.time > last.time) {
       // Nouvelle bougie
       candlesData.push(newCandle);
       if (candlesData.length > 600) candlesData.shift();
-      currentSeries.update(newCandle);
     }
 
-    // Mise à jour du prix courant
+    try {
+      currentSeries.update(newCandle);
+    } catch (e) {
+      console.error("Erreur update candle:", e);
+    }
+
     Openpositionlines(currentSeries);
   }
 
