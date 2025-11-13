@@ -287,7 +287,7 @@ document.addEventListener("DOMContentLoaded", () => {
       {
        wspl.send(JSON.stringify(JSON.stringify({ ticks: symbol, subscribe: 1 })));   
       }
-      else if (currentInterval !== "1 tick")
+      else if (currentInterval !== "1 tick")    
       {
        wspl.send(JSON.stringify(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))));
       }
