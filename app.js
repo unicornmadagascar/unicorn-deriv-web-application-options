@@ -281,7 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {   
 
-      wspl.send(JSON.stringify({ forget_all: styleType(currentChartType).toString() }));
+      //wspl.send(JSON.stringify({ forget_all: styleType(currentChartType).toString() }));
 
       if (currentInterval === "1 tick" && (currentChartType !== "candlestick" || currentChartType !== "hollow" || currentChartType !== "ohlc"))
       {
