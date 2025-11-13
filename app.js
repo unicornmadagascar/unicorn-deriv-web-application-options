@@ -159,8 +159,8 @@ document.addEventListener("DOMContentLoaded", () => {
        // 🔹 Ajoute la sélection sur celui qu’on vient de cliquer
        el.classList.add("selected");
 
-       // 🔹 Appelle ta fonction de souscription
-       subscribeSymbol(s.symbol,currentInterval,currentChartType);   
+       // 🔹 Appelle ta fonction de souscription   
+       subscribeSymbol(s.symbol,currentInterval,currentChartType);      
      });
 
      symbolList.appendChild(el);
