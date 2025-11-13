@@ -601,13 +601,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Chargement initial (historique)
-        /*if (data.msg_type === "candles" && data.candles) {
+        if (data.msg_type === "candles" && data.candles) {
           handleCandles(data.candles);
           return;
-        }
+        }  
 
         // Flux temps réel (mise à jour d'une seule candle)
-        if (data.msg_type === "ohlc" && data.ohlc) {
+        /*if (data.msg_type === "ohlc" && data.ohlc) {
           handleCandleLive(data.ohlc); // une seule bougie mise à jour
         }*/
 
