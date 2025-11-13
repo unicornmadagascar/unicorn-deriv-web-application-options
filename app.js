@@ -222,17 +222,18 @@ document.addEventListener("DOMContentLoaded", () => {
    return style_type;
   }
 
-  function Payloadforsubscription(currentSymbol,currentInterval,stylestr)
+  function Payloadforsubscription(currentSymbol,currentInterval,currentChartType)
   {
    if (!currentSymbol || currentSymbol===null) return;
 
    const payload4subscription = {
      tick_history: currentSymbol || "R_75",  
      adjust_start_time: 1,    
-     count: 1000,
+     count: 700,
      end: "latest",
+     start: 1,
      granularity: convertTF(currentInterval) || 60,   
-     style: stylestr,  
+     style: styleType(currentChartType),  
      subscribe: 1
    }
 
@@ -279,12 +280,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (currentInterval === "1 tick" && currentChartType !== "candlestick")
       {
        wspl.send(JSON.stringify({ forget_all: "ticks" }));        
-       wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,"ticks")));            
+       wspl.send(JSON.stringify({ticks : symbol, subscribe: 1}));            
       }           
       else if (currentInterval !== "1 tick" && currentChartType === "candlestick")           
       {
        wspl.send(JSON.stringify({ forget_all: "candles" }));  
-       wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,"candles")));
+       wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType)));
       }
     }
   }   
