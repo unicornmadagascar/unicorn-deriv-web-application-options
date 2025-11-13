@@ -235,6 +235,8 @@ document.addEventListener("DOMContentLoaded", () => {
      style: styleType(currentChartType),  
      subscribe: 1
    }
+
+   return payload4subscription;   
   }
 
   function convertTF(currentInterval)  
