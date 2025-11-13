@@ -277,9 +277,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!reponsechart.chart) return;
 
     if (!wspl || wspl.readyState === WebSocket.CLOSED) {
-      pendingSubscribe = symbol;
+      pendingSubscribe = symbol;    
       connectDeriv();
-    }
+    }    
 
     if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {
 
@@ -595,7 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // tick handling
-        if (data.msg_type === "tick" && data.tick) {
+        /*if (data.msg_type === "tick" && data.tick) {
           handleTick(data.tick);
           return;
         }
@@ -609,7 +609,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Flux temps réel (mise à jour d'une seule candle)
         if (data.msg_type === "ohlc" && data.ohlc) {
           handleCandleLive(data.ohlc); // une seule bougie mise à jour
-        }
+        }*/
 
         // other messages are ignored here
       } catch (err) {
