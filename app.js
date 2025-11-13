@@ -221,13 +221,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function styleType(currentChartType)
   {
-   
-  if (!currentChartType || currentChartType===null) return;
+   if (!currentChartType || currentChartType===null) return;
 
-   if (currentChartType === "candlestick" || currentChartType === "Hollow" || currentChartType === "ohlc") {style_type = "candles";}
+   if ((currentChartType === "candlestick" || currentChartType === "Hollow" || currentChartType === "ohlc")) {style_type = "candles";}
    else {style_type = "ticks";}
     
-      
    return style_type;
   }
 
@@ -287,10 +285,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (currentInterval === "1 tick" && (currentChartType !== "candlestick" || currentChartType !== "hollow" || currentChartType !== "ohlc"))
       {
+       wspl.send(JSON.stringify({ forget_all: ticks }));  
        wspl.send(JSON.stringify({ ticks: symbol, subscribe: 1 }));        
       }        
       else if (currentInterval !== "1 tick")    
       {
+       wspl.send(JSON.stringify({ forget_all: candles })); 
        wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType)));
       }
     }
@@ -298,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wspl.onmessage = (msg) => {
        const data = JSON.parse(msg.data);
        console.log('Data : ', data);
-       if (styleType(currentChartType) === "ticks" && (currentChartType !== "candlestick" || currentChartType !== "hollow" || currentChartType !== "ohlc"))
+       if (styleType(currentChartType) === "ticks")
        {
         if (data.msg_type === "tick" && data.tick)
          {
@@ -576,8 +576,8 @@ document.addEventListener("DOMContentLoaded", () => {
             // small delay to ensure WS state consistent
             setTimeout(() => {
               if (wspl && wspl.readyState === WebSocket.OPEN) {   
-                wspl.send(JSON.stringify({ forget_all: "ticks" }));
-                wspl.send(JSON.stringify({ ticks: pendingSubscribe }));
+                wspl.send(JSON.stringify({ forget_all: "ticks" }));  
+                wspl.send(JSON.stringify({ ticks: pendingSubscribe }));   
                 currentSymbol = pendingSubscribe;
                 pendingSubscribe = null;
               }
@@ -614,7 +614,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // other messages are ignored here
       } catch (err) {
-        console.error("WS parse err", err);
+        console.error("WS parse err", err);    
       }
     };
 
