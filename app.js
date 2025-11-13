@@ -2564,10 +2564,9 @@ window.addEventListener("error", function (e) {
  document.querySelectorAll(".chart-type-btn").forEach(btn => {
     btn.addEventListener("click", e => {
       currentChartType = e.target.dataset.type;   
-      console.log("Current Chart Type : " +currentChartType);    
+      console.log("Current Chart Type : " +currentChartType);      
       initChart();
       if (currentSymbol) subscribeSymbol(currentSymbol);
-      modal.style.display = "none";
     });
   });  
 
@@ -2580,7 +2579,6 @@ window.addEventListener("error", function (e) {
 
      // Supprime la classe active sur tous les boutons
      document.querySelectorAll(".interval-btn").forEach(b => b.classList.remove("active"));
-
      // Ajoute la classe active au bouton cliqué    
      e.target.classList.add("active");   
     });
