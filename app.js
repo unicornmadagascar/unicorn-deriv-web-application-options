@@ -288,7 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (currentInterval === "1 tick" && (currentChartType !== "candlestick" || currentChartType !== "hollow" || currentChartType !== "ohlc"))
       {
        wspl.send(JSON.stringify({ ticks: symbol, subscribe: 1 }));        
-      }   
+      }      
       else if (currentInterval !== "1 tick")    
       {
        wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType)));
@@ -315,7 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
          }
 
          if (data.msg_type === "ohlc" && data.ohlc)   
-         {
+         {    
           handleCandleLive(data.ohlc);
           return;
          }
