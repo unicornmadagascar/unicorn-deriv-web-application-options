@@ -296,7 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     wspl.onmessage = (msg) => {
        const data = JSON.parse(msg.data);
-       console.log('Data : ', data);
+       //console.log('Data : ', data);
        if (styleType(currentChartType) === "ticks")
        {
         if (data.msg_type === "tick" && data.tick)
