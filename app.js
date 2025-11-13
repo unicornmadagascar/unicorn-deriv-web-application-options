@@ -388,7 +388,6 @@ document.addEventListener("DOMContentLoaded", () => {
       currentSeries.update(newCandle);
     }
 
-
     // Mise à jour du prix courant
     Openpositionlines(currentSeries);
   }
