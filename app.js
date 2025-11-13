@@ -160,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
        el.classList.add("selected");
 
        // 🔹 Appelle ta fonction de souscription
-       subscribeSymbol(s.symbol,currentInterval,currentChartType);
+       subscribeSymbol(s.symbol,currentInterval,currentChartType);   
      });
 
      symbolList.appendChild(el);
@@ -345,8 +345,48 @@ document.addEventListener("DOMContentLoaded", () => {
     Openpositionlines(currentSeries);  
   }
 
+  function handleCandles(candlesArray) {
+    // Chargement initial : 500 bougies
+    const formatted = candlesArray.map(c => ({
+      time: Number(c.open_time),
+      open: Number(c.open),
+      high: Number(c.high),
+      low: Number(c.low),
+      close: Number(c.close)
+    }));
+    currentSeries.setData(formatted);
+    candlesData = formatted;
+    chart.timeScale().fitContent();
+  }
+
+  function handleCandleLive(ohlc) {
+    // Bougie temps réel (une seule)
+    const newCandle = {
+      time: Number(ohlc.open_time),
+      open: Number(ohlc.open),
+      high: Number(ohlc.high),
+      low: Number(ohlc.low),
+      close: Number(ohlc.close)
+    };
+
+    if (!candlesData.length) return;
+
+    const last = candlesData[candlesData.length - 1];
+    if (newCandle.time === last.time) {
+      candlesData[candlesData.length - 1] = newCandle;
+      currentSeries.update(newCandle);
+    } else if (newCandle.time > last.time) {
+      candlesData.push(newCandle);
+      if (candlesData.length > 600) candlesData.shift();
+      currentSeries.update(newCandle);
+    }
+
+    // Mise à jour du prix courant
+    Openpositionlines(currentSeries);
+  }
+
   // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
-  function Openpositionlines(areaSeries) {
+  function Openpositionlines(currentSeries) {
 
     if (wsOpenLines === null)
     {
@@ -381,7 +421,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (c.status === "sold") {
           const id = c.contract_id;
           if (priceLines4openlines[id]) {
-            try { areaSeries.removePriceLine(priceLines4openlines[id]); } catch {}
+            try { currentSeries.removePriceLine(priceLines4openlines[id]); } catch {}
             delete priceLines4openlines[id];
             console.log(`❌ Ligne supprimée pour contrat ${id}`);
           }
@@ -397,7 +437,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const type = c.contract_type;
           const color = type === "MULTUP" ? "#00ff80" : "#ff4d4d";      
 
-          const line = areaSeries.createPriceLine({
+          const line = currentSeries.createPriceLine({
             price: entryPrice,
             color,
             lineWidth: 2,
