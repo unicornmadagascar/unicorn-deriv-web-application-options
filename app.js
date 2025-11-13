@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const tokencalendar = document.getElementById("tokencalendar");
   const statusEl = document.getElementById('status');
   const modal = document.getElementById("chartTypeModal");
-  const openModalBtn = document.getElementById("openChartModal");
+  const openModalBtn = document.getElementById("openPopup");  
   const closeModalBtn = document.getElementById("closeModal");
 
   let totalPL = 0; // cumul des profits et pertes
