@@ -177,10 +177,6 @@ document.addEventListener("DOMContentLoaded", () => {
         textColor: "#333",
         background: { type: "solid", color: "#fff" },
       },
-      grid: {
-        vertLines: { color: "#f0f0f0" },
-        horzLines: { color: "#f0f0f0" },
-      },
       timeScale: { timeVisible: true, secondsVisible: true },   
     });
 
@@ -203,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     } else if (currentChartType === "line") {
       currentSeries = chart.addLineSeries({
-        color: "#2962FF",
+        color: "#2962FF",   
         lineWidth: 2,
       });
     }
@@ -214,7 +210,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     positionGauges();
 
-    return currentChartType;
   }
 
   function styleType(currentChartType)
