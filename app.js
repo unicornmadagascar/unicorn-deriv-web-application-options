@@ -288,7 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (currentInterval === "1 tick" && (currentChartType !== "candlestick" || currentChartType !== "hollow" || currentChartType !== "ohlc"))
       {
        wspl.send(JSON.stringify({ ticks: symbol, subscribe: 1 }));        
-      }      
+      }        
       else if (currentInterval !== "1 tick")    
       {
        wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType)));
@@ -298,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wspl.onmessage = (msg) => {
        const data = JSON.parse(msg.data);
        console.log('Data : ', data);
-       if (styleType(currentChartType).trim() === "ticks" && (currentChartType !== "candlestick" || currentChartType !== "hollow" || currentChartType !== "ohlc"))
+       if (styleType(currentChartType) === "ticks" && (currentChartType !== "candlestick" || currentChartType !== "hollow" || currentChartType !== "ohlc"))
        {
         if (data.msg_type === "tick" && data.tick)
          {
@@ -306,7 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
          }
        }
-       else if (styleType(currentChartType).trim() === "candles")
+       else if (styleType(currentChartType) === "candles")
        {
          if (data.msg_type === "history" && data.candles)
          {
