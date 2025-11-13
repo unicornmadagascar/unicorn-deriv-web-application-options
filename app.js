@@ -376,14 +376,18 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!candlesData.length) return;
 
     const last = candlesData[candlesData.length - 1];
+
     if (newCandle.time === last.time) {
+      // Met à jour la bougie actuelle
       candlesData[candlesData.length - 1] = newCandle;
       currentSeries.update(newCandle);
     } else if (newCandle.time > last.time) {
+      // Nouvelle bougie
       candlesData.push(newCandle);
       if (candlesData.length > 600) candlesData.shift();
       currentSeries.update(newCandle);
     }
+
 
     // Mise à jour du prix courant
     Openpositionlines(currentSeries);
