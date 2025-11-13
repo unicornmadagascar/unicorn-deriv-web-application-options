@@ -276,7 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!wspl || wspl.readyState === WebSocket.CLOSED) {
       pendingSubscribe = symbol;
-      connectDeriv();
+      connectDeriv();    
     }
 
     if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {
