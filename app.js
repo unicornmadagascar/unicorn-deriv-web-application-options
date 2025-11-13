@@ -2587,7 +2587,7 @@ window.addEventListener("error", function (e) {
   });
 
   // === Changement de symbole  ===
-  document.querySelectorAll(".symbol-item").forEach(btn => {
+  document.querySelectorAll(".symbol-item").forEach(btn => {   
     btn.addEventListener("click", e => {
       currentSymbol = e.target.dataset.symbol;
       console.log("Current Symbol:", currentSymbol);
