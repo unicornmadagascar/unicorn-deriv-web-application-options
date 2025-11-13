@@ -283,6 +283,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }        
       else if (currentInterval !== "1 tick")           
       {
+       wspl.send(JSON.stringify({ forget_all: "candles" }));  
        wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType)));
       }
     }
@@ -600,9 +601,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }  
 
         // Flux temps réel (mise à jour d'une seule candle)
-        /*if (data.msg_type === "ohlc" && data.ohlc) {
+        if (data.msg_type === "ohlc" && data.ohlc) {
           handleCandleLive(data.ohlc); // une seule bougie mise à jour
-        }*/
+          return;
+        }  
 
         // other messages are ignored here  
       } catch (err) {  
