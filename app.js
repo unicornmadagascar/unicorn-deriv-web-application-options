@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- NEW: current symbol & pending subscribe ---
   //let currentSymbol = null;    
   let pendingSubscribe = null;
-  let authorized = false;   
+  let authorized = false;      
   // Exemple de données
 
   const SYMBOLS = [
