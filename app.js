@@ -2581,7 +2581,7 @@ window.addEventListener("error", function (e) {
       document.querySelectorAll(".interval-btn").forEach(b => b.classList.remove("active"));
 
       // Activer celui qu'on vient de cliquer
-      e.target.classList.add("active");
+      e.target.classList.add("active");    
     });
   });
 
