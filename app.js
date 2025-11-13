@@ -169,12 +169,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- INIT CHART ---
   function initChart(currentChartType) {
-    try { if (chart) chart.remove(); } catch (e) {}
+    try { if (chart) chart.remove(); } catch (e) {}   
     chartInner.innerHTML = "";
 
     chart = LightweightCharts.createChart(chartInner, {
-      width: chartInner.clientWidth,
-      height: chartInner.clientHeight,
       layout: {
         textColor: "#333",
         background: { type: "solid", color: "#fff" },
@@ -320,7 +318,7 @@ document.addEventListener("DOMContentLoaded", () => {
          }
        }
     }; */  
-  }
+  }   
 
   // --- TICK HANDLER ---
   function handleTick(tick) {
