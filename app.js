@@ -222,6 +222,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function styleType(currentChartType)
   {
    
+  if (!currentChartType || currentChartType===null) return;
+
    if (currentChartType === "candlestick" || currentChartType === "Hollow" || currentChartType === "ohlc") {style_type = "candles";}
    else {style_type = "ticks";}
     
@@ -234,7 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
    if (!currentSymbol || currentSymbol===null) return;
 
    const payload4subscription = {
-     tick_history: currentSymbol || "R_75",
+     tick_history: currentSymbol || "R_75",  
      adjust_start_time: 1,    
      count: 1000,
      end: "latest",
@@ -259,7 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
     case "1 hour": return 3600;
     case "2 hours": return 7200;
     case "4 hours": return 14400;
-    case "8 hours": return 2880;
+    case "8 hours": return 2880;   
     default: return 86400;
    }
   }
