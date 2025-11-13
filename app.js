@@ -287,33 +287,6 @@ document.addEventListener("DOMContentLoaded", () => {
        wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,"candles")));
       }
     }
-
-    /*wspl.onmessage = (msg) => {
-       const data = JSON.parse(msg.data);
-       //console.log('Data : ', data);
-       if (styleType(currentChartType) === "ticks")
-       {
-        if (data.msg_type === "tick" && data.tick)
-         {
-          handleTick(data.tick);
-          return;   
-         }
-       }
-       else if (styleType(currentChartType) === "candles")     
-       {   
-         if (data.msg_type === "history" && data.candles)
-         {
-          handleCandles(data.candles);
-          return;
-         }
-
-         if (data.msg_type === "ohlc" && data.ohlc)   
-         {    
-          handleCandleLive(data.ohlc);
-          return;
-         }
-       }
-    }; */  
   }   
 
   // --- TICK HANDLER ---
@@ -592,7 +565,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // tick handling
-        /*if (data.msg_type === "tick" && data.tick) {
+        if (data.msg_type === "tick" && data.tick) {
           handleTick(data.tick);
           return;
         }
@@ -607,8 +580,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.msg_type === "ohlc" && data.ohlc) {
           handleCandleLive(data.ohlc); // une seule bougie mise à jour
           return;
-        }  */
-
+        } 
+ 
         // other messages are ignored here  
       } catch (err) {  
         console.error("WS parse err", err);      
