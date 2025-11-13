@@ -286,7 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (currentInterval === "1 tick" && (currentChartType !== "candlestick" || currentChartType !== "hollow" || currentChartType !== "ohlc"))
       {
        wspl.send(JSON.stringify({ forget_all: ticks }));  
-       wspl.send(JSON.stringify({ ticks: symbol, subscribe: 1 }));        
+       wspl.send(JSON.stringify({ ticks: symbol }));        
       }        
       else if (currentInterval !== "1 tick")    
       {
@@ -511,7 +511,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function appendGauge(container, gaugeDiv, labelText) {
     const wrapper = document.createElement("div");
-    wrapper.style.display = "flex";
+    wrapper.style.display = "flex";   
     wrapper.style.flexDirection = "column";
     wrapper.style.alignItems = "center";
     wrapper.style.width = "140px";
@@ -596,13 +596,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // tick handling
-        /*if (data.msg_type === "tick" && data.tick) {
+        if (data.msg_type === "tick" && data.tick) {
           handleTick(data.tick);
           return;
         }
 
         // Chargement initial (historique)
-        if (data.msg_type === "candles" && data.candles) {
+        /*if (data.msg_type === "candles" && data.candles) {
           handleCandles(data.candles);
           return;
         }
@@ -612,9 +612,9 @@ document.addEventListener("DOMContentLoaded", () => {
           handleCandleLive(data.ohlc); // une seule bougie mise à jour
         }*/
 
-        // other messages are ignored here
-      } catch (err) {
-        console.error("WS parse err", err);    
+        // other messages are ignored here  
+      } catch (err) {  
+        console.error("WS parse err", err);      
       }
     };
 
