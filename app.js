@@ -2573,15 +2573,16 @@ window.addEventListener("error", function (e) {
 
   // === Changement d’intervalle ===
   document.querySelectorAll(".interval-btn").forEach(btn => {
-    btn.addEventListener("click", e => {
-      currentInterval = e.target.dataset.interval;
-      console.log("Current Interval:", currentInterval);   
+      btn.addEventListener("click", e => {
+     // Récupère le texte du bouton (ex: "1 minute")
+     currentInterval = e.target.textContent.trim();
+     console.log("⏱️ Current Interval:", currentInterval);
 
-      // Retirer "active" sur tous
-      //document.querySelectorAll(".interval-btn").forEach(b => b.classList.remove("active"));
+     // Supprime la classe active sur tous les boutons
+     document.querySelectorAll(".interval-btn").forEach(b => b.classList.remove("active"));
 
-      // Activer celui qu'on vient de cliquer
-      //e.target.classList.add("active");    
+     // Ajoute la classe active au bouton cliqué
+     e.target.classList.add("active");
     });
   });
 
