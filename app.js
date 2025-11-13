@@ -618,7 +618,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     wspl.onclose = () => {
-      connectBtn.textContent = "Connect";
+      connectBtn.textContent = "Connect";    
       accountInfo.textContent = "";
       wspl = null;
       authorized = false;
