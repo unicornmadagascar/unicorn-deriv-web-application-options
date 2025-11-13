@@ -258,7 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- SUBSCRIBE SYMBOL ---
-  function subscribeSymbol(symbol,currentInterval,currentChartType) {
+  function subscribeSymbol(symbol,currentInterval,currentChartType) {    
     if (wspl === null) {
       pendingSubscribe = symbol;
       return;
