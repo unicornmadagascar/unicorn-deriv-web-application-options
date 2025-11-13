@@ -230,7 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
    if (!currentSymbol || currentSymbol===null) return;
 
    const payload4subscription = {
-     tick_history: currentSymbol || "R_75",  
+     tick_history: "R_75",  
      adjust_start_time: 1,    
      count: 700,
      end: "latest",
