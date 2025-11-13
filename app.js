@@ -106,6 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let structresponse = [];
   let datapercent = {};
   let response;
+  let style_type;
   //------
   let candleSeries;
   let currentSymbol = null;
@@ -159,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
        el.classList.add("selected");
 
        // 🔹 Appelle ta fonction de souscription
-       subscribeSymbol(s.symbol);
+       subscribeSymbol(s.symbol,currentInterval,currentChartType);
      });
 
      symbolList.appendChild(el);
@@ -167,7 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- INIT CHART ---
-  function initChart() {
+  function initChart(currentChartType) {
     try { if (chart) chart.remove(); } catch (e) {}
     chartInner.innerHTML = "";
 
@@ -218,15 +219,60 @@ document.addEventListener("DOMContentLoaded", () => {
     return currentChartType;
   }
 
+  function styleType(currentChartType)
+  {
+   
+   if (currentChartType === "candlestick" || currentChartType === "Hollow" || currentChartType === "ohlc") {style_type = "candles";}
+   else {style_type = "ticks";}
+    
+      
+   return style_type;
+  }
+
+  function Payloadforsubscription(currentSymbol,currentInterval,currentChartType)
+  {
+   if (!currentSymbol || currentSymbol===null) return;
+
+   const payload4subscription = {
+     tick_history: currentSymbol || "R_75",
+     adjust_start_time: 1,
+     count: 1000,
+     end: "latest",
+     granularity: convertTF(currentInterval) || 60,
+     style: styleType(currentChartType),  
+     subscribe: 1
+   }
+
+   return payload4subscription;
+  }
+
+  function convertTF(currentInterval)  
+  {
+   switch (currentInterval) {
+    case "1 minute": return 60;
+    case "2 minutes": return 120;
+    case "3 minutes": return 180;
+    case "5 minutes": return 300;
+    case "10 minutes": return 600;
+    case "15 minutes": return 900;
+    case "30 minutes": return 1800;
+    case "1 hour": return 3600;
+    case "2 hours": return 7200;
+    case "4 hours": return 14400;
+    case "8 hours": return 2880;
+    default: return 86400;
+   }
+  }
+
   // --- SUBSCRIBE SYMBOL ---
-  function subscribeSymbol(symbol) {
+  function subscribeSymbol(symbol,currentInterval,currentChartType) {
     if (wspl === null) {
       pendingSubscribe = symbol;
       return;
     }
 
     currentSymbol = symbol;
-    initChart();
+    const reponsechart = initChart(currentChartType);
 
     if (!wspl || wspl.readyState === WebSocket.CLOSED) {
       pendingSubscribe = symbol;
@@ -234,19 +280,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {
-      wspl.send(JSON.stringify({ forget_all: "ticks" }));
-      wspl.send(JSON.stringify({ ticks: symbol }));
+      wspl.send(JSON.stringify({ forget_all: styleType(currentChartType).toString() }));
+      if (currentInterval === "1 tick" && (currentChartType !== "candlestick" || currentChartType !== "hollow" || currentChartType !== "ohlc"))
+      {
+       wspl.send(JSON.stringify(JSON.stringify({ ticks: symbol, subscribe: 1 })));
+      }
+      else if (currentInterval !== "1 tick")
+      {
+       wspl.send(JSON.stringify(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))));
+      }
     }
   }
 
-  // --- HANDLE TICK ---
+  // --- TICK HANDLER ---
   function handleTick(tick) {
+    // ensure tick belongs to current symbol (or accept if no currentSymbol)
     if (!tick || !tick.symbol) return;
     if (currentSymbol && tick.symbol !== currentSymbol) return;
 
     const quote = safe(Number(tick.quote));
+    // Deriv epoch is seconds; lightweight-charts accepts number seconds
     const epoch = Number(tick.epoch) || Math.floor(Date.now() / 1000);
 
+    // update lastPrices per symbol key (keep generic)
     const prev = lastPrices[tick.symbol] ?? quote;
     lastPrices[tick.symbol] = quote;
 
@@ -256,25 +312,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
     updateCircularGauges();
 
+    // update chartData and series
+    if (!currentSeries || !chart) return;
+
     const point = { time: epoch, value: quote };
 
-    if (!chart) return;
-    if (currentChartType === "candlestick") {
-      const candle = { time: epoch, open: quote, high: quote, low: quote, close: quote };
-      try { candleSeries.update(candle); } catch {}
-    } else if (areaSeries) {
-      if (!chartData.length) {
-        chartData.push(point);
-        try { areaSeries.setData(chartData); } catch {}
-      } else {
-        chartData.push(point);
-        if (chartData.length > 600) chartData.shift();
-        try { areaSeries.update(point); } catch {}
+    // if first data point, setData with small array to initialize
+    if (!chartData.length) {
+      chartData.push(point);
+      try {
+        currentSeries.setData(chartData);
+      } catch (e) {
+        // fallback: try update
+        try { currentSeries.update(point); } catch (err) {}
+      }
+    } else {
+      // append and update
+      chartData.push(point);
+      if (chartData.length > 600) chartData.shift();    
+
+      // Prefer update (faster); fallback to setData if update throws
+      try {
+        currentSeries.update(point);
+      } catch (e) {
+        try { currentSeries.setData(chartData); } catch (err) {}
       }
     }
 
-    try { chart.timeScale().fitContent(); } catch (e) {}
-    Openpositionlines(areaSeries || candleSeries);
+    // try to auto-fit time scale (safe)
+    try { chart.timeScale().fitContent(); } catch (e) {}   
+    
+    Openpositionlines(currentSeries);  
   }
 
   // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
@@ -460,6 +528,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.msg_type === "tick" && data.tick) {
           handleTick(data.tick);
           return;
+        }
+
+        // Chargement initial (historique)
+        if (data.msg_type === "candles" && data.candles) {
+          handleCandles(data.candles);
+          return;
+        }
+
+        // Flux temps réel (mise à jour d'une seule candle)
+        if (data.msg_type === "ohlc" && data.ohlc) {
+          handleCandleLive(data.ohlc); // une seule bougie mise à jour
         }
 
         // other messages are ignored here
@@ -2435,7 +2514,7 @@ window.addEventListener("error", function (e) {
   // startup
   initDerivAccountManager();
   displaySymbols();
-  initChart();
+  //initChart();
   initPLGauge();
   initTable();
   initHistoricalTable(); 
@@ -2564,9 +2643,8 @@ window.addEventListener("error", function (e) {
  document.querySelectorAll(".chart-type-btn").forEach(btn => {
     btn.addEventListener("click", e => {
       currentChartType = e.target.dataset.type;   
-      console.log("Current Chart Type : " +currentChartType);      
-      initChart();
-      if (currentSymbol) subscribeSymbol(currentSymbol);
+      console.log("Current Chart Type : " +currentChartType);     
+      initChart(currentChartType);
     });
   });  
 
