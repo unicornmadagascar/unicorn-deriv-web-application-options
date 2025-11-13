@@ -288,10 +288,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (currentInterval === "1 tick" && (currentChartType !== "candlestick" || currentChartType !== "hollow" || currentChartType !== "ohlc"))
       {
        wspl.send(JSON.stringify({ ticks: symbol, subscribe: 1 }));        
-      }
+      }   
       else if (currentInterval !== "1 tick")    
       {
-       wspl.send(JSON.stringify(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))));
+       wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType)));
       }
     }
 
