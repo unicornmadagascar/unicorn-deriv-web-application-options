@@ -216,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
   {
    if (!currentChartType || currentChartType===null) return;
 
-   if ((currentChartType === "candlestick" || currentChartType === "Hollow" || currentChartType === "ohlc")) {style_type = "candles";}
+   if ((currentChartType === "candlestick" || currentChartType === "hollow" || currentChartType === "ohlc")) {style_type = "candles";}
    else {style_type = "ticks";}
     
    return style_type;
