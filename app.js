@@ -272,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     currentSymbol = symbol;
-    const reponsechart = initChart(currentChartType);
+    initChart(currentChartType);
 
     if (!wspl || wspl.readyState === WebSocket.CLOSED) {
       pendingSubscribe = symbol;
@@ -2554,7 +2554,7 @@ window.addEventListener("error", function (e) {
   // startup
   initDerivAccountManager();
   displaySymbols();
-  //initChart();
+  initChart(currentChartType);
   initPLGauge();
   initTable();
   initHistoricalTable(); 
