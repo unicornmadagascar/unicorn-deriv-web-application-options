@@ -114,9 +114,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentInterval = "tick";  // par défaut
 
   // --- NEW: current symbol & pending subscribe ---
-  //let currentSymbol = null;
+  //let currentSymbol = null;    
   let pendingSubscribe = null;
-  let authorized = false;
+  let authorized = false;   
   // Exemple de données
 
   const SYMBOLS = [
