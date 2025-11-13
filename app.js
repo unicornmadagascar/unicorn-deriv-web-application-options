@@ -576,7 +576,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 300);
           }
 
-          displaySymbols();
+          displaySymbols(currentInterval,currentChartType);
           return;
         }
 
