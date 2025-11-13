@@ -276,12 +276,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       //wspl.send(JSON.stringify({ forget_all: styleType(currentChartType).toString() }));   
 
-      if (currentInterval === "1 tick")
+      if (currentInterval === "1 tick" && currentChartType !== "candlestick")
       {
        wspl.send(JSON.stringify({ forget_all: "ticks" }));    
        wspl.send(JSON.stringify({ ticks: symbol, subscribe: 1 }));          
       }        
-      else if (currentInterval !== "1 tick")    
+      else if (currentInterval !== "1 tick")           
       {
        wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType)));
       }
