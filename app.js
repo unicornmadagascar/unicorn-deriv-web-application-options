@@ -314,7 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
          }
 
-         if (data.msg_type === "ohlc" && data.ohlc)
+         if (data.msg_type === "ohlc" && data.ohlc)   
          {
           handleCandleLive(data.ohlc);
           return;
