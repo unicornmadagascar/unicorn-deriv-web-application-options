@@ -279,20 +279,20 @@ document.addEventListener("DOMContentLoaded", () => {
       if (currentInterval === "1 tick" && currentChartType !== "candlestick")
       {
        wspl.send(JSON.stringify({ forget_all: "ticks" }));        
-       wspl.send(JSON.stringify({ ticks: symbol, subscribe: 1 }));             
+       wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType)));            
       }        
-      else if (currentInterval !== "1 tick")           
+      else if (currentInterval !== "1 tick" && currentChartType === "candlestick")           
       {
-       //wspl.send(JSON.stringify({ forget_all: "candles" }));  
+       wspl.send(JSON.stringify({ forget_all: "candles" }));  
        wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType)));
       }
     }
 
-    wspl.onmessage = (msg) => {
+    /*wspl.onmessage = (msg) => {
        const data = JSON.parse(msg.data);
        //console.log('Data : ', data);
        if (styleType(currentChartType) === "ticks")
-       {   
+       {
         if (data.msg_type === "tick" && data.tick)
          {
           handleTick(data.tick);
@@ -313,7 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
          }
        }
-    };   
+    }; */  
   }   
 
   // --- TICK HANDLER ---
