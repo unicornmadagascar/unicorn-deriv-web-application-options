@@ -235,10 +235,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
    const payload4subscription = {
      tick_history: currentSymbol || "R_75",
-     adjust_start_time: 1,
+     adjust_start_time: 1,    
      count: 1000,
      end: "latest",
-     granularity: convertTF(currentInterval) || 60,
+     granularity: convertTF(currentInterval) || 60,   
      style: styleType(currentChartType),  
      subscribe: 1
    }
