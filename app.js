@@ -379,7 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
       close: Number(c.close)
     }));
     
-    if (!formatted.length) return; 
+    if (!formatted.length) return;    
 
     currentSeries.setData(formatted);
     candlesData = formatted;
