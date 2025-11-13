@@ -297,6 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     wspl.onmessage = (msg) => {
        const data = JSON.parse(msg.data);
+       console.log('Data : ', data);
        if (styleType(currentChartType).trim() === "ticks" && (currentChartType !== "candlestick" || currentChartType !== "hollow" || currentChartType !== "ohlc"))
        {
         if (data.msg_type === "tick" && data.tick)
@@ -307,7 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
        }
        else if (styleType(currentChartType).trim() === "candles")
        {
-         if (data.msg_type === "candles" && data.candles)
+         if (data.msg_type === "history" && data.candles)
          {
           handleCandles(data.candles);
           return;
