@@ -2581,8 +2581,8 @@ window.addEventListener("error", function (e) {
      // Supprime la classe active sur tous les boutons
      document.querySelectorAll(".interval-btn").forEach(b => b.classList.remove("active"));
 
-     // Ajoute la classe active au bouton cliqué
-     e.target.classList.add("active");
+     // Ajoute la classe active au bouton cliqué    
+     e.target.classList.add("active");   
     });
   });
 
