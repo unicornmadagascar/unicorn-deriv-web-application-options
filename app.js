@@ -272,15 +272,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     currentSymbol = symbol;
-    initChart(currentChartType);
+    const reponsechart = initChart(currentChartType);
+
+    if (!reponsechart.chart) return;
 
     if (!wspl || wspl.readyState === WebSocket.CLOSED) {
       pendingSubscribe = symbol;
-      connectDeriv();    
+      connectDeriv();
     }
 
     if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {
+
       wspl.send(JSON.stringify({ forget_all: styleType(currentChartType).toString() }));
+
       if (currentInterval === "1 tick" && (currentChartType !== "candlestick" || currentChartType !== "hollow" || currentChartType !== "ohlc"))
       {
        wspl.send(JSON.stringify(JSON.stringify({ ticks: symbol, subscribe: 1 })));
@@ -290,6 +294,32 @@ document.addEventListener("DOMContentLoaded", () => {
        wspl.send(JSON.stringify(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))));
       }
     }
+
+    wspl.onmessage = (msg) => {
+       const data = JSON.parse(msg.data);
+       if (styleType(currentChartType).trim() === "ticks" && (currentChartType !== "candlestick" || currentChartType !== "hollow" || currentChartType !== "ohlc"))
+       {
+        if (data.msg_type === "tick" && data.tick)
+         {
+          handleTick(data.tick);
+          return;
+         }
+       }
+       else if (styleType(currentChartType).trim() === "candles")
+       {
+         if (data.msg_type === "candles" && data.candles)
+         {
+          handleCandles(data.candles);
+          return;
+         }
+
+         if (data.msg_type === "ohlc" && data.ohlc)
+         {
+          handleCandleLive(data.ohlc);
+          return;
+         }
+       }
+    };
   }
 
   // --- TICK HANDLER ---
@@ -2682,7 +2712,7 @@ window.addEventListener("error", function (e) {
  // === Changement du type de graphique ===
  document.querySelectorAll(".chart-type-btn").forEach(btn => {
     btn.addEventListener("click", e => {
-      currentChartType = e.target.dataset.type;   
+      currentChartType = e.target.dataset.type.trim();   
       console.log("Current Chart Type : " +currentChartType);     
       initChart(currentChartType);
     });
@@ -2705,7 +2735,7 @@ window.addEventListener("error", function (e) {
   // === Changement de symbole  ===
   document.querySelectorAll(".symbol-item").forEach(btn => {   
     btn.addEventListener("click", e => {
-      currentSymbol = e.target.dataset.symbol;
+      currentSymbol = e.target.dataset.symbol.trim();
       console.log("Current Symbol:", currentSymbol);
     });
   });
