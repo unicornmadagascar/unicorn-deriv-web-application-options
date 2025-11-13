@@ -106,12 +106,12 @@ document.addEventListener("DOMContentLoaded", () => {
   let structresponse = [];
   let datapercent = {};
   let response;
-  let style_type;
+  let style_type = "ticks";
   //------
   let candleSeries;
   let currentSymbol = null;
   let currentChartType = "area"; // par défaut
-  let currentInterval = "tick";  // par défaut
+  let currentInterval = "1 tick";  // par défaut
 
   // --- NEW: current symbol & pending subscribe ---
   //let currentSymbol = null;    
@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
  
  // --- SYMBOLS ---
-  function displaySymbols() {
+  function displaySymbols(currentInterval,currentChartType) {
    symbolList.innerHTML = "";
 
    SYMBOLS.forEach(s => {
@@ -2584,7 +2584,7 @@ window.addEventListener("error", function (e) {
 
   // startup
   initDerivAccountManager();
-  displaySymbols();
+  displaySymbols(currentInterval,currentChartType);
   initChart(currentChartType);
   initPLGauge();
   initTable();
