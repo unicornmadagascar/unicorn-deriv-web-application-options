@@ -378,6 +378,9 @@ document.addEventListener("DOMContentLoaded", () => {
       low: Number(c.low),
       close: Number(c.close)
     }));
+    
+    if (!formatted.length) return; 
+
     currentSeries.setData(formatted);
     candlesData = formatted;
     chart.timeScale().fitContent();
