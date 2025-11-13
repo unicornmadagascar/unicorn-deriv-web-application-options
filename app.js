@@ -235,8 +235,8 @@ document.addEventListener("DOMContentLoaded", () => {
      count: 700,
      end: "latest",
      start: 1,
-     granularity: convertTF(currentInterval) || 60,   
-     style: styleType(currentChartType),  
+     granularity: 60,                                  // convertTF(currentInterval) ||
+     style: "candles",                                 // styleType(currentChartType)
      subscribe: 1
    }
 
