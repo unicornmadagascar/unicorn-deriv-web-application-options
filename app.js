@@ -288,7 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    /*wspl.onmessage = (msg) => {
+    wspl.onmessage = (msg) => {
        const data = JSON.parse(msg.data);
        //console.log('Data : ', data);
        if (styleType(currentChartType) === "ticks")
@@ -313,7 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
          }
        }
-    }; */  
+    };   
   }   
 
   // --- TICK HANDLER ---
@@ -592,7 +592,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // tick handling
-        if (data.msg_type === "tick" && data.tick) {
+        /*if (data.msg_type === "tick" && data.tick) {
           handleTick(data.tick);
           return;
         }
@@ -607,7 +607,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.msg_type === "ohlc" && data.ohlc) {
           handleCandleLive(data.ohlc); // une seule bougie mise à jour
           return;
-        }  
+        }  */
 
         // other messages are ignored here  
       } catch (err) {  
