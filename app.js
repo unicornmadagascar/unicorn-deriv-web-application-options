@@ -294,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    wspl.onmessage = (msg) => {
+    /*wspl.onmessage = (msg) => {
        const data = JSON.parse(msg.data);
        //console.log('Data : ', data);
        if (styleType(currentChartType) === "ticks")
@@ -319,7 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
          }
        }
-    };
+    }; */  
   }
 
   // --- TICK HANDLER ---
