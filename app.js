@@ -2573,10 +2573,15 @@ window.addEventListener("error", function (e) {
 
   // === Changement d’intervalle ===
   document.querySelectorAll(".interval-btn").forEach(btn => {
-    btn.addEventListener("click", e => {   
-      currentInterval = String(e.target.dataset.interval);
-      console.log("⏱ Intervalle changé :", currentInterval);
-      // Ici, tu peux ajuster la fréquence des ticks ou fetcher des données historiques selon Deriv
+    btn.addEventListener("click", e => {
+      currentInterval = e.target.dataset.interval;
+      console.log("Current Interval:", currentInterval);
+
+      // Retirer "active" sur tous
+      document.querySelectorAll(".interval-btn").forEach(b => b.classList.remove("active"));
+
+      // Activer celui qu'on vient de cliquer
+      e.target.classList.add("active");
     });
   });
 
