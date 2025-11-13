@@ -272,9 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     currentSymbol = symbol;
-    const reponsechart = initChart(currentChartType);
-
-    if (!reponsechart.chart) return;
+    initChart(currentChartType);
 
     if (!wspl || wspl.readyState === WebSocket.CLOSED) {
       pendingSubscribe = symbol;    
