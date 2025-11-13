@@ -279,7 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
       connectDeriv();
     }    
 
-    if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {
+    if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {   
 
       wspl.send(JSON.stringify({ forget_all: styleType(currentChartType).toString() }));
 
