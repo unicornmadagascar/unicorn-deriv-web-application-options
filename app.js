@@ -585,7 +585,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // other messages are ignored here  
       } catch (err) {  
         console.error("WS parse err", err);      
-      }
+      }   
     };
 
     wspl.onclose = () => {
