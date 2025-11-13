@@ -107,6 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let datapercent = {};
   let response;
   let style_type = "ticks";
+  let candlesData = [];
   //------
   let candleSeries;
   let currentSymbol = null;
@@ -177,7 +178,9 @@ document.addEventListener("DOMContentLoaded", () => {
         textColor: "#333",
         background: { type: "solid", color: "#fff" },
       },
+      grid: { vertLines: { color: "rgba(255,255,255,0.05)" }, horzLines: { color: "rgba(255,255,255,0.05)" } },
       timeScale: { timeVisible: true, secondsVisible: true },   
+      crosshair: { mode: 1 }
     });
 
     // === Type de graphique dynamique ===
@@ -345,7 +348,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function handleCandles(candlesArray) {
     // Chargement initial : 500 bougies
-    const formatted = candlesArray.map(c => ({
+    candlesData = candlesArray.map(c => ({
       time: Number(c.open_time),
       open: Number(c.open),
       high: Number(c.high),
@@ -354,9 +357,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }));
     
     if (!formatted.length) return;    
-
-    currentSeries.setData(formatted);
-    candlesData = formatted;
+    
+    candlesData = candlesData.slice(-500);
+    currentSeries.setData(candlesData);
     chart.timeScale().fitContent();
   }
 
