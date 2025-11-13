@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const statusEl = document.getElementById('status');
   const modal = document.getElementById("chartTypeModal");
   const openModalBtn = document.getElementById("openPopup");  
-  const closeModalBtn = document.getElementById("closeModal");
+  const closeModalBtn = document.getElementById("closeModal");    
 
   let totalPL = 0; // cumul des profits et pertes
   let automationRunning = false;
