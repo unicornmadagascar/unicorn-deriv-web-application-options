@@ -610,7 +610,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Chargement initial (historique)
-        if (data.msg_type === "candles" && data.candle) {
+        if (data.msg_type === "candle" && data.candle) {
           handleCandles(data.candle);   
           return;
         }  
