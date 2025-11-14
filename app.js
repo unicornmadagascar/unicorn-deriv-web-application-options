@@ -297,7 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    wspl.onmessage = (msg) => {
+    wspl.onmessage = (msg) => {   
 
            const data = JSON.parse(msg.data);
         
