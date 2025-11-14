@@ -628,7 +628,14 @@ document.addEventListener("DOMContentLoaded", () => {
             setTimeout(() => {
                 if (wspl && wspl.readyState === WebSocket.OPEN) {   
                   wspl.send(JSON.stringify({ forget_all: "candles" }));  
-                  wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))); 
+                  wspl.send(JSON.stringify({
+                     tick_history: currentSymbol,
+                     adjust_start_time : 1,
+                     end: "latest",
+                     start: 1,
+                     granularity: 60,
+                     style: "candles"
+                  })); 
                   currentSymbol = pendingSubscribe;
                   pendingSubscribe = null;
                 }
