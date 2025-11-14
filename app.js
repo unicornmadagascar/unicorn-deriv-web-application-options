@@ -295,7 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
                      subscribe: 1  
         })); */
       }
-    }
+    }   
 
     /*wspl.onmessage = (msg) => {   
 
