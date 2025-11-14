@@ -262,7 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- SUBSCRIBE SYMBOL ---
   function subscribeSymbol(symbol,currentInterval,currentChartType) {    
-    if (wspl__ct === null) {
+    if (wspl === null) {
       pendingSubscribe = symbol;
       return;
     }
@@ -270,23 +270,23 @@ document.addEventListener("DOMContentLoaded", () => {
     currentSymbol = symbol;
     initChart(currentChartType);
 
-    if (!wspl__ct || wspl__ct.readyState === WebSocket.CLOSED) {
+    if (!wspl || wspl.readyState === WebSocket.CLOSED) {
       pendingSubscribe = symbol;    
       connectDeriv();
     }        
 
-    if (wspl__ct && wspl__ct.readyState === WebSocket.OPEN && authorized) {        
+    if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {        
 
       if (currentInterval === "1 tick" && currentChartType !== "candlestick")
       {
-       wspl__ct.send(JSON.stringify({ forget_all: "ticks" }));        
-       wspl__ct.send(JSON.stringify({ticks : currentSymbol, subscribe: 1}));            
+       wspl.send(JSON.stringify({ forget_all: "ticks" }));        
+       wspl.send(JSON.stringify({ticks : currentSymbol, subscribe: 1}));            
       }           
       else if (currentInterval !== "1 tick" && currentChartType === "candlestick")           
       {
-       wspl__ct.send(JSON.stringify({ forget_all: "candles" }));        
+       wspl.send(JSON.stringify({ forget_all: "candles" }));        
        //wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))); 
-       wspl__ct.send(JSON.stringify({
+       wspl.send(JSON.stringify({
                      tick_history: currentSymbol,
                      adjust_start_time : 1,
                      count: 500,
@@ -298,11 +298,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }   
 
-    wspl__ct.onmessage = (msg) => {   
+    wspl.onmessage = (msg) => {   
 
         const data = JSON.parse(msg.data);
-        if (data.msg_type === "candles" && data.candles) {   
-          handleCandles(data.candles);   
+        if (data.msg_type === "candle" && data.candle) {   
+          handleCandles(data.candle);   
           console.log("Candle Handling here.");
           return;
         }  
@@ -315,7 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }     
     };    
 
-    wspl__ct.onclose = () => {
+    wspl.onclose = () => {
          console.log("Socket Closed");
          setTimeout(connectDeriv,200);
     }; 
