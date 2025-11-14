@@ -292,27 +292,35 @@ document.addEventListener("DOMContentLoaded", () => {
                      end: "latest",
                      start: 1,      
                      granularity: 60,          // convertTF(currentInterval)
-                     style: "candles",
-                     subscribe: 1  
+                     style: "candles"  
         })); 
       }
     }
 
     wspl.onmessage = (msg) => {
        const data = JSON.parse(msg.data);
-       if (currentInterval !== "1 tick" && currentChartType === "candlestick")
-       {
-          if (data.msg_type === "candles" && data.candles){
-             handleCandles(data.candles);
-             return;
-          }
 
-          if (data.msg_type === "ohlc" && data.ohlc)
-          {
-            handleCandleLive(data.ohlc);
-            return;
-          }
-      } 
+       try {
+         if (currentInterval !== "1 tick" && currentChartType === "candlestick")
+         {
+           if (data.msg_type === "candles" && data.candles){
+              handleCandles(data.candles);
+              return;
+           }
+
+           if (data.msg_type === "ohlc" && data.ohlc)
+           {
+             handleCandleLive(data.ohlc);
+             return;
+           }
+         } 
+       }
+       catch (e)
+       {
+         console.log('error : ',e.description);
+         setTimeout(connectDeriv,200);
+       }
+       
     };
 
     wspl.onclose = () => {
