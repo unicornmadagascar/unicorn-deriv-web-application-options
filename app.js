@@ -624,8 +624,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           }
           else if (currentInterval !== "1 tick" && currentChartType === "candlestick")
-          {
-            
+          {          
             setTimeout(() => {
                 if (wspl && wspl.readyState === WebSocket.OPEN) {   
                   wspl.send(JSON.stringify({ forget_all: "candles" }));  
@@ -635,7 +634,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }, 300);
           }
-
+  
           displaySymbols(currentInterval,currentChartType);
           return;
         }
