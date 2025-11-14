@@ -269,37 +269,37 @@ document.addEventListener("DOMContentLoaded", () => {
     currentSymbol = symbol;
     initChart(currentChartType);
 
-    if (wspl__ct === null)
+    if (wspl === null)
     {
      authorized = false;
-     wspl__ct = new WebSocket(WS_URL);
-     wspl__ct.onopen=()=>{ wspl__ct.send(JSON.stringify({ authorize: TOKEN })); };
+     wspl = new WebSocket(WS_URL);
+     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
     }
   
-    if (wspl__ct && (wspl__ct.readyState === WebSocket.OPEN || wspl__ct.readyState === WebSocket.CONNECTING))
+    if (wspl && (wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING))
     {
-     wspl__ct.onopen=()=>{ wspl__ct.send(JSON.stringify({ authorize: TOKEN })); };
+     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wspl__ct && (wspl__ct.readyState === WebSocket.CLOSED || wspl__ct.readyState === WebSocket.CLOSING))
+    if (wspl && (wspl.readyState === WebSocket.CLOSED || wspl.readyState === WebSocket.CLOSING))
     {
-      wspl__ct = new WebSocket(WS_URL);
-      wspl__ct.onopen=()=>{ wspl__ct.send(JSON.stringify({ authorize: TOKEN })); };
+      wspl = new WebSocket(WS_URL);
+      wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    wspl__ct.onmessage = (msg) => {   
+    wspl.onmessage = (msg) => {   
        
      const data = JSON.parse(msg.data);
       try {
         
-        if (currentInterval === "1 tick" && currentChartType !== "candlestick") return;          
+        if (currentChartType !== "candlestick") return;          
         
         // authorize response
         if (data.msg_type === "authorize" && data.authorize) {
           authorized = true;
-          wspl__ct.send(JSON.stringify({ forget_all: "candles" }));        
+          wspl.send(JSON.stringify({ forget_all: "candles" }));        
           //wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))); 
-          wspl__ct.send(JSON.stringify({  
+          wspl.send(JSON.stringify({  
                      tick_history: symbol,
                      adjust_start_time : 1,
                      count: 500,
@@ -329,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }    
     };    
 
-    wspl__ct.onclose = () => {
+    wspl.onclose = () => {
          console.log("Socket Closed");
     }; 
   }   
@@ -351,7 +351,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {        
 
-      if (currentInterval !== "1 tick" && currentChartType === "candlestick") return;
+      if (currentChartType === "candlestick") return;
       
       wspl.send(JSON.stringify({ forget_all: "ticks" }));        
       wspl.send(JSON.stringify({ticks : currentSymbol}));            
