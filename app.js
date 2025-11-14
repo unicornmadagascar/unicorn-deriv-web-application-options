@@ -635,7 +635,7 @@ document.addEventListener("DOMContentLoaded", () => {
                      end: "latest",
                      start: 1,      
                      granularity: 60,
-                     style: "candles"
+                     style: "candles"   
                   })); 
                   currentSymbol = pendingSubscribe;
                   pendingSubscribe = null;
