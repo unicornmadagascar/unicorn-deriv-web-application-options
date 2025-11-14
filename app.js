@@ -295,7 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function handleTick(tick) {
     // ensure tick belongs to current symbol (or accept if no currentSymbol)
     if (!tick || !tick.symbol) return;
-    if (currentSymbol && tick.symbol !== currentSymbol) return;
+    if (currentSymbol && tick.symbol !== currentSymbol) return;  
 
     const quote = safe(Number(tick.quote));
     // Deriv epoch is seconds; lightweight-charts accepts number seconds
