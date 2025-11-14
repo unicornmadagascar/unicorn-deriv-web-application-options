@@ -344,83 +344,113 @@ document.addEventListener("DOMContentLoaded", () => {
     Openpositionlines(currentSeries);  
   }
 
+  // ======= HANDLE INITIAL CANDLES (tableau) =======
   function handleCandles(candlesArray) {
-    if (!candlesArray || !Array.isArray(candlesArray) || !candlesArray.length) {
-      console.warn("Aucune donnée de bougies reçue");
-      return;
-    }
-
-    // Chargement initial : 500 bougies max
-    candlesData = candlesArray
-      .map(c => ({
-        time: Number(c.open_time),
-        open: Number(c.open),
-        high: Number(c.high),
-        low: Number(c.low),
-        close: Number(c.close)
-      }))
-      .filter(c =>
-        c.time &&
-        !isNaN(c.open) &&
-        !isNaN(c.high) &&
-        !isNaN(c.low) &&
-       !isNaN(c.close)
-      );
-
-    if (!candlesData.length) {
-      console.warn("Données OHLC invalides");
-      return;
-    }
-
-    candlesData = candlesData.slice(-500);
-
     try {
+      if (!candlesArray || !Array.isArray(candlesArray) || !candlesArray.length) {
+        console.warn('[handleCandles] Pas de candles valides reçues', candlesArray);
+        return;
+      }
+
+      // formater + filtrer les entrées invalides
+      const formatted = candlesArray
+        .map(formatCandleRaw)
+        .filter(c => c !== null);
+
+      if (!formatted.length) {
+        console.warn('[handleCandles] Après filtrage, aucune candle valide');
+        return;
+      }
+
+      // garder les 500 dernières
+      candlesData = formatted.slice(-500);
+
+      // setData une seule fois au chargement initial
+      if (!currentSeries) {
+        console.error('[handleCandles] currentSeries non initialisée');
+        return;
+      }
+
       currentSeries.setData(candlesData);
       chart.timeScale().fitContent();
-    } catch (e) {
-      console.error("Erreur setData:", e);
+
+      // mettre ligne prix courant sur la dernière close
+      const last = candlesData[candlesData.length - 1];
+
+      console.log('[handleCandles] Chargement initial OK —', candlesData.length, 'candles');
+    } catch (err) {
+      console.error('[handleCandles] Exception:', err);
     }
+
+    Openpositionlines(currentSeries); 
   }
 
+  // ======= HANDLE LIVE OHLC (une seule bougie en mise à jour) =======
   function handleCandleLive(ohlc) {
-    if (!ohlc) return;
+    try {
+      if (!ohlc) return;
+      if (!candlesData) candlesData = [];
 
-    const newCandle = {
-      time: Number(ohlc.open_time),
-      open: Number(ohlc.open),
-      high: Number(ohlc.high),
-      low: Number(ohlc.low),
-      close: Number(ohlc.close)
-    };
+      const newCandle = formatCandleRaw(ohlc);
+      if (!newCandle) {
+        console.warn('[handleCandleLive] candle invalide', ohlc);
+        return;
+      }
+
+      // si pas d'historique local, on initialise par setData d'une seule candle (peu probable)
+      if (!candlesData.length) {
+        candlesData.push(newCandle);
+        currentSeries.setData(candlesData);
+        return;
+      }
+
+      const last = candlesData[candlesData.length - 1];
+
+      if (newCandle.time === last.time) {
+        // mise à jour de la bougie courante
+        candlesData[candlesData.length - 1] = newCandle;
+      } else if (newCandle.time > last.time) {
+        // nouvelle bougie complète
+        candlesData.push(newCandle);
+        // garder un buffer raisonnable
+        if (candlesData.length > 600) candlesData.shift();
+      } else {
+        // message hors ordre (anciennes données) -> ignorer
+        console.warn('[handleCandleLive] candle time <= last.time, ignored', newCandle.time, '<=', last.time);
+        return;
+      }
+
+      // NOTE: update() accepte un point (ou setData un tableau) — on utilise update
+      try {
+        currentSeries.update(newCandle);
+      } catch (e) {
+        // fallback: si update échoue, resynchroniser par setData
+        console.warn('[handleCandleLive] update failed, fallback to setData', e);
+        currentSeries.setData(candlesData);
+      }
+    } catch (err) {
+      console.error('[handleCandleLive] Exception:', err);
+    }
+
+    Openpositionlines(currentSeries); 
+  }
+  
+  // ======= UTIL: nettoyer et formater une candle brute ======
+  function formatCandleRaw(raw) {
+    if (!raw) return null;
+    const time = Number(raw.open_time ?? raw.time ?? raw.epoch); // différentes APIS
+    const open = Number(raw.open);
+    const high = Number(raw.high);
+    const low  = Number(raw.low);
+    const close= Number(raw.close);
 
     if (
-      !newCandle.time ||
-      [newCandle.open, newCandle.high, newCandle.low, newCandle.close].some(isNaN)
+      !time || isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close)
     ) {
-      console.warn("Candle temps réel invalide:", newCandle);
-      return;
+      return null;
     }
 
-    if (!candlesData || !candlesData.length) return;
-
-    const last = candlesData[candlesData.length - 1];
-
-    if (newCandle.time === last.time) {
-      // Mise à jour de la bougie actuelle
-      candlesData[candlesData.length - 1] = newCandle;
-    } else if (newCandle.time > last.time) {
-      // Nouvelle bougie
-      candlesData.push(newCandle);
-      if (candlesData.length > 600) candlesData.shift();
-    }
-
-    try {
-      currentSeries.update(newCandle);
-    } catch (e) {
-      console.error("Erreur update candle:", e);
-    }
-
-    Openpositionlines(currentSeries);
+    return { time, open, high, low, close };
   }
 
   // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
@@ -602,15 +632,15 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        // tick handling
+        // tick handling  
         if (data.msg_type === "tick" && data.tick) {
           handleTick(data.tick);
           return;
         }
 
         // Chargement initial (historique)
-        if (data.msg_type === "candle" && data.candle) {
-          handleCandles(data.candle);   
+        if (data.msg_type === "candles" && data.candles) {
+          handleCandles(data.candles);   
           return;
         }  
 
@@ -2748,6 +2778,17 @@ window.addEventListener("error", function (e) {
       console.log("Current Symbol:", currentSymbol);
     });
   });
+
+  // ======= DEBUG HELPERS (optionnel) =======
+  // Exposer dans console pour tests manuels
+  window._debug = {
+    candlesData,
+    handleCandles,
+    handleCandleLive,
+    Openpositionlines,
+    currentSeries,
+    chart
+  };
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
