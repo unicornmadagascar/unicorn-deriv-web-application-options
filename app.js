@@ -618,7 +618,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   wspl.send(JSON.stringify({ forget_all: "ticks" }));  
                   wspl.send(JSON.stringify({ ticks: pendingSubscribe }));   
                   currentSymbol = pendingSubscribe;
-                  pendingSubscribe = null;
+                  pendingSubscribe = null;    
                 }
               }, 300);
             }
