@@ -284,8 +284,8 @@ document.addEventListener("DOMContentLoaded", () => {
       else if (currentInterval !== "1 tick" && currentChartType === "candlestick")           
       {
        wspl.send(JSON.stringify({ forget_all: "candles" }));        
-       wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))); 
-       /*wspl.send(JSON.stringify({
+       //wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))); 
+       wspl.send(JSON.stringify({
                      tick_history: currentSymbol,
                      adjust_start_time : 1,
                      count: 500,
@@ -293,7 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
                      granularity: 60,          // convertTF(currentInterval)
                      style: "candles",
                      subscribe: 1  
-        })); */
+        }));
       }
     }   
 
@@ -668,7 +668,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Chargement initial (historique)
-        /*if (data.msg_type === "candles" && data.candles) {   
+        if (data.msg_type === "candles" && data.candles) {   
           handleCandles(data.candles);   
           console.log("Candle Handling here.");
           return;
@@ -679,7 +679,7 @@ document.addEventListener("DOMContentLoaded", () => {
           handleCandleLive(data.ohlc); // une seule bougie mise à jour
           console.log("OHLC Handling here.");
           return;
-        } */
+        } 
  
         // other messages are ignored here  
       } catch (err) {  
