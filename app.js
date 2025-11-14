@@ -265,7 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function candlessubscribing(symbol,currentInterval,currentChartType) 
   {
     if(!symbol) return;
-    
+
     currentSymbol = symbol;
     initChart(currentChartType);
 
@@ -289,7 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     wspl__ct.onmessage = (msg) => {   
        
-        const data = JSON.parse(msg.data);
+     const data = JSON.parse(msg.data);
       try {
         
         if (currentInterval === "1 tick" && currentChartType !== "candlestick") return;          
