@@ -340,11 +340,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {        
 
-      if (currentInterval === "1 tick" && currentChartType !== "candlestick")
-      {
-       wspl.send(JSON.stringify({ forget_all: "ticks" }));        
-       wspl.send(JSON.stringify({ticks : currentSymbol}));            
-      }           
+      if (currentInterval !== "1 tick" && currentChartType === "candlestick") return;
+      
+      wspl.send(JSON.stringify({ forget_all: "ticks" }));        
+      wspl.send(JSON.stringify({ticks : currentSymbol}));            
+                
     }   
   }  
 
@@ -414,20 +414,6 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log("Tick Handling here.");
           return;
         }
-
-        // Chargement initial (historique)
-        /*if (data.msg_type === "candles" && data.candles) {   
-          handleCandles(data.candles);   
-          console.log("Candle Handling here.");
-          return;
-        }  
-
-        // Flux temps réel (mise à jour d'une seule candle)
-        if (data.msg_type === "ohlc" && data.ohlc) {
-          handleCandleLive(data.ohlc); // une seule bougie mise à jour
-          console.log("OHLC Handling here.");    
-          return;    
-        } */  
  
         // other messages are ignored here  
       } catch (err) {  
