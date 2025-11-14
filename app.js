@@ -641,7 +641,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Chargement initial (historique)
         if (data.msg_type === "candles" && data.candles) {   
-          handleCandles(data.candle);   
+          handleCandles(data.candles);   
           console.log("Candle Handling here.");
           return;
         }  
