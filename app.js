@@ -279,7 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (currentInterval === "1 tick" && currentChartType !== "candlestick")
       {
        wspl.send(JSON.stringify({ forget_all: "ticks" }));        
-       wspl.send(JSON.stringify({ticks : symbol, subscribe: 1}));            
+       wspl.send(JSON.stringify({ticks : currentSymbol, subscribe: 1}));            
       }           
       else if (currentInterval !== "1 tick" && currentChartType === "candlestick")           
       {
@@ -289,8 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
                      tick_history: symbol,
                      adjust_start_time : 1,
                      count: 500,
-                     end: "latest",
-                     start: 1,      
+                     end: "latest",   
                      granularity: 60,          // convertTF(currentInterval)
                      style: "candles",
                      subscribe: 1  
@@ -299,14 +298,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     wspl.onmessage = (msg) => {
-         const data = JSON.parse(msg.data);
+
+           const data = JSON.parse(msg.data);
+        
            if (data.msg_type === "candles" && data.candles){
+              console.log('Candles :',data.candles);
               handleCandles(data.candles);
               return;
            }
 
            if (data.msg_type === "ohlc" && data.ohlc)
            {
+             console.log('Candles :',data.ohlc);
              handleCandleLive(data.ohlc);
              return;
            }
