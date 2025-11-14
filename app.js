@@ -633,7 +633,7 @@ document.addEventListener("DOMContentLoaded", () => {
                      adjust_start_time : 1,
                      count: 500,
                      end: "latest",
-                     start: 1,   
+                     start: 1,      
                      granularity: 60,
                      style: "candles"
                   })); 
