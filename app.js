@@ -2783,15 +2783,6 @@ window.addEventListener("error", function (e) {
   });
 
   // ======= DEBUG HELPERS (optionnel) =======
-  // Exposer dans console pour tests manuels
-  window._debug = {
-    candlesData,
-    handleCandles,
-    handleCandleLive,
-    Openpositionlines,
-    currentSeries,
-    chart
-  };
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
