@@ -631,6 +631,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   wspl.send(JSON.stringify({
                      tick_history: currentSymbol,
                      adjust_start_time : 1,
+                     count: 500,
                      end: "latest",
                      start: 1,   
                      granularity: 60,
