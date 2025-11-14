@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
  
  // --- SYMBOLS ---
-  function displaySymbols(currentInterval,currentChartType) {
+  function displaySymbols() {
    symbolList.innerHTML = "";
 
    SYMBOLS.forEach(s => {
@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
        el.classList.add("selected");
 
        // 🔹 Appelle ta fonction de souscription   
-       subscribeSymbol(s.symbol,currentInterval,currentChartType);      
+       subscribeSymbol(s.symbol);      
      });
 
      symbolList.appendChild(el);
@@ -260,7 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- SUBSCRIBE SYMBOL ---
-  function subscribeSymbol(symbol,currentInterval,currentChartType) {    
+  function subscribeSymbol(symbol) {    
     if (wspl === null) {
       pendingSubscribe = symbol;
       return;
@@ -286,7 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
        wspl.send(JSON.stringify({ forget_all: "candles" }));        
        //wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))); 
        wspl.send(JSON.stringify({
-                     tick_history: currentSymbol,
+                     tick_history: symbol,
                      adjust_start_time : 1,
                      count: 500,
                      end: "latest",
@@ -317,7 +317,7 @@ document.addEventListener("DOMContentLoaded", () => {
        }
        catch (e)
        {
-         console.log('error : ',e.description);
+         //console.log('error : ',e.description);
          setTimeout(connectDeriv,200);
        }
        
@@ -662,7 +662,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           }
   
-          displaySymbols(currentInterval,currentChartType);
+          displaySymbols();
           return;
         }
 
@@ -717,7 +717,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       if (wspl && wspl.readyState === WebSocket.OPEN)
       {
-        wspl.send(JSON.stringify({ forget_all: "ticks" }));
+        wspl.send(JSON.stringify({ forget_all: ["candles","ticks"] }));
         wspl.close();
         wspl = null;
         connectBtn.textContent = "Connect";
@@ -2666,7 +2666,7 @@ window.addEventListener("error", function (e) {
 
   // startup
   initDerivAccountManager();
-  displaySymbols(currentInterval,currentChartType);
+  displaySymbols();
   initChart(currentChartType);
   initPLGauge();
   initTable();
