@@ -375,7 +375,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // authorize response
         if (data.msg_type === "authorize" && data.authorize) {
-          authorized = true;
+          authorized = true;    
           const acc = data.authorize.loginid;
           const bal = data.authorize.balance;
           const currency = data.authorize.currency || "";
