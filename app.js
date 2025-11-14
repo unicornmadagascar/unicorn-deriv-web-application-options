@@ -230,13 +230,12 @@ document.addEventListener("DOMContentLoaded", () => {
    if (!currentSymbol || currentSymbol===null) return;
 
    const payload4subscription = {
-     tick_history: "R_75",  
+     tick_history: currentSymbol || "R_75",  
      adjust_start_time: 1,    
      count: 700,
      end: "latest",
-     start: 1,
-     granularity: 60,                                  // convertTF(currentInterval) ||
-     style: "candles",                                 // styleType(currentChartType)  
+     granularity: convertTF(currentInterval) || 60,                     
+     style: styleType(currentChartType)  ,                   
      subscribe: 1
    }
 
@@ -611,8 +610,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Chargement initial (historique)
-        if (data.msg_type === "candles" && data.candles) {
-          handleCandles(data.candles);
+        if (data.msg_type === "candles" && data.candle) {
+          handleCandles(data.candle);   
           return;
         }  
 
