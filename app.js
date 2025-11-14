@@ -285,7 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }           
       else if (currentInterval !== "1 tick" && currentChartType === "candlestick")           
       {
-       wspl.send(JSON.stringify({ forget_all: "candles" }));        
+       //wspl.send(JSON.stringify({ forget_all: "candles" }));        
        wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType)));
       }
     }
@@ -635,18 +635,21 @@ document.addEventListener("DOMContentLoaded", () => {
         // tick handling  
         if (data.msg_type === "tick" && data.tick) {
           handleTick(data.tick);
+          console.log("Tick Handling here.");
           return;
         }
 
         // Chargement initial (historique)
         if (data.msg_type === "candle" && data.candle) {   
-          handleCandles(data.candles);   
+          handleCandles(data.candle);   
+          console.log("Candle Handling here.");
           return;
         }  
 
         // Flux temps réel (mise à jour d'une seule candle)
         if (data.msg_type === "ohlc" && data.ohlc) {
           handleCandleLive(data.ohlc); // une seule bougie mise à jour
+          console.log("OHLC Handling here.");
           return;
         } 
  
