@@ -2789,7 +2789,7 @@ window.addEventListener("error", function (e) {
     if (connectBtn.textContent !== "Connect")
     {
       contractentry(totalPL => {
-        updatePLGauge(totalPL);
+        updatePLGauge(totalPL);   
       });
     
       // Subscribing Tables
