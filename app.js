@@ -426,8 +426,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.msg_type === "ohlc" && data.ohlc) {
           handleCandleLive(data.ohlc); // une seule bougie mise à jour
           console.log("OHLC Handling here.");
-          return;
-        } */
+          return;    
+        } */  
  
         // other messages are ignored here  
       } catch (err) {  
