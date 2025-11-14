@@ -176,7 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chart = LightweightCharts.createChart(chartInner, {
       layout: {
         textColor: "#333",
-        background: { type: "solid", color: "#fff" },    
+        background: { type: "solid", color: "#fff" },        
       },
       grid: { vertLines: { color: "rgba(255,255,255,0.05)" }, horzLines: { color: "rgba(255,255,255,0.05)" } },
       timeScale: { timeVisible: true, secondsVisible: true },   
