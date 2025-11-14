@@ -698,7 +698,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (err) {  
         console.error("WS parse err", err);      
       }   
-    };
+    };   
 
     wspl.onclose = () => {
       connectBtn.textContent = "Connect";    
