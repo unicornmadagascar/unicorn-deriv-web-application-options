@@ -180,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       grid: { vertLines: { color: "rgba(255,255,255,0.05)" }, horzLines: { color: "rgba(255,255,255,0.05)" } },
       timeScale: { timeVisible: true, secondsVisible: true },   
-      crosshair: { mode: 1 }
+      crosshair: { mode: 2 }
     });
 
     // === Type de graphique dynamique ===
