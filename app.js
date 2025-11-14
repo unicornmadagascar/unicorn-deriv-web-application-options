@@ -274,9 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
       connectDeriv();
     }        
 
-    if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {      
-
-      //wspl.send(JSON.stringify({ forget_all: styleType(currentChartType).toString() }));   
+    if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {        
 
       if (currentInterval === "1 tick" && currentChartType !== "candlestick")
       {
@@ -285,10 +283,42 @@ document.addEventListener("DOMContentLoaded", () => {
       }           
       else if (currentInterval !== "1 tick" && currentChartType === "candlestick")           
       {
-       //wspl.send(JSON.stringify({ forget_all: "candles" }));        
-       wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType)));
+       wspl.send(JSON.stringify({ forget_all: "candles" }));        
+       //wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))); 
+       wspl.send(JSON.stringify({
+                     tick_history: currentSymbol,
+                     adjust_start_time : 1,
+                     count: 500,
+                     end: "latest",
+                     start: 1,      
+                     granularity: 60,          // convertTF(currentInterval)
+                     style: "candles",
+                     subscribe: 1  
+        })); 
       }
     }
+
+    wspl.onmessage = (msg) => {
+       const data = JSON.parse(msg.data);
+       if (currentInterval !== "1 tick" && currentChartType === "candlestick")
+       {
+          if (data.msg_type === "candles" && data.candles){
+             handleCandles(data.candles);
+             return;
+          }
+
+          if (data.msg_type === "ohlc" && data.ohlc)
+          {
+            handleCandleLive(data.ohlc);
+            return;
+          }
+      } 
+    };
+
+    wspl.onclose = () => {
+         console.log("Socket Closed");
+         setTimeout(connectDeriv,200);
+    };
   }   
 
   // --- TICK HANDLER ---
@@ -622,25 +652,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
               }, 300);
             }
-          }
-          else if (currentInterval !== "1 tick" && currentChartType === "candlestick")
-          {          
-            setTimeout(() => {
-                if (wspl && wspl.readyState === WebSocket.OPEN) {   
-                  wspl.send(JSON.stringify({ forget_all: "candles" }));  
-                  wspl.send(JSON.stringify({
-                     tick_history: currentSymbol,
-                     adjust_start_time : 1,
-                     count: 500,
-                     end: "latest",
-                     start: 1,      
-                     granularity: 60,
-                     style: "candles"   
-                  })); 
-                  currentSymbol = pendingSubscribe;
-                  pendingSubscribe = null;
-                }
-            }, 300);
           }
   
           displaySymbols(currentInterval,currentChartType);
