@@ -312,7 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log("OHLC Handling here.");
           return;
         }     
-    };
+    };    
 
     wspl.onclose = () => {
          console.log("Socket Closed");
