@@ -639,7 +639,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Chargement initial (historique)
-        if (data.msg_type === "candles" && data.candles) {
+        if (data.msg_type === "candle" && data.candle) {
           handleCandles(data.candles);   
           return;
         }  
