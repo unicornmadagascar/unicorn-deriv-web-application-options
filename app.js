@@ -297,17 +297,27 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }   
 
-    /*wspl.onmessage = (msg) => {   
+    wspl.onmessage = (msg) => {   
 
-           const data = JSON.parse(msg.data);
-        
-           
+        const data = JSON.parse(msg.data);
+        if (data.msg_type === "candles" && data.candles) {   
+          handleCandles(data.candles);   
+          console.log("Candle Handling here.");
+          return;
+        }  
+
+        // Flux temps réel (mise à jour d'une seule candle)
+        if (data.msg_type === "ohlc" && data.ohlc) {
+          handleCandleLive(data.ohlc); // une seule bougie mise à jour
+          console.log("OHLC Handling here.");
+          return;
+        }     
     };
 
     wspl.onclose = () => {
          console.log("Socket Closed");
          setTimeout(connectDeriv,200);
-    };  */ 
+    }; 
   }   
 
   // --- TICK HANDLER ---
@@ -658,7 +668,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Chargement initial (historique)
-        if (data.msg_type === "candles" && data.candles) {   
+        /*if (data.msg_type === "candles" && data.candles) {   
           handleCandles(data.candles);   
           console.log("Candle Handling here.");
           return;
@@ -669,7 +679,7 @@ document.addEventListener("DOMContentLoaded", () => {
           handleCandleLive(data.ohlc); // une seule bougie mise à jour
           console.log("OHLC Handling here.");
           return;
-        } 
+        } */
  
         // other messages are ignored here  
       } catch (err) {  
