@@ -264,6 +264,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function candlessubscribing(symbol,currentInterval,currentChartType) 
   {
+    if(!symbol) return;
+    
     currentSymbol = symbol;
     initChart(currentChartType);
 
