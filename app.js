@@ -54,6 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let ws=null;
   let connection = null;
   let wsROC = null;
+  let wspl__ct = null;
   let wsContracts__close = null;
   let wsContracts_winning = null;
   let wsAutomation_sell = null;
@@ -261,7 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- SUBSCRIBE SYMBOL ---
   function subscribeSymbol(symbol,currentInterval,currentChartType) {    
-    if (wspl === null) {
+    if (wspl__ct === null) {
       pendingSubscribe = symbol;
       return;
     }
@@ -269,23 +270,23 @@ document.addEventListener("DOMContentLoaded", () => {
     currentSymbol = symbol;
     initChart(currentChartType);
 
-    if (!wspl || wspl.readyState === WebSocket.CLOSED) {
+    if (!wspl__ct || wspl__ct.readyState === WebSocket.CLOSED) {
       pendingSubscribe = symbol;    
       connectDeriv();
     }        
 
-    if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {        
+    if (wspl__ct && wspl__ct.readyState === WebSocket.OPEN && authorized) {        
 
       if (currentInterval === "1 tick" && currentChartType !== "candlestick")
       {
-       wspl.send(JSON.stringify({ forget_all: "ticks" }));        
-       wspl.send(JSON.stringify({ticks : currentSymbol, subscribe: 1}));            
+       wspl__ct.send(JSON.stringify({ forget_all: "ticks" }));        
+       wspl__ct.send(JSON.stringify({ticks : currentSymbol, subscribe: 1}));            
       }           
       else if (currentInterval !== "1 tick" && currentChartType === "candlestick")           
       {
-       wspl.send(JSON.stringify({ forget_all: "candles" }));        
+       wspl__ct.send(JSON.stringify({ forget_all: "candles" }));        
        //wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))); 
-       wspl.send(JSON.stringify({
+       wspl__ct.send(JSON.stringify({
                      tick_history: currentSymbol,
                      adjust_start_time : 1,
                      count: 500,
@@ -297,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }   
 
-    wspl.onmessage = (msg) => {   
+    wspl__ct.onmessage = (msg) => {   
 
         const data = JSON.parse(msg.data);
         if (data.msg_type === "candles" && data.candles) {   
@@ -314,11 +315,126 @@ document.addEventListener("DOMContentLoaded", () => {
         }     
     };    
 
-    wspl.onclose = () => {
+    wspl__ct.onclose = () => {
          console.log("Socket Closed");
          setTimeout(connectDeriv,200);
     }; 
   }   
+
+  // --- CONNECT DERIV ---
+  function connectDeriv() {
+
+    if (wspl === null)
+    {
+     authorized = false;
+     wspl = new WebSocket(WS_URL);
+     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+  
+    if (wspl && (wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING))
+    {
+     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (wspl && (wspl.readyState === WebSocket.CLOSED || wspl.readyState === WebSocket.CLOSING))
+    {
+      wspl = new WebSocket(WS_URL);
+      wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    wspl.onmessage = (evt) => {
+      try {
+        const data = JSON.parse(evt.data);
+
+        // authorize response
+        if (data.msg_type === "authorize" && data.authorize) {
+          authorized = true;
+          const acc = data.authorize.loginid;
+          const bal = data.authorize.balance;
+          const currency = data.authorize.currency || "";
+          connectBtn.textContent = "Disconnect";
+          accountInfo.textContent = `Account: ${acc} | Balance: ${Number(bal).toFixed(2)} ${currency}`;
+
+          // subscribe balance updates
+          wspl.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+          // if there was a pending subscribe requested earlier, do it now
+          if (pendingSubscribe) {
+            // small delay to ensure WS state consistent
+            setTimeout(() => {
+              if (wspl && wspl.readyState === WebSocket.OPEN) {   
+                  wspl.send(JSON.stringify({ forget_all: "ticks" }));  
+                  wspl.send(JSON.stringify({ ticks: pendingSubscribe }));   
+                  currentSymbol = pendingSubscribe;
+                  pendingSubscribe = null;       
+              }
+            }, 300);  
+          }
+  
+          displaySymbols(currentInterval,currentChartType);
+          return;
+        }
+
+        // balance update
+        if (data.msg_type === "balance" && data.balance) {
+          const b = data.balance;
+          accountInfo.textContent = `Account: ${b.loginid} | Balance: ${Number(b.balance).toFixed(2)} ${b.currency}`;
+          return;
+        }
+
+        // tick handling  
+        if (data.msg_type === "tick" && data.tick) {
+          handleTick(data.tick);
+          console.log("Tick Handling here.");
+          return;
+        }
+
+        // Chargement initial (historique)
+        if (data.msg_type === "candles" && data.candles) {   
+          handleCandles(data.candles);   
+          console.log("Candle Handling here.");
+          return;
+        }  
+
+        // Flux temps réel (mise à jour d'une seule candle)
+        if (data.msg_type === "ohlc" && data.ohlc) {
+          handleCandleLive(data.ohlc); // une seule bougie mise à jour
+          console.log("OHLC Handling here.");
+          return;
+        } 
+ 
+        // other messages are ignored here  
+      } catch (err) {  
+        console.error("WS parse err", err);          
+      }   
+    };   
+
+    wspl.onclose = () => {
+      connectBtn.textContent = "Connect";    
+      accountInfo.textContent = "";
+      wspl = null;
+      authorized = false;
+    };
+
+    wspl.onerror = (e) => {
+      console.error("WS error", e);
+    };
+  }
+
+  // --- CONNECT DERIV ---
+  function DisconnectDeriv() {
+    setTimeout(() => {
+      if (wspl && wspl.readyState === WebSocket.OPEN)
+      {
+        wspl.send(JSON.stringify({ forget_all: ["candles","ticks"] }));
+        wspl.close();
+        wspl = null;
+        connectBtn.textContent = "Connect";
+        accountInfo.textContent = "";
+        authorized = false;
+        console.log("Socket Closed");
+      }
+    }, 500);  
+  }
 
   // --- TICK HANDLER ---
   function handleTick(tick) {
@@ -598,121 +714,6 @@ document.addEventListener("DOMContentLoaded", () => {
     wrapper.appendChild(label);
 
     container.appendChild(wrapper);
-  }
-
-  // --- CONNECT DERIV ---
-  function connectDeriv() {
-
-    if (wspl === null)
-    {
-     authorized = false;
-     wspl = new WebSocket(WS_URL);
-     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-  
-    if (wspl && (wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING))
-    {
-     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
-    if (wspl && (wspl.readyState === WebSocket.CLOSED || wspl.readyState === WebSocket.CLOSING))
-    {
-      wspl = new WebSocket(WS_URL);
-      wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
-    wspl.onmessage = (evt) => {
-      try {
-        const data = JSON.parse(evt.data);
-
-        // authorize response
-        if (data.msg_type === "authorize" && data.authorize) {
-          authorized = true;
-          const acc = data.authorize.loginid;
-          const bal = data.authorize.balance;
-          const currency = data.authorize.currency || "";
-          connectBtn.textContent = "Disconnect";
-          accountInfo.textContent = `Account: ${acc} | Balance: ${Number(bal).toFixed(2)} ${currency}`;
-
-          // subscribe balance updates
-          wspl.send(JSON.stringify({ balance: 1, subscribe: 1 }));
-          // if there was a pending subscribe requested earlier, do it now
-          if (pendingSubscribe) {
-            // small delay to ensure WS state consistent
-            setTimeout(() => {
-              if (wspl && wspl.readyState === WebSocket.OPEN) {   
-                  wspl.send(JSON.stringify({ forget_all: "ticks" }));  
-                  wspl.send(JSON.stringify({ ticks: pendingSubscribe }));   
-                  currentSymbol = pendingSubscribe;
-                  pendingSubscribe = null;       
-              }
-            }, 300);  
-          }
-  
-          displaySymbols(currentInterval,currentChartType);
-          return;
-        }
-
-        // balance update
-        if (data.msg_type === "balance" && data.balance) {
-          const b = data.balance;
-          accountInfo.textContent = `Account: ${b.loginid} | Balance: ${Number(b.balance).toFixed(2)} ${b.currency}`;
-          return;
-        }
-
-        // tick handling  
-        if (data.msg_type === "tick" && data.tick) {
-          handleTick(data.tick);
-          console.log("Tick Handling here.");
-          return;
-        }
-
-        // Chargement initial (historique)
-        if (data.msg_type === "candles" && data.candles) {   
-          handleCandles(data.candles);   
-          console.log("Candle Handling here.");
-          return;
-        }  
-
-        // Flux temps réel (mise à jour d'une seule candle)
-        if (data.msg_type === "ohlc" && data.ohlc) {
-          handleCandleLive(data.ohlc); // une seule bougie mise à jour
-          console.log("OHLC Handling here.");
-          return;
-        } 
- 
-        // other messages are ignored here  
-      } catch (err) {  
-        console.error("WS parse err", err);          
-      }   
-    };   
-
-    wspl.onclose = () => {
-      connectBtn.textContent = "Connect";    
-      accountInfo.textContent = "";
-      wspl = null;
-      authorized = false;
-    };
-
-    wspl.onerror = (e) => {
-      console.error("WS error", e);
-    };
-  }
-
-  // --- CONNECT DERIV ---
-  function DisconnectDeriv() {
-    setTimeout(() => {
-      if (wspl && wspl.readyState === WebSocket.OPEN)
-      {
-        wspl.send(JSON.stringify({ forget_all: ["candles","ticks"] }));
-        wspl.close();
-        wspl = null;
-        connectBtn.textContent = "Connect";
-        accountInfo.textContent = "";
-        authorized = false;
-        console.log("Socket Closed");
-      }
-    }, 500);  
   }
   
   function RocstartAutomation() {
