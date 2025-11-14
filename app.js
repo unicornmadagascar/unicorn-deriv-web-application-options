@@ -299,11 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     wspl.onmessage = (msg) => {
-       const data = JSON.parse(msg.data);
-
-       try {
-         if (currentInterval !== "1 tick" && currentChartType === "candlestick")
-         {
+         const data = JSON.parse(msg.data);
            if (data.msg_type === "candles" && data.candles){
               handleCandles(data.candles);
               return;
@@ -314,20 +310,12 @@ document.addEventListener("DOMContentLoaded", () => {
              handleCandleLive(data.ohlc);
              return;
            }
-         } 
-       }
-       catch (e)
-       {
-         //console.log('error : ',e.description);
-         setTimeout(connectDeriv,200);
-       }
-       
     };
 
     wspl.onclose = () => {
          console.log("Socket Closed");
          setTimeout(connectDeriv,200);
-    };
+    };   
   }   
 
   // --- TICK HANDLER ---
