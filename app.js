@@ -179,8 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
         background: { type: "solid", color: "#fff" },        
       },
       grid: { vertLines: { color: "rgba(255,255,255,0.05)" }, horzLines: { color: "rgba(255,255,255,0.05)" } },
-      timeScale: { timeVisible: true, secondsVisible: true },   
-      crosshair: { mode: 2 }
+      timeScale: { timeVisible: true, secondsVisible: true }
     });
 
     // === Type de graphique dynamique ===
