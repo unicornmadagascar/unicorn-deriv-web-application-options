@@ -645,21 +645,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // subscribe balance updates
           wspl.send(JSON.stringify({ balance: 1, subscribe: 1 }));
-
-          if (currentInterval === "1 tick" && currentChartType !== "candlestick")
-          {
-            // if there was a pending subscribe requested earlier, do it now
-            if (pendingSubscribe) {
-              // small delay to ensure WS state consistent
-              setTimeout(() => {
-                if (wspl && wspl.readyState === WebSocket.OPEN) {   
+          // if there was a pending subscribe requested earlier, do it now
+          if (pendingSubscribe) {
+            // small delay to ensure WS state consistent
+            setTimeout(() => {
+              if (wspl && wspl.readyState === WebSocket.OPEN) {   
                   wspl.send(JSON.stringify({ forget_all: "ticks" }));  
                   wspl.send(JSON.stringify({ ticks: pendingSubscribe }));   
                   currentSymbol = pendingSubscribe;
                   pendingSubscribe = null;    
-                }
-              }, 300);
-            }
+              }
+            }, 300);  
           }
   
           displaySymbols(currentInterval,currentChartType);
