@@ -284,16 +284,16 @@ document.addEventListener("DOMContentLoaded", () => {
       else if (currentInterval !== "1 tick" && currentChartType === "candlestick")           
       {
        wspl.send(JSON.stringify({ forget_all: "candles" }));        
-       //wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))); 
-       wspl.send(JSON.stringify({
-                     tick_history: symbol,
+       wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))); 
+       /*wspl.send(JSON.stringify({
+                     tick_history: currentSymbol,
                      adjust_start_time : 1,
                      count: 500,
                      end: "latest",   
                      granularity: 60,          // convertTF(currentInterval)
                      style: "candles",
                      subscribe: 1  
-        })); 
+        })); */
       }
     }
 
