@@ -264,6 +264,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function candlessubscribing(symbol,currentInterval,currentChartType) 
   {
+    currentSymbol = symbol;
+    initChart(currentChartType);
+
     if (wspl__ct === null)
     {
      authorized = false;
