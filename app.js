@@ -307,8 +307,8 @@ document.addEventListener("DOMContentLoaded", () => {
           }));
         }
 
-        if (data.msg_type === "candle" && data.candle) {   
-          handleCandles(data.candle);   
+        if (data.msg_type === "candles" && data.candles) {   
+          handleCandles(data.candles);   
           console.log("Candle Handling here.");
           return;
         }  
