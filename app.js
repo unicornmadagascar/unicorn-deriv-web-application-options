@@ -234,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
      count: 700,
      end: "latest",
      granularity: convertTF(currentInterval) || 60,                     
-     style: styleType(currentChartType)  ,                   
+     style: styleType(currentChartType),                   
      subscribe: 1
    }
 
@@ -608,16 +608,31 @@ document.addEventListener("DOMContentLoaded", () => {
           // subscribe balance updates
           wspl.send(JSON.stringify({ balance: 1, subscribe: 1 }));
 
-          // if there was a pending subscribe requested earlier, do it now
-          if (pendingSubscribe) {
-            // small delay to ensure WS state consistent
+          if (currentInterval === "1 tick" && currentChartType !== "candlestick")
+          {
+            // if there was a pending subscribe requested earlier, do it now
+            if (pendingSubscribe) {
+              // small delay to ensure WS state consistent
+              setTimeout(() => {
+                if (wspl && wspl.readyState === WebSocket.OPEN) {   
+                  wspl.send(JSON.stringify({ forget_all: "ticks" }));  
+                  wspl.send(JSON.stringify({ ticks: pendingSubscribe }));   
+                  currentSymbol = pendingSubscribe;
+                  pendingSubscribe = null;
+                }
+              }, 300);
+            }
+          }
+          else if (currentInterval !== "1 tick" && currentChartType === "candlestick")
+          {
+            
             setTimeout(() => {
-              if (wspl && wspl.readyState === WebSocket.OPEN) {   
-                wspl.send(JSON.stringify({ forget_all: "ticks" }));  
-                wspl.send(JSON.stringify({ ticks: pendingSubscribe }));   
-                currentSymbol = pendingSubscribe;
-                pendingSubscribe = null;
-              }
+                if (wspl && wspl.readyState === WebSocket.OPEN) {   
+                  wspl.send(JSON.stringify({ forget_all: "candles" }));  
+                  wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))); 
+                  currentSymbol = pendingSubscribe;
+                  pendingSubscribe = null;
+                }
             }, 300);
           }
 
@@ -2781,8 +2796,6 @@ window.addEventListener("error", function (e) {
       console.log("Current Symbol:", currentSymbol);
     });
   });
-
-  // ======= DEBUG HELPERS (optionnel) =======
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
