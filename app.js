@@ -632,7 +632,7 @@ document.addEventListener("DOMContentLoaded", () => {
                      tick_history: currentSymbol,
                      adjust_start_time : 1,
                      end: "latest",
-                     start: 1,
+                     start: 1,   
                      granularity: 60,
                      style: "candles"
                   })); 
