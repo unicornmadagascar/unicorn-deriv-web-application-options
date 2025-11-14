@@ -292,7 +292,8 @@ document.addEventListener("DOMContentLoaded", () => {
                      end: "latest",
                      start: 1,      
                      granularity: 60,          // convertTF(currentInterval)
-                     style: "candles"  
+                     style: "candles",
+                     subscribe: 1  
         })); 
       }
     }
