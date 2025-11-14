@@ -271,7 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initChart(currentChartType);
 
     if (!wspl || wspl.readyState === WebSocket.CLOSED) {
-      pendingSubscribe = symbol;    
+      pendingSubscribe = symbol;      
       connectDeriv();
     }        
 
