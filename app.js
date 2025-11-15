@@ -173,12 +173,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- INIT CHART ---
   function initChart(currentChartType) {
-    try { if (chart) chart.remove(); } catch (e) {}   
+    try { if (chart) chart.remove(); } catch (e) {}      
     chartInner.innerHTML = "";
 
     chart = LightweightCharts.createChart(chartInner, {
       layout: {
-        textColor: "#333",
+        textColor: "#333",   
         background: { type: "solid", color: "#fff" },        
       },
       grid: { vertLines: { color: "rgba(255,255,255,0.05)" }, horzLines: { color: "rgba(255,255,255,0.05)" } },
