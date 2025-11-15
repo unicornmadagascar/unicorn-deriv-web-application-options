@@ -848,7 +848,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Démarrage de la connexion WS
-    if (!wsROC || wsROC.readyState > 1) {
+    if (!wsROC || wsROC.readyState > 1) {   
       connectWebSocket();
     }
   }
