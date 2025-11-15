@@ -827,7 +827,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const multiplier = parseInt(multiplierInput.value) || 50;
       const repeat = direction === "BUY"
         ? (parseInt(buyNum.value) || 1)
-        : (parseInt(sellNum.value) || 1);
+        : (parseInt(sellNum.value) || 1);   
 
       console.log(`📤 Ouverture d’un contrat ${direction} (${mainType})`);
 
