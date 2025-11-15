@@ -800,7 +800,7 @@ document.addEventListener("DOMContentLoaded", () => {
                            wsROC.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                         });
 
-                     if (rocproposal__.contract_id) return;
+                     if (rocproposal__.contract_id) return;    
 
                      console.log("📤 Ouverture d'un nouveau contrat BUY...");
                      if (currentSymbol === "cryBTCUSD" || currentSymbol === "frxXAUUSD")
