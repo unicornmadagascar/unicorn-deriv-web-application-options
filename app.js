@@ -167,7 +167,8 @@ document.addEventListener("DOMContentLoaded", () => {
        // 🔹 Appelle ta fonction de souscription   
        subscribeSymbol(s.symbol,currentChartType);  
        // Candles Call  
-     });
+       candlessubscribing(s.symbol,currentChartType);
+     });   
 
      symbolList.appendChild(el);
    });
@@ -264,6 +265,18 @@ document.addEventListener("DOMContentLoaded", () => {
    }
   }
 
+  // Fonction pour convertir les données OHLCV Deriv au format Lightweight Charts
+  const formatDataForChart = (ohlcData) => {
+    // Le temps dans Lightweight Charts est en secondes UNIX, Deriv le fournit également.
+    return {
+        time: ohlcData.epoch,
+        open: parseFloat(ohlcData.open),
+        high: parseFloat(ohlcData.high),
+        low: parseFloat(ohlcData.low),
+        close: parseFloat(ohlcData.close),
+    };
+  };
+
   function candlessubscribing(symbol,currentChartType) 
   {
     if(!symbol) return;
@@ -290,7 +303,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wspl = new WebSocket(WS_URL);
       wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
     }
-
+    
     wspl.onmessage = (msg) => {   
        
      const data = JSON.parse(msg.data);
@@ -298,33 +311,46 @@ document.addEventListener("DOMContentLoaded", () => {
           
         // authorize response
         if (data.msg_type === "authorize" && data.authorize) {
-          //wspl.send(JSON.stringify({ forget_all: "candles" }));        
-          //wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))); 
-          wspl.send(JSON.stringify({  
-                     tick_history: symbol,
-                     adjust_start_time : 1,
-                     count: 500,
-                     end: "latest",  
-                     start: 1, 
-                     granularity: 60,          // convertTF(currentInterval)
-                     style: "candles", 
-          }));
+              console.log('Connexion WebSocket établie avec Deriv.');
+
+              // 1. Demander les données historiques (pour remplir le graphique initialement)
+              // et souscrire aux mises à jour en temps réel (bougies en cours).
+              const ohlcRequest = {
+                      tick_history: symbol,
+                      adjust_start_time : 1,
+                      count: 500,
+                      end: "latest",  
+                      start: 1, 
+                      granularity: 60,          // convertTF(currentInterval)
+                      style: "candles", 
+                      subscribe: 1 // C'est la clé pour les mises à jour en temps réel !
+               };
+
+               wspl.send(JSON.stringify(ohlcRequest));
         }
 
-        if (data.msg_type === "candles" && data.candles) {   
-          handleCandles(data.candles);   
-          console.log("Candle Handling here.");
-          console.log(data.candles);
-          return;
-        }  
+        if (response.msg_type === 'history') {
+          // 2. Traitement des données historiques
+          const history = response.history.candles;
+          const initialData = history.map(formatDataForChart);
+          currentSeries.setData(initialData);
+          console.log(`Données initiales de ${history.length} bougies chargées.`);
 
-        // Flux temps réel (mise à jour d'une seule candle)
-        if (data.msg_type === "ohlc" && data.ohlc) {
-          handleCandleLive(data.ohlc); // une seule bougie mise à jour
-          console.log("OHLC Handling here.");
-          console.log(data.ohlc);
-          return;
-        } 
+        } else if (response.msg_type === 'candles') {
+          // 3. Traitement de la mise à jour en temps réel (bougie en cours)
+          const currentCandle = response.candles.splice(-1)[0]; // Dernière bougie (en cours)
+          const formattedCandle = formatDataForChart(currentCandle);
+        
+          // La méthode update() gère la création d'une nouvelle bougie ou la mise à jour
+          // de la dernière bougie si le temps est le même.
+          currentSeries.update(formattedCandle);
+          console.log('Bougie mise à jour en temps réel:', formattedCandle);
+        }
+    
+        // Pour maintenir la connexion active (bonnes pratiques WebSocket)
+        if (response.ping) {
+          connection.send(JSON.stringify({ pong: 1 }));
+        }
       }
       catch (err)
       {
@@ -423,7 +449,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // tick handling  
         if (data.msg_type === "tick" && data.tick) {
           handleTick(data.tick);   
-          console.log("Tick Handling here.");
           return;
         }
     };   
@@ -509,115 +534,6 @@ document.addEventListener("DOMContentLoaded", () => {
     
     Openpositionlines(currentSeries);  
   }
-
-  // ======= HANDLE INITIAL CANDLES (tableau) =======
-  function handleCandles(candlesArray) {
-    try {
-      if (!candlesArray || !Array.isArray(candlesArray) || !candlesArray.length) {
-        console.warn('[handleCandles] Pas de candles valides reçues', candlesArray);
-        return;
-      }
-
-      // formater + filtrer les entrées invalides
-      const formatted = candlesArray
-        .map(formatCandleRaw)
-        .filter(c => c !== null);
-
-      if (!formatted.length) {
-        console.warn('[handleCandles] Après filtrage, aucune candle valide');
-        return;
-      }
-
-      // garder les 500 dernières
-      candlesData = formatted.slice(-500);   
-
-      // setData une seule fois au chargement initial
-      if (!currentSeries) {
-        console.error('[handleCandles] currentSeries non initialisée');
-        return;
-      }
-
-      currentSeries.setData(candlesData);
-      chart.timeScale().fitContent();
-
-      // mettre ligne prix courant sur la dernière close
-      const last = candlesData[candlesData.length - 1];
-
-      console.log('[handleCandles] Chargement initial OK —', candlesData.length, 'candles');
-    } catch (err) {
-      console.error('[handleCandles] Exception:', err);
-    }
-
-    Openpositionlines(currentSeries); 
-  }
-
-  // ======= HANDLE LIVE OHLC (une seule bougie en mise à jour) =======
-  function handleCandleLive(ohlc) {
-    try {
-      if (!ohlc) return;
-      if (!candlesData) candlesData = [];
-
-      const newCandle = formatCandleRaw(ohlc);
-      if (!newCandle) {
-        console.warn('[handleCandleLive] candle invalide', ohlc);
-        return;
-      }
-
-      // si pas d'historique local, on initialise par setData d'une seule candle (peu probable)
-      if (!candlesData.length) {
-        candlesData.push(newCandle);
-        currentSeries.setData(candlesData);
-        return;
-      }
-
-      const last = candlesData[candlesData.length - 1];
-
-      if (newCandle.time === last.time) {
-        // mise à jour de la bougie courante
-        candlesData[candlesData.length - 1] = newCandle;
-      } else if (newCandle.time > last.time) {
-        // nouvelle bougie complète
-        candlesData.push(newCandle);
-        // garder un buffer raisonnable
-        if (candlesData.length > 600) candlesData.shift();
-      } else {
-        // message hors ordre (anciennes données) -> ignorer
-        console.warn('[handleCandleLive] candle time <= last.time, ignored', newCandle.time, '<=', last.time);
-        return;
-      }
-
-      // NOTE: update() accepte un point (ou setData un tableau) — on utilise update
-      try {
-        currentSeries.update(newCandle);
-      } catch (e) {
-        // fallback: si update échoue, resynchroniser par setData
-        console.warn('[handleCandleLive] update failed, fallback to setData', e);
-        currentSeries.setData(candlesData);
-      }
-    } catch (err) {
-      console.error('[handleCandleLive] Exception:', err);
-    }
-
-    Openpositionlines(currentSeries); 
-  }
-  
-  // ======= UTIL: nettoyer et formater une candle brute ======
-  function formatCandleRaw(raw) {
-    if (!raw) return null;
-    const time = Number(raw.open_time ?? raw.time ?? raw.epoch); // différentes APIS
-    const open = Number(raw.open);
-    const high = Number(raw.high);
-    const low  = Number(raw.low);
-    const close= Number(raw.close);
-
-    if (
-      !time || isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close)
-    ) {
-      return null;
-    }
-
-    return { time, open, high, low, close };
-  }  
 
   // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
   function Openpositionlines(currentSeries) {
