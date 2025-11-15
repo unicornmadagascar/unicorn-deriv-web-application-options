@@ -2791,6 +2791,7 @@ window.addEventListener("error", function (e) {
   })();
 
   window.addEventListener('beforeunload', () => { try { if (ws) ws.close(); } catch (e) {} });
+  window.addEventListener('resize', () => chart.applyOptions({ width: chartInner.clientWidth, height: chartInner.clientHeight }));
 
   // === CONTRÔLES POPUP ===
   openModalBtn.addEventListener("click", () => {
