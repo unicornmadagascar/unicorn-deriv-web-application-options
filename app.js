@@ -407,14 +407,14 @@ document.addEventListener("DOMContentLoaded", () => {
                   pendingSubscribe = null;       
               }
             }, 300);  
-          }
+          }   
   
           displaySymbols(currentChartType);
           return;
         }
 
         // balance update
-        if (data.msg_type === "balance" && data.balance) {
+        if (data.msg_type === "balance" && data.balance) {   
           const b = data.balance;
           accountInfo.textContent = `Account: ${b.loginid} | Balance: ${Number(b.balance).toFixed(2)} ${b.currency}`;
           return;
