@@ -1129,7 +1129,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
  
   // --- GAUGES UPDATE ---   
-  function updateCircularGauges() {
+  function updateCircularGauges() {   
     if (!recentChanges.length) return;
     const mean = recentChanges.reduce((a, b) => a + b, 0) / recentChanges.length;
     const variance = recentChanges.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / recentChanges.length;
