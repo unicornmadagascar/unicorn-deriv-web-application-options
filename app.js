@@ -351,7 +351,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }        
 
     if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {        
-
+    
       if (currentChartType === "candlestick") return;
       
       wspl.send(JSON.stringify({ forget_all: "ticks" }));        
