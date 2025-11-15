@@ -805,8 +805,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (["cryBTC", "frxXAU"].includes(symbolPrefix)) {
           if (roc_ > 0.01) {
+            if (rocProposal.contract_id) return;
             handleSignal("BUY");
           } else if (roc_ < -0.01) {
+            if (rocProposal.contract_id) return;
             handleSignal("SELL");
           }
         }
