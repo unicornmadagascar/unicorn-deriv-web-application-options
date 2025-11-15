@@ -737,6 +737,8 @@ document.addEventListener("DOMContentLoaded", () => {
   
   function RocstartAutomation() {
 
+    if (!symbol_test) return;
+
     const symbol_test = currentSymbol.slice(0,6);
 
     if (wsROC === null)
@@ -786,7 +788,7 @@ document.addEventListener("DOMContentLoaded", () => {
            if (iu >= 20) // garder seulement les 3 derniers ticks
            {   
                let Iu__ = iu - 20;
-               roc_ = 100 * ((tickHistory__[iu] - tickHistory__[Iu__])/tickHistory__[Iu__]);
+               roc_ = 100 * ((tickHistory__[parseInt(iu)] - tickHistory__[parseInt(Iu__)])/tickHistory__[parseInt(Iu__)]);
                ROC.push(roc_);
                console.log("ROC : " + roc_);
                if (symbol_test === "cryBTC" || symbol_test === "frxXAU")  
