@@ -755,7 +755,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (wsROC && (wsROC.readyState === WebSocket.OPEN || wsROC.readyState === WebSocket.CONNECTING))
       {
-       wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };
+       wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };   
       }
 
       if (wsROC && (wsROC.readyState === WebSocket.CLOSED || wsROC.readyState === WebSocket.CLOSING))
