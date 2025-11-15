@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
  
  // --- SYMBOLS ---
-  function displaySymbols() {
+  function displaySymbols(currentChartType) {
    symbolList.innerHTML = "";
 
    SYMBOLS.forEach(s => {
@@ -162,9 +162,9 @@ document.addEventListener("DOMContentLoaded", () => {
        el.classList.add("selected");
 
        // 🔹 Appelle ta fonction de souscription   
-       subscribeSymbol(s.symbol);  
+       subscribeSymbol(s.symbol,currentChartType);  
        // Candles Call
-       candlessubscribing(s.symbol);    
+       candlessubscribing(s.symbol,currentChartType);    
      });
 
      symbolList.appendChild(el);
@@ -262,7 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
    }
   }
 
-  function candlessubscribing(symbol) 
+  function candlessubscribing(symbol,currentChartType) 
   {
     if(!symbol) return;
 
@@ -336,7 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }   
 
   // --- SUBSCRIBE SYMBOL ---
-  function subscribeSymbol(symbol) {    
+  function subscribeSymbol(symbol,currentChartType) {    
     if (wspl === null) {
       pendingSubscribe = symbol;
       return;
@@ -407,7 +407,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 300);  
           }   
   
-          displaySymbols();    
+          displaySymbols(currentChartType);    
           return;
         }
 
@@ -2672,7 +2672,7 @@ window.addEventListener("error", function (e) {
 
   // startup
   initDerivAccountManager();
-  displaySymbols();
+  displaySymbols(currentChartType);
   initChart(currentChartType);
   initPLGauge();
   initTable();
