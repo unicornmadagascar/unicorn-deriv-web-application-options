@@ -162,9 +162,9 @@ document.addEventListener("DOMContentLoaded", () => {
        el.classList.add("selected");
 
        // 🔹 Appelle ta fonction de souscription   
-       subscribeSymbol(s.symbol,currentChartType);  
+       subscribeSymbol(s.symbol);  
        // Candles Call
-       candlessubscribing(s.symbol,currentChartType);    
+       candlessubscribing(s.symbol);    
      });
 
      symbolList.appendChild(el);
@@ -172,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- INIT CHART ---
-  function initChart(currentChartType) {
+  function initChart() {
     try { if (chart) chart.remove(); } catch (e) {}      
     chartInner.innerHTML = "";
 
@@ -262,7 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
    }
   }
 
-  function candlessubscribing(symbol,currentChartType) 
+  function candlessubscribing(symbol) 
   {
     if(!symbol) return;
 
@@ -302,7 +302,8 @@ document.addEventListener("DOMContentLoaded", () => {
                      tick_history: symbol,
                      adjust_start_time : 1,
                      count: 500,
-                     end: "latest",   
+                     end: "latest",  
+                     start: 1, 
                      granularity: 60,          // convertTF(currentInterval)
                      style: "candles", 
           }));
@@ -311,6 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.msg_type === "candles" && data.candles) {   
           handleCandles(data.candles);   
           console.log("Candle Handling here.");
+          console.log(data.candles);
           return;
         }  
 
@@ -318,6 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.msg_type === "ohlc" && data.ohlc) {
           handleCandleLive(data.ohlc); // une seule bougie mise à jour
           console.log("OHLC Handling here.");
+          console.log(data.ohlc);
           return;
         } 
       }
@@ -333,7 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }   
 
   // --- SUBSCRIBE SYMBOL ---
-  function subscribeSymbol(symbol,currentChartType) {    
+  function subscribeSymbol(symbol) {    
     if (wspl === null) {
       pendingSubscribe = symbol;
       return;
@@ -2676,8 +2679,8 @@ window.addEventListener("error", function (e) {
 
   // startup
   initDerivAccountManager();
-  displaySymbols(currentChartType);
-  initChart(currentChartType);
+  displaySymbols();
+  initChart();
   initPLGauge();
   initTable();
   initHistoricalTable(); 
