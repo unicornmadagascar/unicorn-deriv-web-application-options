@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
  
  // --- SYMBOLS ---
-  function displaySymbols(currentChartType) {
+  function displaySymbols() {
    symbolList.innerHTML = "";
 
    SYMBOLS.forEach(s => {
@@ -172,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- INIT CHART ---
-  function initChart() {
+  function initChart(currentChartType) {
     try { if (chart) chart.remove(); } catch (e) {}      
     chartInner.innerHTML = "";
 
@@ -355,7 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (currentChartType === "candlestick") return;
       
       wspl.send(JSON.stringify({ forget_all: "ticks" }));        
-      wspl.send(JSON.stringify({ticks : currentSymbol}));            
+      wspl.send(JSON.stringify({ticks : currentSymbol, subscribe: 1}));            
                 
     }   
   }  
@@ -409,7 +409,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 300);  
           }   
   
-          displaySymbols(currentChartType);    
+          displaySymbols();    
           return;
         }
 
@@ -2680,7 +2680,7 @@ window.addEventListener("error", function (e) {
   // startup
   initDerivAccountManager();
   displaySymbols();
-  initChart();
+  initChart(currentChartType);
   initPLGauge();
   initTable();
   initHistoricalTable(); 
