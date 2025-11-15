@@ -784,7 +784,6 @@ document.addEventListener("DOMContentLoaded", () => {
            const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
 
            tickHistory__.push(price);
-           console.log("TickHistoryROC : " + tickHistory__);
            if (iu >= 20) // garder seulement les 3 derniers ticks
            {   
                let Iu__ = iu - 20;
