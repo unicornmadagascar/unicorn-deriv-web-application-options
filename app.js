@@ -762,7 +762,7 @@ document.addEventListener("DOMContentLoaded", () => {
       {
        wsROC = new WebSocket(WS_URL);
        console.log("🟢 WebSocket ROC connecté");
-       wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };
+       wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };   
       }
 
       wsROC.onmessage = (msg) => handleMessage(JSON.parse(msg.data));   
