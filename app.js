@@ -151,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
      el.className = "symbol-item";
      el.textContent = s.name;
      el.dataset.symbol = s.symbol;
-
+   
      el.addEventListener("click", () => {
        // 🔹 Supprime la sélection sur tous les symboles
        document.querySelectorAll("#SymbolList .symbol-item").forEach(item => {
@@ -347,7 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!wspl || wspl.readyState === WebSocket.CLOSED) {
       pendingSubscribe = symbol;      
-      connectDeriv();
+      connectDeriv(currentChartType);
     }        
 
     if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {        
@@ -361,7 +361,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }  
 
   // --- CONNECT DERIV ---
-  function connectDeriv() {
+  function connectDeriv(currentChartType) {
 
     if (wspl === null)
     {
@@ -2644,8 +2644,8 @@ function extractValue(event, key) {
       connectBtn.textContent = "Connecting...";
       accountInfo.textContent = "Connecting..."; 
       isConnect = true; 
-      connectDeriv();
-      displaySymbols();
+      connectDeriv(currentChartType);
+      displaySymbols(currentChartType);
     } else {
       connectBtn.textContent = "Disconnecting...";
       accountInfo.textContent = "Disconnecting...";
