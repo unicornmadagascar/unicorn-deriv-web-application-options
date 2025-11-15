@@ -164,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
        // 🔹 Appelle ta fonction de souscription   
        subscribeSymbol(s.symbol,currentChartType);  
        // Candles Call
-       candlessubscribing(s.symbol,currentChartType);    
+       //candlessubscribing(s.symbol,currentChartType);    
      });
 
      symbolList.appendChild(el);
@@ -361,7 +361,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }  
 
   // --- CONNECT DERIV ---
-  function connectDeriv(currentChartType) {
+  function connectDeriv() {
 
     if (wspl === null)
     {
@@ -2644,7 +2644,7 @@ function extractValue(event, key) {
       connectBtn.textContent = "Connecting...";
       accountInfo.textContent = "Connecting..."; 
       isConnect = true; 
-      connectDeriv(currentChartType);
+      connectDeriv();
       displaySymbols(currentChartType);
     } else {
       connectBtn.textContent = "Disconnecting...";
