@@ -101,6 +101,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let contractSymbol;  
   let contracts = [];
   let roccontracts = [];
+  let rocContracts = [];
+  let rocProposal = null;
+  const MAX_HISTORY = 1000; // max taille du buffer
   let proposal__ = [];
   let rocproposal__ = [];
   let transactions__ = [];
@@ -739,17 +742,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!currentSymbol) return;
 
     const symbolPrefix = currentSymbol.slice(0, 6);
-    let wsROC = null;
-    let rocContracts = [];
-    let rocProposal = null;
-
-    const MAX_HISTORY = 1000; // max taille du buffer
 
     function connectWebSocket() {
 
       if (wsROC === null){
          wsROC = new WebSocket(WS_URL);
-         console.log("🟢 WebSocket ROC connecté");
          wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };
       }
 
