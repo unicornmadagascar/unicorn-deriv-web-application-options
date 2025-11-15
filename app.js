@@ -482,6 +482,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // if first data point, setData with small array to initialize
     if (!chartData.length) {
       chartData.push(point);
+      if (chartData.length > 600) chartData.shift();    
       try {
         currentSeries.setData(chartData);
       } catch (e) {
@@ -787,7 +788,7 @@ document.addEventListener("DOMContentLoaded", () => {
                roc_ = 100 * ((tickHistory__[iu] - tickHistory__[Iu__])/tickHistory__[Iu__]);
                ROC.push(roc_);
                console.log("ROC : " + roc_);
-               if (symbol_test === "cryBTC" || symbol_test === "comGOL")  
+               if (symbol_test === "cryBTC" || symbol_test === "frxXAU")  
                {
                   if (ROC[Iu__] > 0.01)   
                    {
@@ -801,7 +802,7 @@ document.addEventListener("DOMContentLoaded", () => {
                      if (rocproposal__.contract_id) return;
 
                      console.log("📤 Ouverture d'un nouveau contrat BUY...");
-                     if (currentSymbol === "cryBTCUSD" || currentSymbol === "comGOLDUSD")
+                     if (currentSymbol === "cryBTCUSD" || currentSymbol === "frxXAUUSD")
                      {
                       const stake = parseFloat(stakeInput.value) || 1;
                       const multiplier = parseInt(multiplierInput.value)||50;
@@ -836,7 +837,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (rocproposal__.contract_id) return;
 
                     console.log("📤 Ouverture d'un nouveau contrat SELL...");
-                    if (currentSymbol === "cryBTCUSD" || currentSymbol === "comGOLDUSD")
+                    if (currentSymbol === "cryBTCUSD" || currentSymbol === "frxXAUUSD")
                     {
                       const stake = parseFloat(stakeInput.value) || 1;
                       const multiplier = parseInt(multiplierInput.value)||50;
@@ -863,7 +864,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
            iu = iu + 1;
-           if (iu > 1000)    
+           if (iu > 500)    
            {
               tickHistory__.shift();
               ROC.shift(); 
@@ -1109,7 +1110,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }  
 
         it = it + 1;
-        if (it > 2200)    
+        if (it > 700)    
         {
          tickHistory.shift();
          ROC.shift(); 
