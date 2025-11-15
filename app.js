@@ -173,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- INIT CHART ---
   function initChart(currentChartType) {
-    try { if (chart) chart.remove(); } catch (e) {}      
+    try { if (chart) chart.remove(); } catch (e) {}          
     chartInner.innerHTML = "";
 
     chart = LightweightCharts.createChart(chartInner, {
