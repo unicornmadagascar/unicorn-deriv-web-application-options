@@ -487,7 +487,7 @@ document.addEventListener("DOMContentLoaded", () => {
         currentSeries.setData(chartData);
       } catch (e) {
         // fallback: try update
-        try { currentSeries.update(point); } catch (err) {}
+        try { currentSeries.update(point); } catch (err) {}   
       }
     } else {
       // append and update
