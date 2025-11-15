@@ -779,7 +779,7 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
 
         case "portfolio":
-          rocContracts = data.portfolio.contracts;
+          rocContracts = data.portfolio.contracts;    
           break;
 
         case "proposal_open_contract":
