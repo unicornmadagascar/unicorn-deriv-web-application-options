@@ -796,21 +796,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 const stake = parseFloat(stakeInput.value) || 1;
                 const multiplier = parseInt(multiplierInput.value) || 50;
                 const numb_ = parseInt(buyNum.value) || 1;
-
-                for (let i = 0; i < numb_; i++) {
-                  wsROC.send(JSON.stringify({   
-                    buy: 1,
-                    price: stake.toFixed(2),
-                    parameters: {
-                      contract_type: "MULTUP",
-                      symbol: currentSymbol,
-                      currency: "USD",
-                      basis: "stake",
-                      amount: stake.toFixed(2),
-                      multiplier: multiplier,
-                    },
-                  }));
-                }
+                setTimeout(()=> {
+                   for (let i = 0; i < numb_; i++) {
+                      wsROC.send(JSON.stringify({   
+                         buy: 1,
+                         price: stake.toFixed(2),
+                         parameters: {
+                            contract_type: "MULTUP",
+                            symbol: currentSymbol,
+                            currency: "USD",
+                            basis: "stake",
+                            amount: stake.toFixed(2),
+                            multiplier: multiplier,
+                         },
+                      }));
+                    }
+                },500);
               }
             }
             else if (roc_ < -0.01) 
@@ -827,21 +828,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 const stake = parseFloat(stakeInput.value) || 1;
                 const multiplier = parseInt(multiplierInput.value) || 50;
                 const numb_ = parseInt(sellNum.value) || 1;
-
-                for (let i = 0; i < numb_; i++) {
-                  wsROC.send(JSON.stringify({
-                    buy: 1,
-                    price: stake.toFixed(2),
-                    parameters: {
-                      contract_type: "MULTDOWN",
-                      symbol: currentSymbol,
-                      currency: "USD",
-                      basis: "stake",
-                      amount: stake.toFixed(2),
-                      multiplier: multiplier,
-                    },
-                  }));
-                }
+                setTimeout(()=> {
+                   for (let i = 0; i < numb_; i++) {
+                       wsROC.send(JSON.stringify({
+                           buy: 1,
+                           price: stake.toFixed(2),
+                           parameters: {
+                             contract_type: "MULTDOWN",
+                             symbol: currentSymbol,
+                             currency: "USD",
+                             basis: "stake",
+                             amount: stake.toFixed(2),
+                             multiplier: multiplier,
+                           },
+                       }));
+                    }
+                },500);
               }
             }
           }
