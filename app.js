@@ -527,7 +527,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // garder les 500 dernières
-      candlesData = formatted.slice(-500);
+      candlesData = formatted.slice(-500);   
 
       // setData une seule fois au chargement initial
       if (!currentSeries) {
