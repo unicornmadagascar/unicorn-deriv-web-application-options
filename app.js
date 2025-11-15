@@ -786,7 +786,7 @@ document.addEventListener("DOMContentLoaded", () => {
                const Iu__ = iu - 20;
                roc_ = 100 * ((tickHistory__[iu] - tickHistory__[Iu__])/tickHistory__[Iu__]);
                ROC.push(roc_);
-               console.log("Sub symbol : " + symbol_test);
+               console.log("ROC : " + roc_);
                if (symbol_test === "cryBTC" || symbol_test === "comGOL")  
                {
                   if (ROC[Iu__] > 0.01)   
