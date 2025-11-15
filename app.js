@@ -766,7 +766,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       wsROC.onmessage = (msg) => handleMessage(JSON.parse(msg.data));   
-      wsROC.onclose = () => console.log("🔴 WebSocket ROC fermé");
+      wsROC.onclose = () => console.log("🔴 WebSocket ROC fermé");   
       wsROC.onerror = (err) => console.error("WebSocket error:", err);
     }
 
