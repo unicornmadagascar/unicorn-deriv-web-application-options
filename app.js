@@ -852,7 +852,7 @@ document.addEventListener("DOMContentLoaded", () => {
                               contract_type: "MULTDOWN",
                               symbol: currentSymbol,
                               currency: "USD",
-                              basis: "stake",
+                              basis: "stake",  
                               amount: stake.toFixed(2),
                               multiplier: multiplier,
                             }
@@ -861,7 +861,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       }
                     }
                   }
-               }
+               }  
             }
 
            iu = iu + 1;
