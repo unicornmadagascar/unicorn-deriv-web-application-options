@@ -614,7 +614,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     return { time, open, high, low, close };
-  }
+  }  
 
   // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
   function Openpositionlines(currentSeries) {
