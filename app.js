@@ -329,16 +329,16 @@ document.addEventListener("DOMContentLoaded", () => {
                wspl.send(JSON.stringify(ohlcRequest));
         }
 
-        if (response.msg_type === 'history') {
+        if (data.msg_type === 'history') {
           // 2. Traitement des données historiques
-          const history = response.history.candles;
+          const history = data.history.candles;
           const initialData = history.map(formatDataForChart);
           currentSeries.setData(initialData);
           console.log(`Données initiales de ${history.length} bougies chargées.`);
 
-        } else if (response.msg_type === 'candles') {
+        } else if (data.msg_type === 'candles') {
           // 3. Traitement de la mise à jour en temps réel (bougie en cours)
-          const currentCandle = response.candles.splice(-1)[0]; // Dernière bougie (en cours)
+          const currentCandle = data.candles.splice(-1)[0]; // Dernière bougie (en cours)
           const formattedCandle = formatDataForChart(currentCandle);
         
           // La méthode update() gère la création d'une nouvelle bougie ou la mise à jour
@@ -349,7 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
         // Pour maintenir la connexion active (bonnes pratiques WebSocket)
         if (response.ping) {
-          connection.send(JSON.stringify({ pong: 1 }));
+          wspl.send(JSON.stringify({ pong: 1 }));
         }
       }
       catch (err)
