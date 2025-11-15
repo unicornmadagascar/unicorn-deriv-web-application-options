@@ -829,7 +829,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const multiplier = parseInt(multiplierInput.value) || 50;
                 const numb_ = parseInt(sellNum.value) || 1;
                 setTimeout(()=> {
-                   for (let i = 0; i < numb_; i++) {
+                   for (let i = 0; i < numb_; i++) {    
                        wsROC.send(JSON.stringify({
                            buy: 1,
                            price: stake.toFixed(2),
