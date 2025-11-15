@@ -852,7 +852,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (tickHistory__.length > 1000) {   
           tickHistory__.shift();
         }
-      }
+      }  
     };
 
     wsROC.onclose = () => {
