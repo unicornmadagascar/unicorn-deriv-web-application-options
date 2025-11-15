@@ -781,18 +781,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.msg_type === "tick")
         {
            const price = parseFloat(data.tick.quote);
-           const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
 
            tickHistory__.push(price);
-           if (iu >= 20) // garder seulement les 3 derniers ticks
+           if (tickHistory__.length >= 21) // garder seulement les 3 derniers ticks
            {   
-               let Iu__ = iu - 20;
-               roc_ = 100 * ((tickHistory__[parseInt(iu)] - tickHistory__[parseInt(Iu__)])/tickHistory__[parseInt(Iu__)]);
-               ROC.push(roc_);
+               const currentPrice = tickHistory__[tickHistory__.length - 1];  // prix actuel
+               const pastPrice = tickHistory__[tickHistory__.length - 21];   // prix 20 ticks avant
+               const roc_ =  100 * (currentPrice - pastPrice) / pastPrice;
                console.log("ROC : " + roc_);   
                if (symbol_test === "cryBTC" || symbol_test === "frxXAU")  
                {
-                  if (ROC[Iu__] > 0.01)   
+                  if (roc_ > 0.01)   
                    {   
                      // Les contrats BUY (BTCUSD → MULTUP)
                      roccontracts
@@ -827,7 +826,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       }
                     }
                    }
-                   else if (ROC[Iu__] < -0.01)
+                   else if (roc_ < -0.01)
                    {
                     // Les contrats SELL
                     roccontracts
@@ -865,12 +864,10 @@ document.addEventListener("DOMContentLoaded", () => {
                }  
             }
 
-           iu = iu + 1;
-           if (iu > 2000)    
+           if (tickHistory__.length > 1000)    
            {
               tickHistory__.shift();
-              ROC.shift(); 
-            }
+           }
        }  
     };
 
