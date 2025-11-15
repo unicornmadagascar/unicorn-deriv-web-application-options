@@ -2799,7 +2799,7 @@ window.addEventListener("error", function (e) {
   });
 
   closeModalBtn.addEventListener("click", () => {
-    modal.style.display = "none";
+    modal.style.display = "none";   
   });
 
   window.addEventListener("click", e => {
