@@ -799,7 +799,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         .forEach(c => {
                            wsROC.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                         });
-
+   
                      if (rocproposal__.contract_id) return;    
 
                      console.log("📤 Ouverture d'un nouveau contrat BUY...");
