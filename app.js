@@ -785,7 +785,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (roc_ > 0.01) {
               // SELL existing MULTDOWN contracts
               rocContracts
-                .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTDOWN")
+                .filter(c => c.contract_type === "MULTDOWN")
                 .forEach(c => wsROC.send(JSON.stringify({ sell: c.contract_id, price: 0 })));
 
               if (rocproposal__ && rocproposal__.contract_id) return;
@@ -812,11 +812,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
               }
             }
-
-            if (roc_ < -0.01) {
+            else if (roc_ < -0.01) 
+            {
               // SELL existing MULTUP contracts
               rocContracts
-                .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTUP")
+                .filter(c => c.contract_type === "MULTUP")
                 .forEach(c => wsROC.send(JSON.stringify({ sell: c.contract_id, price: 0 })));
 
               if (rocproposal__ && rocproposal__.contract_id) return;
