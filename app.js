@@ -421,6 +421,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // tick handling  
         if (data.msg_type === "tick" && data.tick) {
           handleTick(data.tick);   
+          console.log("Tick Handling here.");
           return;
         }
     };   
@@ -737,132 +738,122 @@ document.addEventListener("DOMContentLoaded", () => {
   function RocstartAutomation() {
     if (!currentSymbol) return;
 
-    const symbol_test = currentSymbol.slice(0, 6);
+    const symbolPrefix = currentSymbol.slice(0, 6);
+    let wsROC = null;
+    let rocContracts = [];
+    let rocProposal = null;
 
-    // === WebSocket Setup ===
-    if (!wsROC || wsROC.readyState === WebSocket.CLOSED) {   
+    const MAX_HISTORY = 1000; // max taille du buffer
+
+    function connectWebSocket() {
       wsROC = new WebSocket(WS_URL);
 
       wsROC.onopen = () => {
-        console.log("WebSocket opened. Authorizing...");  
+        console.log("🟢 WebSocket ROC connecté");
         wsROC.send(JSON.stringify({ authorize: TOKEN }));
       };
+
+      wsROC.onmessage = (msg) => handleMessage(JSON.parse(msg.data));
+      wsROC.onclose = () => console.log("🔴 WebSocket ROC fermé");
+      wsROC.onerror = (err) => console.error("WebSocket error:", err);
     }
 
-    // === On WebSocket Message ===
-    wsROC.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
+    function handleMessage(data) {
+      switch (data.msg_type) {
+        case "authorize":
+          wsROC.send(JSON.stringify({ ticks: currentSymbol, subscribe: 1 }));
+          wsROC.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
+          wsROC.send(JSON.stringify({ portfolio: 1 }));
+          break;
 
-      if (data.msg_type === "authorize") {
-        console.log("Authorized. Subscribing...");
-        wsROC.send(JSON.stringify({ ticks: currentSymbol, subscribe: 1 }));
-        wsROC.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
-        wsROC.send(JSON.stringify({ portfolio: 1 }));
+        case "portfolio":
+          rocContracts = data.portfolio.contracts;
+          break;
+
+        case "proposal_open_contract":
+          rocProposal = data.proposal_open_contract;
+          break;
+
+        case "tick":
+          handleTick(data.tick);
+          break;
       }
+    }
 
-      if (data.msg_type === "portfolio") {
-        rocContracts = data.portfolio.contracts || [];
-      }
+    function handleTick(tick) {
+      const price = parseFloat(tick.quote);
+      tickHistory__.push(price);
 
-      if (data.msg_type === "proposal_open_contract") {
-        rocproposal__ = data.proposal_open_contract;
-      }
+      if (tickHistory__.length >= 21) {
+        const currentPrice = tickHistory__[tickHistory__.length - 1];
+        const pastPrice = tickHistory__[tickHistory__.length - 21];
+        const roc_ = 100 * (currentPrice - pastPrice) / pastPrice;
 
-      if (data.msg_type === "tick") {
-        const price = parseFloat(data.tick.quote);
+        console.log("ROC :", roc_.toFixed(4));
 
-        tickHistory__.push(price);
-
-        if (tickHistory__.length >= 21) {
-          const currentPrice = tickHistory__[tickHistory__.length - 1];
-          const pastPrice = tickHistory__[tickHistory__.length - 21];
-          const roc_ = 100 * (currentPrice - pastPrice) / pastPrice;
-
-          console.log("ROC : " + roc_.toFixed(4));
-
-          // Cas spécifique symboles BTC et XAU
-          if (symbol_test === "cryBTC" || symbol_test === "frxXAU") {
-
-            if (roc_ > 0.01) {
-              // SELL existing MULTDOWN contracts
-              rocContracts
-                .filter(c => c.contract_type === "MULTDOWN")
-                .forEach(c => wsROC.send(JSON.stringify({ sell: c.contract_id, price: 0 })));
-
-              if (rocproposal__ && rocproposal__.contract_id) return;
-
-              console.log("📤 Ouverture d'un nouveau contrat BUY...");
-              if (currentSymbol === "cryBTCUSD" || currentSymbol === "frxXAUUSD") {
-                const stake = parseFloat(stakeInput.value) || 1;
-                const multiplier = parseInt(multiplierInput.value) || 50;
-                const numb_ = parseInt(buyNum.value) || 1;
-                setTimeout(()=> {
-                   for (let i = 0; i < numb_; i++) {
-                      wsROC.send(JSON.stringify({   
-                         buy: 1,
-                         price: stake.toFixed(2),
-                         parameters: {
-                            contract_type: "MULTUP",
-                            symbol: currentSymbol,
-                            currency: "USD",
-                            basis: "stake",
-                            amount: stake.toFixed(2),
-                            multiplier: multiplier,
-                         },
-                      }));
-                    }
-                },500);
-              }
-            }
-            else if (roc_ < -0.01) 
-            {
-              // SELL existing MULTUP contracts
-              rocContracts
-                .filter(c => c.contract_type === "MULTUP")
-                .forEach(c => wsROC.send(JSON.stringify({ sell: c.contract_id, price: 0 })));
-
-              if (rocproposal__ && rocproposal__.contract_id) return;
-
-              console.log("📤 Ouverture d'un nouveau contrat SELL...");
-              if (currentSymbol === "cryBTCUSD" || currentSymbol === "frxXAUUSD") {
-                const stake = parseFloat(stakeInput.value) || 1;
-                const multiplier = parseInt(multiplierInput.value) || 50;
-                const numb_ = parseInt(sellNum.value) || 1;
-                setTimeout(()=> {
-                   for (let i = 0; i < numb_; i++) {    
-                       wsROC.send(JSON.stringify({
-                           buy: 1,
-                           price: stake.toFixed(2),
-                           parameters: {
-                             contract_type: "MULTDOWN",
-                             symbol: currentSymbol,
-                             currency: "USD",
-                             basis: "stake",
-                             amount: stake.toFixed(2),
-                             multiplier: multiplier,
-                           },
-                       }));
-                    }
-                },500);
-              }
-            }
+        if (["cryBTC", "frxXAU"].includes(symbolPrefix)) {
+          if (roc_ > 0.01) {
+            handleSignal("BUY");
+          } else if (roc_ < -0.01) {
+            handleSignal("SELL");
           }
         }
+      }
 
-        if (tickHistory__.length > 1000) {   
-          tickHistory__.shift();
-        }
-      }  
-    };
+      if (tickHistory__.length > MAX_HISTORY) {
+        tickHistory__.shift(); // enlever l'élément le plus ancien
+      }
+    }
 
-    wsROC.onclose = () => {
-      console.log("WebSocket disconnected.");
-    };
+    function handleSignal(direction) {
+      const oppositeType = direction === "BUY" ? "MULTDOWN" : "MULTUP";
+      const mainType = direction === "BUY" ? "MULTUP" : "MULTDOWN";
 
-    wsROC.onerror = (err) => {
-      console.error("WebSocket error:", err);
-    };
+      // 1. Fermer les contrats opposés
+      rocContracts
+        .filter(c => c.symbol === currentSymbol && c.contract_type === oppositeType)
+        .forEach(c => {
+          console.log("🛑 Fermeture contrat", oppositeType);
+          wsROC.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+        });
+
+      // 2. Vérifier si un contrat actif existe avant d'ouvrir
+      if (rocProposal?.contract_id) {
+        console.log("⏸️ Contrat déjà actif, attente...");
+        return;
+      }
+
+      // 3. Ouvrir un nouveau contrat
+      const stake = parseFloat(stakeInput.value) || 1;
+      const multiplier = parseInt(multiplierInput.value) || 50;
+      const repeat = direction === "BUY"
+        ? (parseInt(buyNum.value) || 1)
+        : (parseInt(sellNum.value) || 1);
+
+      console.log(`📤 Ouverture d’un contrat ${direction} (${mainType})`);
+
+      for (let i = 0; i < repeat; i++) {
+        wsROC.send(JSON.stringify({
+          buy: 1,
+          price: stake.toFixed(2),
+          parameters: {
+            contract_type: mainType,
+            symbol: currentSymbol,
+            currency: "USD",
+            basis: "stake",
+            amount: stake.toFixed(2),
+            multiplier: multiplier,
+          }
+        }));
+      }
+    }
+
+    // Démarrage de la connexion WS
+    if (!wsROC || wsROC.readyState > 1) {
+      connectWebSocket();
+    }
   }
+
 
   function RocstopAutomation() {
     if (wsROC  && wsROC.readyState === WebSocket.OPEN) {
