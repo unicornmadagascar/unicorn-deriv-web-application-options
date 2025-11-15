@@ -382,9 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     wspl.onmessage = (evt) => {
-      try {
         const data = JSON.parse(evt.data);
-
         // authorize response
         if (data.msg_type === "authorize" && data.authorize) {
           authorized = true;       
@@ -426,11 +424,6 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log("Tick Handling here.");
           return;
         }
- 
-        // other messages are ignored here  
-      } catch (err) {  
-        console.error("WS parse err", err);          
-      }   
     };   
 
     wspl.onclose = () => {
