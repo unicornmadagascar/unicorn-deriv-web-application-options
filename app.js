@@ -782,6 +782,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // Cas spécifique symboles BTC et XAU
           if (symbol_test === "cryBTC" || symbol_test === "frxXAU") {
+
             if (roc_ > 0.01) {
               // SELL existing MULTDOWN contracts
               rocContracts
@@ -797,7 +798,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const numb_ = parseInt(buyNum.value) || 1;
 
                 for (let i = 0; i < numb_; i++) {
-                  wsROC.send(JSON.stringify({
+                  wsROC.send(JSON.stringify({   
                     buy: 1,
                     price: stake.toFixed(2),
                     parameters: {
