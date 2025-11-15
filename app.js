@@ -674,7 +674,7 @@ document.addEventListener("DOMContentLoaded", () => {
             lineWidth: 2,
             lineStyle: LightweightCharts.LineStyle.Solid,
             axisLabelVisible: true,
-            title: `${type} @ ${entryPrice.toFixed(2)}`,
+            title: `${type} @ ${entryPrice.toFixed(2)}`,  
           });
 
           priceLines4openlines[id] = line;
