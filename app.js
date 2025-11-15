@@ -740,7 +740,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const symbol_test = currentSymbol.slice(0, 6);
 
     // === WebSocket Setup ===
-    if (!wsROC || wsROC.readyState === WebSocket.CLOSED) {
+    if (!wsROC || wsROC.readyState === WebSocket.CLOSED) {   
       wsROC = new WebSocket(WS_URL);
 
       wsROC.onopen = () => {
