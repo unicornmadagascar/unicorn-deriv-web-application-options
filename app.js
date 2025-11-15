@@ -746,12 +746,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const MAX_HISTORY = 1000; // max taille du buffer
 
     function connectWebSocket() {
-      wsROC = new WebSocket(WS_URL);
 
-      wsROC.onopen = () => {  
-        console.log("🟢 WebSocket ROC connecté");
-        wsROC.send(JSON.stringify({ authorize: TOKEN }));  
-      };
+      if (!wsROC || wsROC === null){
+         wsROC = new WebSocket(WS_URL);
+         console.log("🟢 WebSocket ROC connecté");
+         wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+
+      if (wsROC && (wsROC.readyState === WebSocket.OPEN || wsROC.readyState === WebSocket.CONNECTING))
+      {
+       wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+
+      if (wsROC && (wsROC.readyState === WebSocket.CLOSED || wsROC.readyState === WebSocket.CLOSING))
+      {
+       wsROC = new WebSocket(WS_URL);
+       console.log("🟢 WebSocket ROC connecté");
+       wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };
+      }
 
       wsROC.onmessage = (msg) => handleMessage(JSON.parse(msg.data));   
       wsROC.onclose = () => console.log("🔴 WebSocket ROC fermé");
