@@ -785,14 +785,14 @@ document.addEventListener("DOMContentLoaded", () => {
            console.log("TickHistoryROC : " + tickHistory__);
            if (iu >= 20) // garder seulement les 3 derniers ticks
            {   
-               const Iu__ = iu - 20;
+               let Iu__ = iu - 20;
                roc_ = 100 * ((tickHistory__[iu] - tickHistory__[Iu__])/tickHistory__[Iu__]);
                ROC.push(roc_);
                console.log("ROC : " + roc_);
                if (symbol_test === "cryBTC" || symbol_test === "frxXAU")  
                {
                   if (ROC[Iu__] > 0.01)   
-                   {
+                   {   
                      // Les contrats BUY (BTCUSD → MULTUP)
                      roccontracts
                         .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTDOWN")
