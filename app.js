@@ -166,8 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
        // 🔹 Appelle ta fonction de souscription   
        subscribeSymbol(s.symbol,currentChartType);  
-       // Candles Call
-       //candlessubscribing(s.symbol,currentChartType);    
+       // Candles Call  
      });
 
      symbolList.appendChild(el);
