@@ -849,7 +849,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
 
-        if (tickHistory__.length > 1000) {
+        if (tickHistory__.length > 1000) {   
           tickHistory__.shift();
         }
       }
