@@ -775,12 +775,12 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
 
         case "tick":
-          handleTick(data.tick);
+          handleTicks(data.tick);
           break;
       }
     }
 
-    function handleTick(tick) {
+    function handleTicks(tick) {
       const price = parseFloat(tick.quote);
       tickHistory__.push(price);
 
