@@ -409,7 +409,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 300);  
           }   
   
-          displaySymbols(currentChartType);
+          displaySymbols(currentChartType);    
           return;
         }
 
