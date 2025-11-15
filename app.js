@@ -266,6 +266,8 @@ document.addEventListener("DOMContentLoaded", () => {
   {
     if(!symbol) return;
 
+    if (currentChartType !== "candlestick") return;  
+
     currentSymbol = symbol;
     initChart(currentChartType);
 
@@ -291,9 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
        
      const data = JSON.parse(msg.data);
       try {
-        
-        if (currentChartType !== "candlestick") return;          
-        
+          
         // authorize response
         if (data.msg_type === "authorize" && data.authorize) {
           //wspl.send(JSON.stringify({ forget_all: "candles" }));        
@@ -342,6 +342,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    if (currentChartType === "candlestick") return;
+
     currentSymbol = symbol;
     initChart(currentChartType);
 
@@ -351,8 +353,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }        
 
     if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {        
-    
-      if (currentChartType === "candlestick") return;
       
       wspl.send(JSON.stringify({ forget_all: "ticks" }));        
       wspl.send(JSON.stringify({ticks : currentSymbol, subscribe: 1}));            
@@ -782,6 +782,7 @@ document.addEventListener("DOMContentLoaded", () => {
            const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
 
            tickHistory__.push(price);
+           console.log("TickHistoryROC : " + tickHistory__);
            if (iu >= 20) // garder seulement les 3 derniers ticks
            {   
                const Iu__ = iu - 20;
@@ -864,7 +865,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
            iu = iu + 1;
-           if (iu > 500)    
+           if (iu > 2000)    
            {
               tickHistory__.shift();
               ROC.shift(); 
