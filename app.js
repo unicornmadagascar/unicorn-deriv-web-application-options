@@ -732,7 +732,7 @@ document.addEventListener("DOMContentLoaded", () => {
     label.style.pointerEvents = "none";
     wrapper.appendChild(label);
 
-    container.appendChild(wrapper);
+    container.appendChild(wrapper);   
   }
   
   function RocstartAutomation() {
