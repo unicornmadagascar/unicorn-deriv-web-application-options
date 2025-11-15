@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
  
  // --- SYMBOLS ---
-  function displaySymbols(currentInterval,currentChartType) {
+  function displaySymbols(currentChartType) {
    symbolList.innerHTML = "";
 
    SYMBOLS.forEach(s => {
@@ -162,9 +162,9 @@ document.addEventListener("DOMContentLoaded", () => {
        el.classList.add("selected");
 
        // 🔹 Appelle ta fonction de souscription   
-       subscribeSymbol(s.symbol,currentInterval,currentChartType);  
+       subscribeSymbol(s.symbol,currentChartType);  
        // Candles Call
-       candlessubscribing(s.symbol,currentInterval,currentChartType);    
+       candlessubscribing(s.symbol,currentChartType);    
      });
 
      symbolList.appendChild(el);
@@ -262,7 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
    }
   }
 
-  function candlessubscribing(symbol,currentInterval,currentChartType) 
+  function candlessubscribing(symbol,currentChartType) 
   {
     if(!symbol) return;
 
@@ -296,8 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // authorize response
         if (data.msg_type === "authorize" && data.authorize) {
-          authorized = true;
-          wspl.send(JSON.stringify({ forget_all: "candles" }));        
+          //wspl.send(JSON.stringify({ forget_all: "candles" }));        
           //wspl.send(JSON.stringify(Payloadforsubscription(symbol,currentInterval,currentChartType))); 
           wspl.send(JSON.stringify({  
                      tick_history: symbol,
@@ -305,8 +304,7 @@ document.addEventListener("DOMContentLoaded", () => {
                      count: 500,
                      end: "latest",   
                      granularity: 60,          // convertTF(currentInterval)
-                     style: "candles",
-                     subscribe: 1  
+                     style: "candles", 
           }));
         }
 
@@ -335,7 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }   
 
   // --- SUBSCRIBE SYMBOL ---
-  function subscribeSymbol(symbol,currentInterval,currentChartType) {    
+  function subscribeSymbol(symbol,currentChartType) {    
     if (wspl === null) {
       pendingSubscribe = symbol;
       return;
@@ -408,7 +406,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 300);  
           }
   
-          displaySymbols(currentInterval,currentChartType);
+          displaySymbols(currentChartType);
           return;
         }
 
@@ -2678,7 +2676,7 @@ window.addEventListener("error", function (e) {
 
   // startup
   initDerivAccountManager();
-  displaySymbols(currentInterval,currentChartType);
+  displaySymbols(currentChartType);
   initChart(currentChartType);
   initPLGauge();
   initTable();
