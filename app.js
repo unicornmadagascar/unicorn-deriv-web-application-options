@@ -150,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
      const el = document.createElement("div");
      el.className = "symbol-item";
      el.textContent = s.name;
-     el.dataset.symbol = s.symbol;
+     el.dataset.symbol = s.symbol;   
    
      el.addEventListener("click", () => {
        // 🔹 Supprime la sélection sur tous les symboles
