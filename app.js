@@ -738,7 +738,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function RocstartAutomation() {
 
     if (!currentSymbol) return;       
-
+    
     const symbol_test = currentSymbol.slice(0,6);
 
     if (wsROC === null)
