@@ -753,7 +753,7 @@ document.addEventListener("DOMContentLoaded", () => {
         wsROC.send(JSON.stringify({ authorize: TOKEN }));  
       };
 
-      wsROC.onmessage = (msg) => handleMessage(JSON.parse(msg.data));
+      wsROC.onmessage = (msg) => handleMessage(JSON.parse(msg.data));   
       wsROC.onclose = () => console.log("🔴 WebSocket ROC fermé");
       wsROC.onerror = (err) => console.error("WebSocket error:", err);
     }
