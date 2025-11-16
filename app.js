@@ -345,7 +345,9 @@ document.addEventListener("DOMContentLoaded", () => {
                       subscribe: 1 // C'est la clé pour les mises à jour en temps réel !
                };
 
+               console.log('Envoi de la demande de données OHLC:', ohlcRequest);
                wspl.send(JSON.stringify(ohlcRequest));
+               console.log('Demande de données OHLC envoyée pour le symbole:', symbol);
         }
 
         if (data.msg_type === 'history' && response.history && response.history.candles) {
