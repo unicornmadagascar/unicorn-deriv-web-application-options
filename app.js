@@ -375,7 +375,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Pour maintenir la connexion active (bonnes pratiques WebSocket)   
         if (data.ping) {
           wspl__ct.send(JSON.stringify({ pong: 1 }));
-        }   
+        }      
       }
       catch (err)
       {
