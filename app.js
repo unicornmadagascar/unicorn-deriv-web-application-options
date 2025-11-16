@@ -2011,8 +2011,8 @@ closeAll.onclick=()=>{
       value += delta;
 
       randomData.push({   
-        time,   
-        value: +value.toFixed(3)
+         time,   
+         value: +value.toFixed(3)
      });   
    }
     
