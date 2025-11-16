@@ -1948,15 +1948,27 @@ closeAll.onclick=()=>{
    const startInput = document.getElementById("startDate").value;
    const endInput = document.getElementById("endDate").value;
 
-   // Initialisation du WebSocket ou reconnexion
-   if (!connection_ws || connection_ws.readyState === WebSocket.CLOSED) {
-     connection_ws = new WebSocket(WS_URL);
-
-     connection_ws.onopen = () => {
-       connection_ws.send(JSON.stringify({ authorize: TOKEN }));    
-     };    
+   if (connection_ws===null)
+   {
+    connection_ws = new WebSocket(WS_URL);
+    connection_ws.onopen = () => {
+       connection_ws.send(JSON.stringify({ authorize: TOKEN }));
+    };
+   }
+   
+   if (connection_ws && (connection_ws.readyState === WebSocket.OPEN || connection_ws.readyState === WebSocket.CONNECTING))
+   {
+    connection_ws.onopen=()=>{ connection_ws.send(JSON.stringify({ authorize: TOKEN })); };
    }
 
+   if (connection_ws && (connection_ws.readyState === WebSocket.CLOSED || connection_ws.readyState === WebSocket.CLOSING))
+   {
+    connection_ws = new WebSocket(WS_URL);
+    connection_ws.onopen=()=>{ connection_ws.send(JSON.stringify({ authorize: TOKEN })); };
+   }
+    
+   connection_ws.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+   connection_ws.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
    connection_ws.onmessage = (msg) => {
      const data = JSON.parse(msg.data);
 
