@@ -1999,7 +1999,7 @@ closeAll.onclick=()=>{
 
         if (profitData.length) {
            areahistoricalSeries.setData(profitData);
-           charthistorical.timeScale().fitContent();  
+           charthistorical.timeScale().fitContent();     
         } else {  
            console.warn("Aucun profit à afficher.");     
        }
