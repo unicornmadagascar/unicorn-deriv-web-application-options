@@ -1998,7 +1998,7 @@ closeAll.onclick=()=>{
  // === Série aléatoire avant les vrais contrats ===
  function setRandomSeries() {
    const now = Math.floor(Date.now() / 1000);
-   let randomData = [];
+   let randomData = [];   
    const target = 1.0;      // Valeur cible (asymptote)
    let value = 0;           // Point de départ
 
@@ -2008,7 +2008,7 @@ closeAll.onclick=()=>{
       // facteur d'apprentissage + petite variation aléatoire
       const delta = (target - value) * 0.05 + (Math.random() * 0.1 - 0.05);
 
-      value += delta;
+      value += delta;   
 
       randomData.push({   
          time,   
