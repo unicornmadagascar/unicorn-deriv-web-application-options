@@ -2015,7 +2015,7 @@ closeAll.onclick=()=>{
      });   
    }
     
-   areahistoricalSeries.setData(randomData);
+   areahistoricalSeries.setData(randomData);   
  }
    
   // === Initialisation du graphique ===
