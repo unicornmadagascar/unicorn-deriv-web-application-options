@@ -373,11 +373,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.ping) {
           wspl.send(JSON.stringify({ pong: 1 }));
         }       
-    };    
+    };       
 
     wspl.onclose = () => {
          console.log("Socket Closed");
-    }; 
+    };    
   }   
 
   // --- SUBSCRIBE SYMBOL ---
