@@ -2453,8 +2453,6 @@ function extractValue(event, key) {
    etProfitgraphical();
  });
 
-
-
  // 🔹 Gérer le changement de compte dans la combobox
  document.getElementById("accountSelect")?.addEventListener("change", (e) => {
     const selectedToken = e.target.value;
