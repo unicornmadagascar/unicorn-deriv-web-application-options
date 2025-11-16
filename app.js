@@ -73,6 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let chart = null;
   let charthistorical = null;
   let areaSeries = null;
+  let areahistoricalSeries = null;
   let chartData = [];
   let lastPrices = {};
   let recentChanges = [];
@@ -81,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let Dispersion;
   let isConnect = false;
   let it = 0;
-  let iu = 0;
+  let iu = 0;  
   let ROC = [];
   let roc_;
   let TOKEN;
@@ -2012,7 +2013,7 @@ closeAll.onclick=()=>{
       timeScale: { timeVisible: true, secondsVisible: true }
     });
 
-    areaSeries  = chart.addAreaSeries({
+    areahistoricalSeries  = chart.addAreaSeries({
         lineColor: "#2962FF",
         topColor: "rgba(41,98,255,0.28)",
         bottomColor: "rgba(41,98,255,0.05)",
@@ -2031,33 +2032,7 @@ closeAll.onclick=()=>{
       // 🔽 Trier les données par temps
       chartData = chartData.sort((a, b) => a.time - b.time);
 
-      // Création du graphique
-      const charthistorical = LightweightCharts.createChart(historicalchartcontainer, {
-        width: historicalchartcontainer.clientWidth,
-        height: historicalchartcontainer.clientHeight,
-        layout: {   
-          background: { color: "#ffffff" },   
-          textColor: "#333",
-        },
-        timeScale: { timeVisible: true, secondsVisible: true },
-        grid: {
-          vertLines: { color: "#eee" },    
-          horzLines: { color: "#eee" },
-        },
-      });
-
-      const areaSeries = charthistorical.addAreaSeries({
-        topColor: "rgba(0, 150, 136, 0.56)",
-        bottomColor: "rgba(0, 150, 136, 0.04)",
-        lineColor: "rgba(0, 150, 136, 1)",
-        lineWidth: 2,
-      });
-
-      areaSeries.setData(chartData);
-
-      window.addEventListener("resize", () => {
-        charthistorical.applyOptions({ width: container.clientWidth });
-      });
+      areahistoricalSeries.setData(chartData);
  }
 
  // 🔹 Fonction de calcul PNL, WinRate, LossRate
