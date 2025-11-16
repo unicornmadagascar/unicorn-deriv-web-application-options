@@ -326,11 +326,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     wspl.onmessage = (msg) => {      
-       
-     const data = JSON.parse(msg.data);
-     console.log('Message reçu du WebSocket (candles):', data);
-      try {
-             
+        const data = JSON.parse(msg.data);
+        console.log('Message reçu du WebSocket (candles):', data);
         // authorize response
         if (data.msg_type === "authorize" && data.authorize) {
               console.log('Connexion WebSocket établie avec Deriv.');
@@ -375,12 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Pour maintenir la connexion active (bonnes pratiques WebSocket)   
         if (data.ping) {
           wspl.send(JSON.stringify({ pong: 1 }));
-        }      
-      }
-      catch (err)   
-      {
-        console.log('Error :',err);
-      }    
+        }       
     };    
 
     wspl.onclose = () => {
