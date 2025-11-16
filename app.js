@@ -302,7 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentChartType !== "candlestick") return;  
 
     currentSymbol = symbol;
-    //initChart(currentChartType);
+    initChart(currentChartType);
 
     if (wspl === null)
     {
@@ -366,9 +366,9 @@ document.addEventListener("DOMContentLoaded", () => {
        }
     
         // Pour maintenir la connexion active (bonnes pratiques WebSocket)
-        if (response.ping) {
+        if (data.ping) {
           wspl.send(JSON.stringify({ pong: 1 }));
-        }
+        }   
       }
       catch (err)
       {
