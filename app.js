@@ -1987,7 +1987,7 @@ closeAll.onclick=()=>{
            areahistoricalSeries.setData(profitData);
            charthistorical.timeScale().fitContent();  
         } else {
-           console.warn("Aucun profit à afficher.");
+           console.warn("Aucun profit à afficher.");   
        }
      }
    };
