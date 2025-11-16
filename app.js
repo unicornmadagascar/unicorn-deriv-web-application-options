@@ -2023,12 +2023,12 @@ closeAll.onclick=()=>{
      priceFormat: { type: "price", precision: 2 },
    });
 
-   // Injecter les données
+   // Injecter les données   
    areahistoricalSeries.setData(chartData);
 
   // Responsive
    window.addEventListener("resize", () => {
-     chart.applyOptions({ width: container.clientWidth });
+     charthistorical.applyOptions({ width: container.clientWidth });
   });
  }
 
