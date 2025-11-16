@@ -2011,7 +2011,7 @@ closeAll.onclick=()=>{
       const charthistorical = LightweightCharts.createChart(container, {
         width: container.clientWidth,
         height: container.clientHeight,
-        layout: {
+        layout: {   
           background: { color: "#ffffff" },   
           textColor: "#333",
         },
