@@ -325,6 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wspl.onmessage = (msg) => {   
        
      const data = JSON.parse(msg.data);
+     console.log('Message reçu du WebSocket (candles):', data);
       try {
           
         // authorize response
@@ -337,7 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       tick_history: symbol,
                       adjust_start_time : 1,
                       count: 500,
-                      end: "latest",  
+                      end: "latest",   
                       start: 1, 
                       granularity: 60,          // convertTF(currentInterval)
                       style: "candles", 
