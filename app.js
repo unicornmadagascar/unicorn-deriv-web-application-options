@@ -2041,7 +2041,7 @@ closeAll.onclick=()=>{
         },
         timeScale: { timeVisible: true, secondsVisible: true },
         grid: {
-          vertLines: { color: "#eee" },
+          vertLines: { color: "#eee" },    
           horzLines: { color: "#eee" },
         },
       });
