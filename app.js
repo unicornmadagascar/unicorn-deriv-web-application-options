@@ -1944,95 +1944,104 @@ closeAll.onclick=()=>{
     };
  }
 
- function GetProfitgraphical()
- {
-  const startInput = document.getElementById("startDate").value;
-  const endInput = document.getElementById("endDate").value;
+  function GetProfitgraphical() {
+   const startInput = document.getElementById("startDate").value;
+   const endInput = document.getElementById("endDate").value;
 
-  if (connection_ws===null)
-   {
-    connection_ws = new WebSocket(WS_URL);
-    connection_ws.onopen = () => {
-       connection_ws.send(JSON.stringify({ authorize: TOKEN }));
-    };
-   }
-   
-   if (connection_ws && (connection_ws.readyState === WebSocket.OPEN || connection_ws.readyState === WebSocket.CONNECTING))
-   {
-    connection_ws.onopen=()=>{ connection_ws.send(JSON.stringify({ authorize: TOKEN })); };
+   // Initialisation du WebSocket ou reconnexion
+   if (!connection_ws || connection_ws.readyState === WebSocket.CLOSED) {
+     connection_ws = new WebSocket(WS_URL);
+
+     connection_ws.onopen = () => {
+       connection_ws.send(JSON.stringify({ authorize: TOKEN }));    
+     };
    }
 
-   if (connection_ws && (connection_ws.readyState === WebSocket.CLOSED || connection_ws.readyState === WebSocket.CLOSING))
-   {
-    connection_ws = new WebSocket(WS_URL);
-    connection_ws.onopen=()=>{ connection_ws.send(JSON.stringify({ authorize: TOKEN })); };
-   }
-    
-   connection_ws.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-   connection_ws.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
    connection_ws.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
+     const data = JSON.parse(msg.data);
 
-      if (data.msg_type === "authorize")
-      {
+     if (data.msg_type === "authorize") {
+       // Requête profit_table après autorisation
        connection_ws.send(JSON.stringify({
-          profit_table: 1,
-          description: 1,
-          date_from: startInput.toString(),
-          date_to: endInput.toString(),   
-          limit: 500,
-           sort : "DESC"
+         profit_table: 1,
+         description: 1,
+         date_from: startInput.toString(),
+         date_to: endInput.toString(),
+         limit: 500,
+         sort: "ASC",
        }));
-      }
+     }
 
-       // Quand on reçoit la profit_table
-     if (data.msg_type === "profit_table") {     
-        const txs = data.profit_table.transactions;
+     if (data.msg_type === "profit_table") {
+       const txs = data.profit_table.transactions;
 
-        if (!txs || txs.length === 0) {
-          document.getElementById("message").textContent = "Aucun contrat trouvé pour cette période.";
-          return;
-        }
+       if (!txs || txs.length === 0) {
+         document.getElementById("message").textContent = "Aucun contrat trouvé pour cette période.";
+         return;
+       }
 
-        plotProfitTableChart(txs);
-      }
-    };
+       plotProfitTableChart(txs); // Charger les vrais résultats
+     }
+   };
+
+   connection_ws.onclose = () => console.log("WebSocket fermé");
+   connection_ws.onerror = (e) => console.error("Erreur WebSocket", e);
  }
 
- function inihistoricalchart()
- {
-  try { if (charthistorical) charthistorical.remove(); } catch (e) {}          
-    historicalchartcontainer.innerHTML = "";
+ // === Série aléatoire avant les vrais contrats ===
+ function setRandomSeries() {
+   const now = Math.floor(Date.now() / 1000);
+   const randomData = [];
 
-    charthistorical = LightweightCharts.createChart(historicalchartcontainer, {
-      layout: {
-        textColor: "#333",   
-        background: { type: "solid", color: "#fff" },        
-      },
-      grid: { vertLines: { color: "rgba(255,255,255,0.05)" }, horzLines: { color: "rgba(255,255,255,0.05)" } },
-      timeScale: { timeVisible: true, secondsVisible: true }
-    });
+   for (let i = 10; i >= 1; i--) {
+     const time = now - i * 3600; // toutes les heures
+     const value = +(Math.random() * 5 - 2.5).toFixed(2); // valeur aléatoire entre -2.5 et 2.5
+     randomData.push({ time, value });
+   }
 
-    areahistoricalSeries  = chart.addAreaSeries({
-        lineColor: "#2962FF",
-        topColor: "rgba(41,98,255,0.28)",
-        bottomColor: "rgba(41,98,255,0.05)",
-        lineWidth: 2,
+   areahistoricalSeries.setData(randomData);
+ }
+
+  // === Affichage des données réelles du profit_table ===
+  function plotProfitTableChart(transactions) {
+   let chartDatahistorical = transactions.map((t) => ({
+     time: Number(t.exit_time), // timestamp UNIX
+     value: Number(parseFloat(t.profit).toFixed(2)),
+   }));
+
+   chartDatahistorical.sort((a, b) => a.time - b.time);
+   areahistoricalSeries.setData(chartDatahistorical); // Mise à jour du graphique
+ }
+
+  // === Initialisation du graphique ===
+ function inihistoricalchart() {
+   // Supprimer le graphique précédent
+   try { if (charthistorical) charthistorical.remove(); } catch (e) {}
+   historicalchartcontainer.innerHTML = "";
+
+   // Créer un nouveau graphique
+   charthistorical = LightweightCharts.createChart(historicalchartcontainer, {
+     layout: {
+       textColor: "#333",
+       background: { type: "solid", color: "#fff" },
+     },
+     grid: {
+       vertLines: { color: "rgba(200,200,200,0.3)" },
+       horzLines: { color: "rgba(200,200,200,0.3)" },
+     },
+     timeScale: { timeVisible: true, secondsVisible: false },
    });
- }
 
- function plotProfitTableChart(transactions) {
-       
-      // 🟡 Normaliser les données
-      let chartData = transactions.map(t => ({
-        time: Number(t.exit_time), // timestamp UNIX en sec
-        value: Number(parseFloat(t.profit).toFixed(2)),
-      }));
+   // Ajouter AreaSeries
+   areahistoricalSeries = charthistorical.addAreaSeries({
+     lineColor: "#2962FF",
+     topColor: "rgba(41,98,255,0.28)",
+     bottomColor: "rgba(41,98,255,0.05)",
+     lineWidth: 2,
+   });
 
-      // 🔽 Trier les données par temps
-      chartData = chartData.sort((a, b) => a.time - b.time);
-
-      areahistoricalSeries.setData(chartData);
+   // 🎲 Donner des données aléatoires par défaut
+   setRandomSeries();
  }
 
  // 🔹 Fonction de calcul PNL, WinRate, LossRate
