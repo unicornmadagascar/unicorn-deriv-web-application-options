@@ -322,7 +322,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wspl && (wspl.readyState === WebSocket.CLOSED || wspl.readyState === WebSocket.CLOSING))
     {
       wspl = new WebSocket(WS_URL);
-      wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
+      wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };    
     }
     
     wspl.onmessage = (msg) => {      
