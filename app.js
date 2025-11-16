@@ -377,7 +377,7 @@ document.addEventListener("DOMContentLoaded", () => {
           wspl__ct.send(JSON.stringify({ pong: 1 }));
         }      
       }
-      catch (err)
+      catch (err)   
       {
         console.log('Error :',err);
       }    
