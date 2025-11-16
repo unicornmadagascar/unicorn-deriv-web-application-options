@@ -1977,7 +1977,7 @@ closeAll.onclick=()=>{
 
         const profitData = txs
         .map(t => ({
-           time: Math.floor(Number(t.exit_time)),   // en secondes
+           time: Math.floor(Number(t.sell_time)),   // en secondes
            value: Number(t.profit),                 // profit brut
         }))
         .filter(p => p.time > 0 && !isNaN(p.value)) // filtrage simple
@@ -1992,8 +1992,8 @@ closeAll.onclick=()=>{
      }
    };
 
-   connection__.onclose = () => console.log("WebSocket fermé");
-   connection__.onerror = (e) => console.error("Erreur WebSocket", e);
+   connection_ws.onclose = () => console.log("WebSocket fermé");
+   connection_ws.onerror = (e) => console.error("Erreur WebSocket", e);
  }
 
  // === Série aléatoire avant les vrais contrats ===
