@@ -531,9 +531,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // if first data point, setData with small array to initialize
     if (!chartData.length) {
       chartData.push(point);
-      if (chartData.length > 600) chartData.shift();    
+      if (chartData.length > 600) chartData.splice(0,5);    
       try {
-        currentSeries.setData(chartData);
+        currentSeries.setData(chartData);  
       } catch (e) {
         // fallback: try update
         try { currentSeries.update(point); } catch (err) {}   
@@ -750,7 +750,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (tickHistory__.length > MAX_HISTORY) {
-        tickHistory__.shift(); // enlever l'élément le plus ancien
+        tickHistory__.splice(0,3); // enlever l'élément le plus ancien
       }
     }
 
