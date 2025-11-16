@@ -1995,10 +1995,10 @@ closeAll.onclick=()=>{
 
    for (let i = 200; i >= 1; i--) {
      const time = now - i * 3600; // toutes les heures
-     const value = +(Math.random() * 1 - 0.5).toFixed(2); // valeur aléatoire entre -2.5 et 2.5
+     const value = +(Math.random() * 1 - 0.5).toFixed(2); // valeur aléatoire entre -2.5 et 2.5  
      randomData.push({ time, value });
    }
-
+  
    areahistoricalSeries.setData(randomData);
  }
    
