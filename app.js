@@ -1948,20 +1948,20 @@ closeAll.onclick=()=>{
    const endInput = document.getElementById("endDate").value;
 
    // Initialisation du WebSocket ou reconnexion
-   if (!connection__ || connection__.readyState === WebSocket.CLOSED) {
-     connection__ = new WebSocket(WS_URL);
+   if (!connection_ws || connection_ws.readyState === WebSocket.CLOSED) {
+     connection_ws = new WebSocket(WS_URL);
 
-     connection__.onopen = () => {
-       connection__.send(JSON.stringify({ authorize: TOKEN }));    
+     connection_ws.onopen = () => {
+       connection_ws.send(JSON.stringify({ authorize: TOKEN }));    
      };    
    }
 
-   connection__.onmessage = (msg) => {
+   connection_ws.onmessage = (msg) => {
      const data = JSON.parse(msg.data);
 
      if (data.msg_type === "authorize") {
        // Requête profit_table après autorisation
-       connection__.send(JSON.stringify({
+       connection_ws.send(JSON.stringify({
          profit_table: 1,
          description: 1,
          date_from: startInput.toString(),
@@ -1984,7 +1984,7 @@ closeAll.onclick=()=>{
 
         if (profitData.length) {
            areahistoricalSeries.setData(profitData);
-           charthistorical.timeScale().fitContent();
+           charthistorical.timeScale().fitContent();  
         } else {
            console.warn("Aucun profit à afficher.");
        }
