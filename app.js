@@ -46,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("chartTypeModal");
   const openModalBtn = document.getElementById("openPopup");  
   const closeModalBtn = document.getElementById("closeModal");    
+  const historicalchartcontainer = document.getElementById("HistoricalgraphicalContract");
 
   let totalPL = 0; // cumul des profits et pertes
   let automationRunning = false;
@@ -70,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wspl = null;
   let wsplgauge = null;
   let chart = null;
+  let charthistorical = null;
   let areaSeries = null;
   let chartData = [];
   let lastPrices = {};
@@ -1996,8 +1998,30 @@ closeAll.onclick=()=>{
     };
  }
 
+ function inihistoricalchart()
+ {
+  try { if (charthistorical) charthistorical.remove(); } catch (e) {}          
+    historicalchartcontainer.innerHTML = "";
+
+    charthistorical = LightweightCharts.createChart(historicalchartcontainer, {
+      layout: {
+        textColor: "#333",   
+        background: { type: "solid", color: "#fff" },        
+      },
+      grid: { vertLines: { color: "rgba(255,255,255,0.05)" }, horzLines: { color: "rgba(255,255,255,0.05)" } },
+      timeScale: { timeVisible: true, secondsVisible: true }
+    });
+
+    areaSeries  = chart.addAreaSeries({
+        lineColor: "#2962FF",
+        topColor: "rgba(41,98,255,0.28)",
+        bottomColor: "rgba(41,98,255,0.05)",
+        lineWidth: 2,
+   });
+ }
+
  function plotProfitTableChart(transactions) {
-       const container = document.getElementById("HistoricalgraphicalContract");
+       
       // 🟡 Normaliser les données
       let chartData = transactions.map(t => ({
         time: Number(t.exit_time), // timestamp UNIX en sec
@@ -2008,14 +2032,14 @@ closeAll.onclick=()=>{
       chartData = chartData.sort((a, b) => a.time - b.time);
 
       // Création du graphique
-      const charthistorical = LightweightCharts.createChart(container, {
-        width: container.clientWidth,
-        height: container.clientHeight,
+      const charthistorical = LightweightCharts.createChart(historicalchartcontainer, {
+        width: historicalchartcontainer.clientWidth,
+        height: historicalchartcontainer.clientHeight,
         layout: {   
           background: { color: "#ffffff" },   
           textColor: "#333",
         },
-        timeScale: { timeVisible: true, secondsVisible: false },
+        timeScale: { timeVisible: true, secondsVisible: true },
         grid: {
           vertLines: { color: "#eee" },
           horzLines: { color: "#eee" },
@@ -2690,7 +2714,8 @@ window.addEventListener("error", function (e) {
   initChart(currentChartType);
   initPLGauge();
   initTable();
-  initHistoricalTable(); 
+  initHistoricalTable();
+  inihistoricalchart(); 
    
   // Gestion du "Select All"  
   const selectAll = document.getElementById("selectAll");
