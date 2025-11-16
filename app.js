@@ -61,6 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsAutomation_sell = null;
   let wsAutomation_buy = null;
   let connection_ws = null;
+  let connection_ws_htx = null;
   let wshistorical = null;
   let wsAutomation = null;
   let wsContracts = null;
@@ -1950,33 +1951,33 @@ closeAll.onclick=()=>{
    const startInput = document.getElementById("startDate").value;
    const endInput = document.getElementById("endDate").value;
 
-   if (connection_ws===null)
+   if (connection_ws_htx===null)
    {
-    connection_ws = new WebSocket(WS_URL);
-    connection_ws.onopen = () => {
-       connection_ws.send(JSON.stringify({ authorize: TOKEN }));
+    connection_ws_htx = new WebSocket(WS_URL);
+    connection_ws_htx.onopen = () => {
+       connection_ws_htx.send(JSON.stringify({ authorize: TOKEN }));
     };
    }
    
-   if (connection_ws && (connection_ws.readyState === WebSocket.OPEN || connection_ws.readyState === WebSocket.CONNECTING))
+   if (connection_ws_htx && (connection_ws_htx.readyState === WebSocket.OPEN || connection_ws_htx.readyState === WebSocket.CONNECTING))
    {
-    connection_ws.onopen=()=>{ connection_ws.send(JSON.stringify({ authorize: TOKEN })); };
+    connection_ws_htx.onopen=()=>{ connection_ws_htx.send(JSON.stringify({ authorize: TOKEN })); };
    }
 
-   if (connection_ws && (connection_ws.readyState === WebSocket.CLOSED || connection_ws.readyState === WebSocket.CLOSING))
+   if (connection_ws_htx && (connection_ws_htx.readyState === WebSocket.CLOSED || connection_ws_htx.readyState === WebSocket.CLOSING))
    {
-    connection_ws = new WebSocket(WS_URL);
-    connection_ws.onopen=()=>{ connection_ws.send(JSON.stringify({ authorize: TOKEN })); };
+    connection_ws_htx = new WebSocket(WS_URL);
+    connection_ws_htx.onopen=()=>{ connection_ws_htx.send(JSON.stringify({ authorize: TOKEN })); };
    }
     
-   connection_ws.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-   connection_ws.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
-   connection_ws.onmessage = (msg) => {
+   connection_ws_htx.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+   connection_ws_htx.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+   connection_ws_htx.onmessage = (msg) => {
      const data = JSON.parse(msg.data);
 
      if (data.msg_type === "authorize") {
        // Requête profit_table après autorisation
-       connection_ws.send(JSON.stringify({
+       connection_ws_htx.send(JSON.stringify({
          profit_table: 1,
          description: 1,
          date_from: startInput.toString(),
@@ -2006,8 +2007,8 @@ closeAll.onclick=()=>{
      }
    };
 
-   connection_ws.onclose = () => console.log("WebSocket fermé");
-   connection_ws.onerror = (e) => console.error("Erreur WebSocket", e);
+   connection_ws_htx.onclose = () => console.log("WebSocket fermé");
+   connection_ws_htx.onerror = (e) => console.error("Erreur WebSocket", e);
  }
 
  // === Série aléatoire avant les vrais contrats ===
