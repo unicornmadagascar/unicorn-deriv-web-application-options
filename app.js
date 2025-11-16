@@ -2001,7 +2001,7 @@ closeAll.onclick=()=>{
 
    areahistoricalSeries.setData(randomData);
  }
-
+   
   // === Affichage des données réelles du profit_table ===
   function plotProfitTableChart(transactions) {
    let chartDatahistorical = transactions.map((t) => ({
