@@ -362,7 +362,7 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log(`Données initiales de ${history.length} bougies chargées.`);
 
         } else if (data.msg_type === "candles" && data.candles) {
-          const currentCandle = data.candles.splice(-1)[0]; 
+          const currentCandle = data.candles.splice(-1)[0];    
           const formattedCandle = formatDataForChart(currentCandle);  
           console.log('Données de bougie en temps réel reçues:', currentCandle);
           // IMPORTANT : N'appeler update/setData que si formattedCandle est valide
