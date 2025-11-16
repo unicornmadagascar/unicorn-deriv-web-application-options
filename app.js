@@ -2019,7 +2019,7 @@ closeAll.onclick=()=>{
    areahistoricalSeries.setData(randomData);
  }
    
-  // === Initialisation du graphique ===
+  // === Initialisation du graphique ===   
  function inihistoricalchart() {  
    // Supprimer le graphique précédent
    try { if (charthistorical) charthistorical.remove(); } catch (e) {}
