@@ -330,7 +330,7 @@ document.addEventListener("DOMContentLoaded", () => {
      const data = JSON.parse(msg.data);
      console.log('Message reçu du WebSocket (candles):', data);
       try {
-          
+             
         // authorize response
         if (data.msg_type === "authorize" && data.authorize) {
               console.log('Connexion WebSocket établie avec Deriv.');
