@@ -2013,7 +2013,9 @@ closeAll.onclick=()=>{
      .filter(d => d.time > 0 && !isNaN(d.value))  // valid only
      .sort((a, b) => a.time - b.time);            // sorted by time
 
-   if (!data.length) return console.warn("Aucune donnée valide à tracer");
+   if (!data.length) return;
+   
+   console.log('Aucune donnée valide à tracer',data);
 
    areahistoricalSeries.setData(data);
    charthistorical.timeScale().fitContent();
