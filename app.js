@@ -350,13 +350,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.msg_type === 'history' && response.history && response.history.candles) {
           // 2. Traitement des données historiques
           const history = data.history.candles;
+          console.log('Données historiques reçues:', history);
           const initialData = history.map(formatDataForChart);
           currentSeries.setData(initialData);
           console.log(`Données initiales de ${history.length} bougies chargées.`);
 
         } else if (data.msg_type === 'candles' && data.candles) {
           const currentCandle = data.candles.splice(-1)[0]; 
-          const formattedCandle = formatDataForChart(currentCandle);
+          const formattedCandle = formatDataForChart(currentCandle);  
     
           // IMPORTANT : N'appeler update/setData que si formattedCandle est valide
           if (formattedCandle) { 
