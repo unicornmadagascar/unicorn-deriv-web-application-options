@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsContracts__ = null;
   let wsOpenLines = null;
   let wspl = null;
-  let wsplgauge = null;
+  let connection__ = null;
   let chart = null;
   let charthistorical = null;
   let areaSeries = null;
@@ -1948,20 +1948,20 @@ closeAll.onclick=()=>{
    const endInput = document.getElementById("endDate").value;
 
    // Initialisation du WebSocket ou reconnexion
-   if (!connection_ws || connection_ws.readyState === WebSocket.CLOSED) {
+   if (!connection__ || connection__.readyState === WebSocket.CLOSED) {
      connection_ws = new WebSocket(WS_URL);
 
-     connection_ws.onopen = () => {
-       connection_ws.send(JSON.stringify({ authorize: TOKEN }));    
+     connection__.onopen = () => {
+       connection__.send(JSON.stringify({ authorize: TOKEN }));    
      };    
    }
 
-   connection_ws.onmessage = (msg) => {
+   connection__.onmessage = (msg) => {
      const data = JSON.parse(msg.data);
 
      if (data.msg_type === "authorize") {
        // Requête profit_table après autorisation
-       connection_ws.send(JSON.stringify({
+       connection__.send(JSON.stringify({
          profit_table: 1,
          description: 1,
          date_from: startInput.toString(),
@@ -1983,8 +1983,8 @@ closeAll.onclick=()=>{
      }
    };
 
-   connection_ws.onclose = () => console.log("WebSocket fermé");
-   connection_ws.onerror = (e) => console.error("Erreur WebSocket", e);
+   connection__.onclose = () => console.log("WebSocket fermé");
+   connection__.onerror = (e) => console.error("Erreur WebSocket", e);
  }
 
  // === Série aléatoire avant les vrais contrats ===
