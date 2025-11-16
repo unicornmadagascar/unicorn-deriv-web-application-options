@@ -1989,20 +1989,19 @@ closeAll.onclick=()=>{
 
      if (data.msg_type === "profit_table") {
         const txs = data.profit_table.transactions;
-
         const profitData = txs
-        .map(t => ({
-           time: Math.floor(Number(t.sell_time)),   // en secondes
-           value: Number(t.profit),                 // profit brut
-        }))
-        .filter(p => p.time > 0 && !isNaN(p.value)) // filtrage simple
-        .sort((a, b) => a.time - b.time);           // tri croissant
+            .filter(t => t.sell_time && t.sell_price) // contrats clôturés uniquement
+            .map(t => ({
+                time: Number(t.sell_time),              // timestamp en secondes
+                value: +(t.sell_price - t.buy_price).toFixed(2), // profit net
+            }))
+            .sort((a, b) => a.time - b.time); // essential for chart timeline
 
         if (profitData.length) {
            areahistoricalSeries.setData(profitData);
            charthistorical.timeScale().fitContent();  
         } else {
-           console.warn("Aucun profit à afficher.");   
+           console.warn("Aucun profit à afficher.");     
        }
      }
    };
