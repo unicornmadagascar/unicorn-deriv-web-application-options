@@ -2010,8 +2010,8 @@ closeAll.onclick=()=>{
 
       value += delta;
 
-      randomData.push({
-        time,
+      randomData.push({   
+        time,   
         value: +value.toFixed(3)
      });   
    }
