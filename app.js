@@ -1941,6 +1941,97 @@ closeAll.onclick=()=>{
     };
  }
 
+ function GetProfitgraphical()
+ {
+  const startInput = document.getElementById("startDate").value;
+  const endInput = document.getElementById("endDate").value;
+
+  if (connection_ws===null)
+   {
+    connection_ws = new WebSocket(WS_URL);
+    connection_ws.onopen = () => {
+       connection_ws.send(JSON.stringify({ authorize: TOKEN }));
+    };
+   }
+   
+   if (connection_ws && (connection_ws.readyState === WebSocket.OPEN || connection_ws.readyState === WebSocket.CONNECTING))
+   {
+    connection_ws.onopen=()=>{ connection_ws.send(JSON.stringify({ authorize: TOKEN })); };
+   }
+
+   if (connection_ws && (connection_ws.readyState === WebSocket.CLOSED || connection_ws.readyState === WebSocket.CLOSING))
+   {
+    connection_ws = new WebSocket(WS_URL);
+    connection_ws.onopen=()=>{ connection_ws.send(JSON.stringify({ authorize: TOKEN })); };
+   }
+    
+   connection_ws.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
+   connection_ws.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+   connection_ws.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+
+      if (data.msg_type === "authorize")
+      {
+       connection_ws.send(JSON.stringify({
+          profit_table: 1,
+          description: 1,
+          date_from: startInput.toString(),
+          date_to: endInput.toString(),   
+          limit: 500,
+           sort : "DESC"
+       }));
+      }
+
+       // Quand on reçoit la profit_table
+     if (data.msg_type === "profit_table") {     
+        const transactions = data.profit_table.transactions;
+        if (transactions.length > 0) {
+          plotProfitTableChart(transactions);
+        } else {
+          console.warn("Aucune donnée trouvée pour cette période.");
+        }
+      }
+    };
+ }
+
+ function plotProfitTableChart(transactions) {
+      // 🔄 Convertir les données au format {time, value}
+      const chartData = transactions.map(t => ({
+        time: t.exit_time,                   // timestamp UNIX
+        value: parseFloat(parseFloat(t.profit).toFixed(2)) // montant du profit/perte
+      }));
+
+    // Création du graphique
+    const container = document.getElementById("HistoricalContract");
+    const charthistorical = LightweightCharts.createChart(container, {
+      width: container.clientWidth,
+      height: 300,
+      layout: { background: { color: "#ffffff" }, textColor: "#222" },
+      grid: {
+        vertLines: { color: "#f0f0f0" },
+        horzLines: { color: "#f0f0f0" },
+      },
+      timeScale: { timeVisible: true },
+    });
+
+    // AreaSeries
+    const areahistoricalSeries = charthistorical.addAreaSeries({
+     topColor: "rgba(46, 204, 113, 0.56)",
+     bottomColor: "rgba(46, 204, 113, 0.04)",
+     lineColor: "rgba(46, 204, 113, 1)",
+     lineWidth: 2,
+     priceFormat: { type: "price", precision: 2 },
+   });
+
+   // Injecter les données
+   areahistoricalSeries.setData(chartData);
+
+  // Responsive
+   window.addEventListener("resize", () => {
+     chart.applyOptions({ width: container.clientWidth });
+  });
+ }
+
  // 🔹 Fonction de calcul PNL, WinRate, LossRate
 function getProfitStats(response) {
   const transactions = response?.profit_table?.transactions || [];
@@ -2358,8 +2449,11 @@ function extractValue(event, key) {
    console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
    getProfitTable(start, end); 
    GetProfitConnection();
-   connectHistoricalDeriv();   
+   connectHistoricalDeriv();
+   etProfitgraphical();
  });
+
+
 
  // 🔹 Gérer le changement de compte dans la combobox
  document.getElementById("accountSelect")?.addEventListener("change", (e) => {
