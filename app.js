@@ -405,7 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
       connectDeriv();
     }        
 
-    if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {        
+    if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {             
       
       wspl.send(JSON.stringify({ forget_all: "ticks" }));            
       wspl.send(JSON.stringify({ticks : currentSymbol, subscribe: 1}));            
