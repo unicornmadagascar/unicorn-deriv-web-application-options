@@ -1949,7 +1949,7 @@ closeAll.onclick=()=>{
 
    // Initialisation du WebSocket ou reconnexion
    if (!connection__ || connection__.readyState === WebSocket.CLOSED) {
-     connection_ws = new WebSocket(WS_URL);
+     connection__ = new WebSocket(WS_URL);
 
      connection__.onopen = () => {
        connection__.send(JSON.stringify({ authorize: TOKEN }));    
@@ -1972,14 +1972,22 @@ closeAll.onclick=()=>{
      }
 
      if (data.msg_type === "profit_table") {
-       const txs = data.profit_table.transactions;
+        const txs = data.profit_table.transactions;
 
-       if (!txs || txs.length === 0) {
-         document.getElementById("message").textContent = "Aucun contrat trouvé pour cette période.";
-         return;
+        const profitData = txs
+        .map(t => ({
+           time: Math.floor(Number(t.exit_time)),   // en secondes
+           value: Number(t.profit),                 // profit brut
+        }))
+        .filter(p => p.time > 0 && !isNaN(p.value)) // filtrage simple
+        .sort((a, b) => a.time - b.time);           // tri croissant
+
+        if (profitData.length) {
+           areahistoricalSeries.setData(profitData);
+           charthistorical.timeScale().fitContent();
+        } else {
+           console.warn("Aucun profit à afficher.");
        }
-
-       plotProfitTableChart(txs); // Charger les vrais résultats
      }
    };
 
@@ -1989,40 +1997,29 @@ closeAll.onclick=()=>{
 
  // === Série aléatoire avant les vrais contrats ===
  function setRandomSeries() {
-   const now = Math.floor(Date.now() / 1000);
-   const randomData = [];   
+
+   const target = 1.0;      // Valeur cible (asymptote)
+   let value = 0;           // Point de départ
 
    for (let i = 200; i >= 1; i--) {
-     const time = now - i * 3600; // toutes les heures
-     const value = +(Math.random() * 1 - 0.5).toFixed(2); // valeur aléatoire entre -2.5 et 2.5  
-     randomData.push({ time, value });
+      const time = now - i * 3600; // toutes les heures
+
+      // facteur d'apprentissage + petite variation aléatoire
+      const delta = (target - value) * 0.05 + (Math.random() * 0.1 - 0.05);
+
+      value += delta;
+
+      randomData.push({
+        time,
+        value: +value.toFixed(3)
+     });
    }
     
    areahistoricalSeries.setData(randomData);
  }
    
-  // === Affichage des données réelles du profit_table ===   
-  function plotProfitTableChart(transactions) {
-   if (!areahistoricalSeries || !charthistorical) return console.warn("Chart non initialisé");
-
-   const data = transactions
-     .map(t => ({
-       time: Math.floor(Number(t.exit_time || t.transaction_time || 0)), // seconds
-       value: Number(t.profit || 0),
-     }))
-     .filter(d => d.time > 0 && !isNaN(d.value))  // valid only
-     .sort((a, b) => a.time - b.time);            // sorted by time
-
-   if (!data.length) return;
-   
-   console.log('Aucune donnée valide à tracer',data);
-
-   areahistoricalSeries.setData(data);
-   charthistorical.timeScale().fitContent();
- }
-
   // === Initialisation du graphique ===
- function inihistoricalchart() {
+ function inihistoricalchart() {  
    // Supprimer le graphique précédent
    try { if (charthistorical) charthistorical.remove(); } catch (e) {}
    historicalchartcontainer.innerHTML = "";
