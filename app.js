@@ -61,7 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsAutomation_sell = null;
   let wsAutomation_buy = null;
   let connection_ws = null;
-  let wsAutomation_autoclose = null; 
   let wshistorical = null;
   let wsAutomation = null;
   let wsContracts = null;
@@ -1998,19 +1997,26 @@ closeAll.onclick=()=>{
      const value = +(Math.random() * 1 - 0.5).toFixed(2); // valeur aléatoire entre -2.5 et 2.5  
      randomData.push({ time, value });
    }
-  
+    
    areahistoricalSeries.setData(randomData);
  }
    
   // === Affichage des données réelles du profit_table ===   
   function plotProfitTableChart(transactions) {
-   let chartDatahistorical = transactions.map((t) => ({
-     time: Number(t.exit_time), // timestamp UNIX 
-     value: Number(parseFloat(t.profit).toFixed(2)),
-   }));
+   if (!areahistoricalSeries || !charthistorical) return console.warn("Chart non initialisé");
 
-   chartDatahistorical.sort((a, b) => a.time - b.time);
-   areahistoricalSeries.setData(chartDatahistorical); // Mise à jour du graphique
+   const data = transactions
+     .map(t => ({
+       time: Math.floor(Number(t.exit_time || t.transaction_time || 0)), // seconds
+       value: Number(t.profit || 0),
+     }))
+     .filter(d => d.time > 0 && !isNaN(d.value))  // valid only
+     .sort((a, b) => a.time - b.time);            // sorted by time
+
+   if (!data.length) return console.warn("Aucune donnée valide à tracer");
+
+   areahistoricalSeries.setData(data);
+   charthistorical.timeScale().fitContent();
  }
 
   // === Initialisation du graphique ===
