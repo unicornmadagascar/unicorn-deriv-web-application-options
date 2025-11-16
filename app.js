@@ -2482,9 +2482,9 @@ function extractValue(event, key) {
 
    console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
    getProfitTable(start, end); 
+   GetProfitgraphical();
    GetProfitConnection();
    connectHistoricalDeriv();
-   GetProfitgraphical();
  });  
 
  // 🔹 Gérer le changement de compte dans la combobox
