@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let charthistorical = null;
   let areaSeries = null;
   let areahistoricalSeries = null;
-  let chartData = [];
+  let chartData = [];   
   let lastPrices = {};
   let recentChanges = [];
   let signal;
