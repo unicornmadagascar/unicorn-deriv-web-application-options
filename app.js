@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
      el.addEventListener("click", () => {
        // 🔹 Supprime la sélection sur tous les symboles
        document.querySelectorAll("#SymbolList .symbol-item").forEach(item => {
-         item.classList.remove("selected");   
+         item.classList.remove("selected");      
        });
 
        // 🔹 Ajoute la sélection sur celui qu’on vient de cliquer
