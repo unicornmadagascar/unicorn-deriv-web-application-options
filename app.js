@@ -1997,7 +1997,7 @@ closeAll.onclick=()=>{
 
  // === Série aléatoire avant les vrais contrats ===
  function setRandomSeries() {
-
+   const now = Math.floor(Date.now() / 1000);
    const target = 1.0;      // Valeur cible (asymptote)
    let value = 0;           // Point de départ
 
@@ -2015,7 +2015,7 @@ closeAll.onclick=()=>{
      });   
    }
     
-   areahistoricalSeries.setData(randomData);   
+   areahistoricalSeries.setData(randomData);
  }
    
   // === Initialisation du graphique ===
