@@ -1993,7 +1993,7 @@ closeAll.onclick=()=>{
    const now = Math.floor(Date.now() / 1000);
    const randomData = [];   
 
-   for (let i = 500; i >= 1; i--) {
+   for (let i = 200; i >= 1; i--) {
      const time = now - i * 3600; // toutes les heures
      const value = +(Math.random() * 1 - 0.5).toFixed(2); // valeur aléatoire entre -2.5 et 2.5
      randomData.push({ time, value });
@@ -2005,7 +2005,7 @@ closeAll.onclick=()=>{
   // === Affichage des données réelles du profit_table ===   
   function plotProfitTableChart(transactions) {
    let chartDatahistorical = transactions.map((t) => ({
-     time: Number(t.exit_time), // timestamp UNIX
+     time: Number(t.exit_time), // timestamp UNIX 
      value: Number(parseFloat(t.profit).toFixed(2)),
    }));
 
