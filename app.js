@@ -1954,7 +1954,7 @@ closeAll.onclick=()=>{
 
      connection_ws.onopen = () => {
        connection_ws.send(JSON.stringify({ authorize: TOKEN }));    
-     };
+     };    
    }
 
    connection_ws.onmessage = (msg) => {
