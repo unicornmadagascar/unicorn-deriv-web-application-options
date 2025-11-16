@@ -2450,8 +2450,8 @@ function extractValue(event, key) {
    getProfitTable(start, end); 
    GetProfitConnection();
    connectHistoricalDeriv();
-   etProfitgraphical();
- });
+   GetProfitgraphical();
+ });  
 
  // 🔹 Gérer le changement de compte dans la combobox
  document.getElementById("accountSelect")?.addEventListener("change", (e) => {
