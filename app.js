@@ -1991,9 +1991,9 @@ closeAll.onclick=()=>{
  // === Série aléatoire avant les vrais contrats ===
  function setRandomSeries() {
    const now = Math.floor(Date.now() / 1000);
-   const randomData = [];
+   const randomData = [];   
 
-   for (let i = 10; i >= 1; i--) {
+   for (let i = 1000; i >= 1; i--) {
      const time = now - i * 3600; // toutes les heures
      const value = +(Math.random() * 5 - 2.5).toFixed(2); // valeur aléatoire entre -2.5 et 2.5
      randomData.push({ time, value });
