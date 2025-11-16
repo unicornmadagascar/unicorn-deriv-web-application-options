@@ -2012,7 +2012,7 @@ closeAll.onclick=()=>{
         width: container.clientWidth,
         height: container.clientHeight,
         layout: {
-          background: { color: "#ffffff" },
+          background: { color: "#ffffff" },   
           textColor: "#333",
         },
         timeScale: { timeVisible: true, secondsVisible: false },
