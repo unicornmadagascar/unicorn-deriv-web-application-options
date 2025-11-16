@@ -735,11 +735,12 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("ROC :", roc_.toFixed(4));
 
         if (["cryBTC", "frxXAU"].includes(symbolPrefix)) {
+          
+          if (rocProposal.contract_id) return;
+
           if (roc_ > 0.01) {
-            if (rocProposal.contract_id) return;
             handleSignal("BUY");
           } else if (roc_ < -0.01) {
-            if (rocProposal.contract_id) return;
             handleSignal("SELL");
           }
         }
