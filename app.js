@@ -2012,7 +2012,7 @@ closeAll.onclick=()=>{
       randomData.push({
         time,
         value: +value.toFixed(3)
-     });
+     });   
    }
     
    areahistoricalSeries.setData(randomData);
