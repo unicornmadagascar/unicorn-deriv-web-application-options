@@ -277,7 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const open = parseFloat(ohlcData.open);
     const high = parseFloat(ohlcData.high);
     const low = parseFloat(ohlcData.low);
-    const close = parseFloat(ohlcData.close);
+    const close = parseFloat(ohlcData.close);   
 
     // 3. Vérification que les valeurs converties sont des nombres valides
     if (isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close)) {
