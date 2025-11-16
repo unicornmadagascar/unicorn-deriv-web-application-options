@@ -2002,7 +2002,7 @@ closeAll.onclick=()=>{
    areahistoricalSeries.setData(randomData);
  }
    
-  // === Affichage des données réelles du profit_table ===
+  // === Affichage des données réelles du profit_table ===   
   function plotProfitTableChart(transactions) {
    let chartDatahistorical = transactions.map((t) => ({
      time: Number(t.exit_time), // timestamp UNIX
