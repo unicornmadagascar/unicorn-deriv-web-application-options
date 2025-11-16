@@ -299,30 +299,33 @@ document.addEventListener("DOMContentLoaded", () => {
   {
     if(!symbol) return;
 
+    console.log("Subscribing to candles for symbol:", symbol);
+
     if (currentChartType !== "candlestick") return;  
 
     currentSymbol = symbol;
     initChart(currentChartType);
 
-    if (wspl === null)
+    console.log("Current Chart Type for candles subscription:", currentChartType);
+
+    if (wspl__ct === null)
     {
-     authorized = false;
-     wspl = new WebSocket(WS_URL);
-     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
+     wspl__ct = new WebSocket(WS_URL);
+     wspl__ct.onopen=()=>{ wspl__ct.send(JSON.stringify({ authorize: TOKEN })); };
     }
   
-    if (wspl && (wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING))
+    if (wspl__ct && (wspl.readyState === WebSocket.OPEN || wspl__ct.readyState === WebSocket.CONNECTING))
     {
-     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
+     wspl__ct.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    if (wspl && (wspl.readyState === WebSocket.CLOSED || wspl.readyState === WebSocket.CLOSING))
+    if (wspl__ct && (wspl__ct.readyState === WebSocket.CLOSED || wspl__ct.readyState === WebSocket.CLOSING))
     {
-      wspl = new WebSocket(WS_URL);
-      wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
+      wspl__ct = new WebSocket(WS_URL);
+      wspl__ct.onopen=()=>{ wspl__ct.send(JSON.stringify({ authorize: TOKEN })); };
     }
     
-    wspl.onmessage = (msg) => {   
+    wspl__ct.onmessage = (msg) => {   
        
      const data = JSON.parse(msg.data);
      console.log('Message reçu du WebSocket (candles):', data);
@@ -346,11 +349,11 @@ document.addEventListener("DOMContentLoaded", () => {
                };
 
                console.log('Envoi de la demande de données OHLC:', ohlcRequest);
-               wspl.send(JSON.stringify(ohlcRequest));
+               wspl__ct.send(JSON.stringify(ohlcRequest));
                console.log('Demande de données OHLC envoyée pour le symbole:', symbol);   
         }
 
-        if (data.msg_type === 'history' && response.history && response.history.candles) {
+        if (data.msg_type === "history" && data.history && data.history.candles) {
           // 2. Traitement des données historiques
           const history = data.history.candles;
           console.log('Données historiques reçues:', history);
@@ -358,10 +361,10 @@ document.addEventListener("DOMContentLoaded", () => {
           currentSeries.setData(initialData);
           console.log(`Données initiales de ${history.length} bougies chargées.`);
 
-        } else if (data.msg_type === 'candles' && data.candles) {
+        } else if (data.msg_type === "candles" && data.candles) {
           const currentCandle = data.candles.splice(-1)[0]; 
           const formattedCandle = formatDataForChart(currentCandle);  
-    
+          console.log('Données de bougie en temps réel reçues:', currentCandle);
           // IMPORTANT : N'appeler update/setData que si formattedCandle est valide
           if (formattedCandle) { 
              currentSeries.update(formattedCandle);
@@ -369,9 +372,9 @@ document.addEventListener("DOMContentLoaded", () => {
           }
        }
     
-        // Pour maintenir la connexion active (bonnes pratiques WebSocket)
+        // Pour maintenir la connexion active (bonnes pratiques WebSocket)   
         if (data.ping) {
-          wspl.send(JSON.stringify({ pong: 1 }));
+          wspl__ct.send(JSON.stringify({ pong: 1 }));
         }   
       }
       catch (err)
@@ -380,7 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }    
     };    
 
-    wspl.onclose = () => {
+    wspl__ct.onclose = () => {
          console.log("Socket Closed");
     }; 
   }   
