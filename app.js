@@ -2002,7 +2002,7 @@ closeAll.onclick=()=>{
    const target = 1.0;      // Valeur cible (asymptote)
    let value = 0;           // Point de départ
 
-   for (let i = 200; i >= 1; i--) {     
+   for (let i = 700; i >= 1; i--) {     
       const time = now - i * 3600; // toutes les heures
 
       // facteur d'apprentissage + petite variation aléatoire
