@@ -1832,7 +1832,7 @@ closeAll.onclick=()=>{
      const profit = trade.sell_price - trade.buy_price;
      const status = profit.toFixed(2) > 0 ? "Win" : (profit.toFixed(2) < 0 ? "Loss" : "Even");
      
-
+   
      tr.innerHTML = `
        <td>${time}</td>
        <td>${trade.contract_id || "-"}</td>
