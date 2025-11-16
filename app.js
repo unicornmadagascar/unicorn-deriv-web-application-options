@@ -284,7 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentChartType !== "candlestick") return;  
 
     currentSymbol = symbol;
-    initChart(currentChartType);
+    //initChart(currentChartType);
 
     if (wspl === null)
     {
