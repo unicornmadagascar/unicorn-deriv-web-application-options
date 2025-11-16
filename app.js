@@ -709,7 +709,7 @@ document.addEventListener("DOMContentLoaded", () => {
           wsROC.send(JSON.stringify({ portfolio: 1 }));
           break;
 
-        case "portfolio":
+        case "portfolio":   
           rocContracts = data.portfolio.contracts;    
           break;
 
