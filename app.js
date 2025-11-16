@@ -347,7 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       style: "candles", 
                       subscribe: 1 // C'est la clé pour les mises à jour en temps réel !
                };
-
+    
                console.log('Envoi de la demande de données OHLC:', ohlcRequest);
                wspl__ct.send(JSON.stringify(ohlcRequest));
                console.log('Demande de données OHLC envoyée pour le symbole:', symbol);   
