@@ -1997,7 +1997,7 @@ closeAll.onclick=()=>{
  }
 
  function plotProfitTableChart(transactions) {
-       const container = document.getElementById("HistoricalContract");
+       const container = document.getElementById("HistoricalgraphicalContract");
       // 🟡 Normaliser les données
       let chartData = transactions.map(t => ({
         time: Number(t.exit_time), // timestamp UNIX en sec
