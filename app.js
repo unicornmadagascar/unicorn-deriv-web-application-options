@@ -2000,7 +2000,7 @@ closeAll.onclick=()=>{
  function setRandomSeries() {
    const now = Math.floor(Date.now() / 1000);
    let randomData = [];   
-   const target = 1.0;      // Valeur cible (asymptote)
+   const target = 1.0;      // Valeur cible (asymptote)    
    let value = 0;           // Point de départ
 
    for (let i = 700; i >= 1; i--) {     
