@@ -1984,52 +1984,56 @@ closeAll.onclick=()=>{
 
        // Quand on reçoit la profit_table
      if (data.msg_type === "profit_table") {     
-        const transactions = data.profit_table.transactions;
-        if (transactions.length > 0) {
-          plotProfitTableChart(transactions);
-        } else {
-          console.warn("Aucune donnée trouvée pour cette période.");
+        const txs = data.profit_table.transactions;
+
+        if (!txs || txs.length === 0) {
+          document.getElementById("message").textContent = "Aucun contrat trouvé pour cette période.";
+          return;
         }
+
+        plotProfitTableChart(txs);
       }
     };
  }
 
  function plotProfitTableChart(transactions) {
-      // 🔄 Convertir les données au format {time, value}
-      const chartData = transactions.map(t => ({
-        time: t.exit_time,                   // timestamp UNIX
-        value: parseFloat(parseFloat(t.profit).toFixed(2)) // montant du profit/perte
+       const container = document.getElementById("HistoricalContract");
+      // 🟡 Normaliser les données
+      let chartData = transactions.map(t => ({
+        time: Number(t.exit_time), // timestamp UNIX en sec
+        value: Number(parseFloat(t.profit).toFixed(2)),
       }));
 
-    // Création du graphique
-    const container = document.getElementById("HistoricalContract");
-    const charthistorical = LightweightCharts.createChart(container, {
-      width: container.clientWidth,
-      height: 300,
-      layout: { background: { color: "#ffffff" }, textColor: "#222" },
-      grid: {
-        vertLines: { color: "#f0f0f0" },
-        horzLines: { color: "#f0f0f0" },
-      },
-      timeScale: { timeVisible: true },
-    });
+      // 🔽 Trier les données par temps
+      chartData = chartData.sort((a, b) => a.time - b.time);
 
-    // AreaSeries
-    const areahistoricalSeries = charthistorical.addAreaSeries({
-     topColor: "rgba(46, 204, 113, 0.56)",
-     bottomColor: "rgba(46, 204, 113, 0.04)",
-     lineColor: "rgba(46, 204, 113, 1)",
-     lineWidth: 2,
-     priceFormat: { type: "price", precision: 2 },
-   });
+      // Création du graphique
+      const charthistorical = LightweightCharts.createChart(container, {
+        width: container.clientWidth,
+        height: container.clientHeight,
+        layout: {
+          background: { color: "#ffffff" },
+          textColor: "#333",
+        },
+        timeScale: { timeVisible: true, secondsVisible: false },
+        grid: {
+          vertLines: { color: "#eee" },
+          horzLines: { color: "#eee" },
+        },
+      });
 
-   // Injecter les données   
-   areahistoricalSeries.setData(chartData);
+      const areaSeries = charthistorical.addAreaSeries({
+        topColor: "rgba(0, 150, 136, 0.56)",
+        bottomColor: "rgba(0, 150, 136, 0.04)",
+        lineColor: "rgba(0, 150, 136, 1)",
+        lineWidth: 2,
+      });
 
-  // Responsive
-   window.addEventListener("resize", () => {
-     charthistorical.applyOptions({ width: container.clientWidth });
-  });
+      areaSeries.setData(chartData);
+
+      window.addEventListener("resize", () => {
+        charthistorical.applyOptions({ width: container.clientWidth });
+      });
  }
 
  // 🔹 Fonction de calcul PNL, WinRate, LossRate
