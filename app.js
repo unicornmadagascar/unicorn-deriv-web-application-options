@@ -267,13 +267,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Fonction pour convertir les données OHLCV Deriv au format Lightweight Charts
   const formatDataForChart = (ohlcData) => {
-    // Le temps dans Lightweight Charts est en secondes UNIX, Deriv le fournit également.
+    // 1. Vérification de l'existence des données essentielles
+    if (!ohlcData || !ohlcData.epoch || !ohlcData.open || !ohlcData.high || !ohlcData.low || !ohlcData.close) {
+        console.error("Données de bougie incomplètes ou nulles:", ohlcData);
+        return null; // Retourne null pour ignorer la bougie invalide
+    }
+
+    // 2. Conversion robuste en nombres flottants
+    const open = parseFloat(ohlcData.open);
+    const high = parseFloat(ohlcData.high);
+    const low = parseFloat(ohlcData.low);
+    const close = parseFloat(ohlcData.close);
+
+    // 3. Vérification que les valeurs converties sont des nombres valides
+    if (isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close)) {
+        console.error("Erreur de conversion: Les prix ne sont pas des nombres valides.", ohlcData);
+        return null;
+    }
+
+    // 4. Retourne l'objet au format requis
     return {
-        time: ohlcData.epoch,
-        open: parseFloat(ohlcData.open),
-        high: parseFloat(ohlcData.high),
-        low: parseFloat(ohlcData.low),
-        close: parseFloat(ohlcData.close),
+        time: ohlcData.epoch, // Doit être l'horodatage UNIX en secondes (Number)
+        open: open,
+        high: high,
+        low: low,
+        close: close,
     };
   };
 
@@ -329,23 +347,23 @@ document.addEventListener("DOMContentLoaded", () => {
                wspl.send(JSON.stringify(ohlcRequest));
         }
 
-        if (data.msg_type === 'history') {
+        if (data.msg_type === 'history' && response.history && response.history.candles) {
           // 2. Traitement des données historiques
           const history = data.history.candles;
           const initialData = history.map(formatDataForChart);
           currentSeries.setData(initialData);
           console.log(`Données initiales de ${history.length} bougies chargées.`);
 
-        } else if (data.msg_type === 'candles') {
-          // 3. Traitement de la mise à jour en temps réel (bougie en cours)
-          const currentCandle = data.candles.splice(-1)[0]; // Dernière bougie (en cours)
+        } else if (data.msg_type === 'candles' && data.candles) {
+          const currentCandle = data.candles.splice(-1)[0]; 
           const formattedCandle = formatDataForChart(currentCandle);
-        
-          // La méthode update() gère la création d'une nouvelle bougie ou la mise à jour
-          // de la dernière bougie si le temps est le même.
-          currentSeries.update(formattedCandle);
-          console.log('Bougie mise à jour en temps réel:', formattedCandle);
-        }
+    
+          // IMPORTANT : N'appeler update/setData que si formattedCandle est valide
+          if (formattedCandle) { 
+             currentSeries.update(formattedCandle);
+             console.log('Bougie mise à jour en temps réel:', formattedCandle);
+          }
+       }
     
         // Pour maintenir la connexion active (bonnes pratiques WebSocket)
         if (response.ping) {
