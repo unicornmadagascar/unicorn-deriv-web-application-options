@@ -523,7 +523,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     updateCircularGauges();
 
-    // update chartData and series
+    // update chartData and series   
     if (!currentSeries || !chart) return;
 
     const point = { time: epoch, value: quote };
