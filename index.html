@@ -347,7 +347,7 @@
 }
 
 #tradeEvalPanel.active {
-  max-height: 3000px;
+  max-height: 4000px;
   opacity: 1;
   transform: translateY(0);
   visibility: visible;
@@ -674,13 +674,6 @@ hr {
   font-weight: 600;
 }
 
-   #HistoricalContract {   
-      width: 100%;
-      height: 800px;
-      margin-top: 10px;
-      border: 1px solid #ccc;
-    }
-
   </style>
 </head>
 <body>
@@ -861,8 +854,8 @@ hr {
          <button id="fetchTrades">Refresh Table</button>
       </div>
     </div>
-    <h3 style="font-family: Arial, sans-serif; margin-top: 20px;">P/L representation - Contrats</h3>
-    <div id="HistoricalContract"></div>  
+    <h3 style="margin-top: 20px;">P/L Contrats Representation</h3>
+    <div id="HistoricalContract" style="padding-top: 20px;margin-bottom: 20px; width: 100%; height: 800px;"></div>  
     <p id="message"></p>
   </div>
   </div>
