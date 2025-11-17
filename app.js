@@ -1997,7 +1997,7 @@ function GetProfitgraphical() {
           .sort((a, b) => a.time - b.time);               // ordre chronologique
 
         console.log("profitData:", profitData); // vérification
-        
+
         // 🔍 Filtrage & validation
         const cleanProfitData = profitData.filter((p, i) => {
           if (p.value === null || p.value === undefined || isNaN(p.value)) {
