@@ -1982,26 +1982,52 @@ function GetProfitgraphical() {
        }));
      }
 
-     if (data.msg_type === "profit_table") {
-       const txs = data.profit_table.transactions || [];
+      // Quand on reçoit la profit_table
+      if (profitData.length > 0) {
+        const txs = data.profit_table.transactions;
 
-       const profitData = txs
-         .filter(t => t.sell_time && !isNaN(t.sell_price)) // uniquement les clôturés
-         .map(t => ({
-           time: Number(t.sell_time),                  // timestamp UNIX en secondes
-           value: +(t.sell_price - t.buy_price).toFixed(2), // profit net
-         }))
-         .filter(p => p.time > 0 && !isNaN(p.value))     // validation des données
-         .sort((a, b) => a.time - b.time);               // tri obligatoire
+        // === Transformation des transactions en série exploitable ===
+        const profitData = txs
+          .filter(t => t.sell_time && !isNaN(t.sell_price)) // uniquement les clôturées
+          .map(t => ({
+            time: Number(t.sell_time),                  // timestamp UNIX en secondes
+            value: +(t.sell_price - t.buy_price).toFixed(2), // profit net
+          }))
+          .filter(p => p.time > 0 && !isNaN(p.value))     // validation des données
+          .sort((a, b) => a.time - b.time);               // ordre chronologique
 
-       if (profitData.length > 0) {
-         console.log("📊 Données affichées :", profitData);   
-         areahistoricalSeries.setData(profitData);
-         charthistorical.timeScale().fitContent();
-       } else {
-         alert("Aucun contrat trouvé pour cette période.");
-       }
-     }
+        console.log("profitData:", profitData); // vérification
+        
+        // 🔍 Filtrage & validation
+        const cleanProfitData = profitData.filter((p, i) => {
+          if (p.value === null || p.value === undefined || isNaN(p.value)) {
+              console.warn(`⚠️ Valeur invalide @ index ${i}:`, p);
+              return false;
+          }
+          return true;
+        });
+
+        const seenTimes = new Set();
+        const uniqueData = cleanProfitData.filter(p => {
+          if (seenTimes.has(p.time)) {
+              console.warn(`⛔ Timestamp dupliqué ignoré:`, p);
+              return false;
+          }
+          seenTimes.add(p.time);
+          return true;
+        });
+
+        if (!uniqueData.length) {
+          console.error("❌ Aucune donnée valide à afficher !");
+          return;
+        }
+
+        console.log("📊 Données finales utilisées:", uniqueData);
+        areahistoricalSeries.setData(uniqueData);
+        charthistorical.timeScale().fitContent();
+      } else {
+        alert("Aucun contrat trouvé pour cette période.");
+      }
    };
 
    connection_ws_htx.onerror = (err) => {
