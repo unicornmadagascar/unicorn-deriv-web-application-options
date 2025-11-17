@@ -1975,8 +1975,8 @@ function GetProfitgraphical() {
        connection_ws_htx.send(JSON.stringify({
          profit_table: 1,
          description: 1,
-         date_from: Math.floor(new Date(startInput).getTime() / 1000),
-         date_to: Math.floor(new Date(endInput).getTime() / 1000),
+         date_from: startInput.toString(),
+         date_to: endInput.toString(),
          limit: 500,
          sort: "ASC",
        }));
@@ -1995,7 +1995,7 @@ function GetProfitgraphical() {
          .sort((a, b) => a.time - b.time);               // tri obligatoire
 
        if (profitData.length > 0) {
-         console.log("📊 Données affichées :", profitData);
+         console.log("📊 Données affichées :", profitData);   
          areahistoricalSeries.setData(profitData);
          charthistorical.timeScale().fitContent();
        } else {
