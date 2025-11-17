@@ -2011,8 +2011,8 @@ closeAll.onclick=()=>{
    }
 
    // Supprimer le graphique précédent
-   if (window.charthistorical) {
-     window.charthistorical.remove();
+   if (charthistorical) {
+     charthistorical.remove();
    }
 
    historicalchartcontainer.innerHTML = "";
@@ -2063,7 +2063,7 @@ closeAll.onclick=()=>{
    areahistoricalSeries.setData(randomData);
  }
 
- // 🔹 Fonction de calcul PNL, WinRate, LossRate
+ // 🔹 Fonction de calcul PNL, WinRate, LossRate  
 function getProfitStats(response) {
   const transactions = response?.profit_table?.transactions || [];
   if (!transactions.length) return { pnlPercent: '0', winRate: '0', lossRate: '0' };
