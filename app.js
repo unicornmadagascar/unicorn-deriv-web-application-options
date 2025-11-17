@@ -2003,7 +2003,7 @@ closeAll.onclick=()=>{
         } else {  
            console.warn("Aucun profit à afficher.");     
        }
-     }
+     }   
    };
 
    connection_ws_htx.onclose = () => console.log("WebSocket fermé");
