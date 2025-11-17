@@ -320,7 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       subscribe: 1 // C'est la clé pour les mises à jour en temps réel !
                };
     
-               console.log('Envoi de la demande de données OHLC:', ohlcRequest);
+               console.log('Envoi de la demande de données OHLC:', ohlcRequest);    
                setTimeout(() => {
                     wspl.send(JSON.stringify(ohlcRequest));
                 }, 500); // petit délai pour s'assurer que l'autorisation est bien prise en compte
