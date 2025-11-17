@@ -2039,7 +2039,6 @@ closeAll.onclick=()=>{
    setRandomSeries();
  }
 
-
   // === Série aléatoire avant les vrais contrats ===
  function setRandomSeries() {
    const now = Math.floor(Date.now() / 1000);
