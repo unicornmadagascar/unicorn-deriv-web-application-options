@@ -1983,7 +1983,7 @@ function GetProfitgraphical() {
      }
 
       // Quand on reçoit la profit_table
-      if (profitData.length > 0) {
+      if (data.msg_type === "profit_table") {
         const txs = data.profit_table.transactions;
 
         // === Transformation des transactions en série exploitable ===
@@ -1996,40 +1996,41 @@ function GetProfitgraphical() {
           .filter(p => p.time > 0 && !isNaN(p.value))     // validation des données
           .sort((a, b) => a.time - b.time);               // ordre chronologique
 
-        console.log("profitData:", profitData); // vérification   
+        console.log("profitData:", profitData); // vérification 
 
-        // 🔍 Filtrage & validation
-        const cleanProfitData = profitData.filter((p, i) => {
-          if (p.value === null || p.value === undefined || isNaN(p.value)) {
-              console.warn(`⚠️ Valeur invalide @ index ${i}:`, p);
-              return false;
-          }
-          return true;
-        });
+        if (profitData.length > 0) {
+           // 🔍 Filtrage & validation
+           const cleanProfitData = profitData.filter((p, i) => {
+             if (p.value === null || p.value === undefined || isNaN(p.value)) {
+                console.warn(`⚠️ Valeur invalide @ index ${i}:`, p);
+                return false;
+            }
+            return true;
+           });
 
-        const seenTimes = new Set();
-        const uniqueData = cleanProfitData.filter(p => {
-          if (seenTimes.has(p.time)) {
-              console.warn(`⛔ Timestamp dupliqué ignoré:`, p);
-              return false;
-          }
-          seenTimes.add(p.time);
-          return true;
-        });
+           const seenTimes = new Set();
+           const uniqueData = cleanProfitData.filter(p => {
+             if (seenTimes.has(p.time)) {
+                console.warn(`⛔ Timestamp dupliqué ignoré:`, p);
+                return false;
+             }
+             seenTimes.add(p.time);
+             return true;
+           });
 
-        if (!uniqueData.length) {
-          console.error("❌ Aucune donnée valide à afficher !");
-          return;
+           if (!uniqueData.length) {
+             console.error("❌ Aucune donnée valide à afficher !");
+             return;
+           }
+
+           console.log("📊 Données finales utilisées:", uniqueData);
+           areahistoricalSeries.setData(uniqueData);
+           charthistorical.timeScale().fitContent();
+        } else {
+           alert("Aucun contrat trouvé pour cette période.");
         }
-
-        console.log("📊 Données finales utilisées:", uniqueData);
-        areahistoricalSeries.setData(uniqueData);
-        charthistorical.timeScale().fitContent();
-      } else {
-        alert("Aucun contrat trouvé pour cette période.");
-      }
    };
-
+   
    connection_ws_htx.onerror = (err) => {
      console.error("Erreur WS:", err);
    };
