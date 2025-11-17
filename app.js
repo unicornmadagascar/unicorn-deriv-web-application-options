@@ -1968,9 +1968,9 @@ function GetProfitgraphical() {
      connection_ws_htx.send(JSON.stringify({ authorize: TOKEN }));
    }
 
-    connection_ws_htx.onmessage = (msg) => {
+   connection_ws_htx.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
-  
+     
       if (data.msg_type === "authorize") {
         connection_ws_htx.send(JSON.stringify({
           profit_table: 1,
