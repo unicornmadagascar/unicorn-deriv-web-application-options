@@ -2841,6 +2841,7 @@ function extractValue(event, key) {
       accountInfo.textContent = "Connecting..."; 
       isConnect = true; 
       connectDeriv();
+      connect(); 
       displaySymbols(currentChartType);
     } else {
       connectBtn.textContent = "Disconnecting...";
@@ -2869,7 +2870,7 @@ window.addEventListener("error", function (e) {
   // startup
   initDerivAccountManager();
   displaySymbols(currentChartType);
-  //initChart(currentChartType);
+  initChart(currentChartType);
   initPLGauge();
   initTable();
   initHistoricalTable();   
@@ -3026,10 +3027,6 @@ window.addEventListener("error", function (e) {
       console.log("Current Symbol:", currentSymbol);
     });
   });    
-
-  window.onload = () => {
-      connect();   
-  };
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
