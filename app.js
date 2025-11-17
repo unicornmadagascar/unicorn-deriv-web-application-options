@@ -2018,7 +2018,7 @@ closeAll.onclick=()=>{
    historicalchartcontainer.innerHTML = "";
 
    // Créer le graphique
-   window.charthistorical = LightweightCharts.createChart(historicalchartcontainer, {
+   charthistorical = LightweightCharts.createChart(historicalchartcontainer, {
      layout: { textColor: "#333", background: { type: "solid", color: "#fff" } },
      grid: {
        vertLines: { color: "rgba(200,200,200,0.3)" },
@@ -2028,7 +2028,7 @@ closeAll.onclick=()=>{
    });
 
    // Série
-   window.areahistoricalSeries = charthistorical.addAreaSeries({
+   areahistoricalSeries = charthistorical.addAreaSeries({
      lineColor: "#2962FF",
      topColor: "rgba(41,98,255,0.28)",
      bottomColor: "rgba(41,98,255,0.05)",
