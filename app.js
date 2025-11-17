@@ -316,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wspl === null)
     {
      wspl = new WebSocket(WS_URL);
-     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
+     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };   
     }
   
     if (wspl && (wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING))
