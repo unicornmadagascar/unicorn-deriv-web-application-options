@@ -1998,7 +1998,7 @@ function GetProfitgraphical() {
 
         console.log("profitData:", profitData); // vérification 
 
-        if (profitData.length > 0) {
+        if (profitData.length > 0) {   
            // 🔍 Filtrage & validation
            const cleanProfitData = profitData.filter((p, i) => {
              if (p.value === null || p.value === undefined || isNaN(p.value)) {
