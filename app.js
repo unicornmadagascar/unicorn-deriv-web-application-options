@@ -310,13 +310,13 @@ document.addEventListener("DOMContentLoaded", () => {
               // 1. Demander les données historiques (pour remplir le graphique initialement)
               // et souscrire aux mises à jour en temps réel (bougies en cours).
               const ohlcRequest = {
-                      tick_history: symbol,
+                      tick_history: currentSymbol,
                       adjust_start_time : 1,
                       count: 500,
                       end: "latest",   
                       start: 1, 
                       granularity: 60,          // convertTF(currentInterval)
-                      style: "candles", 
+                      style: "candles",   
                       subscribe: 1 // C'est la clé pour les mises à jour en temps réel !
                };
     
