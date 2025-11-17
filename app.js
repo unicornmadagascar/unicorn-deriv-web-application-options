@@ -2060,7 +2060,7 @@ closeAll.onclick=()=>{
      });   
    }
     
-   areahistoricalSeries.setData(randomData);
+   areahistoricalSeries.setData(randomData);   
  }
 
  // 🔹 Fonction de calcul PNL, WinRate, LossRate  
