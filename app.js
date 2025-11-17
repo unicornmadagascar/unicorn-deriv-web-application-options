@@ -339,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
            currentSeries.setData(bars);
         } 
         else if (data.msg_type === "candles" && data.candles.epoch) {
-           // Nouvelle bougie en streaming
+           // Nouvelle bougie en streaming   
            const c = data.candles;
            const bar = {
               time: c.epoch,
