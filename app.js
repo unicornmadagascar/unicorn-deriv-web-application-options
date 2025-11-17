@@ -120,12 +120,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let candlesCache = [];
   //------
   let candleSeries;
-  let currentSymbol = null;
-  let currentChartType = "area"; // par défaut
-  let currentInterval = "1 tick";  // par défaut
+  let currentChartType = "candlestick"; // par défaut
+  let currentInterval = "1 minute";  // par défaut
 
   // --- NEW: current symbol & pending subscribe ---
-  //let currentSymbol = null;    
+  let currentSymbol = "cryBTCUSD"; // symbole par défaut
   let pendingSubscribe = null;
   let authorized = false;      
   // Exemple de données
