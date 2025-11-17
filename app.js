@@ -1947,79 +1947,85 @@ closeAll.onclick=()=>{
     };
  }
 
-  function GetProfitgraphical() {
-    const startInput = document.getElementById("startDate").value;
-    const endInput = document.getElementById("endDate").value;
+  // === Récupérer les contrats Deriv et tracer le profit ===
+function GetProfitgraphical() {
+   const startInput = document.getElementById("startDate").value;
+   const endInput = document.getElementById("endDate").value;
 
-    // WebSocket Deriv
-    if (!connection_ws_htx || connection_ws_htx.readyState === WebSocket.CLOSED) {
-      connection_ws_htx = new WebSocket(WS_URL);
+   if (!startInput || !endInput) {
+     alert("Veuillez sélectionner une date de début et une date de fin.");
+     return;
+   }
 
-      connection_ws_htx.onopen = () => {
-        console.log("WS ouvert");
-        connection_ws_htx.send(JSON.stringify({ authorize: TOKEN }));
-      };
-    } else if (connection_ws_htx.readyState === WebSocket.OPEN) {
+   // Initialiser WS si nécessaire
+   if (!connection_ws_htx || connection_ws_htx.readyState === WebSocket.CLOSED) {
+     connection_ws_htx = new WebSocket(WS_URL);
+
+     connection_ws_htx.onopen = () => {
        connection_ws_htx.send(JSON.stringify({ authorize: TOKEN }));
-    }
+     };
+   } else if (connection_ws_htx.readyState === WebSocket.OPEN) {
+     connection_ws_htx.send(JSON.stringify({ authorize: TOKEN }));
+   }
 
     connection_ws_htx.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
+     const data = JSON.parse(msg.data);
 
-      if (data.msg_type === "authorize") {
-        connection_ws_htx.send(JSON.stringify({
-          profit_table: 1,
-          description: 1,
-          date_from: startInput.toString(),
-          date_to: endInput.toString(),
-          limit: 500,
-          sort: "ASC",
-        }));
-      }
+     if (data.msg_type === "authorize") {
+       connection_ws_htx.send(JSON.stringify({
+         profit_table: 1,
+         description: 1,
+         date_from: Math.floor(new Date(startInput).getTime() / 1000),
+         date_to: Math.floor(new Date(endInput).getTime() / 1000),
+         limit: 500,
+         sort: "ASC",
+       }));
+     }
 
-      if (data.msg_type === "profit_table") {
-        const txs = data.profit_table.transactions || [];
+     if (data.msg_type === "profit_table") {
+       const txs = data.profit_table.transactions || [];
 
-        const profitData = txs
-          .filter(t => t.sell_time && t.sell_price) // uniquement les clôturés
-          .map(t => ({
-            time: Number(t.sell_time),                
-            value: +(t.sell_price - t.buy_price).toFixed(2),
-          }))
-          .filter(t => !isNaN(t.time) && !isNaN(t.value))
-          .sort((a, b) => a.time - b.time);
+       const profitData = txs
+         .filter(t => t.sell_time && !isNaN(t.sell_price)) // uniquement les clôturés
+         .map(t => ({
+           time: Number(t.sell_time),                  // timestamp UNIX en secondes
+           value: +(t.sell_price - t.buy_price).toFixed(2), // profit net
+         }))
+         .filter(p => p.time > 0 && !isNaN(p.value))     // validation des données
+         .sort((a, b) => a.time - b.time);               // tri obligatoire
 
-         if (profitData.length > 0) {
-           console.log("Profit data:", profitData);
-           areahistoricalSeries.setData(profitData);
-           charthistorical.timeScale().fitContent();
-         } else {
-           console.warn("Aucun contrat trouvé pour cet intervalle.");
-         }
-      }
+       if (profitData.length > 0) {
+         console.log("📊 Données affichées :", profitData);
+         areahistoricalSeries.setData(profitData);
+         charthistorical.timeScale().fitContent();
+       } else {
+         alert("Aucun contrat trouvé pour cette période.");
+       }
+     }
    };
 
-   connection_ws_htx.onclose = () => console.log("WS fermé");
-   connection_ws_htx.onerror = (e) => console.error("Erreur WS: ", e);
+   connection_ws_htx.onerror = (err) => {
+     console.error("Erreur WS:", err);
+   };
  }
 
-   
+ // === Initialisation du graphique ===
  function inihistoricalchart() {
    if (!historicalchartcontainer) {
-     console.error("historicalchartcontainer introuvable !");
+     console.error("❌ Container 'HistoricalContract' introuvable !");
      return;
    }
 
    // Supprimer le graphique précédent
-   if (charthistorical) {
-     charthistorical.remove();
-   }
-
+   if (charthistorical) charthistorical.remove();
    historicalchartcontainer.innerHTML = "";
 
    // Créer le graphique
    charthistorical = LightweightCharts.createChart(historicalchartcontainer, {
-     layout: { textColor: "#333", background: { type: "solid", color: "#fff" } },
+     layout: {
+       textColor: "#333",
+       background: { type: "solid", color: "#fff" },
+     },
      grid: {
        vertLines: { color: "rgba(200,200,200,0.3)" },
        horzLines: { color: "rgba(200,200,200,0.3)" },
@@ -2027,7 +2033,7 @@ closeAll.onclick=()=>{
      timeScale: { timeVisible: true, secondsVisible: false },
    });
 
-   // Série
+   // AreaSeries unique
    areahistoricalSeries = charthistorical.addAreaSeries({
      lineColor: "#2962FF",
      topColor: "rgba(41,98,255,0.28)",
@@ -2039,7 +2045,7 @@ closeAll.onclick=()=>{
    setRandomSeries();
  }
 
-  // === Série aléatoire avant les vrais contrats ===
+ // === Série aléatoire avant les vrais contrats ===
  function setRandomSeries() {
    const now = Math.floor(Date.now() / 1000);
    let randomData = [];   
