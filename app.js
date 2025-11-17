@@ -1996,7 +1996,7 @@ function GetProfitgraphical() {
           .filter(p => p.time > 0 && !isNaN(p.value))     // validation des données
           .sort((a, b) => a.time - b.time);               // ordre chronologique
 
-        console.log("profitData:", profitData); // vérification
+        console.log("profitData:", profitData); // vérification   
 
         // 🔍 Filtrage & validation
         const cleanProfitData = profitData.filter((p, i) => {
