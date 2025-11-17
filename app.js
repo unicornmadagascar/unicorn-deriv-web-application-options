@@ -2788,7 +2788,7 @@ window.addEventListener("error", function (e) {
   // startup
   initDerivAccountManager();
   displaySymbols(currentChartType);
-  initChart(currentChartType);
+  //initChart(currentChartType);
   initPLGauge();
   initTable();
   initHistoricalTable();
