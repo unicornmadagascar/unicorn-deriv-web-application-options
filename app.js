@@ -355,29 +355,38 @@ document.addEventListener("DOMContentLoaded", () => {
                console.log('Demande de données OHLC envoyée pour le symbole:', symbol);   
         }
 
-        if (data.msg_type === "history" && data.history && data.history.candles) {
-          // 2. Traitement des données historiques
-          const history = data.history.candles;
-          console.log('Données historiques reçues:', history);
-          const initialData = history.map(formatDataForChart);
-          currentSeries.setData(initialData);
-          console.log(`Données initiales de ${history.length} bougies chargées.`);
+        if (data.msg_type === "history") {
+          const { prices, times } = data.history;
 
-        } else if (data.msg_type === "candles" && data.candles) {
-          const currentCandle = data.candles.splice(-1)[0];    
-          const formattedCandle = formatDataForChart(currentCandle);  
-          console.log('Données de bougie en temps réel reçues:', currentCandle);
-          // IMPORTANT : N'appeler update/setData que si formattedCandle est valide
-          if (formattedCandle) { 
-             currentSeries.update(formattedCandle);
-             console.log('Bougie mise à jour en temps réel:', formattedCandle);
-          }
-       }
-    
-        // Pour maintenir la connexion active (bonnes pratiques WebSocket)   
-        if (data.ping) {
-          wspl.send(JSON.stringify({ pong: 1 }));
-        }       
+          candles.length = 0; // reset
+
+          times.forEach((ts, i) => {
+            candles.push({
+              time: Number(ts),
+              open: Number(prices.open[i]),
+              high: Number(prices.high[i]),
+              low: Number(prices.low[i]),
+              close: Number(prices.close[i]),
+            });
+          });
+
+          currentSeries.setData(candles);
+        }
+
+        if (data.msg_type === "candles") {
+          const c = data.candles;
+
+          const latest = {
+            time: Number(c.epoch),
+            open: Number(c.open),
+            high: Number(c.high),
+            low: Number(c.low),
+            close: Number(c.close),
+          };
+
+          candles.push(latest);
+          currentSeries.update(latest);
+        }
     };       
 
     wspl.onclose = () => {
