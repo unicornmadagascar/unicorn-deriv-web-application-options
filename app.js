@@ -2791,7 +2791,7 @@ window.addEventListener("error", function (e) {
   //initChart(currentChartType);
   initPLGauge();
   initTable();
-  initHistoricalTable();
+  initHistoricalTable();   
   inihistoricalchart(); 
    
   // Gestion du "Select All"  
