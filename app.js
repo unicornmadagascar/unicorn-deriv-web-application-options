@@ -311,7 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
               // et souscrire aux mises à jour en temps réel (bougies en cours).
               const ohlcRequest = {
                       tick_history: symbol,
-                      //adjust_start_time : 1,
+                      adjust_start_time : 1,
                       count: 500,
                       end: "latest",   
                       start: 1, 
@@ -327,7 +327,7 @@ document.addEventListener("DOMContentLoaded", () => {
                console.log('Demande de données OHLC envoyée pour le symbole:', symbol);   
         }
 
-        if (data.msg_type === "candles" && Array.isArray(data.candles)) {
+        if (data.msg_type === "candles" && data.candles) {
            // Historique initial ou batch de données
            const bars = data.candles.map(c => ({  
                time: c.epoch,      // valeur en secondes
