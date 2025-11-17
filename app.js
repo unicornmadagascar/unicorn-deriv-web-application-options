@@ -1969,18 +1969,18 @@ function GetProfitgraphical() {
    }
 
     connection_ws_htx.onmessage = (msg) => {
-     const data = JSON.parse(msg.data);
-
-     if (data.msg_type === "authorize") {
-       connection_ws_htx.send(JSON.stringify({
-         profit_table: 1,
-         description: 1,
-         date_from: startInput.toString(),
-         date_to: endInput.toString(),
-         limit: 500,
-         sort: "ASC",
-       }));
-     }
+      const data = JSON.parse(msg.data);
+  
+      if (data.msg_type === "authorize") {
+        connection_ws_htx.send(JSON.stringify({
+          profit_table: 1,
+          description: 1,
+          date_from: startInput.toString(),
+          date_to: endInput.toString(),
+          limit: 500,
+          sort: "ASC",
+        }));
+      }
 
       // Quand on reçoit la profit_table
       if (data.msg_type === "profit_table") {
@@ -2029,6 +2029,7 @@ function GetProfitgraphical() {
         } else {
            alert("Aucun contrat trouvé pour cette période.");
         }
+      }
    };
    
    connection_ws_htx.onerror = (err) => {
