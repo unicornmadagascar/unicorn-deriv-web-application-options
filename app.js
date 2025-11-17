@@ -1954,7 +1954,7 @@ function GetProfitgraphical() {
 
    if (!startInput || !endInput) {
      alert("Veuillez sélectionner une date de début et une date de fin.");
-     return;
+     return;   
    }
 
    // Initialiser WS si nécessaire
