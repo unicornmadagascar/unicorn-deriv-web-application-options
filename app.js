@@ -3028,7 +3028,7 @@ window.addEventListener("error", function (e) {
   });
 
   window.onload = () => {
-      connect();
+      connect();   
   };
 
   // Simulation : mise à jour toutes les 2 secondes
