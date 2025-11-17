@@ -423,7 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
           candlesCache.push(bar);
        }
        currentSeries.update(bar);
-    }
+     }
   }
 
   // --- SUBSCRIBE SYMBOL ---
