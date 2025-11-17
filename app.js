@@ -329,6 +329,8 @@ document.addEventListener("DOMContentLoaded", () => {
       wspl = new WebSocket(WS_URL);
       wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };       
     }
+
+    const candles = []; // cache local pour les bougies
     
     wspl.onmessage = (msg) => {      
         const data = JSON.parse(msg.data);
@@ -341,7 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
               // et souscrire aux mises à jour en temps réel (bougies en cours).
               const ohlcRequest = {
                       tick_history: symbol,
-                      adjust_start_time : 1,
+                      //adjust_start_time : 1,
                       count: 500,
                       end: "latest",   
                       start: 1, 
@@ -351,7 +353,9 @@ document.addEventListener("DOMContentLoaded", () => {
                };
     
                console.log('Envoi de la demande de données OHLC:', ohlcRequest);
-               wspl.send(JSON.stringify(ohlcRequest));
+               setTimeout(() => {
+                    wspl.send(JSON.stringify(ohlcRequest));
+                }, 500); // petit délai pour s'assurer que l'autorisation est bien prise en compte
                console.log('Demande de données OHLC envoyée pour le symbole:', symbol);   
         }
 
