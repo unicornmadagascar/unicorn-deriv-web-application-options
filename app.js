@@ -117,6 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let response;
   let style_type = "ticks";
   let candlesData = [];
+  let candlesCache = [];
   //------
   let candleSeries;
   let currentSymbol = null;
@@ -170,9 +171,9 @@ document.addEventListener("DOMContentLoaded", () => {
        el.classList.add("selected");
 
        // 🔹 Appelle ta fonction de souscription   
-       subscribeSymbol(s.symbol,currentChartType);  
+       //subscribeSymbol(s.symbol,currentChartType);  
        // Candles Call     
-       candlessubscribing(s.symbol,currentChartType);   
+       //candlessubscribing(s.symbol,currentChartType);   
      });   
 
      symbolList.appendChild(el);
@@ -356,6 +357,74 @@ document.addEventListener("DOMContentLoaded", () => {
          console.log("Socket Closed");
     };    
   }   
+
+  // helper : normalize et valider une candle brute retournée par Deriv
+  function normalizeCandle(raw) {
+    if (!raw) return null;
+
+    let epoch = raw.epoch ?? raw.time ?? raw.epoch_time;
+    let open  = raw.open  ?? raw.o ?? raw[1];
+    let high  = raw.high  ?? raw.h ?? raw[2];
+    let low   = raw.low   ?? raw.l ?? raw[3];
+    let close = raw.close ?? raw.c ?? raw[4];
+
+    epoch = epoch === undefined ? NaN : Number(epoch);
+    open  = open  === undefined ? NaN : Number(open);
+    high  = high  === undefined ? NaN : Number(high);
+    low   = low   === undefined ? NaN : Number(low);
+    close = close === undefined ? NaN : Number(close);
+
+    if (Number.isFinite(epoch) && epoch > 1e12) epoch = Math.floor(epoch / 1000);
+
+    if (![epoch, open, high, low, close].every(Number.isFinite)) return null;
+
+    return { time: epoch, open, high, low, close };
+ }
+
+ function connect() {
+      ws = new WebSocket(WS_URL);
+      ws.onopen = () => {
+        ws.send(JSON.stringify({
+          ticks_history: currentSymbol,
+          style: 'candles',
+          count: 500,
+          granularity: 60, // période en secondes (1 min)
+          subscribe: 1
+        }));
+      };
+
+      ws.onmessage = handleMessage;
+  }
+
+  function handleMessage(evt) {
+      let data;
+      try { data = JSON.parse(evt.data); } catch (e) {
+        console.warn("Message non JSON:", evt.data);
+        return;
+      }
+
+      if (data.msg_type === "candles" && Array.isArray(data.candles)) {
+        const bars = data.candles.map(normalizeCandle).filter(Boolean);
+        if (!bars.length) return console.warn("Aucun bar valide dans data.candles (array).");
+        candlesCache = bars;
+        candleSeries.setData(candlesCache);
+        chart.timeScale().fitContent();
+        return;
+      }
+
+      if (data.msg_type === "candles" && typeof data.candles === "object") {
+        const bar = normalizeCandle(data.candles);
+        if (!bar) return console.warn("Candle stream invalide:", data.candles);
+
+        const last = candlesCache[candlesCache.length - 1];
+        if (last && last.time === bar.time) {
+          candlesCache[candlesCache.length - 1] = bar;
+       } else {
+          candlesCache.push(bar);
+       }
+       candleSeries.update(bar);
+    }
+  }
 
   // --- SUBSCRIBE SYMBOL ---
   function subscribeSymbol(symbol,currentChartType) {    
@@ -2877,6 +2946,11 @@ window.addEventListener("error", function (e) {
       console.log("Current Symbol:", currentSymbol);
     });
   });
+
+  window.onload = () => {
+      initChart(currentChartType);
+      connect();
+    };
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
