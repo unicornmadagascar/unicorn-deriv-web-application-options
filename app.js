@@ -279,7 +279,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentChartType !== "candlestick") return;  
 
     currentSymbol = symbol;
-    initChart(currentChartType);
 
     console.log("Current Chart Type for candles subscription:", currentChartType);
 
