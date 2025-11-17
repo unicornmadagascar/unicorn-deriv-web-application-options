@@ -399,7 +399,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function handleMessage(evt) {
       let data;
       try { data = JSON.parse(evt.data); } catch (e) {
-        console.warn("Message non JSON:", evt.data);
+        console.warn("Message non JSON:", evt.data);  
         return;
       }
 
@@ -407,7 +407,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const bars = data.candles.map(normalizeCandle).filter(Boolean);
         if (!bars.length) return console.warn("Aucun bar valide dans data.candles (array).");
         candlesCache = bars;
-        candleSeries.setData(candlesCache);
+        currentSeries.setData(candlesCache);
         chart.timeScale().fitContent();
         return;
       }
@@ -422,7 +422,7 @@ document.addEventListener("DOMContentLoaded", () => {
        } else {
           candlesCache.push(bar);
        }
-       candleSeries.update(bar);
+       currentSeries.update(bar);
     }
   }
 
