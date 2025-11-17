@@ -3025,7 +3025,7 @@ window.addEventListener("error", function (e) {
       currentSymbol = e.target.dataset.symbol.trim();
       console.log("Current Symbol:", currentSymbol);
     });
-  });
+  });    
 
   window.onload = () => {
       connect();   
