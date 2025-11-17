@@ -270,36 +270,6 @@ document.addEventListener("DOMContentLoaded", () => {
    }
   }
 
-  // Fonction pour convertir les données OHLCV Deriv au format Lightweight Charts
-  const formatDataForChart = (ohlcData) => {
-    // 1. Vérification de l'existence des données essentielles
-    if (!ohlcData || !ohlcData.epoch || !ohlcData.open || !ohlcData.high || !ohlcData.low || !ohlcData.close) {
-        console.error("Données de bougie incomplètes ou nulles:", ohlcData);
-        return null; // Retourne null pour ignorer la bougie invalide
-    }
-
-    // 2. Conversion robuste en nombres flottants
-    const open = parseFloat(ohlcData.open);
-    const high = parseFloat(ohlcData.high);
-    const low = parseFloat(ohlcData.low);
-    const close = parseFloat(ohlcData.close);   
-
-    // 3. Vérification que les valeurs converties sont des nombres valides
-    if (isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close)) {
-        console.error("Erreur de conversion: Les prix ne sont pas des nombres valides.", ohlcData);
-        return null;
-    }
-
-    // 4. Retourne l'objet au format requis
-    return {
-        time: ohlcData.epoch, // Doit être l'horodatage UNIX en secondes (Number)
-        open: open,
-        high: high,
-        low: low,
-        close: close,
-    };
-  };
-
   function candlessubscribing(symbol,currentChartType) 
   {
     if(!symbol) return;
@@ -329,8 +299,6 @@ document.addEventListener("DOMContentLoaded", () => {
       wspl = new WebSocket(WS_URL);
       wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };       
     }
-
-    const candles = []; // cache local pour les bougies
     
     wspl.onmessage = (msg) => {      
         const data = JSON.parse(msg.data);
@@ -359,38 +327,30 @@ document.addEventListener("DOMContentLoaded", () => {
                console.log('Demande de données OHLC envoyée pour le symbole:', symbol);   
         }
 
-        if (data.msg_type === "history") {
-          const { prices, times } = data.history;
+        if (data.msg_type === "candles" && Array.isArray(data.candles)) {
+           // Historique initial ou batch de données
+           const bars = data.candles.map(c => ({  
+               time: c.epoch,      // valeur en secondes
+               open: c.open,
+               high: c.high,
+               low: c.low,
+               close: c.close
+            }));
+           currentSeries.setData(bars);
+        } 
+        else if (data.msg_type === "candles" && data.candles.epoch) {
+           // Nouvelle bougie en streaming
+           const c = data.candles;
+           const bar = {
+              time: c.epoch,
+              open: c.open,
+              high: c.high,
+              low: c.low,
+              close: c.close
+           };
 
-          candles.length = 0; // reset
-
-          times.forEach((ts, i) => {
-            candles.push({
-              time: Number(ts),
-              open: Number(prices.open[i]),
-              high: Number(prices.high[i]),
-              low: Number(prices.low[i]),
-              close: Number(prices.close[i]),
-            });
-          });
-
-          currentSeries.setData(candles);
-        }
-
-        if (data.msg_type === "candles") {
-          const c = data.candles;
-
-          const latest = {
-            time: Number(c.epoch),
-            open: Number(c.open),
-            high: Number(c.high),
-            low: Number(c.low),
-            close: Number(c.close),
-          };
-
-          candles.push(latest);
-          currentSeries.update(latest);
-        }
+           currentSeries.update(bar);
+      }
     };       
 
     wspl.onclose = () => {
