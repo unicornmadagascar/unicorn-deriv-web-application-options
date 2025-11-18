@@ -244,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ticks_history: currentSymbol,
         adjust_start_time: 1,
         style: styleType(currentChartType),
-        granularity: convertTF(currentInterval),
+        granularity: convertTF(currentInterval),  
         count: 300,
         subscribe: 1,
         end: "latest"
