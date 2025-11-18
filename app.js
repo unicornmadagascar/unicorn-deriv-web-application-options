@@ -376,6 +376,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function connect(symbol,currentInterval,currentChartType) {
     if (ws) ws.close();
 
+    if (!symbol && currentChartType !== "candlestick") return;
 
     currentSymbol = symbol;
     initChart(currentChartType);
@@ -518,7 +519,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 300);  
           }   
   
-          displaySymbols(currentChartType);    
+          displaySymbols(currentInterval,currentChartType);    
           return;
         }
 
@@ -2781,7 +2782,7 @@ function extractValue(event, key) {
       accountInfo.textContent = "Connecting..."; 
       isConnect = true; 
       connectDeriv();
-      displaySymbols(currentChartType);
+      displaySymbols(currentInterval,currentChartType);
     } else {
       connectBtn.textContent = "Disconnecting...";
       accountInfo.textContent = "Disconnecting...";
@@ -2808,7 +2809,7 @@ window.addEventListener("error", function (e) {
 
   // startup
   initDerivAccountManager();
-  displaySymbols(currentChartType);
+  displaySymbols(currentInterval,currentChartType);
   initChart(currentChartType);
   initPLGauge();
   initTable();
