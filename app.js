@@ -2916,7 +2916,7 @@ window.addEventListener("error", function (e) {
     btn.addEventListener("click", e => {
       currentChartType = e.target.dataset.type.trim();   
       console.log("Current Chart Type : " +currentChartType);     
-      initChart(currentChartType);
+      connect(currentSymbol, currentInterval, currentChartType);
     });
   });  
 
@@ -2925,6 +2925,7 @@ window.addEventListener("error", function (e) {
       btn.addEventListener("click", e => {
      // Récupère le texte du bouton (ex: "1 minute")
      currentInterval = e.target.textContent.trim();
+     connect(currentSymbol, currentInterval, currentChartType);
      console.log("⏱️ Current Interval:", currentInterval);
 
      // Supprime la classe active sur tous les boutons
@@ -2938,6 +2939,7 @@ window.addEventListener("error", function (e) {
   document.querySelectorAll(".symbol-item").forEach(btn => {   
     btn.addEventListener("click", e => {
       currentSymbol = e.target.dataset.symbol.trim();
+      connect(currentSymbol, currentInterval, currentChartType);
       console.log("Current Symbol:", currentSymbol);
     });
   });   
