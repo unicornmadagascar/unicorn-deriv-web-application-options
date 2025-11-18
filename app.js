@@ -432,14 +432,14 @@ document.addEventListener("DOMContentLoaded", () => {
           cache[cache.length-1] = bar;
           currentSeries.update(bar);
         } else {
-          cache.push(bar);
+          cache.push(bar);   
           currentSeries.update(bar);
         }
       }
 
       if (msg.msg_type === "error") {
         console.error("Erreur WS:", msg);   
-        console.log("Erreur réseau ou payload");
+        console.log("Erreur réseau ou payload");   
       }   
     };
 
