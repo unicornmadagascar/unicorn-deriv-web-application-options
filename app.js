@@ -380,7 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!symbol && currentChartType !== "candlestick") return;
 
     currentSymbol = symbol;
-    initChart(currentChartType);
+    initChart(currentChartType);   
     console.log("Connexion...");
 
     ws = new WebSocket(WS_URL);
