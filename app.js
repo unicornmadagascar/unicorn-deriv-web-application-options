@@ -319,7 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
         currentSeries.setData(cache);
         chart.timeScale().fitContent();
         console.log(`Historique prêt (${bars.length} bougies)`);
-      }
+      }   
 
       if (msg.msg_type === "ohlc" && msg.ohlc) {
         const bar = normalize(msg.ohlc);
