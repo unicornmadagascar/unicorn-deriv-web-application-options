@@ -2752,9 +2752,7 @@ function extractValue(event, key) {
     if (!isConnect) {
       connectBtn.textContent = "Connecting...";
       accountInfo.textContent = "Connecting..."; 
-      isConnect = true; 
-      if (currentSymbol === "") return;
-      connect(currentSymbol,currentInterval,currentChartType);    
+      isConnect = true;    
       connectDeriv();
       displaySymbols(currentInterval,currentChartType);   
     } else {
