@@ -118,6 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let style_type = "ticks";
   let candlesData = [];
   let candlesCache = [];
+  let cache = [];
   //------
   let candleSeries;
   let currentChartType = "candlestick"; // par défaut
@@ -383,6 +384,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Connecté");
       ws.send(JSON.stringify({
         ticks_history: currentSymbol,
+        adjust_start_time: 1,
         style: "candles",
         granularity: 60,
         count: 100,
@@ -408,7 +410,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // première fois : setData pour l'historique
         if (cache.length === 0) {
           cache = bars;
-          series.setData(cache);
+          currentSeries.setData(cache);
           chart.timeScale().fitContent();
           console.log(`Historique prêt (${bars.length} bougies)`);
           return;
@@ -419,10 +421,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const last = cache[cache.length-1];
         if (last && last.time === bar.time) {
           cache[cache.length-1] = bar;
-          series.update(bar);
+          currentSeries.update(bar);
         } else {
           cache.push(bar);
-          series.update(bar);
+          currentSeries.update(bar);
         }
       }
 
@@ -432,7 +434,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    ws.onclose = () => info("Déconnecté");
+    ws.onclose = () => console.log("Déconnecté");
     ws.onerror = (e) => {
       console.error("WS Error:", e);
       console.log("Erreur WebSocket");
