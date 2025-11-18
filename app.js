@@ -431,7 +431,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (msg.msg_type === "error") {
         console.error("Erreur WS:", msg);
         console.log("Erreur réseau ou payload");
-      }
+      }   
     };
 
     ws.onclose = () => console.log("Déconnecté");
