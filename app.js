@@ -320,12 +320,12 @@ document.addEventListener("DOMContentLoaded", () => {
           cache = bars;
           currentSeries.setData(cache);
           chart.timeScale().fitContent();
-          console.log(`Historique prêt (${bars.length} bougies)`);
+          console.log(`Historique prêt (${bars.length} bougies)`);  
           return;
         }
       }   
       else if (msg.msg_type === "ohlc" && msg.ohlc) { 
-        const bar = normalize(msg.ohlc);    
+        const bar = normalize(msg.ohlc);     
         if (!bar) return;  
         currentSeries.update(bar);
       }
