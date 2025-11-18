@@ -673,6 +673,8 @@ hr {
   font-weight: 600;
 }
 
+.widget-title{font-weight:700;color:#0f172a;margin-bottom:.75rem;border-left:4px solid #0369a1;padding-left:.6rem}
+
   </style>
 </head>
 <body>
@@ -871,6 +873,9 @@ hr {
       <div id="autoHistoryList"></div>
     </div>
   </div>
+
+  <div class="widget-title">Forex Screener</div>
+  <div id="forex-screener-container" class="tradingview-widget-container"></div>
   
   <!-- Nouveau panneau des Calendriers economiques -->
   <div class="container">
@@ -963,6 +968,23 @@ hr {
        "showSymbolLogo":true,
        "displayMode":"adaptive"
       }
+    );
+
+    // --- 4) Forex Screener ---
+    createTradingViewEmbed('forex-screener-container',
+       'https://s3.tradingview.com/external-embedding/embed-widget-screener.js',
+        {
+         "market": "forex",
+         "showToolbar": true,
+         "defaultColumn": "overview",
+         "defaultScreen": "general",
+         "isTransparent": false,
+         "locale": "en",
+         "colorTheme": "light",
+         "width": "100%",
+         "height": 550
+        },
+        '<a href="https://www.tradingview.com/markets/currencies/" target="_blank">Forex Screener</a>'
     );
 
     // Toggle panel
