@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
        el.classList.add("selected");
 
        // 🔹 Appelle ta fonction de souscription   
-       //subscribeSymbol(s.symbol,currentChartType);  
+       subscribeSymbol(s.symbol,currentChartType);  
        // Candles Call     
        //candlessubscribing(s.symbol,currentChartType);   
      });   
@@ -358,152 +358,85 @@ document.addEventListener("DOMContentLoaded", () => {
   }   
 
   // normalize une candle brute en { time, open, high, low, close } ou null
-  function normalizeCandle(raw) {
-      if (!raw) return null;
-      const epoch = Number(raw.epoch ?? raw.time ?? raw.epoch_time);
-      const open  = Number(raw.open ?? raw.o ?? raw[1]);
-      const high  = Number(raw.high ?? raw.h ?? raw[2]);
-      const low   = Number(raw.low ?? raw.l ?? raw[3]);
-      const close = Number(raw.close ?? raw.c ?? raw[4]);
-
-      if (!Number.isFinite(epoch) || !Number.isFinite(open) || !Number.isFinite(high) ||
-          !Number.isFinite(low) || !Number.isFinite(close)) return null;
-
-      // convert ms -> s if needed
-      const time = epoch > 1e12 ? Math.floor(epoch / 1000) : epoch;
-      return { time, open, high, low, close };
+  function normalize(c) {
+    if (!c) return null;
+    const t = c.epoch || c.epoch_time || c.time;
+    if (!t) return null;
+    const timestamp = Number(t);
+    return {
+      time: Math.floor(timestamp / (timestamp > 1e12 ? 1000 : 1)),
+      open: Number(c.open),
+      high: Number(c.high),
+      low: Number(c.low),
+      close: Number(c.close)
+    };
   }
   
   function connect() {
-      if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-        console.log('WS déjà connecté — fermeture et reconnexion...');
-        ws.close();
+    if (ws) ws.close();
+    initChart(currentChartType);
+    console.log("Connexion...");
+
+    ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => {
+      console.log("Connecté");
+      ws.send(JSON.stringify({
+        ticks_history: currentSymbol,
+        style: "candles",
+        granularity: 60,
+        count: 100,
+        subscribe: 1,
+        end: "latest"
+      }));
+
+      setInterval(() => ws.send(JSON.stringify({ ping:1 })), 60000);
+    };
+
+    ws.onmessage = ({ data }) => {
+      let msg = {};
+      try { msg = JSON.parse(data); } catch(e){ return; }
+
+      // Historique initial ou mise à jour live
+      if (msg.msg_type === "candles" && msg.candles) {
+        const bars = Array.isArray(msg.candles)
+          ? msg.candles.map(normalize).filter(Boolean)
+          : [normalize(msg.candles)].filter(Boolean);
+
+        if (!bars.length) return;
+
+        // première fois : setData pour l'historique
+        if (cache.length === 0) {
+          cache = bars;
+          series.setData(cache);
+          chart.timeScale().fitContent();
+          console.log(`Historique prêt (${bars.length} bougies)`);
+          return;
+        }
+
+        // ensuite : live bougie par bougie
+        const bar = bars[bars.length-1];
+        const last = cache[cache.length-1];
+        if (last && last.time === bar.time) {
+          cache[cache.length-1] = bar;
+          series.update(bar);
+        } else {
+          cache.push(bar);
+          series.update(bar);
+        }
       }
 
-      initChart(currentChartType);
-      ws = new WebSocket(WS_URL);
+      if (msg.msg_type === "error") {
+        console.error("Erreur WS:", msg);
+        console.log("Erreur réseau ou payload");
+      }
+    };
 
-      let initialResponseReceived = false;
-      const initialTimeout = setTimeout(() => {
-        if (!initialResponseReceived) console.warn('Aucune réponse initiale reçue après 3s — vérifier endpoint / réseau');
-      }, 3000);
-
-      ws.onopen = () => {
-        console.log('WS ouvert');
-        // authorize si TOKEN fourni
-        if (TOKEN) ws.send(JSON.stringify({ authorize: TOKEN }));
-
-        // Requête historique + subscription
-        const req = {
-          ticks_history: currentSymbol,
-          style: "candles",
-          granularity: 60,
-          count: 100,
-          subscribe: 1
-        };
-        ws.send(JSON.stringify(req));
-        console.log('requête envoyée:', req);
-      };
-
-      ws.onmessage = (evt) => {
-        let data;
-        try { data = JSON.parse(evt.data); } catch (e) {
-          console.warn('Message non JSON reçu', evt.data);
-          return;
-        }
-
-        // Debug léger : log des msg_type utiles
-        if (data.msg_type) console.debug('ws msg_type=', data.msg_type);
-
-        // 1) historique initial (array)
-        if (data.msg_type === 'candles' && Array.isArray(data.candles)) {
-          initialResponseReceived = true;
-          clearTimeout(initialTimeout);
-
-          const bars = data.candles.map(normalizeCandle).filter(Boolean);
-          if (!bars.length) {
-            console.warn('Aucun bar valide dans data.candles (array).', data.candles);
-            return;
-          }
-          candlesCache = bars;
-          currentSeries.setData(candlesCache);
-          chart.timeScale().fitContent();
-          console.log(`Historique reçu (${bars.length} bougies).`);
-          return;
-        }
-
-        // 2) streaming: data.candles objet unique (mise à jour ou nouvelle)
-        if (data.msg_type === 'candles' && data.candles && !Array.isArray(data.candles)) {
-          const raw = data.candles;
-          const bar = normalizeCandle(raw);
-          if (!bar) {
-            console.warn('Candle stream invalide ignorée:', raw);
-            return;
-          }
-          // si dernière bougie a même time => update; sinon push
-          const last = candlesCache[candlesCache.length - 1];
-          if (last && last.time === bar.time) {
-            candlesCache[candlesCache.length - 1] = bar;
-            currentSeries.update(bar);
-          } else {
-            candlesCache.push(bar);
-            // update accepte aussi nouvelle bougie
-            currentSeries.update(bar);
-          }
-          return;
-        }
-
-        // 3) history object variant (history.candles)
-        if (data.msg_type === 'history' && data.history) {
-          if (Array.isArray(data.history.candles)) {
-            const bars = data.history.candles.map(normalizeCandle).filter(Boolean);
-            if (bars.length) {
-              candlesCache = bars;
-              currentSeries.setData(candlesCache);
-              chart.timeScale().fitContent();
-              console.log(`Historique(history.candles) reçu (${bars.length} bougies).`);
-            }
-            return;
-          }
-          // history.prices + history.times
-          if (data.history.prices && Array.isArray(data.history.times)) {
-            const times = data.history.times;
-            const prices = data.history.prices;
-            const bars = [];
-            for (let i = 0; i < times.length; i++) {
-              const cand = { epoch: times[i], open: prices.open[i], high: prices.high[i], low: prices.low[i], close: prices.close[i] };
-              const n = normalizeCandle(cand);
-              if (n) bars.push(n);
-            }
-            if (bars.length) {
-              candlesCache = bars;
-              currentSeries.setData(candlesCache);
-              chart.timeScale().fitContent();
-              console.log(`Historique(history.prices) reçu (${bars.length} bougies).`);
-            }
-            return;
-          }
-        }
-
-        // 4) erreurs ou autre
-        if (data.msg_type === 'error') {
-          console.error('WS error payload:', data);
-          console.log('Erreur reçue (voir console)');
-          return;
-        }
-
-        // debug fallback
-        console.log('Message non traité:', data);
-      };
-
-      ws.onerror = (e) => {
-        console.error('WS error', e);
-        console.log('Erreur WebSocket (voir console)');
-      };
-
-      ws.onclose = () => {
-        console.log('WS fermé');
-      };
+    ws.onclose = () => info("Déconnecté");
+    ws.onerror = (e) => {
+      console.error("WS Error:", e);
+      console.log("Erreur WebSocket");
+    };
   }
 
   // --- SUBSCRIBE SYMBOL ---
@@ -2841,7 +2774,6 @@ function extractValue(event, key) {
       accountInfo.textContent = "Connecting..."; 
       isConnect = true; 
       connectDeriv();
-      connect(); 
       displaySymbols(currentChartType);
     } else {
       connectBtn.textContent = "Disconnecting...";
@@ -3026,7 +2958,11 @@ window.addEventListener("error", function (e) {
       currentSymbol = e.target.dataset.symbol.trim();
       console.log("Current Symbol:", currentSymbol);
     });
-  });    
+  });   
+  
+  window.onload = () => {
+       connect();
+  };
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
