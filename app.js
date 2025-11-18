@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
   
-  function connect() {
+  function connect(symbol,currentInterval,currentChartType) {
     if (ws) ws.close();
     initChart(currentChartType);
     console.log("Connexion...");
@@ -383,11 +383,11 @@ document.addEventListener("DOMContentLoaded", () => {
     ws.onopen = () => {
       console.log("Connecté");
       ws.send(JSON.stringify({
-        ticks_history: currentSymbol,
+        ticks_history: symbol,
         adjust_start_time: 1,
-        style: "candles",
-        granularity: 60,
-        count: 100,
+        style: styleType(currentChartType),
+        granularity: convertTF(currentInterval),
+        count: 300,
         subscribe: 1,
         end: "latest"
       }));
@@ -2963,7 +2963,8 @@ window.addEventListener("error", function (e) {
   });   
   
   window.onload = () => {
-       connect();
+       if (currentChartType !== "candlestick") return;
+       connect(currentSymbol, currentInterval, currentChartType);
   };
 
   // Simulation : mise à jour toutes les 2 secondes
