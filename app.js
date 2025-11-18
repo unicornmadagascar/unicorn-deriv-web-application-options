@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
         adjust_start_time: 1,
         style: styleType(currentChartType),
         granularity: convertTF(currentInterval),  
-        count: 450,
+        count: 430,
         subscribe: 1,
         end: "latest",   
         start: 1
@@ -288,22 +288,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function connect(symbol,currentInterval,currentChartType) {
-    if (ws) ws.close();
+    if (wspl) wspl.close();
 
-    if (!symbol && currentChartType !== "candlestick") return;
+    if (!symbol) return;
+
+    if (currentChartType !== "candlestick") return;
 
     currentSymbol = symbol;
     initChart(currentChartType);   
     console.log("Connexion...");  
 
-    ws = new WebSocket(WS_URL);
+    wspl = new WebSocket(WS_URL);
 
-    ws.onopen = () => {
+    wspl.onopen = () => {
       console.log("Connecté");
-      ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
+      wspl.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
     };
 
-    ws.onmessage = ({ data }) => {  
+    wspl.onmessage = ({ data }) => {  
        const msg = JSON.parse(data);
        if (msg.msg_type === "candles" && Array.isArray(msg.candles)) {
            candles = msg.candles.map(c => ({
@@ -355,7 +357,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function connectInit(symbol,currentInterval,currentChartType) {
     if (ws) ws.close();
 
-    if (!symbol && currentChartType !== "candlestick") return;
+    if (!symbol) return;
+    
+    if (currentChartType !== "candlestick") return;
 
     currentSymbol = symbol;
     initChart(currentChartType);
