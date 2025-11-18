@@ -347,8 +347,8 @@ document.addEventListener("DOMContentLoaded", () => {
         Openpositionlines(currentSeries);
     };
 
-    ws.onclose = () => console.log("Déconnecté");
-    ws.onerror = (e) => {
+    wspl.onclose = () => console.log("Déconnecté");
+    wspl.onerror = (e) => {
       console.error("WS Error:", e);
       console.log("Erreur WebSocket");
     };
