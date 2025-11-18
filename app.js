@@ -405,7 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? msg.candles.map(normalize).filter(Boolean)
           : [normalize(msg.candles)].filter(Boolean);
 
-        if (!bars.length) return;
+        if (!bars.length) return;   
 
         // première fois : setData pour l'historique
         if (cache.length === 0) {
