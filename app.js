@@ -296,7 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     currentSymbol = symbol;
     initChart(currentChartType);   
-    console.log("Connexion...");  
+    console.log("Connexion...");     
 
     wspl = new WebSocket(WS_URL);
 
