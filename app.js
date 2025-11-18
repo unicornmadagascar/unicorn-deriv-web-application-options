@@ -397,7 +397,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Historique initial ou mise à jour live
       if (msg.msg_type === "candles" && msg.candles) {
         const bars = Array.isArray(msg.candles)
-          ? msg.candles.map(normalize).filter(Boolean)
+          ? msg.candles.map(normalize).filter(Boolean)   
           : [normalize(msg.candles)].filter(Boolean);
 
         if (!bars.length) return;   
