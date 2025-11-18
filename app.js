@@ -2782,7 +2782,7 @@ function extractValue(event, key) {
       accountInfo.textContent = "Connecting..."; 
       isConnect = true; 
       connectDeriv();
-      displaySymbols(currentInterval,currentChartType);
+      displaySymbols(currentInterval,currentChartType);   
     } else {
       connectBtn.textContent = "Disconnecting...";
       accountInfo.textContent = "Disconnecting...";
