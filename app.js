@@ -247,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
         granularity: convertTF(currentInterval),  
         count: 450,
         subscribe: 1,
-        end: "latest",
+        end: "latest",   
         start: 1
    }   
 
@@ -270,94 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
     case "8 hours": return 2880;   
     default: return 86400;
    }
-  }
-
-  function candlessubscribing(symbol,currentChartType) 
-  {
-    if(!symbol) return;
-
-    console.log("Subscribing to candles for symbol:", symbol);
-
-    if (currentChartType !== "candlestick") return;  
-
-    currentSymbol = symbol;
-
-    console.log("Current Chart Type for candles subscription:", currentChartType);
-
-    if (wspl === null)
-    {
-     wspl = new WebSocket(WS_URL);
-     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };   
-    }
-  
-    if (wspl && (wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING))
-    {
-     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
-    if (wspl && (wspl.readyState === WebSocket.CLOSED || wspl.readyState === WebSocket.CLOSING))
-    {
-      wspl = new WebSocket(WS_URL);
-      wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };       
-    }
-    
-    wspl.onmessage = (msg) => {      
-        const data = JSON.parse(msg.data);
-        console.log('Message reçu du WebSocket (candles):', data);
-        // authorize response
-        if (data.msg_type === "authorize" && data.authorize) {
-              console.log('Connexion WebSocket établie avec Deriv.');
-
-              // 1. Demander les données historiques (pour remplir le graphique initialement)
-              // et souscrire aux mises à jour en temps réel (bougies en cours).
-              const ohlcRequest = {
-                      tick_history: currentSymbol,
-                      adjust_start_time : 1,
-                      count: 500,
-                      end: "latest",   
-                      start: 1, 
-                      granularity: 60,          // convertTF(currentInterval)
-                      style: "candles",   
-                      subscribe: 1 // C'est la clé pour les mises à jour en temps réel !
-               };
-    
-               console.log('Envoi de la demande de données OHLC:', ohlcRequest);    
-               setTimeout(() => {
-                    wspl.send(JSON.stringify(ohlcRequest));
-                }, 500); // petit délai pour s'assurer que l'autorisation est bien prise en compte
-               console.log('Demande de données OHLC envoyée pour le symbole:', symbol);   
-        }
-
-        if (data.msg_type === "candles" && data.candles) {
-           // Historique initial ou batch de données
-           const bars = data.candles.map(c => ({  
-               time: c.epoch,      // valeur en secondes
-               open: c.open,
-               high: c.high,
-               low: c.low,
-               close: c.close
-            }));
-           currentSeries.setData(bars);
-        } 
-        else if (data.msg_type === "candles" && data.candles.epoch) {
-           // Nouvelle bougie en streaming   
-           const c = data.candles;
-           const bar = {
-              time: c.epoch,
-              open: c.open,
-              high: c.high,
-              low: c.low,
-              close: c.close
-           };
-
-           currentSeries.update(bar);
-      }
-    };       
-
-    wspl.onclose = () => {
-         console.log("Socket Closed");
-    };    
-  }   
+  } 
 
   // normalize une candle brute en { time, open, high, low, close } ou null
   function normalize(c) {
@@ -402,7 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!bars.length) return;   
 
-        cache.push(bars);
+        cache.push(bars);    
         currentSeries.setData(cache);
         chart.timeScale().fitContent();
         console.log(`Historique prêt (${bars.length} bougies)`);
