@@ -249,7 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
         subscribe: 1,
         end: "latest",
         start: 1
-   }
+   }   
 
    return payload4subscription;   
   }  
