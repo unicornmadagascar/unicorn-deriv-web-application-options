@@ -353,7 +353,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Erreur WebSocket");
     };
   }
-  
+      
   function connectInit(symbol,currentInterval,currentChartType) {
     if (ws) ws.close();
 
