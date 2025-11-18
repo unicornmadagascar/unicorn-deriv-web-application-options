@@ -2766,7 +2766,7 @@ function extractValue(event, key) {
 // 1️⃣ Intercepter les erreurs globales
 window.addEventListener("error", function (e) {
   const msg = e.message || "";
-  if (
+  if (   
     msg.includes("Unchecked runtime.lastError") ||
     msg.includes("The message port closed before a response was received") ||
     msg.includes("Error: no ad") ||
