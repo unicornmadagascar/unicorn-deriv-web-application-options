@@ -677,6 +677,9 @@ hr {
 </head>
 <body>
   <header>
+    <!-- TradingView Widget BEGIN -->
+    <div id="ticker-container" class="tradingview-widget-container"></div>
+    <!-- TradingView Widget END -->
     <div id="symbolList"></div>
     <div id="controls">
       <div id="accountInfo" style="margin-right:10px; font-weight:500; color:#333;"></div>
@@ -918,6 +921,49 @@ hr {
   </div>
 
   <script>
+    // TRADINGVIEW WIDGET
+    function createTradingViewEmbed(containerId, src, config, creditHtml) {
+       const container = document.getElementById(containerId);
+       if (!container) return;
+
+       const placeholder = document.createElement('div');
+       placeholder.className = 'tradingview-widget-container__widget';
+       container.appendChild(placeholder);
+
+       const s = document.createElement('script');
+       s.type = 'text/javascript';
+       s.async = true;
+       s.src = src;
+       s.text = JSON.stringify(config);
+       container.appendChild(s);
+
+       if(creditHtml){
+          const cr = document.createElement('div');
+          cr.className = 'tradingview-widget-copyright';
+          cr.innerHTML = creditHtml;
+          container.appendChild(cr);
+       }
+    }
+
+    // --- 1) Ticker Tape ---
+    createTradingViewEmbed('ticker-container',
+    'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js',
+     {
+      "symbols":[
+        {"proName":"FX:GBPUSD","title":"S&P 500 Index"},
+        {"proName":"OANDA:XAUUSD","title":"Gold to USD"},
+        {"proName":"FX_IDC:EURUSD","title":"EUR to USD"},
+        {"proName":"BITSTAMP:BTCUSD","title":"Bitcoin"},
+        {"proName":"BITSTAMP:ETHUSD","title":"Ethereum"}
+       ],
+       "colorTheme":"light",
+       "locale":"en",
+       "isTransparent":false,
+       "showSymbolLogo":true,
+       "displayMode":"adaptive"
+      }
+    );
+
     // Toggle panel
     const controlPanelToggle = document.getElementById("controlPanelToggle");
     const controlFormPanel = document.getElementById("controlFormPanel");
