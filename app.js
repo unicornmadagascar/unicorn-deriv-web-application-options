@@ -238,7 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function Payloadforsubscription(currentSymbol,currentInterval,currentChartType)
   {
-   if (!currentSymbol || currentSymbol===null) return;
+   if (!currentSymbol || currentSymbol===null) return;   
 
    const payload4subscription = {
         ticks_history: currentSymbol,
