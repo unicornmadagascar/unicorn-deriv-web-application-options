@@ -2965,7 +2965,7 @@ window.addEventListener("error", function (e) {
   };
 
   // Simulation : mise à jour toutes les 2 secondes
-  setInterval(() => {
+  setInterval(() => {   
     if (connectBtn.textContent !== "Connect")
     {
       contractentry(totalPL => {
