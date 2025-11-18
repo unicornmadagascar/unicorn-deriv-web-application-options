@@ -152,7 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
  
  // --- SYMBOLS ---
-  function displaySymbols(currentChartType) {
+  function displaySymbols(currentInterval,currentChartType) {
    symbolList.innerHTML = "";
 
    SYMBOLS.forEach(s => {
@@ -173,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
        // 🔹 Appelle ta fonction de souscription   
        subscribeSymbol(s.symbol,currentChartType);  
        // Candles Call     
-       //candlessubscribing(s.symbol,currentChartType);   
+       connect(s.symbol,currentInterval,currentChartType);   
      });   
 
      symbolList.appendChild(el);
@@ -375,6 +375,9 @@ document.addEventListener("DOMContentLoaded", () => {
   
   function connect(symbol,currentInterval,currentChartType) {
     if (ws) ws.close();
+
+
+    currentSymbol = symbol;
     initChart(currentChartType);
     console.log("Connexion...");
 
@@ -393,8 +396,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }));*/
     ws.onopen = () => {
       console.log("Connecté");
-      const payload = Payloadforsubscription(symbol,currentInterval,currentChartType);
-      ws.send(JSON.stringify(payload));
+      ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
+      setInterval(() => ws.send(JSON.stringify({ ping:1 })), 60000);
     };
 
     ws.onmessage = ({ data }) => {
@@ -2970,7 +2973,7 @@ window.addEventListener("error", function (e) {
   };
 
   // Simulation : mise à jour toutes les 2 secondes
-  setInterval(() => {     
+  setInterval(() => {   
     if (connectBtn.textContent !== "Connect")
     {
       contractentry(totalPL => {
