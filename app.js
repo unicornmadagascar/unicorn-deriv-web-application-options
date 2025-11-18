@@ -404,7 +404,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ws.onmessage = ({ data }) => {
       let msg = {};
       try { msg = JSON.parse(data); } catch(e){ return; }
-
+   
       // Historique initial ou mise à jour live
       if (msg.msg_type === "candles" && msg.candles) {
         const bars = Array.isArray(msg.candles)
