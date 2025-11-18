@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
         adjust_start_time: 1,
         style: styleType(currentChartType),
         granularity: convertTF(currentInterval),  
-        count: 700,
+        count: 450,
         subscribe: 1,
         end: "latest",
         start: 1
@@ -402,38 +402,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!bars.length) return;   
 
-        // première fois : setData pour l'historique
-        if (cache.length === 0) {
-          cache = bars;
-          currentSeries.setData(cache);
-          chart.timeScale().fitContent();
-          console.log(`Historique prêt (${bars.length} bougies)`);
-          return;
-        }
-
-        // ensuite : live bougie par bougie
-        const bar = bars[bars.length-1];
-        const last = cache[cache.length-1];
-        if (last && last.time === bar.time) {
-          cache[cache.length-1] = bar;
-          currentSeries.update(bar);
-        } else {
-          cache.push(bar);
-          currentSeries.update(bar);
-        }
+        cache.push(bars);
+        currentSeries.setData(cache);
+        chart.timeScale().fitContent();
+        console.log(`Historique prêt (${bars.length} bougies)`);
       }
 
       if (msg.msg_type === "ohlc" && msg.ohlc) {
         const bar = normalize(msg.ohlc);
         if (!bar) return;
-        const last = cache[cache.length-1];
-        if (last && last.time === bar.time) {
-          cache[cache.length-1] = bar;
-          currentSeries.update(bar);
-        } else {
-          cache.push(bar);   
-          currentSeries.update(bar);
-        }
+        currentSeries.update(bar);
       }
 
       if (msg.msg_type === "ping" && msg.ping) {
