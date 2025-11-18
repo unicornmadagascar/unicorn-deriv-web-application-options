@@ -288,7 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function connect(symbol,currentInterval,currentChartType) {
-    if (wspl) wspl.close();
+    if (ws) ws.close();
 
     if (!symbol) return;
 
@@ -298,14 +298,14 @@ document.addEventListener("DOMContentLoaded", () => {
     initChart(currentChartType);   
     console.log("Connexion...");     
 
-    wspl = new WebSocket(WS_URL);
+    ws = new WebSocket(WS_URL);
 
-    wspl.onopen = () => {
+    ws.onopen = () => {
       console.log("Connecté");
-      wspl.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
+      ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
     };
 
-    wspl.onmessage = ({ data }) => {  
+    ws.onmessage = ({ data }) => {  
        const msg = JSON.parse(data);
        if (msg.msg_type === "candles" && Array.isArray(msg.candles)) {
            candles = msg.candles.map(c => ({
@@ -347,8 +347,8 @@ document.addEventListener("DOMContentLoaded", () => {
         Openpositionlines(currentSeries);
     };
 
-    wspl.onclose = () => console.log("Déconnecté");
-    wspl.onerror = (e) => {
+    ws.onclose = () => console.log("Déconnecté");
+    ws.onerror = (e) => {
       console.error("WS Error:", e);
       console.log("Erreur WebSocket");
     };
