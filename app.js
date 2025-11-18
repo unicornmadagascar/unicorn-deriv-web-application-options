@@ -245,9 +245,10 @@ document.addEventListener("DOMContentLoaded", () => {
         adjust_start_time: 1,
         style: styleType(currentChartType),
         granularity: convertTF(currentInterval),  
-        count: 300,
+        count: 700,
         subscribe: 1,
-        end: "latest"
+        end: "latest",
+        start: 1
    }
 
    return payload4subscription;   
