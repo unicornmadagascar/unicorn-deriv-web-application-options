@@ -308,22 +308,25 @@ document.addEventListener("DOMContentLoaded", () => {
       try { msg = JSON.parse(data); } catch(e){ return; }   
    
       // Historique initial ou mise à jour live
-      if (msg.msg_type === "history" && msg.history) {
+      if (msg.msg_type === "candles" && msg.candles) {
         const bars = Array.isArray(msg.candles)
           ? msg.candles.map(normalize).filter(Boolean)   
           : [normalize(msg.candles)].filter(Boolean);
      
         if (!bars.length) return;   
 
-        cache.push(bars);    
-        currentSeries.setData(cache);
-        chart.timeScale().fitContent();
-        console.log(`Historique prêt (${bars.length} bougies)`);
+        // première fois : setData pour l'historique
+        if (cache.length === 0) {
+          cache = bars;
+          currentSeries.setData(cache);
+          chart.timeScale().fitContent();
+          console.log(`Historique prêt (${bars.length} bougies)`);
+          return;
+        }
       }   
-
-      if (msg.msg_type === "ohlc" && msg.ohlc) {
-        const bar = normalize(msg.ohlc);
-        if (!bar) return;
+      else if (msg.msg_type === "ohlc" && msg.ohlc) { 
+        const bar = normalize(msg.ohlc);    
+        if (!bar) return;  
         currentSeries.update(bar);
       }
 
