@@ -304,36 +304,45 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     ws.onmessage = ({ data }) => {  
-      let msg = {};
-      try { msg = JSON.parse(data); } catch(e){ return; }     
-   
-      // Historique initial ou mise à jour live
-      if (msg.msg_type === "candles" && msg.candles) {
-        const bars = Array.isArray(msg.candles)
-          ? msg.candles.map(normalize).filter(Boolean)   
-          : [normalize(msg.candles)].filter(Boolean);
-     
-        if (!bars.length) return;   
-
-        // première fois : setData pour l'historique
-        if (cache.length === 0) {
-          cache = bars;
-          currentSeries.setData(cache);
+       const msg = JSON.parse(data);
+       if (msg.msg_type === "candles" && Array.isArray(msg.candles)) {
+           candles = msg.candles.map(c => ({
+             time: Number(c.epoch),
+             open: Number(c.open),
+             high: Number(c.high),
+             low: Number(c.low),
+             close: Number(c.close),
+          }));
+          currentSeries.setData(candles);
           chart.timeScale().fitContent();
-          console.log(`Historique prêt (${bars.length} bougies)`);  
-          return;
-        }
-      }   
-      else if (msg.msg_type === "ohlc" && msg.ohlc) { 
-        const bar = normalize(msg.ohlc);     
-        if (!bar) return;  
-        currentSeries.update(bar);
-      }
+       }
 
-      if (msg.msg_type === "error") {
-        console.error("Erreur WS:", msg);   
-        console.log("Erreur réseau ou payload");   
-      }   
+       if (msg.msg_type === "ohlc" && msg.ohlc) {
+          const o = msg.ohlc;
+          const openTime = Number(o.open_time);  // time of the current candle
+          const bar = {
+              time: openTime,
+              open: Number(o.open),
+              high: Number(o.high),
+              low: Number(o.low),
+              close: Number(o.close),
+          };
+
+          const last = candles[candles.length - 1];
+
+          if (!last || last.time !== openTime) {
+             // Nouvelle bougie
+             candles.push(bar);
+             currentSeries.update(bar);
+             console.log("🟢 Nouvelle bougie :", bar);
+          } else {
+             // Mise à jour de la dernière bougie
+             candles[candles.length - 1] = bar;
+             currentSeries.update(bar);
+          }
+        }
+
+        Openpositionlines(currentSeries);
     };
 
     ws.onclose = () => console.log("Déconnecté");
@@ -2740,8 +2749,9 @@ function extractValue(event, key) {
       connectBtn.textContent = "Connecting...";
       accountInfo.textContent = "Connecting..."; 
       isConnect = true; 
-      connectDeriv();
+      if (currentSymbol === "") return;
       connect(currentSymbol,currentInterval,currentChartType); 
+      connectDeriv();
       displaySymbols(currentInterval,currentChartType);   
     } else {
       connectBtn.textContent = "Disconnecting...";
