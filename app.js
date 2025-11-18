@@ -294,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     currentSymbol = symbol;
     initChart(currentChartType);   
-    console.log("Connexion...");
+    console.log("Connexion...");  
 
     ws = new WebSocket(WS_URL);
 
@@ -303,7 +303,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
     };
 
-    ws.onmessage = ({ data }) => {
+    ws.onmessage = ({ data }) => {  
       let msg = {};
       try { msg = JSON.parse(data); } catch(e){ return; }     
    
