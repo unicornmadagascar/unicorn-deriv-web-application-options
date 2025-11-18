@@ -241,13 +241,13 @@ document.addEventListener("DOMContentLoaded", () => {
    if (!currentSymbol || currentSymbol===null) return;
 
    const payload4subscription = {
-     tick_history: currentSymbol || "R_75",  
-     adjust_start_time: 1,    
-     count: 700,
-     end: "latest",
-     granularity: convertTF(currentInterval) || 60,                     
-     style: styleType(currentChartType),                   
-     subscribe: 1
+        ticks_history: currentSymbol,
+        adjust_start_time: 1,
+        style: styleType(currentChartType),
+        granularity: convertTF(currentInterval),
+        count: 300,
+        subscribe: 1,
+        end: "latest"
    }
 
    return payload4subscription;   
@@ -2969,7 +2969,7 @@ window.addEventListener("error", function (e) {
   });   
   
   window.onload = () => {
-       if (currentChartType !== "candlestick") return;
+       if (currentChartType !== "candlestick" && !currentSymbol) return;
        connect(currentSymbol, currentInterval, currentChartType);
   };
 
