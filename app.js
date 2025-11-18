@@ -2912,7 +2912,7 @@ window.addEventListener("error", function (e) {
   });
 
  // === Changement du type de graphique ===
- document.querySelectorAll(".chart-type-btn").forEach(btn => {
+ document.querySelectorAll(".chart-type-btn").forEach(btn => {   
     btn.addEventListener("click", e => {
       currentChartType = e.target.dataset.type.trim();   
       console.log("Current Chart Type : " +currentChartType);     
@@ -2922,7 +2922,7 @@ window.addEventListener("error", function (e) {
 
   // === Changement d’intervalle ===
   document.querySelectorAll(".interval-btn").forEach(btn => {
-      btn.addEventListener("click", e => {
+      btn.addEventListener("click", e => {   
      // Récupère le texte du bouton (ex: "1 minute")
      currentInterval = e.target.textContent.trim();
      connect(currentSymbol, currentInterval, currentChartType);
