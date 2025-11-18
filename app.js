@@ -252,7 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
    }
 
    return payload4subscription;   
-  }
+  }  
 
   function convertTF(currentInterval)  
   {
