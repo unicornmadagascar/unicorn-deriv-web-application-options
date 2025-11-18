@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { symbol: "CRASH600", name: "Crash 600" },       
     { symbol: "cryBTCUSD", name: "BTCUSD" },   
     { symbol: "frxXAUUSD", name: "XAUUSD" },   
-    { symbol: "R_100", name: "VIX 100" },
+    { symbol: "frxEURUSD", name: "EURUSD" },
     { symbol: "R_75", name: "VIX 75" },   
     { symbol: "R_50", name: "VIX 50" },
     { symbol: "R_25", name: "VIX 25" },
@@ -1285,6 +1285,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   //--- Trades (New)
   function executeTrade(type){
+    if (wsContracts) wsContracts.close();
+    
     const stake=parseFloat(stakeInput.value)||1;
     const multiplier=parseInt(multiplierInput.value)||50;
     const tp_contract = Number(takeProfitInput.value)||0;
@@ -1339,7 +1341,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   closewinning.onclick=()=>{
-
+    if (wsContracts_winning) wsContracts_winning.close();
     console.log("Closing all profitable trades...");
 
     if (wsContracts_winning === null)
@@ -1422,6 +1424,7 @@ document.addEventListener("DOMContentLoaded", () => {
  };
 
 closeAll.onclick=()=>{
+   if (wsContracts__close) wsContracts__close.close(); 
 
    if (wsContracts__close === null)
     {
