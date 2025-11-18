@@ -388,7 +388,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ws.onopen = () => {
       console.log("Connecté");
       ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
-      ws.send(JSON.stringify({ ping:1 }));
     };
 
     ws.onmessage = ({ data }) => {
@@ -435,6 +434,10 @@ document.addEventListener("DOMContentLoaded", () => {
           cache.push(bar);   
           currentSeries.update(bar);
         }
+      }
+
+      if (msg.msg_type === "ping" && msg.ping) {
+          ws.send(JSON.stringify({ ping:1 }));
       }
 
       if (msg.msg_type === "error") {
@@ -2848,6 +2851,7 @@ function extractValue(event, key) {
       accountInfo.textContent = "Connecting..."; 
       isConnect = true; 
       connectDeriv();
+      connect(currentSymbol,currentInterval,currentChartType); 
       displaySymbols(currentInterval,currentChartType);   
     } else {
       connectBtn.textContent = "Disconnecting...";
