@@ -2750,7 +2750,7 @@ function extractValue(event, key) {
       accountInfo.textContent = "Connecting..."; 
       isConnect = true; 
       if (currentSymbol === "") return;
-      connect(currentSymbol,currentInterval,currentChartType); 
+      connect(currentSymbol,currentInterval,currentChartType);    
       connectDeriv();
       displaySymbols(currentInterval,currentChartType);   
     } else {
