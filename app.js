@@ -380,7 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     ws = new WebSocket(WS_URL);
 
-    ws.onopen = () => {
+    /*ws.onopen = () => {
       console.log("Connecté");
       ws.send(JSON.stringify({
         ticks_history: symbol,
@@ -390,9 +390,11 @@ document.addEventListener("DOMContentLoaded", () => {
         count: 300,
         subscribe: 1,
         end: "latest"
-      }));
-
-      setInterval(() => ws.send(JSON.stringify({ ping:1 })), 60000);
+      }));*/
+    ws.onopen = () => {
+      console.log("Connecté");
+      const payload = Payloadforsubscription(symbol,currentInterval,currentChartType);
+      ws.send(JSON.stringify(payload));
     };
 
     ws.onmessage = ({ data }) => {
@@ -2968,7 +2970,7 @@ window.addEventListener("error", function (e) {
   };
 
   // Simulation : mise à jour toutes les 2 secondes
-  setInterval(() => {   
+  setInterval(() => {     
     if (connectBtn.textContent !== "Connect")
     {
       contractentry(totalPL => {
