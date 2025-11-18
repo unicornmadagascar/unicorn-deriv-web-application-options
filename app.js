@@ -429,7 +429,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (msg.msg_type === "error") {
-        console.error("Erreur WS:", msg);
+        console.error("Erreur WS:", msg);   
         console.log("Erreur réseau ou payload");
       }   
     };
