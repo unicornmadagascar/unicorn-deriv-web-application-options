@@ -308,11 +308,11 @@ document.addEventListener("DOMContentLoaded", () => {
       try { msg = JSON.parse(data); } catch(e){ return; }   
    
       // Historique initial ou mise à jour live
-      if (msg.msg_type === "candles" && msg.candles) {
+      if (msg.msg_type === "history" && msg.history) {
         const bars = Array.isArray(msg.candles)
           ? msg.candles.map(normalize).filter(Boolean)   
           : [normalize(msg.candles)].filter(Boolean);
-
+     
         if (!bars.length) return;   
 
         cache.push(bars);    
@@ -325,10 +325,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const bar = normalize(msg.ohlc);
         if (!bar) return;
         currentSeries.update(bar);
-      }
-
-      if (msg.msg_type === "ping" && msg.ping) {
-          ws.send(JSON.stringify({ ping:1 }));
       }
 
       if (msg.msg_type === "error") {
