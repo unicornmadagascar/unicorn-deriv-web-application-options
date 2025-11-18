@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
       close: Number(c.close)
     };
   }
-  
+
   function connect(symbol,currentInterval,currentChartType) {
     if (ws) ws.close();
 
@@ -385,17 +385,82 @@ document.addEventListener("DOMContentLoaded", () => {
 
     ws = new WebSocket(WS_URL);
 
-    /*ws.onopen = () => {
+    ws.onopen = () => {
       console.log("Connecté");
-      ws.send(JSON.stringify({
-        ticks_history: symbol,
-        adjust_start_time: 1,
-        style: styleType(currentChartType),
-        granularity: convertTF(currentInterval),
-        count: 300,
-        subscribe: 1,
-        end: "latest"
-      }));*/
+      ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
+      ws.send(JSON.stringify({ ping:1 }));
+    };
+
+    ws.onmessage = ({ data }) => {
+      let msg = {};
+      try { msg = JSON.parse(data); } catch(e){ return; }
+   
+      // Historique initial ou mise à jour live
+      if (msg.msg_type === "candles" && msg.candles) {
+        const bars = Array.isArray(msg.candles)
+          ? msg.candles.map(normalize).filter(Boolean)
+          : [normalize(msg.candles)].filter(Boolean);
+
+        if (!bars.length) return;   
+
+        // première fois : setData pour l'historique
+        if (cache.length === 0) {
+          cache = bars;
+          currentSeries.setData(cache);
+          chart.timeScale().fitContent();
+          console.log(`Historique prêt (${bars.length} bougies)`);
+          return;
+        }
+
+        // ensuite : live bougie par bougie
+        const bar = bars[bars.length-1];
+        const last = cache[cache.length-1];
+        if (last && last.time === bar.time) {
+          cache[cache.length-1] = bar;
+          currentSeries.update(bar);
+        } else {
+          cache.push(bar);
+          currentSeries.update(bar);
+        }
+      }
+
+      if (msg.msg_type === "ohlc" && msg.ohlc) {
+        const bar = normalize(msg.ohlc);
+        if (!bar) return;
+        const last = cache[cache.length-1];
+        if (last && last.time === bar.time) {
+          cache[cache.length-1] = bar;
+          currentSeries.update(bar);
+        } else {
+          cache.push(bar);
+          currentSeries.update(bar);
+        }
+      }
+
+      if (msg.msg_type === "error") {
+        console.error("Erreur WS:", msg);   
+        console.log("Erreur réseau ou payload");
+      }   
+    };
+
+    ws.onclose = () => console.log("Déconnecté");
+    ws.onerror = (e) => {
+      console.error("WS Error:", e);
+      console.log("Erreur WebSocket");
+    };
+  }
+  
+  function connectInit(symbol,currentInterval,currentChartType) {
+    if (ws) ws.close();
+
+    if (!symbol && currentChartType !== "candlestick") return;
+
+    currentSymbol = symbol;
+    initChart(currentChartType);
+    console.log("Connexion...");
+
+    ws = new WebSocket(WS_URL);
+
     ws.onopen = () => {
       console.log("Connecté");
       ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
@@ -2971,7 +3036,7 @@ window.addEventListener("error", function (e) {
   
   window.onload = () => {
        if (currentChartType !== "candlestick" && !currentSymbol) return;
-       connect(currentSymbol, currentInterval, currentChartType);
+       connectInit(currentSymbol, currentInterval, currentChartType);
   };
 
   // Simulation : mise à jour toutes les 2 secondes
