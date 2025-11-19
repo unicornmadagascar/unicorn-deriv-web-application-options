@@ -1295,7 +1295,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (wsContracts === null)
     {
-     wsContracts = new WebSocket(WS_URL);
+     wsContracts = new WebSocket(WS_URL);   
      wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
     }
   
