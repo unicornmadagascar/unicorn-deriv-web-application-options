@@ -296,7 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (currentChartType !== "candlestick") return;
 
-    currentSymbol = symbol;
+    currentSymbol = symbol;   
     initChart(currentChartType);   
     console.log("Connexion...");     
 
