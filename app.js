@@ -189,7 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
         textColor: "#333",   
         background: { type: "solid", color: "#fff" },        
       },
-      grid: { vertLines: { color: "rgba(255,255,255,0.05)" }, horzLines: { color: "rgba(255,255,255,0.05)" } },
+      grid: { vertLines: { color: "rgba(255,255,255,0.05)", visible: true, style: LightweightCharts.LineStyle.Solid }, horzLines: { color: "rgba(255,255,255,0.05)", visible: true, style: LightweightCharts.LineStyle.Solid } },
       timeScale: { timeVisible: true, secondsVisible: true }
     });
 
