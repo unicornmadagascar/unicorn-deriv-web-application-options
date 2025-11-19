@@ -697,7 +697,7 @@ hr {
   
 /* Container du widget */
 #forex-screener-container {
-    flex: none;
+    flex: 1;
     background: #fafafa;                       /* Blanc très léger */   
     border-radius: 10px;
     border: 1px solid #efefef;
@@ -904,11 +904,6 @@ hr {
       <div id="autoHistoryList"></div>
     </div>
   </div>
-
-  <section class="widget-section full-width" id="forex-screener-section">
-    <div class="widget-title">Forex Screener</div>
-    <div id="forex-screener-container" class="tradingview-widget-container"></div>
-  </section>
   
   <!-- Nouveau panneau des Calendriers economiques -->
   <div class="container">
@@ -958,6 +953,11 @@ hr {
    
    </div>
   </div>
+
+  <section class="widget-section full-width" id="forex-screener-section">
+    <div class="widget-title">Forex Screener</div>
+    <div id="forex-screener-container" class="tradingview-widget-container"></div>
+  </section>
 
   <script>
     // TRADINGVIEW WIDGET
