@@ -170,9 +170,12 @@ document.addEventListener("DOMContentLoaded", () => {
        el.classList.add("selected");
 
        // 🔹 Appelle ta fonction de souscription   
-       subscribeSymbol(s.symbol,currentChartType);  
-       // Candles Call     
-       connect(s.symbol,currentInterval,currentChartType);   
+       if (!s.symbol) return;
+       if (currentChartType === "candlestick") {
+          connectInit(s.symbol, currentInterval, currentChartType);
+       } else {
+          subscribeSymbol(s.symbol, currentInterval, currentChartType);
+       } 
      });   
 
      symbolList.appendChild(el);
@@ -2916,7 +2919,12 @@ window.addEventListener("error", function (e) {
     btn.addEventListener("click", e => {
       currentChartType = e.target.dataset.type.trim();   
       console.log("Current Chart Type : " +currentChartType);     
-      connect(currentSymbol, currentInterval, currentChartType);
+      if (!currentSymbol) return;
+      if (currentChartType === "candlestick") {
+        connectInit(currentSymbol, currentInterval, currentChartType);
+      } else {
+        subscribeSymbol(currentSymbol, currentInterval, currentChartType);
+      }
     });
   });  
 
@@ -2925,7 +2933,12 @@ window.addEventListener("error", function (e) {
       btn.addEventListener("click", e => {   
      // Récupère le texte du bouton (ex: "1 minute")
      currentInterval = e.target.textContent.trim();
-     connect(currentSymbol, currentInterval, currentChartType);
+     if (!currentSymbol) return;
+     if (currentChartType === "candlestick") {
+       connectInit(currentSymbol, currentInterval, currentChartType);
+     } else {
+      subscribeSymbol(currentSymbol, currentInterval, currentChartType);
+    }
      console.log("⏱️ Current Interval:", currentInterval);
 
      // Supprime la classe active sur tous les boutons
@@ -2939,14 +2952,23 @@ window.addEventListener("error", function (e) {
   document.querySelectorAll(".symbol-item").forEach(btn => {   
     btn.addEventListener("click", e => {
       currentSymbol = e.target.dataset.symbol.trim();
-      connect(currentSymbol, currentInterval, currentChartType);
+      if (!currentSymbol) return;
+      if (currentChartType === "candlestick") {
+        connectInit(currentSymbol, currentInterval, currentChartType);
+      } else {
+        subscribeSymbol(currentSymbol, currentInterval, currentChartType);
+      }
       console.log("Current Symbol:", currentSymbol);
     });
   });   
   
   window.onload = () => {
-       if (currentChartType !== "candlestick" && !currentSymbol) return;
-       connectInit(currentSymbol, currentInterval, currentChartType);
+       if (!currentSymbol) return;
+       if (currentChartType === "candlestick") {
+          connectInit(currentSymbol, currentInterval, currentChartType);
+        } else {
+          subscribeSymbol(currentSymbol, currentInterval, currentChartType);
+        }
   };
 
   // Simulation : mise à jour toutes les 2 secondes
