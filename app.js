@@ -146,8 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { symbol: "frxUSDJPY", name: "USDJPY" },
     { symbol: "OTC_SPC", name: "US SP 500" },
     { symbol: "OTC_DJI", name: "Wall Street 30" }
-  ];
-
+  ];   
   const fmt = n => Number(n).toFixed(2);
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
  
