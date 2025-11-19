@@ -176,7 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
        } else {
           subscribeSymbol(s.symbol, currentInterval, currentChartType);
        } 
-     });   
+     });     
 
      symbolList.appendChild(el);
    });
