@@ -673,18 +673,37 @@ hr {
   font-weight: 600;
 }
 
-.widget-section{
-  background:#fff;
-  border-radius:12px;
-  padding:1rem;
-  box-shadow:0 6px 18px rgba(2,6,23,0.06);
-  transition:transform .18s ease, box-shadow .18s ease;
-  overflow:hidden;
-  height: 550px;
+/* Section principale */
+#forex-screener-section {
+    background: #ffffff;               /* Couleur blanche */
+    border-radius: 14px;               /* Coins arrondis */
+    padding: 20px;                     /* Espacement interne */
+    height: 700px !important;          /* Hauteur plus grande */
+    box-shadow: 0 4px 18px rgba(0,0,0,0.08); /* Légère ombre */
+    border: 1px solid #e8e8e8;         /* Liseré très léger */
+    display: flex;
+    flex-direction: column;
+    gap: 16px;                         /* Espacement entre titre et contenu */
 }
-.widget-section:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(2,6,23,0.08)}
-.widget-title{font-weight:700;color:#0f172a;margin-bottom:.75rem;border-left:4px solid #0369a1;padding-left:.6rem}
-.full-width{grid-column:1/-1}
+
+/* Titre */
+#forex-screener-section .widget-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 8px;
+}
+
+/* Container du widget */
+#forex-screener-container {
+    flex: 1;
+    background: #fafafa;               /* Blanc très léger */
+    border-radius: 10px;
+    border: 1px solid #efefef;
+    overflow: hidden;
+}
+
   </style>
 </head>
 <body>  
