@@ -673,8 +673,17 @@ hr {
   font-weight: 600;
 }
 
+.widget-section{
+  background:#fff;
+  border-radius:12px;
+  padding:1rem;
+  box-shadow:0 6px 18px rgba(2,6,23,0.06);
+  transition:transform .18s ease, box-shadow .18s ease;
+  overflow:hidden;
+}
+.widget-section:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(2,6,23,0.08)}
 .widget-title{font-weight:700;color:#0f172a;margin-bottom:.75rem;border-left:4px solid #0369a1;padding-left:.6rem}
-#forex-screener-container {height:800px;box-shadow:0 6px 18px rgba(0,0,0,0.06);border-radius:8px;background:#fff;margin-bottom:20px}
+.full-width{grid-column:1/-1}
   </style>
 </head>
 <body>
@@ -874,8 +883,10 @@ hr {
     </div>
   </div>
 
-  <div class="widget-title">Forex Screener</div>
-  <div id="forex-screener-container" class="tradingview-widget-container"></div>   
+  <section class="widget-section full-width" id="forex-screener-section" style="height:550px;">
+    <div class="widget-title">Forex Screener</div>
+    <div id="forex-screener-container" class="tradingview-widget-container"></div>
+  </section>
   
   <!-- Nouveau panneau des Calendriers economiques -->
   <div class="container">
