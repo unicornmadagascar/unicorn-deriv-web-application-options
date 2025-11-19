@@ -193,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
       timeScale: { timeVisible: true, secondsVisible: true } 
     });
 
-    // === Type de graphique dynamique ===
+    // === Type de graphique dynamique ===  
     if (currentChartType === "area") {
       currentSeries = chart.addAreaSeries({
         lineColor: "#2962FF",
