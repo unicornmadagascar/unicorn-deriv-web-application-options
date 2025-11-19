@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const SYMBOLS = [
     { symbol: "BOOM1000", name: "Boom 1000" },
-    { symbol: "CRASH1000", name: "Crash 1000" },
+    { symbol: "CRASH1000", name: "Crash 1000" },  
     { symbol: "BOOM500", name: "Boom 500" },
     { symbol: "CRASH500", name: "Crash 500" },     
     { symbol: "BOOM900", name: "Boom 900" },      
@@ -145,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { symbol: "frxGBPUSD", name: "GBPUSD" },   
     { symbol: "frxUSDJPY", name: "USDJPY" },
     { symbol: "OTC_SPC", name: "US SP 500" },
-    { symbol: "OTC_DJI", name: "Wall Street 30" }
+    { symbol: "OTC_DJI", name: "Wall Street 30" }  
   ];   
   const fmt = n => Number(n).toFixed(2);
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
