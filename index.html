@@ -673,19 +673,6 @@ hr {
   font-weight: 600;
 }
 
-/* Section principale */
-#forex-screener-section {
-    background: #ffffff;               /* Couleur blanche */
-    border-radius: 14px;               /* Coins arrondis */
-    padding: 7px;                     /* Espacement interne */
-    height: 1500px;          /* Hauteur plus grande */
-    box-shadow: 0 4px 18px rgba(0,0,0,0.08); /* Légère ombre */
-    border: 1px solid #e8e8e8;         /* Liseré très léger */
-    display: flex;
-    flex-direction: column;
-    gap: 10px;                         /* Espacement entre titre et contenu */
-}
-
 /* Titre */
 #forex-screener-section .widget-title {
     font-size: 17px;
@@ -694,18 +681,28 @@ hr {
     border-bottom: 1px solid #f0f0f0;   
     padding-bottom: 8px;
 }
-  
-/* Container du widget */
+
+/* SECTION */
+#forex-screener-section {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 20px;
+    min-height: 700px;
+    height: auto !important;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    border: 1px solid #e8e8e8;
+}
+
+/* LE CONTENEUR DOIT PRENDRE LA HAUTEUR */
 #forex-screener-container {
-    flex: 1;
-    background: #fafafa;                       /* Blanc très léger */   
+    height: 100% !important;
+    min-height: 650px !important;
+    background: #fafafa;
     border-radius: 10px;
     border: 1px solid #efefef;
     overflow: hidden;
-    margin-top: 8px;
-    height: 1050px;
 }
-
+  
   </style>
 </head>
 <body>  
@@ -904,6 +901,11 @@ hr {
       <div id="autoHistoryList"></div>
     </div>
   </div>
+
+  <section class="widget-section full-width" id="forex-screener-section">
+    <div class="widget-title">Forex Screener</div>
+    <div id="forex-screener-container" class="tradingview-widget-container"></div>
+  </section>
   
   <!-- Nouveau panneau des Calendriers economiques -->
   <div class="container">
@@ -953,11 +955,6 @@ hr {
    
    </div>
   </div>
-
-  <section class="widget-section full-width" id="forex-screener-section">
-    <div class="widget-title">Forex Screener</div>
-    <div id="forex-screener-container" class="tradingview-widget-container"></div>
-  </section>
 
   <script>
     // TRADINGVIEW WIDGET
