@@ -140,12 +140,12 @@ document.addEventListener("DOMContentLoaded", () => {
     { symbol: "BOOM600", name: "Boom 600" },   
     { symbol: "CRASH600", name: "Crash 600" },       
     { symbol: "cryBTCUSD", name: "BTCUSD" },   
-    { symbol: "frxXAUUSD", name: "XAUUSD" },   
+    { symbol: "frxXAUUSD", name: "XAUUSD" },     
     { symbol: "frxEURUSD", name: "EURUSD" },
-    { symbol: "R_75", name: "VIX 75" },   
-    { symbol: "R_50", name: "VIX 50" },
-    { symbol: "R_25", name: "VIX 25" },
-    { symbol: "R_10", name: "VIX 10" }
+    { symbol: "frxGBPUSD", name: "GBPUSD" },   
+    { symbol: "frxUSDJPY", name: "USDJPY" },
+    { symbol: "OTC_SPC", name: "US SP 500" },
+    { symbol: "OTC_DJI", name: "Wall Street 30" }
   ];
 
   const fmt = n => Number(n).toFixed(2);
