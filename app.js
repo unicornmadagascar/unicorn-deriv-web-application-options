@@ -1317,7 +1317,7 @@ document.addEventListener("DOMContentLoaded", () => {
         parameters: {
           contract_type: type==="BUY"?"MULTUP":"MULTDOWN",
           symbol: currentSymbol,
-          currency: "USD",
+          currency: CURRENCY.toString(),
           basis: "stake",
           amount: stake.toFixed(2),
           multiplier: multiplier,
@@ -1381,7 +1381,7 @@ document.addEventListener("DOMContentLoaded", () => {
          console.log("📊 Found " + contracts.length + " active contracts.");
 
          contracts.forEach((contract,i) => {
-         setTimeout(() => {
+         setTimeout(() => {  
             wsContracts_winning.send(
               JSON.stringify({
                  proposal_open_contract: 1,
