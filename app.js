@@ -1381,7 +1381,7 @@ document.addEventListener("DOMContentLoaded", () => {
          console.log("📊 Found " + contracts.length + " active contracts.");
 
          contracts.forEach((contract,i) => {
-         setTimeout(() => {  
+         setTimeout(() => {     
             wsContracts_winning.send(
               JSON.stringify({
                  proposal_open_contract: 1,
