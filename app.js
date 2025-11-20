@@ -1431,7 +1431,7 @@ closeAll.onclick=()=>{
    console.log("Closing all trades...");
   
    if (wsContracts__close === null)
-    {
+    {   
      wsContracts__close = new WebSocket(WS_URL);
      wsContracts__close.onopen=()=>{ wsContracts__close.send(JSON.stringify({ authorize: TOKEN })); };
     }
