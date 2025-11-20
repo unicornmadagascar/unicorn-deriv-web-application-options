@@ -194,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       grid: { vertLines: { color: "#eee" }, horzLines: { color: "#eee" } },
       timeScale: { timeVisible: true, secondsVisible: true } 
-    });
+    });  
 
     // === Type de graphique dynamique ===  
     if (currentChartType === "area") {
