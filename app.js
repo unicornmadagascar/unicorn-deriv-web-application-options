@@ -193,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
         background: { type: "solid", color: "#fff" },        
       },
       grid: { vertLines: { color: "#eee" }, horzLines: { color: "#eee" } },
-      timeScale: { rightOffset: 5, barSpacing: 15, fixRightEdge: true, lockVisibleTimeRangeOnResize: false } 
+      timeScale: { timeVisible: true, secondsVisible: true } 
     });
 
     // === Type de graphique dynamique ===  
@@ -203,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
         topColor: "rgba(41,98,255,0.28)",
         bottomColor: "rgba(41,98,255,0.05)",
         lineWidth: 2,
-      });   
+      });
     } else if (currentChartType === "candlestick") {
       currentSeries = chart.addCandlestickSeries({
         upColor: "#26a69a",
