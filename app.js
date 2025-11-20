@@ -1344,7 +1344,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   closewinning.onclick=()=>{
-    if (wsContracts_winning) wsContracts_winning.close();
+
     console.log("Closing all profitable trades...");
 
     if (wsContracts_winning === null)
@@ -1427,7 +1427,8 @@ document.addEventListener("DOMContentLoaded", () => {
  };
 
 closeAll.onclick=()=>{
-   if (wsContracts__close) wsContracts__close.close(); 
+
+   console.log("Closing all trades...");
 
    if (wsContracts__close === null)
     {
@@ -2120,7 +2121,7 @@ function GetProfitgraphical() {
    const target = 1.0;      // Valeur cible (asymptote)    
    let value = 0;           // Point de départ
 
-   for (let i = 700; i >= 1; i--) {     
+   for (let i = 300; i >= 1; i--) {     
       const time = now - i * 3600; // toutes les heures
 
       // facteur d'apprentissage + petite variation aléatoire
