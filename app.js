@@ -1339,7 +1339,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
               }
 
-              const oppositeType = "MULTDOWN";
+              const oppositeType = "MULTDOWN";  
               const stake = parseFloat(stakeInput.value) || 1;
               const multiplier = parseInt(multiplierInput.value) || 40;
             
@@ -1361,7 +1361,8 @@ document.addEventListener("DOMContentLoaded", () => {
               return;
             });
           }
-          else if (contractType === "MULTDOWN") {
+          else if (contractType === "MULTDOWN") 
+          {
             contracts.filter(c => c.contract_type === "MULTDOWN").forEach(d => {
               wsContracts_reverse.send(JSON.stringify({ sell: d.contract_id, price: 0 }));
               console.log(`⛔ Fermeture du contrat ${d.contract_id} demandée`);
