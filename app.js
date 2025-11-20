@@ -1330,8 +1330,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
          const poc = data.proposal_open_contract;
          console.log("📄 Proposal Open Contract received:", poc);
-         const contractId = poc.contract_id;
-         const contractType = poc.contract_type;
       }
         
       if (data.msg_type === "portfolio") {
@@ -1340,7 +1338,7 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log('Contrats ouverts:', contracts);
 
           // 4️⃣ Fermer chaque contrat
-          if (contractType === "MULTUP") {
+          if (poc.contract_type === "MULTUP") {
             contracts.filter(c => c.contract_type === "MULTUP").forEach(d => {
               wsContracts_reverse.send(JSON.stringify({ sell: d.contract_id, price: 0 }));
               console.log(`⛔ Fermeture du contrat ${d.contract_id} demandée`);
@@ -1371,7 +1369,7 @@ document.addEventListener("DOMContentLoaded", () => {
               return;
             });
           }
-          else if (contractType === "MULTDOWN") 
+          else if (poc.contract_type === "MULTDOWN") 
           {
             contracts.filter(c => c.contract_type === "MULTDOWN").forEach(d => {
               wsContracts_reverse.send(JSON.stringify({ sell: d.contract_id, price: 0 }));
