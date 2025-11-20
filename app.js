@@ -1429,7 +1429,7 @@ document.addEventListener("DOMContentLoaded", () => {
 closeAll.onclick=()=>{
 
    console.log("Closing all trades...");
-
+  
    if (wsContracts__close === null)
     {
      wsContracts__close = new WebSocket(WS_URL);
