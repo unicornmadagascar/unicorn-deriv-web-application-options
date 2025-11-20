@@ -492,7 +492,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // small delay to ensure WS state consistent
             setTimeout(() => {
               if (wspl && wspl.readyState === WebSocket.OPEN) {   
-                  wspl.send(JSON.stringify({ forget_all: "ticks" }));  
+                  wspl.send(JSON.stringify({ forget_all: "ticks" }));     
                   wspl.send(JSON.stringify({ ticks: pendingSubscribe }));   
                   currentSymbol = pendingSubscribe;
                   pendingSubscribe = null;       
