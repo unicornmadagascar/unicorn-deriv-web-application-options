@@ -513,7 +513,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // tick handling  
         if (data.msg_type === "tick" && data.tick) {
-          handleTick(data.tick);   
+          handleTick(data.tick);     
           return;
         }
     };   
