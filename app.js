@@ -1737,7 +1737,7 @@ closeAll.onclick=()=>{
     const accounts = getStoredAccounts();
     accounts.forEach(acc => {
       const option = document.createElement("option");
-      option.value = acc.token;
+      option.value = acc.token;  
       option.textContent = `${acc.account} (${acc.currency})`;
       combo.appendChild(option);
     });
@@ -1745,7 +1745,7 @@ closeAll.onclick=()=>{
   
   // 🔹 Nettoyer l’URL après extraction
   function cleanURL() {
-    window.history.replaceState({}, document.title, window.location.pathname);
+    window.history.replaceState({}, document.title, window.location.pathname);   
   }
 
   // 🔹 Initialisation principale
