@@ -1732,7 +1732,7 @@ closeAll.onclick=()=>{
     const combo = document.getElementById("accountSelect");
     if (!combo) return;
 
-    combo.innerHTML = '<option value="">Sélectionnez un compte</option>';
+    combo.innerHTML = '<option value="">Select an account!</option>';
 
     const accounts = getStoredAccounts();
     accounts.forEach(acc => {
@@ -1781,7 +1781,7 @@ closeAll.onclick=()=>{
           </tr>
         </thead>
         <tbody id="autoHistoricalBody">
-          <tr><td colspan="10" style="text-align:center;">Aucun trade trouvé</td></tr>
+          <tr><td colspan="10" style="text-align:center;">No trade Found</td></tr>
         </tbody>
       </table>
    `;
@@ -1862,7 +1862,7 @@ closeAll.onclick=()=>{
    tbody.innerHTML = "";
 
    if (trades.length === 0) {
-     tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">Aucun trade trouvé</td></tr>';
+     tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">No Trade Found</td></tr>';
      return;
    }
 
@@ -1993,7 +1993,7 @@ function GetProfitgraphical() {
    const endInput = document.getElementById("endDate").value;
 
    if (!startInput || !endInput) {
-     alert("Veuillez sélectionner une date de début et une date de fin.");
+     alert("Please select a start date and an end date.");
      return;   
    }
 
@@ -2067,7 +2067,7 @@ function GetProfitgraphical() {
            areahistoricalSeries.setData(uniqueData);
            charthistorical.timeScale().fitContent();
         } else {
-           alert("Aucun contrat trouvé pour cette période.");
+           alert("No contracts found for this period.");
         }
       }
    };
@@ -2198,7 +2198,7 @@ function initCalendarTable() {
        <tbody id="calendarBody">
          <tr>
           <td colspan="13" style="text-align:center; color:gray;">
-             Aucun événement trouvé
+              No events loaded.
            </td>
          </tr>
        </tbody>
@@ -2224,7 +2224,7 @@ function initCalendarTable() {
  // ✅ Requête WS Deriv API
  function fetchEconomicCalendar() {
    const token = TOKEN;
-   if (!token) { alert('Veuillez entrer votre token Deriv.'); return; }
+   if (!token) { alert('Please enter your Deriv token.'); return; }
 
    statusEl.textContent = 'statut: connexion...';
    if (ws) ws.close();
@@ -2234,10 +2234,10 @@ function initCalendarTable() {
 
    ws.onmessage = (msg) => {  
      const data = JSON.parse(msg.data);
-     if (data.error) { statusEl.textContent = 'Erreur: ' + data.error.message; return; }
+     if (data.error) { statusEl.textContent = 'Error: ' + data.error.message; return; }
 
      if (data.authorize) { 
-       statusEl.textContent = 'Autorisé: ' + (data.authorize.loginid || '');
+       statusEl.textContent = 'Authorized: ' + (data.authorize.loginid || '');
        sendCalendarRequest(); 
        return; 
      }
@@ -2265,7 +2265,7 @@ function initCalendarTable() {
    if (end) payload.end_date = Math.floor(new Date(end).getTime() / 1000);
 
    ws.send(JSON.stringify(payload));
-   statusEl.textContent = 'statut: requête envoyée';
+   statusEl.textContent = 'statut: Resquest sent...';
  }
 
  // ✅ Met à jour les lignes du tableau
@@ -2322,7 +2322,7 @@ function initCalendarTable() {
   body.innerHTML =
     rows ||
     `<tr><td colspan="13" style="text-align:center; color:gray;">
-       Aucun événement trouvé pour cette période
+        “No events found for this period.”
      </td></tr>`;
 
   attachSortHandlers(); // On attache les événements de tri après mise à jour
@@ -2544,7 +2544,7 @@ function extractValue(event, key) {
    const endInput = document.getElementById("endDate").value;
 
    if (!startInput || !endInput) {
-     alert("Veuillez sélectionner une date de début et de fin.");  
+     alert("Please select a start and end date.");  
      return;
    }
 
@@ -2609,7 +2609,7 @@ function extractValue(event, key) {
     const selectedToken = combo.value;
 
     if (!selectedToken) {
-      alert("⚠️ Veuillez d’abord sélectionner un compte à supprimer.");
+      alert("⚠️ Please first select an account to delete.");
       return;
     }
 
@@ -2645,7 +2645,7 @@ function extractValue(event, key) {
       closeContract(contract_id);
       tr.remove(); // suppression immédiate de la ligne
     } else {
-      alert("☑️ Veuillez cocher la case avant de fermer ce contrat.");
+      alert("☑️ Please check the box before closing this contract.");
     }
    }
   });
@@ -2658,7 +2658,7 @@ function extractValue(event, key) {
       const checkedBoxes = document.querySelectorAll(".rowSelect:checked");
 
       if (checkedBoxes.length === 0) {
-        alert("Veuillez sélectionner au moins un contrat à fermer.");
+        alert("Please select at least one contract to close.");
         return;
       }
 
@@ -2670,7 +2670,7 @@ function extractValue(event, key) {
         tr.remove();
       });
 
-      alert("🟢 Tous les contrats sélectionnés ont été envoyés pour fermeture !");
+      alert("🟢 All selected contracts have been sent for closure!");
     }
   });
 
