@@ -2985,7 +2985,7 @@ window.addEventListener("error", function (e) {
     sl_contract = Number(document.getElementById("slInput").value);
 
     console.log("Données sauvegardées :");
-    console.log({ multiplier, stake, buyNumber, sellNumber, tp, sl });
+    console.log({ multiplier, stake, buyNumber, sellNumber, tp_contract, sl_contract });
 
     // Fermer le popup
     document.getElementById("settingsPopup").style.display = "none";
