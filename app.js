@@ -487,7 +487,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // subscribe balance updates
           wspl.send(JSON.stringify({ balance: 1, subscribe: 1 }));
-          // if there was a pending subscribe requested earlier, do it now
+          // if there was a pending subscribe requested earlier, do it now   
           if (pendingSubscribe) {
             // small delay to ensure WS state consistent
             setTimeout(() => {
