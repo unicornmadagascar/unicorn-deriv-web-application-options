@@ -47,6 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const openModalBtn = document.getElementById("openPopup");  
   const closeModalBtn = document.getElementById("closeModal");    
   const historicalchartcontainer = document.getElementById("HistoricalgraphicalContract");
+  const reverseBtn = document.getElementById("reverseBtn");
 
   let totalPL = 0; // cumul des profits et pertes
   let automationRunning = false;
@@ -770,6 +771,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function handleTicks(tick) {
+      const symbolPrefix = currentSymbol.slice(0, 6);
       const price = parseFloat(tick.quote);
       tickHistory__.push(price);
 
@@ -819,8 +821,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const stake = parseFloat(stakeInput.value) || 1;
       const multiplier = parseInt(multiplierInput.value) || 50;
       const repeat = direction === "BUY"
-        ? (parseInt(buyNum.value) || 1)
-        : (parseInt(sellNum.value) || 1);
+        ? (parseInt(buyNumber.value) || 1)
+        : (parseInt(sellNumber.value) || 1);
 
       console.log(`📤 Ouverture d’un contrat ${direction} (${mainType})`);
 
@@ -936,7 +938,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   {
                     const stake = parseFloat(stakeInput.value) || 1;
                     const multiplier = parseInt(multiplierInput.value)||50;
-                    numb_ = parseInt(buyNum.value) || 1;
+                    numb_ = parseInt(buyNumber.value) || 1;
                     for (let i=0;i < numb_; i++)
                     {
                       wsAutomation.send(JSON.stringify({
@@ -974,7 +976,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   {
                     const stake = parseFloat(stakeInput.value) || 1;
                     const multiplier = parseInt(multiplierInput.value)||50;
-                    numb_ = parseInt(sellNum.value) || 1;
+                    numb_ = parseInt(sellNumber.value) || 1;
                     for (let i=0;i < numb_; i++)
                     {
                       wsAutomation.send(JSON.stringify({
@@ -1013,7 +1015,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   {
                     const stake = parseFloat(stakeInput.value) || 1;
                     const multiplier = parseInt(multiplierInput.value)||50;
-                    numb_ = parseInt(sellNum.value) || 1;
+                    numb_ = parseInt(sellNumber.value) || 1;
                     for (let i=0;i < numb_; i++)
                     {
                       wsAutomation.send(JSON.stringify({
@@ -1051,7 +1053,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   {
                     const stake = parseFloat(stakeInput.value) || 1;
                     const multiplier = parseInt(multiplierInput.value)||50;
-                    numb_ = parseInt(buyNum.value) || 1;
+                    numb_ = parseInt(buyNumber.value) || 1;
                     for (let i=0;i < numb_; i++)
                     {
                       wsAutomation.send(JSON.stringify({
@@ -1291,6 +1293,107 @@ document.addEventListener("DOMContentLoaded", () => {
 
   buyBtn.onclick=()=>executeTrade("BUY");
   sellBtn.onclick=()=>executeTrade("SELL");
+  reverseBtn.onclick=()=>{
+    console.log("Reversing positions...");
+    reversefunction();
+  }
+
+  function reversefunction(){
+    console.log("Reversing positions...");
+    if (wsContracts_reverse) wsContracts_reverse.close();
+    
+    if (!wsContracts_reverse || wsContracts_reverse.readyState === WebSocket.CLOSED)
+    {
+      wsContracts_reverse = new WebSocket(WS_URL);
+      wsContracts_reverse.onopen=()=>{ wsContracts_reverse.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    wsContracts_reverse.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+      // Authorization successful
+      if (data.msg_type === "authorize") {
+         console.log("✅ Authorized successfully. Fetching portfolio for reversal...");
+         wsContracts_reverse.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
+         wsContracts_reverse.send(JSON.stringify({ portfolio: 1 }));
+      }
+
+      if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
+         const poc = data.proposal_open_contract;
+         console.log("📄 Proposal Open Contract received:", poc);
+         const contractId = poc.contract_id;
+         const contractType = poc.contract_type;
+      }
+        
+      if (data.msg_type === "portfolio") {
+          const contracts = data.portfolio.contracts;
+
+          console.log('Contrats ouverts:', contracts);
+
+          // 4️⃣ Fermer chaque contrat
+          if (contractType === "MULTUP") {
+            contracts.filter(c => c.contract_type === "MULTUP").forEach(d => {
+              wsContracts_reverse.send(JSON.stringify({ sell: d.contract_id, price: 0 }));
+              console.log(`⛔ Fermeture du contrat ${d.contract_id} demandée`);
+
+              if (poc.contract_id && contracts.length > 0) {
+                return;
+              }
+
+              const oppositeType = "MULTDOWN";
+              const stake = parseFloat(stakeInput.value) || 1;
+              const multiplier = parseInt(multiplierInput.value) || 40;
+            
+              for (let k = 0; k < (parseInt(sellNumber.value) || 1); k++) {    
+                 wsContracts_reverse.send(JSON.stringify({
+                    buy: 1,
+                    price: stake.toFixed(2),
+                    parameters: {
+                      contract_type: oppositeType,
+                      symbol: currentSymbol,
+                      currency: CURRENCY.toString(),
+                      basis: "stake",
+                      amount: stake.toFixed(2),
+                      multiplier: multiplier,
+                   }
+                }));
+              }
+
+              return;
+            });
+          }
+          else if (contractType === "MULTDOWN") {
+            contracts.filter(c => c.contract_type === "MULTDOWN").forEach(d => {
+              wsContracts_reverse.send(JSON.stringify({ sell: d.contract_id, price: 0 }));
+              console.log(`⛔ Fermeture du contrat ${d.contract_id} demandée`);
+
+              if (poc.contract_id && contracts.length > 0) {
+                return;
+              }
+
+              const oppositeType = "MULTUP";
+              const stake = parseFloat(stakeInput.value) || 1;
+              const multiplier = parseInt(multiplierInput.value) || 40;
+              for (let k = 0; k < (parseInt(buyNumber.value) || 1); k++) {    
+                 wsContracts_reverse.send(JSON.stringify({
+                     buy: 1,
+                     price: stake.toFixed(2),
+                     parameters: {
+                       contract_type: oppositeType,
+                       symbol: currentSymbol,
+                       currency: CURRENCY.toString(),
+                       basis: "stake",
+                       amount: stake.toFixed(2),
+                       multiplier: multiplier,
+                    }
+                  }));
+               }
+
+               return;
+            });
+          }
+       }
+    };
+  }
 
   //--- Trades (New)
   function executeTrade(type){
