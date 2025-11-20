@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let smoothTrend = 0;
   let ws=null;
   let connection = null;
+  let wsContracts_reverse = null;
   let wsROC = null;   
   let ws_calendar = null;
   let wsContracts__close = null;
