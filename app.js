@@ -507,7 +507,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // balance update
         if (data.msg_type === "balance" && data.balance) {   
           const b = data.balance;
-          accountInfo.textContent = `Account: ${b.loginid} | Balance: ${Number(b.balance).toFixed(2)} ${b.currency}`;
+          accountInfo.textContent = `Account: ${b.loginid} | ${Number(b.balance).toFixed(2)} ${b.currency}`;
           return;
         }
 
