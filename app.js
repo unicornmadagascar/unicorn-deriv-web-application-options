@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let ws=null;
   let connection = null;
   let wsROC = null;   
-  let wspl__ct = null;
+  let ws_calendar = null;
   let wsContracts__close = null;
   let wsContracts_winning = null;   
   let wsAutomation_sell = null;
@@ -2228,12 +2228,12 @@ function initCalendarTable() {
    if (!token) { alert('Please enter your Deriv token.'); return; }
 
    statusEl.textContent = 'statut: connexion...';
-   if (ws) ws.close();
-   ws = new WebSocket(WS_URL);   
+   if (ws_calendar) ws_calendar.close();
+   ws_calendar = new WebSocket(WS_URL);   
 
-   ws.onopen = () => ws.send(JSON.stringify({ authorize: token }));
+   ws_calendar.onopen = () => ws_calendar.send(JSON.stringify({ authorize: token }));
 
-   ws.onmessage = (msg) => {  
+   ws_calendar.onmessage = (msg) => {  
      const data = JSON.parse(msg.data);
      if (data.error) { statusEl.textContent = 'Error: ' + data.error.message; return; }
 
@@ -2250,8 +2250,8 @@ function initCalendarTable() {
      }   
    };
 
-   ws.onerror = (e) => { statusEl.textContent = 'Erreur WebSocket'; console.error(e); };
-   ws.onclose = () => { statusEl.textContent = 'Connexion fermée'; };
+   ws_calendar.onerror = (e) => { statusEl.textContent = 'Erreur WebSocket'; console.error(e); };
+   ws_calendar.onclose = () => { statusEl.textContent = 'Connexion fermée'; };
  }
 
  // ✅ Envoi du payload calendrier
@@ -2265,7 +2265,7 @@ function initCalendarTable() {
    if (start) payload.start_date = Math.floor(new Date(start).getTime() / 1000);
    if (end) payload.end_date = Math.floor(new Date(end).getTime() / 1000);
 
-   ws.send(JSON.stringify(payload));
+   ws_calendar.send(JSON.stringify(payload));
    statusEl.textContent = 'statut: Resquest sent...';
  }
 
