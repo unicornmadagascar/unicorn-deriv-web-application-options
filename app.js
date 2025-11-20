@@ -24,8 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const stopLossInput = document.getElementById("slInput");
   const closewinning = document.getElementById("closeWinning");
   const closeAll = document.getElementById("closeAll");
-  const buyNum = document.getElementById("buyNumberInput");
-  const sellNum = document.getElementById("sellNumberInput");
+  const buyNumber = document.getElementById("buyNumberInput");
+  const sellNumber = document.getElementById("sellNumberInput");
   const contractsPanelToggle = document.getElementById("contractsPanelToggle");
   const contractsPanel = document.getElementById("contractsPanel");
   const autoHistoryList = document.getElementById("autoHistoryList");
@@ -119,6 +119,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let candlesData = [];
   let candlesCache = [];
   let cache = [];
+  //------
+  let multiplier = 40;
+  let stake = 1;
+  let buyNum = 1;
+  let sellNum = 1;
+  let tp_contract = 0;
+  let sl_contract = 0;
   //------
   let candleSeries;
   let currentChartType = "candlestick"; // par défaut
@@ -1287,11 +1294,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   //--- Trades (New)
   function executeTrade(type){
-    
-    const stake=parseFloat(stakeInput.value)||1;
-    const multiplier=parseInt(multiplierInput.value)||50;
-    const tp_contract = Number(takeProfitInput.value)||0;
-    const sl_contract = Number(stopLossInput.value)||0;
 
     if (wsContracts === null)
     {
@@ -1327,12 +1329,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (type === "BUY")
        {
-        numb_ = parseInt(buyNum.value)||1;
+        numb_ = parseInt(buyNumber.value)||1;
        }
       else if (type === "SELL")
        {
-        numb_ = parseInt(sellNum.value)||1;
-       }
+        numb_ = parseInt(sellNumber.value)||1;
+       }  
 
       for (let i=0;i < numb_; i++)
        {
@@ -2959,7 +2961,35 @@ window.addEventListener("error", function (e) {
       }
       console.log("Current Symbol:", currentSymbol);
     });
-  });   
+  });  
+  
+  //--- Connexion automatique au chargement de la page si conditions remplies ---
+  // Ouvrir popup
+  document.getElementById("Datasetting").onclick = () => {
+    document.getElementById("settingsPopup").style.display = "flex";
+  };
+
+  // Fermer popup
+  document.getElementById("closePopupBtn").onclick = () => {
+    document.getElementById("settingsPopup").style.display = "none";
+  };
+
+  // Sauvegarder + assigner les variables
+  document.getElementById("savePopupBtn").onclick = () => {
+
+    multiplier = parseInt(Number(document.getElementById("multiplierSelect").value)) || 40;
+    stake = parseFloat(Number(document.getElementById("stakeInput").value)) || 1.0;
+    buyNum = parseInt(Number(document.getElementById("buyNumberInput").value)) || 1;
+    sellNum = parseInt(Number(document.getElementById("sellNumberInput").value)) || 1;
+    tp_contract = Number(document.getElementById("tpInput").value);
+    sl_contract = Number(document.getElementById("slInput").value);
+
+    console.log("Données sauvegardées :");
+    console.log({ multiplier, stake, buyNumber, sellNumber, tp, sl });
+
+    // Fermer le popup
+    document.getElementById("settingsPopup").style.display = "none";
+  };
   
   window.onload = () => {
        if (!currentSymbol) return;
