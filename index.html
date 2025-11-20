@@ -141,18 +141,18 @@
   backdrop-filter: blur(4px);
 }
 
-/* Popup GRAND format */
+/* Popup très large */
 .popup-box {
   background: #fff;
   padding: 50px;
   border-radius: 24px;
-  width: 720px;            /* Beaucoup plus grand */
+  width: 720px;      /* Largeur grande */
   max-width: 95%;
   box-shadow: 0 14px 40px rgba(0,0,0,0.25);
   animation: popupShow 0.28s ease forwards;
   opacity: 0;
   transform: scale(0.78);
-}  
+}
 
 .popup-box h2 {
   margin: 0 0 35px;
@@ -162,24 +162,25 @@
   color: #222;
 }
 
-/* 2 colonnes centrées + espacées */
+/* Contenu en grille 2 colonnes, champs même largeur */
 .popup-content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px 45px; /* vertical - horizontal */
-  justify-items: center;  /* CENTRE colonne */
+  grid-template-columns: repeat(2, 1fr); /* 2 colonnes égales */
+  gap: 32px 45px; /* vertical / horizontal */
+  justify-items: center; /* centre horizontalement chaque cellule */
 }
 
-/* Chaque groupe (label + input) */
+/* Groupe label + input */
 .input-group {
-  width: 100%;  
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  align-items: center;     /* CENTRAGE parfaitement */
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  max-width: 300px;  /* largeur identique pour tous les inputs */
 }
 
-/* Labels centrés */
+/* Labels */
 .input-group label {
   font-weight: 600;
   font-size: 16px;
@@ -187,14 +188,14 @@
   text-align: center;
 }
 
-/* Inputs centrés */
+/* Inputs / select identiques */
 .popup-content input,
 .popup-content select {
   padding: 12px 16px;
   font-size: 16px;
   border: 1px solid #cfcfcf;
   border-radius: 12px;
-  width: 85%;
+  width: 100%;           /* tous mêmes largeurs */
   text-align: center;
   background: #f7f7f7;
   transition: 0.25s;
@@ -207,7 +208,7 @@
   box-shadow: 0 0 0 2px rgba(13,110,253,0.20);
 }
 
-/* Boutons centrés */
+/* Boutons */
 .popup-buttons {
   display: flex;
   justify-content: center;
