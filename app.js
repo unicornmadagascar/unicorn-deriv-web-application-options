@@ -1346,7 +1346,7 @@ document.addEventListener("DOMContentLoaded", () => {
               wsContracts_reverse.send(JSON.stringify({ sell: d.contract_id, price: 0 }));
               console.log(`⛔ Fermeture du contrat ${d.contract_id} demandée`);
 
-              if (poc.contract_id && contracts.length > 0) {
+              if (poc.contract_id && contracts.length > 0) {  
                 return;   
               }
 
@@ -1698,13 +1698,13 @@ closeAll.onclick=()=>{
 
     // Objet formaté pour ton tableau
     const trade = {
-      time: new Date(c.date_start * 1000).toLocaleTimeString(),
+      time: new Date(c.date_start * 1000).toLocaleTimeString(),  
       contract_id: c.contract_id,
       symbol: c.underlying || c.symbol,
-      type: c.is_buy ? "BUY" : "SELL",
+      type: c.contract_type === "MULTUP" ? "MULTUP" : "MULTDOWN",
       stake: c.buy_price || 0,
       multiplier: c.multiplier || "-",
-      entry_spot: c.entry_tick ?? "-",
+      entry_spot: c.entry_tick_display_value ?? "-",
       tp: c.take_profit ?? "-",
       sl: c.stop_loss ?? "-",
       profit:
@@ -1725,7 +1725,7 @@ closeAll.onclick=()=>{
         <td>${trade.time}</td>
         <td>${trade.contract_id}</td>
         <td>${trade.symbol.toString()}</td>
-        <td class="${trade.type === "BUY" ? "buy" : "sell"}">${trade.type}</td>
+        <td class="${trade.type === "MULTUP" ? "MULTUP" : "MULTDOWN"}">${trade.type}</td>
         <td>${Number(trade.stake).toFixed(2)}</td>
         <td>${trade.multiplier}</td>
         <td>${trade.entry_spot}</td>
