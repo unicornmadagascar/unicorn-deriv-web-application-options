@@ -127,85 +127,94 @@
     #closeAll { background-color: white; color: #4d4747; }
 
    /* Overlay sombre */
-  .popup-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.55);
-    display: none;
-    justify-content: center;
-    align-items: center;   
-    z-index: 99999;
-    backdrop-filter: blur(3px);
-  }
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.55);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+  backdrop-filter: blur(3px);
+}
 
- /* Box moderne */
- .popup-box {
-   background: #fff;
-   padding: 40px 40px;
-   border-radius: 20px;
-   width: 520px;
-   max-width: 90%;
-   box-shadow: 0 12px 34px rgba(0,0,0,0.25);
-   animation: popupShow 0.28s ease forwards;
-   opacity: 0;
-   transform: scale(0.8);
-  }
+/* Box moderne */
+.popup-box {
+  background: #fff;
+  padding: 40px;
+  border-radius: 20px;
+  width: 600px;        /* Plus large pour 2 colonnes */
+  max-width: 92%;
+  box-shadow: 0 12px 34px rgba(0,0,0,0.25);
+  animation: popupShow 0.28s ease forwards;
+  opacity: 0;
+  transform: scale(0.8);
+}
 
-  .popup-box h2 {
-    margin: 0 0 25px;
-    text-align: center;
-    font-size: 26px;
-    color: #111;
-  }
+.popup-box h2 {
+  margin: 0 0 28px;
+  text-align: center;
+  font-size: 28px;
+  color: #111;
+}
 
-  /* CONTENU CENTRÉ */
-  .popup-content {
-    display: flex;
-    flex-direction: column;
-    gap: 18px; /* Plus d'espace entre les champs */
-  }
+/* CONTENU EN 2 COLONNES */
+.popup-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px 30px; /* Vertical / Horizontal */
+  justify-content: center;
+}
 
-  .popup-content label {
-   font-weight: 600;
-   color: #222;
-   text-align: center;
-  }
+/* Chaque bloc */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-  .popup-content input,
-  .popup-content select {
-    padding: 10px 14px;
-    font-size: 15px;
-    border: 1px solid #d0d0d0;
-    border-radius: 10px;
-    width: 100%;
-    text-align: center;
-    background: #fafafa;
-    transition: 0.25s;
-  }
+.input-group label {
+  font-weight: 600;
+  color: #222;
+  font-size: 15px;
+  text-align: center;
+}
 
-  .popup-content input:focus,
-  .popup-content select:focus {
-    border-color: #0d6efd;
-    background: #fff;
-    box-shadow: 0 0 0 2px rgba(13,110,253,0.15);
-  }
+/* Input et select */
+.popup-content input,
+.popup-content select {
+  padding: 10px 14px;
+  font-size: 15px;
+  border: 1px solid #d0d0d0;
+  border-radius: 10px;
+  text-align: center;
+  background: #fafafa;
+  transition: 0.25s;
+}
 
-  /* BOUTONS CENTRÉS ET PLUS ESPACÉS */
+.popup-content input:focus,
+.popup-content select:focus {
+  border-color: #0d6efd;
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(13,110,253,0.2);
+}
+
+  /* BOUTONS */
   .popup-buttons {
     display: flex;
     justify-content: center;
     gap: 15px;
-    margin-top: 28px;
+    margin-top: 30px;
   }
 
   .popup-buttons button {
     padding: 12px 28px;
     cursor: pointer;
     border: none;
-    font-size: 15px;
+    font-size: 16px;
     background: #0d6efd;
     color: white;
     border-radius: 12px;
@@ -214,18 +223,17 @@
 
   .popup-buttons button:hover {
     opacity: 0.9;
-  }
-
-  #closePopupBtn {
-    background: #999;
-  }
-
-  /* ANIMATION MODERNE */
-  @keyframes popupShow {
-    from { opacity: 0; transform: scale(0.80); }
-    to { opacity: 1; transform: scale(1); }
    }
 
+   #closePopupBtn {
+     background: #999;
+   }
+
+   /* Animation */
+   @keyframes popupShow {
+     from { opacity: 0; transform: scale(0.80); }
+     to { opacity: 1; transform: scale(1); }
+    }
  
     #controlPanelToggle {
       margin-top: 10px;
