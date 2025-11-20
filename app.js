@@ -2965,7 +2965,7 @@ window.addEventListener("error", function (e) {
   
   //--- Connexion automatique au chargement de la page si conditions remplies ---
   // Ouvrir popup
-  document.getElementById("Datasetting").onclick = () => {
+  document.getElementById("DatasettingPopup").onclick = () => {
     document.getElementById("settingsPopup").style.display = "flex";
   };
 
