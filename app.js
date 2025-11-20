@@ -192,8 +192,8 @@ document.addEventListener("DOMContentLoaded", () => {
         textColor: "#333",   
         background: { type: "solid", color: "#fff" },        
       },
-      grid: { vertLines: { color: "rgba(255,255,255,0.05)", visible: true }, horzLines: { color: "rgba(255,255,255,0.05)", visible: true } },
-      timeScale: { timeVisible: true, secondsVisible: true } 
+      grid: { vertLines: { color: "#eee" }, horzLines: { color: "#eee" } },
+      timeScale: { rightOffset: 5, barSpacing: 15, fixRightEdge: true, lockVisibleTimeRangeOnResize: false } 
     });
 
     // === Type de graphique dynamique ===  
