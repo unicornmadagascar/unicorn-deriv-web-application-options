@@ -1318,7 +1318,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wsContracts_reverse.onopen=()=>{ wsContracts_reverse.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    wsContracts_reverse.onmessage = (msg) => {
+    wsContracts_reverse.onmessage = (msg) => {  
       const data = JSON.parse(msg.data);
       // Authorization successful
       if (data.msg_type === "authorize") {
