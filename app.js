@@ -1339,7 +1339,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.msg_type === "portfolio") {
           const contracts = data.portfolio.contracts;
           console.log('Contrats ouverts:', contracts);
-          
+
           // 4️⃣ Fermer chaque contrat
           if (contracttype__ === "MULTUP") {
             contracts.filter(c => c.contract_type === "MULTUP").forEach(d => {
@@ -1347,7 +1347,7 @@ document.addEventListener("DOMContentLoaded", () => {
               console.log(`⛔ Fermeture du contrat ${d.contract_id} demandée`);
 
               if (poc.contract_id && contracts.length > 0) {
-                return;
+                return;   
               }
 
               const oppositeType = "MULTDOWN";  
