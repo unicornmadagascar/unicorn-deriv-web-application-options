@@ -1301,9 +1301,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function reversefunction(){
     console.log("Reversing positions...");
-    if (wsContracts_reverse) wsContracts_reverse.close();
+    if (wsContracts_reverse === null)
+    {
+      wsContracts_reverse = new WebSocket(WS_URL);
+      wsContracts_reverse.onopen=()=>{ wsContracts_reverse.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (wsContracts_reverse && (wsContracts_reverse.readyState === WebSocket.OPEN || wsContracts_reverse.readyState === WebSocket.CONNECTING))
+    {
+     wsContracts_reverse.onopen=()=>{ wsContracts_reverse.send(JSON.stringify({ authorize: TOKEN })); };
+    }
     
-    if (!wsContracts_reverse || wsContracts_reverse.readyState === WebSocket.CLOSED)
+    if (wsContracts_reverse && (wsContracts_reverse.readyState === WebSocket.CLOSED || wsContracts_reverse.readyState === WebSocket.CLOSING))
     {
       wsContracts_reverse = new WebSocket(WS_URL);
       wsContracts_reverse.onopen=()=>{ wsContracts_reverse.send(JSON.stringify({ authorize: TOKEN })); };
