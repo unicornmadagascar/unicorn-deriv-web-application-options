@@ -2271,7 +2271,7 @@ function initCalendarTable() {
  // ✅ Met à jour les lignes du tableau
  function updateCalendarTable(events) {
   const body = document.getElementById("calendarBody");
-  if (!body) return;
+  if (!body) return;  
 
   displayedEvents = events; // On garde la liste affichée pour le tri
   let rows = "";
