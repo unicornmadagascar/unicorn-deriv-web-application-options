@@ -483,7 +483,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const bal = data.authorize.balance;
           const currency = data.authorize.currency || "";
           connectBtn.textContent = "Disconnect";
-          accountInfo.textContent = `Account: ${acc} | Balance: ${Number(bal).toFixed(2)} ${currency}`;
+          accountInfo.textContent = `Account: ${acc} | ${Number(bal).toFixed(2)} ${currency}`;
 
           // subscribe balance updates
           wspl.send(JSON.stringify({ balance: 1, subscribe: 1 }));
