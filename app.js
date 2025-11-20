@@ -203,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
         topColor: "rgba(41,98,255,0.28)",
         bottomColor: "rgba(41,98,255,0.05)",
         lineWidth: 2,
-      });
+      });   
     } else if (currentChartType === "candlestick") {
       currentSeries = chart.addCandlestickSeries({
         upColor: "#26a69a",
