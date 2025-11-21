@@ -1093,7 +1093,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wsContracts_reverse.onopen=()=>{ wsContracts_reverse.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    wsContracts_reverse.onmessage = (msg) => {  
+    wsContracts_reverse.onmessage = (msg) => {     
       const data = JSON.parse(msg.data);
       // Authorization successful
       if (data.msg_type === "authorize") {
@@ -2138,7 +2138,7 @@ function initCalendarTable() {
    };
 
    ws_calendar.onerror = (e) => { statusEl.textContent = 'Erreur WebSocket'; console.error(e); };
-   ws_calendar.onclose = () => { statusEl.textContent = 'Connexion fermée'; };
+   ws_calendar.onclose = () => { statusEl.textContent = 'Connexion closed'; };
  }
 
  // ✅ Envoi du payload calendrier
@@ -2698,14 +2698,7 @@ window.addEventListener("error", function (e) {
     selectAll.checked = false;
   });
 
-  // resize handling
-  window.addEventListener("resize", () => {
-    try { positionGauges(); } catch (e) {}
-    if (chart) {
-      try { chart.resize(chartInner.clientWidth, chartInner.clientHeight); } catch (e) {}
-    }
-  });
-
+  // === Trade Evaluation Panel Toggle ===
   tradeEvalToggle.addEventListener("click", () => {
   tradeEvalPanel.classList.toggle("active");
 
