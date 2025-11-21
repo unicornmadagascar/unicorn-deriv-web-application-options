@@ -2672,7 +2672,7 @@ window.addEventListener("error", function (e) {
 
   // startup
   initDerivAccountManager();
-  displaySymbols(currentInterval,currentChartType);
+  displaySymbols(currentInterval,currentChartType);   
   initChart(currentChartType);
   initTable();
   initHistoricalTable();      
