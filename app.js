@@ -162,37 +162,34 @@ document.addEventListener("DOMContentLoaded", () => {
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
  
  // --- SYMBOLS ---
-  function displaySymbols(currentInterval,currentChartType) {
-   symbolList.innerHTML = "";
+  function displaySymbols(currentInterval, currentChartType) {
+    const symbolList = document.getElementById("symbolList");
+    symbolList.innerHTML = "";
 
-   SYMBOLS.forEach(s => {
-     const el = document.createElement("div");
-     el.className = "symbol-item";
-     el.textContent = s.name;
-     el.dataset.symbol = s.symbol;   
-   
-     el.addEventListener("click", () => {
-       // 🔹 Supprime la sélection sur tous les symboles
-       document.querySelectorAll("#SymbolList .symbol-item").forEach(item => {
-         item.classList.remove("selected");      
-       });
+    SYMBOLS.forEach(s => {
+      const el = document.createElement("div");
+      el.className = "symbol-item";
+      el.textContent = s.name;
+      el.dataset.symbol = s.symbol;
 
-       // 🔹 Ajoute la sélection sur celui qu’on vient de cliquer
-       el.classList.add("selected");
+      el.addEventListener("click", () => {
 
-       // 🔹 Appelle ta fonction de souscription   
-       if (!s.symbol) return;
-       if (currentChartType === "candlestick") {
+        document.querySelectorAll("#symbolList .symbol-item")
+          .forEach(item => item.classList.remove("selected"));
+
+        el.classList.add("selected");
+
+        if (currentChartType === "candlestick") {
           connect(s.symbol, currentInterval, currentChartType);
-       } else {
+        } else {
           subscribeSymbol(s.symbol, currentChartType);
-       } 
-     });     
+        }
+      });
 
-     symbolList.appendChild(el);
-   });
+      symbolList.appendChild(el);
+    });
   }
-
+  
   // --- INIT CHART ---
   function initChart(currentChartType) {
     try { if (chart) chart.remove(); } catch (e) {}          

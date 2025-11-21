@@ -122,68 +122,68 @@
     #DatasettingPopup { background-color: white; color: #4d4747; }
 
   /* Overlay sombre */
-.popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.55);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 99999;
-  backdrop-filter: blur(4px);
-}
+  .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.55);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+    backdrop-filter: blur(4px);
+  }
 
-/* Popup large vertical */
-.popup-box {
-  background: #fff;
-  padding: 50px;
-  border-radius: 24px;
-  width: 600px;
-  max-width: 95%;
-  box-shadow: 0 14px 40px rgba(0,0,0,0.25);
-  animation: popupShow 0.28s ease forwards;
-  opacity: 0;
-  transform: scale(0.78);  
-}  
+  /* Popup large vertical */
+  .popup-box {
+    background: #fff;
+    padding: 50px;
+    border-radius: 24px;
+    width: 600px;
+    max-width: 95%;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.25);
+    animation: popupShow 0.28s ease forwards;
+    opacity: 0;
+    transform: scale(0.78);  
+  }  
 
-.popup-box h2 {
-  margin: 0 0 35px;
-  text-align: center;
-  font-size: 30px;
-  font-weight: 700;
-  color: #222;  
-}
+  .popup-box h2 {
+    margin: 0 0 35px;
+    text-align: center;
+    font-size: 30px;
+    font-weight: 700;
+    color: #222;  
+  }
 
-/* Contenu aligné verticalement */
-.popup-content {
-  display: flex;
-  flex-direction: column;
-  gap: 22px; /* espace vertical entre les champs */
-  align-items: center;
-}
+  /* Contenu aligné verticalement */
+  .popup-content {
+    display: flex;
+    flex-direction: column;
+    gap: 22px; /* espace vertical entre les champs */
+    align-items: center;
+  }
 
-/* Groupe label + input */
-.input-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;     /* centre label + input */
-  gap: 8px;
-  width: 100%;
-  max-width: 350px;        /* même largeur */
-  text-align: center;      /* centre le label */
-}
+  /* Groupe label + input */
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;     /* centre label + input */
+    gap: 8px;
+    width: 100%;
+    max-width: 350px;        /* même largeur */
+    text-align: center;      /* centre le label */
+  }
 
-/* Labels centrés */
-.input-group label {
-  font-weight: 600;
-  font-size: 16px;
-  color: #111;
-  text-align: center;      /* important */
-  width: 100%;
-}
+  /* Labels centrés */
+  .input-group label {
+    font-weight: 600;
+    font-size: 16px;
+    color: #111;
+    text-align: center;      /* important */
+    width: 100%;
+  }
 
   /* Inputs / select uniformes */
   .popup-content input {
@@ -248,7 +248,6 @@
       from { opacity: 0; transform: scale(0.78); }
       to   { opacity: 1; transform: scale(1); }
     }
-
 
     #controlPanelToggle {
       margin-top: 10px;
@@ -575,23 +574,55 @@ footer {
   /*box-shadow: 0 -2px 8px rgba(0,0,0,0.2);*/
 }
 
+/* Container horizontal */
+#symbolList {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 12px;
+  white-space: nowrap;
+
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 18px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.4) transparent;
+}
+
+/* Items */
 .symbol-item {
-  padding: 6px 10px;
-  margin: 3px 0;
-  border-radius: 6px;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
   cursor: pointer;
-  transition: background 0.2s;
+  font-weight: 600;
+  font-size: 15px;
+  color: #fff;
+
+  border: 1px solid rgba(255,255,255,0.2);
+  transition: all .25s ease;
+
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
+/* Hover effet glass + élévation */
 .symbol-item:hover {
-  background: #2563eb;
-  color: white;
+  background: rgba(255,255,255,0.25);
+  transform: translateY(-2px);
 }
 
+/* Sélection → highlight glass */
 .symbol-item.selected {
-  background: #2563eb;
-  color: white;
-  font-weight: bold;
+  background: rgba(255,255,255,0.35);
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: 0 0 12px rgba(255,255,255,0.6);
+  color: #000;
 }
 
 .trade-header {
