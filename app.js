@@ -1094,91 +1094,64 @@ document.addEventListener("DOMContentLoaded", () => {
     wsContracts_reverse.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
 
-      // 1️⃣ AUTHORIZATION
+      // 1. Authorization
       if (data.msg_type === "authorize") {
-        console.log("✅ Authorized successfully. Fetching portfolio...");
-
-          wsContracts_reverse.send(JSON.stringify({
-              proposal_open_contract: 1,
-              subscribe: 1
-          }));   
-
-          wsContracts_reverse.send(JSON.stringify({
-              portfolio: 1
-          }));
-   
+          wsContracts_reverse.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
+          wsContracts_reverse.send(JSON.stringify({ portfolio: 1 }));
           return;
       }
 
-      // 2️⃣ FOLLOW LIVE ACTIVE CONTRACT (get type + ID)
-      if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
+      // 2. Save contract info
+      if (data.msg_type === "proposal_open_contract") {
           const poc = data.proposal_open_contract;
-
-          contracttype__ = poc.contract_type;   // MULTUP or MULTDOWN
+          contracttype__ = poc.contract_type;
           contractid__ = poc.contract_id;
-
-          console.log("📄 Open contract:", poc);
           return;
       }
 
-      // 3️⃣ PORTFOLIO : LIST OF OPEN CONTRACTS
-      if (data.msg_type === "portfolio" && data.portfolio) {
+      // 3. Portfolio received
+      if (data.msg_type !== "portfolio") return;
 
-          const contracts = data.portfolio.contracts;
-          console.log("📦 Open contracts:", contracts);
+      const contracts = data.portfolio.contracts;
+      console.log("📌 Contrats ouverts :", contracts);
 
-          if (!contracts.length) {
-              console.log("⚠️ Aucun contrat à fermer.");
-              return;
-          }
+      if (!contracttype__) return;
 
-          // User parameters
-          const stake = parseFloat(stakeInput.value) || 1;
-          const multiplier = parseInt(multiplierInput.value) || 40;
+      // Determine opposite direction
+      const oppositeType = (contracttype__ === "MULTUP") ? "MULTDOWN" : "MULTUP";
 
-          const repeat = (contracttype__ === "MULTUP")
-              ? (parseInt(sellNumber.value) || 1)  // user defined number of SELL
-              : (parseInt(buyNumber.value) || 1); // user defined number of BUY
+      // User inputs
+      const stake = parseFloat(stakeInput.value) || 1;
+      const multiplier = parseInt(multiplierInput.value) || 40;
+      const qty = (contracttype__ === "MULTUP")
+          ? (parseInt(sellNumber.value) || 1)
+          : (parseInt(buyNumber.value) || 1);
 
-          // Determine opposite type
-          const oppositeType = (contracttype__ === "MULTUP") ? "MULTDOWN" : "MULTUP";
+      // 4. Close all matching contracts
+      contracts
+          .filter(c => c.contract_type === contracttype__)
+          .forEach(c => {
+              wsContracts_reverse.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+              console.log("⛔ Fermeture demandée :", c.contract_id);
+          });
 
-          // 4️⃣ CLOSE CONTRACTS OF THE CURRENT TYPE
-          for (let i = 0; i < contracts.length; i++) {
-              const c = contracts[i];
-
-              if (c.contract_type !== contracttype__) continue;
-
-              wsContracts_reverse.send(JSON.stringify({
-                  sell: c.contract_id,
-                  price: 0
-              }));
-
-              console.log(`⛔ Fermeture demandée pour ${c.contract_id}`);
-          }
-
-          // 5️⃣ REVERSE : OPEN OPPOSITE CONTRACTS
-          console.log(`🔄 Reverse : ouverture de ${repeat} contrat(s) ${oppositeType}`);
-
-          for (let k = 0; k < repeat; k++) {
-
-              wsContracts_reverse.send(JSON.stringify({
-                  buy: 1,
-                  price: stake.toFixed(2),
-                  parameters: {
-                      contract_type: oppositeType,
-                      symbol: currentSymbol,
-                      currency: CURRENCY.toString(),
-                      basis: "stake",
-                      amount: stake.toFixed(2),
-                      multiplier: multiplier,
-                  }
-              }));
-
-          }
-
-          return;
+      // 5. Open opposite direction
+      for (let i = 0; i < qty; i++) {
+          wsContracts_reverse.send(JSON.stringify({
+              buy: 1,
+              price: stake.toFixed(2),
+              parameters: {
+                  contract_type: oppositeType,
+                  symbol: currentSymbol,
+                  currency: CURRENCY,
+                  basis: "stake",
+                  amount: stake.toFixed(2),
+                  multiplier: multiplier
+              }
+          }));
       }
+
+      console.log(`✔️ Reverse exécuté → ${oppositeType} x${qty}`);
     };
 
   }
