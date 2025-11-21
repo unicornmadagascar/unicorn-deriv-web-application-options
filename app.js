@@ -1101,7 +1101,7 @@ document.addEventListener("DOMContentLoaded", () => {
           wsContracts_reverse.send(JSON.stringify({
               proposal_open_contract: 1,
               subscribe: 1
-          }));
+          }));   
 
           wsContracts_reverse.send(JSON.stringify({
               portfolio: 1
