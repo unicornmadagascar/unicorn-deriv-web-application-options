@@ -1097,7 +1097,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.msg_type === "authorize") {
          console.log("✅ Authorized successfully. Fetching portfolio for reversal...");
          wsContracts_reverse.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
-         wsContracts_reverse.send(JSON.stringify({ portfolio: 1 }));
       }
 
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
@@ -1105,6 +1104,7 @@ document.addEventListener("DOMContentLoaded", () => {
          console.log("📄 Proposal Open Contract received:", poc);
          contracttype__ = poc.contract_type; // "MULTUP" or "MULTDOWN"
          contractid__ = poc.contract_id;
+         wsContracts_reverse.send(JSON.stringify({ portfolio: 1 }));
       }
         
       if (data.msg_type === "portfolio") {
