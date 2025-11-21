@@ -1164,7 +1164,7 @@ document.addEventListener("DOMContentLoaded", () => {
                        contract_type: oppositeType,
                        symbol: currentSymbol,
                        currency: CURRENCY.toString(),
-                       basis: "stake",  
+                       basis: "stake",    
                        amount: stake.toFixed(2),    
                        multiplier: multiplier,
                     }
