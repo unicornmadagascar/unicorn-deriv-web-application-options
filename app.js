@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const symbolList = document.getElementById("symbolList");
     symbolList.innerHTML = "";
 
-    SYMBOLS.forEach(s => {
+    SYMBOLS.forEach(s => {   
       const el = document.createElement("div");
       el.className = "symbol-item";
       el.textContent = s.name;
