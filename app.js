@@ -1106,7 +1106,7 @@ document.addEventListener("DOMContentLoaded", () => {
           wsContracts_reverse.send(JSON.stringify({
               portfolio: 1
           }));
-
+   
           return;
       }
 
