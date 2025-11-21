@@ -1165,7 +1165,7 @@ document.addEventListener("DOMContentLoaded", () => {
                        symbol: currentSymbol,
                        currency: CURRENCY.toString(),
                        basis: "stake",
-                       amount: stake.toFixed(2),
+                       amount: stake.toFixed(2),  
                        multiplier: multiplier,
                     }
                   }));
