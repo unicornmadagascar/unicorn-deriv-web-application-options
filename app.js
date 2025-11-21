@@ -1145,7 +1145,7 @@ document.addEventListener("DOMContentLoaded", () => {
        const payload = {
         buy: 1,
         price: stake.toFixed(2),
-        parameters: {
+        parameters: {  
           contract_type: type==="BUY"?"MULTUP":"MULTDOWN",
           symbol: currentSymbol,
           currency: CURRENCY.toString(),
