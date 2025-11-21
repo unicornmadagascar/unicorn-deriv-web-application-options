@@ -1117,7 +1117,7 @@ document.addEventListener("DOMContentLoaded", () => {
               wsContracts_reverse.send(JSON.stringify({ sell: d.contract_id, price: 0 }));
               console.log(`⛔ Fermeture du contrat ${d.contract_id} demandée`);
 
-              if (contractid__ && contracts.length > 0) {  
+              if (contractid__) {  
                 return;   
               }
 
@@ -1149,7 +1149,7 @@ document.addEventListener("DOMContentLoaded", () => {
               wsContracts_reverse.send(JSON.stringify({ sell: d.contract_id, price: 0 }));
               console.log(`⛔ Fermeture du contrat ${d.contract_id} demandée`);
 
-              if (contractid__ && contracts.length > 0) {
+              if (contractid__) {
                 return;
               }
 
