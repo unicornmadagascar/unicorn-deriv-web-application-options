@@ -1091,91 +1091,96 @@ document.addEventListener("DOMContentLoaded", () => {
       wsContracts_reverse.onopen=()=>{ wsContracts_reverse.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    wsContracts_reverse.onmessage = (msg) => {     
+    wsContracts_reverse.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
-      // Authorization successful
+
+      // 1️⃣ AUTHORIZATION
       if (data.msg_type === "authorize") {
-         console.log("✅ Authorized successfully. Fetching portfolio for reversal...");
-         wsContracts_reverse.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
-         wsContracts_reverse.send(JSON.stringify({ portfolio: 1 }));
+        console.log("✅ Authorized successfully. Fetching portfolio...");
+
+          wsContracts_reverse.send(JSON.stringify({
+              proposal_open_contract: 1,
+              subscribe: 1
+          }));
+
+          wsContracts_reverse.send(JSON.stringify({
+              portfolio: 1
+          }));
+
+          return;
       }
 
+      // 2️⃣ FOLLOW LIVE ACTIVE CONTRACT (get type + ID)
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
-         const poc = data.proposal_open_contract;
-         console.log("📄 Proposal Open Contract received:", poc);
-         contracttype__ = poc.contract_type; // "MULTUP" or "MULTDOWN"
-         contractid__ = poc.contract_id;
+          const poc = data.proposal_open_contract;
+
+          contracttype__ = poc.contract_type;   // MULTUP or MULTDOWN
+          contractid__ = poc.contract_id;
+
+          console.log("📄 Open contract:", poc);
+          return;
       }
-        
-      if (data.msg_type === "portfolio") {
+
+      // 3️⃣ PORTFOLIO : LIST OF OPEN CONTRACTS
+      if (data.msg_type === "portfolio" && data.portfolio) {
+
           const contracts = data.portfolio.contracts;
-          console.log('Contrats ouverts:', contracts);
+          console.log("📦 Open contracts:", contracts);
 
-          // 4️⃣ Fermer chaque contrat
-          if (contracttype__ === "MULTUP") {
-            contracts.filter(c => c.contract_type === "MULTUP").forEach(d => {
-              wsContracts_reverse.send(JSON.stringify({ sell: d.contract_id, price: 0 }));
-              console.log(`⛔ Fermeture du contrat ${d.contract_id} demandée`);
+          if (!contracts.length) {
+              console.log("⚠️ Aucun contrat à fermer.");
+              return;
+          }
 
-              if (contractid__) {  
-                return;   
-              }
+          // User parameters
+          const stake = parseFloat(stakeInput.value) || 1;
+          const multiplier = parseInt(multiplierInput.value) || 40;
 
-              const oppositeType = "MULTDOWN";  
-              const stake = parseFloat(stakeInput.value) || 1;
-              const multiplier = parseInt(multiplierInput.value) || 40;
-            
-              for (let k = 0; k < (parseInt(sellNumber.value) || 1); k++) {    
-                 wsContracts_reverse.send(JSON.stringify({
-                    buy: 1,
-                    price: stake.toFixed(2),
-                    parameters: {
+          const repeat = (contracttype__ === "MULTUP")
+              ? (parseInt(sellNumber.value) || 1)  // user defined number of SELL
+              : (parseInt(buyNumber.value) || 1); // user defined number of BUY
+
+          // Determine opposite type
+          const oppositeType = (contracttype__ === "MULTUP") ? "MULTDOWN" : "MULTUP";
+
+          // 4️⃣ CLOSE CONTRACTS OF THE CURRENT TYPE
+          for (let i = 0; i < contracts.length; i++) {
+              const c = contracts[i];
+
+              if (c.contract_type !== contracttype__) continue;
+
+              wsContracts_reverse.send(JSON.stringify({
+                  sell: c.contract_id,
+                  price: 0
+              }));
+
+              console.log(`⛔ Fermeture demandée pour ${c.contract_id}`);
+          }
+
+          // 5️⃣ REVERSE : OPEN OPPOSITE CONTRACTS
+          console.log(`🔄 Reverse : ouverture de ${repeat} contrat(s) ${oppositeType}`);
+
+          for (let k = 0; k < repeat; k++) {
+
+              wsContracts_reverse.send(JSON.stringify({
+                  buy: 1,
+                  price: stake.toFixed(2),
+                  parameters: {
                       contract_type: oppositeType,
                       symbol: currentSymbol,
                       currency: CURRENCY.toString(),
                       basis: "stake",
                       amount: stake.toFixed(2),
                       multiplier: multiplier,
-                   }
-                }));
-              }
+                  }
+              }));
 
-              return;
-            });
           }
-          else if (contracttype__ === "MULTDOWN") 
-          {
-            contracts.filter(c => c.contract_type === "MULTDOWN").forEach(d => {
-              wsContracts_reverse.send(JSON.stringify({ sell: d.contract_id, price: 0 }));
-              console.log(`⛔ Fermeture du contrat ${d.contract_id} demandée`);
 
-              if (contractid__) {
-                return;
-              }
-
-              const oppositeType = "MULTUP";
-              const stake = parseFloat(stakeInput.value) || 1;
-              const multiplier = parseInt(multiplierInput.value) || 40;
-              for (let k = 0; k < (parseInt(buyNumber.value) || 1); k++) {    
-                 wsContracts_reverse.send(JSON.stringify({
-                     buy: 1,
-                     price: stake.toFixed(2),
-                     parameters: {
-                       contract_type: oppositeType,
-                       symbol: currentSymbol,
-                       currency: CURRENCY.toString(),
-                       basis: "stake",    
-                       amount: stake.toFixed(2),    
-                       multiplier: multiplier,
-                    }
-                  }));
-               }
-
-               return;
-            });
-          }
-       }
+          return;
+      }
     };
+
   }
 
   //--- Trades (New)
