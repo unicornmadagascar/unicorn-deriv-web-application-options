@@ -2674,7 +2674,6 @@ window.addEventListener("error", function (e) {
   initDerivAccountManager();
   displaySymbols(currentInterval,currentChartType);
   initChart(currentChartType);
-  initPLGauge();
   initTable();
   initHistoricalTable();      
   inihistoricalchart(); 
