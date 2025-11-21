@@ -2676,7 +2676,7 @@ window.addEventListener("error", function (e) {
   initChart(currentChartType);
   initTable();
   initHistoricalTable();      
-  inihistoricalchart(); 
+  inihistoricalchart();   
    
   // Gestion du "Select All"  
   const selectAll = document.getElementById("selectAll");
