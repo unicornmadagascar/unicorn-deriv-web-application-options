@@ -171,14 +171,19 @@ document.addEventListener("DOMContentLoaded", () => {
       el.className = "symbol-item";
       el.textContent = s.name;
       el.dataset.symbol = s.symbol;
-   
+
       el.addEventListener("click", () => {
 
+      // retire la sélection sur tous les symboles
       document.querySelectorAll("#symbolList .symbol-item")
         .forEach(item => item.classList.remove("selected"));
 
+        // ajoute la sélection
         el.classList.add("selected");
 
+        if (!s.symbol) return;
+
+        // appel de la fonction connect/subscribe selon le type de chart
         if (currentChartType === "candlestick") {
           connect(s.symbol, currentInterval, currentChartType);
         } else {

@@ -574,7 +574,7 @@ footer {
   /*box-shadow: 0 -2px 8px rgba(0,0,0,0.2);*/
 }
 
-/* Container horizontal */
+/* Conteneur horizontal */
 #symbolList {
   display: flex;
   gap: 12px;
@@ -594,7 +594,7 @@ footer {
   scrollbar-color: rgba(255,255,255,0.4) transparent;
 }
 
-/* Items */
+/* Item individuel */
 .symbol-item {
   padding: 10px 18px;
   background: rgba(255, 255, 255, 0.12);
@@ -605,24 +605,25 @@ footer {
   color: #fff;
 
   border: 1px solid rgba(255,255,255,0.2);
-  transition: all .25s ease;
+  transition: all 0.25s ease;
 
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 }
 
-/* Hover effet glass + élévation */
+/* Hover → whitesmoke */
 .symbol-item:hover {
-  background: rgba(255,255,255,0.25);
+  background: whitesmoke;
+  color: #000;
   transform: translateY(-2px);
 }
 
-/* Sélection → highlight glass */
+/* Sélection → whitesmoke aussi */
 .symbol-item.selected {
-  background: rgba(255,255,255,0.35);
+  background: whitesmoke;
+  color: #000;
   border: 1px solid rgba(255,255,255,0.6);
   box-shadow: 0 0 12px rgba(255,255,255,0.6);
-  color: #000;
 }
 
 .trade-header {
