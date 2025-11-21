@@ -97,6 +97,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Historique local des ticks
   let tickHistory = [];
   let tickHistory__ = [];
+  let candleHistory__ = [];
+  let closePrice;
   let tickHistory4openpricelines = [];
   const priceLines4openlines = {}; // Stocke les lignes actives (clé = contract_id)
   let Tick_arr = [];
@@ -112,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let rocProposal = null;
   let contracttype__ = "";
   let contractid__;
-  const MAX_HISTORY = 1000; // max taille du buffer
+  const MAX_HISTORY = 500; // max taille du buffer
   let proposal__ = [];
   let rocproposal__ = [];
   let transactions__ = [];
@@ -707,30 +709,55 @@ document.addEventListener("DOMContentLoaded", () => {
     function handleTicks(tick) {
       const symbolPrefix = currentSymbol.slice(0, 6);
       const price = parseFloat(tick.quote);
-      tickHistory__.push(price);
+      if (currentChartType !== "candlestick") {
+         tickHistory__.push(price);
+         if (tickHistory__.length >= 21) {
+           const currentPrice = tickHistory__[tickHistory__.length - 1];
+           const pastPrice = tickHistory__[tickHistory__.length - 21];
+           const rocTick = 100 * (currentPrice - pastPrice) / pastPrice;
 
-      if (tickHistory__.length >= 21) {
-        const currentPrice = tickHistory__[tickHistory__.length - 1];
-        const pastPrice = tickHistory__[tickHistory__.length - 21];
-        const roc_ = 100 * (currentPrice - pastPrice) / pastPrice;
+           console.log("ROC (Tick) :", rocTick.toFixed(4));
 
-        console.log("ROC :", roc_.toFixed(4));
-
-        if (["cryBTC", "frxXAU"].includes(symbolPrefix)) {
+           if (["cryBTC", "frxXAU"].includes(symbolPrefix)) {
           
-          if (rocProposal.contract_id) return;
+              if (rocProposal.contract_id) return;
 
-          if (roc_ > 0.01) {
-            handleSignal("BUY");
-          } else if (roc_ < -0.01) {
-            handleSignal("SELL");
+              if (rocTick > 0.01) {
+                 handleSignal("BUY");
+              } else if (rocTick < -0.01) {
+                 handleSignal("SELL");
+              }
+           }
+         }
+       }
+       else if (currentChartType === "candlestick") 
+       {
+         closePrice = price;
+         candleHistory__.push(closePrice);
+          if (candleHistory__.length >= 21) {
+            const currentClose = candleHistory__[candleHistory__.length - 1];
+            const pastClose = candleHistory__[candleHistory__.length - 21];
+            const rocCandle = 100 * (currentClose - pastClose) / pastClose;
+
+            console.log("ROC (Candles) :", rocCandle.toFixed(4));
+
+            if (["cryBTC", "frxXAU"].includes(symbolPrefix)) {
+          
+              if (rocProposal.contract_id) return;
+
+              if (rocCandle > 0.01) {
+                 handleSignal("BUY");
+              } else if (rocCandle < -0.01) {
+                 handleSignal("SELL");
+              }
+            }
           }
-        }
-      }
+       }
 
-      if (tickHistory__.length > MAX_HISTORY) {
-        tickHistory__.splice(0,3); // enlever l'élément le plus ancien
-      }
+       if (tickHistory__.length > MAX_HISTORY || candleHistory__.length > MAX_HISTORY) {
+          tickHistory__.splice(0,3); // enlever l'élément le plus ancien
+          candleHistory__.splice(0, 50);
+       }
     }
 
     function handleSignal(direction) {
