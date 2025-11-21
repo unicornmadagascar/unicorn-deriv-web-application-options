@@ -171,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
       el.className = "symbol-item";
       el.textContent = s.name;
       el.dataset.symbol = s.symbol;
-
+   
       el.addEventListener("click", () => {
 
       document.querySelectorAll("#symbolList .symbol-item")
