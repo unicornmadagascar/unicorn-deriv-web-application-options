@@ -1127,7 +1127,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? (parseInt(sellNumber.value) || 1)
           : (parseInt(buyNumber.value) || 1);
 
-      // 4. Close all matching contracts
+      // 4. Close all matching contracts   
       contracts
           .filter(c => c.contract_type === contracttype__)
           .forEach(c => {
