@@ -234,8 +234,6 @@ document.addEventListener("DOMContentLoaded", () => {
     recentChanges = [];
     lastPrices = {};
 
-    positionGauges();
-
   }
 
   function styleType(currentChartType)
@@ -676,52 +674,6 @@ document.addEventListener("DOMContentLoaded", () => {
     wsOpenLines.onclose = () => console.log("❌ WS closed for open lines");
   }
 
-  // --- GAUGES ---
-  function positionGauges() {
-    let gaugesContainer = document.getElementById("gaugesContainer");
-    if (!gaugesContainer) {
-      gaugesContainer = document.createElement("div");
-      gaugesContainer.id = "gaugesContainer";
-      gaugesContainer.style.position = "absolute";
-      gaugesContainer.style.top = "10px";
-      gaugesContainer.style.left = "10px";
-      gaugesContainer.style.display = "flex";
-      gaugesContainer.style.gap = "20px";
-      gaugesContainer.style.zIndex = "12";
-      chartInner.style.position = "relative";
-      chartInner.appendChild(gaugesContainer);
-
-      appendGauge(gaugesContainer, volGauge, "Volatility");
-      appendGauge(gaugesContainer, trendGauge, "Tendance");
-      appendGauge(gaugesContainer, probGauge, "Probabilité");
-      appendGauge(gaugesContainer, plGauge, "P/L Live");
-    }
-  }
-
-  function appendGauge(container, gaugeDiv, labelText) {
-    const wrapper = document.createElement("div");
-    wrapper.style.display = "flex";   
-    wrapper.style.flexDirection = "column";
-    wrapper.style.alignItems = "center";
-    wrapper.style.width = "140px";
-    wrapper.style.pointerEvents = "none";
-
-    const content = document.createElement("div");
-    content.style.width = "100%";
-    content.appendChild(gaugeDiv);
-    wrapper.appendChild(content);
-
-    const label = document.createElement("div");
-    label.textContent = labelText;
-    label.style.fontSize = "13px";
-    label.style.fontWeight = "600";
-    label.style.textAlign = "center";
-    label.style.marginTop = "6px";
-    label.style.pointerEvents = "none";
-    wrapper.appendChild(label);
-
-    container.appendChild(wrapper);   
-  }
   
   function RocstartAutomation() {
     if (!currentSymbol) return;
