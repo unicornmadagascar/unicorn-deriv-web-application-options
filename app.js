@@ -459,25 +459,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- CONNECT DERIV ---
   function connectDeriv() {
+    if (wspl) {wspl.close(); wspl = null;}
 
-    if (wspl === null)
-    {
-     authorized = false;
-     wspl = new WebSocket(WS_URL);
-     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
-    }
+    wspl = new WebSocket(WS_URL);
+    wspl.onopen=()=>{ 
+      console.log("WS open — authorizing");
+      wspl.send(JSON.stringify({ authorize: TOKEN })); 
+    };
   
-    if (wspl && (wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING))
-    {
-     wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
-    if (wspl && (wspl.readyState === WebSocket.CLOSED || wspl.readyState === WebSocket.CLOSING))
-    {
-      wspl = new WebSocket(WS_URL);
-      wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
     wspl.onmessage = (evt) => {
         const data = JSON.parse(evt.data);
         // authorize response
