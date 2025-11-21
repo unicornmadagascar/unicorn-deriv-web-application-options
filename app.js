@@ -475,7 +475,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const acc = data.authorize.loginid;
           const bal = data.authorize.balance;
           const currency = data.authorize.currency || "";
-          connectBtn.textContent = "Disconnect";
+          connectBtn.textContent = "Disconnect";   
           accountInfo.textContent = `Account: ${acc} | ${Number(bal).toFixed(2)} ${currency}`;
 
           // subscribe balance updates
