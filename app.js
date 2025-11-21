@@ -720,7 +720,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
            if (["cryBTC", "frxXAU"].includes(symbolPrefix)) {
           
-              if (rocProposal.contract_id) return;
+              //if (rocProposal.contract_id) return;
 
               if (rocTick > 0.01) {
                  handleSignal("BUY");
@@ -743,7 +743,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (["cryBTC", "frxXAU"].includes(symbolPrefix)) {
           
-              if (rocProposal.contract_id) return;
+              //if (rocProposal.contract_id) return;
 
               if (rocCandle > 0.01) {
                  handleSignal("BUY");
