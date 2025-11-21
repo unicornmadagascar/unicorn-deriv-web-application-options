@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const SYMBOLS = [
     { symbol: "BOOM1000", name: "Boom 1000" },
-    { symbol: "CRASH1000", name: "Crash 1000" },  
+    { symbol: "CRASH1000", name: "Crash 1000" },    
     { symbol: "BOOM500", name: "Boom 500" },
     { symbol: "CRASH500", name: "Crash 500" },     
     { symbol: "BOOM900", name: "Boom 900" },      
@@ -567,8 +567,6 @@ document.addEventListener("DOMContentLoaded", () => {
     recentChanges.push(change);
     if (recentChanges.length > 60) recentChanges.shift();
 
-    updateCircularGauges();
-
     // update chartData and series   
     if (!currentSeries || !chart) return;
 
@@ -803,7 +801,6 @@ document.addEventListener("DOMContentLoaded", () => {
       connectWebSocket();
     }
   }
-
 
   function RocstopAutomation() {
     if (wsROC  && wsROC.readyState === WebSocket.OPEN) {
