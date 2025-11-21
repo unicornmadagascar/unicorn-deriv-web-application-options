@@ -1152,7 +1152,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       console.log(`✔️ Reverse exécuté → ${oppositeType} x${qty}`);
-    };
+    };  
 
   }
 
