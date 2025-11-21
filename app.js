@@ -666,29 +666,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   
   function RocstartAutomation() {
+    
     if (!currentSymbol) return;
 
     const symbolPrefix = currentSymbol.slice(0, 6);
 
     function connectWebSocket() {
-
-      if (wsROC === null){
-         wsROC = new WebSocket(WS_URL);
-         wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-
-      if (wsROC && (wsROC.readyState === WebSocket.OPEN || wsROC.readyState === WebSocket.CONNECTING))
-      {
-       wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };   
-      }
-
-      if (wsROC && (wsROC.readyState === WebSocket.CLOSED || wsROC.readyState === WebSocket.CLOSING))
-      {
-       wsROC = new WebSocket(WS_URL);
-       console.log("🟢 WebSocket ROC connecté");
-       wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };   
-      }
-
+      if (wsROC) {wsROC.close(); wsROC = null;}
+      
+      wsROC = new WebSocket(WS_URL);
+      console.log("🟢 WebSocket ROC connecté");
+      wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };   
       wsROC.onmessage = (msg) => handleMessage(JSON.parse(msg.data));   
       wsROC.onclose = () => console.log("🔴 WebSocket ROC fermé");      
       wsROC.onerror = (err) => console.error("WebSocket error:", err);
@@ -714,7 +702,7 @@ document.addEventListener("DOMContentLoaded", () => {
           handleTicks(data.tick);
           break;
       }
-    }
+    }  
 
     function handleTicks(tick) {
       const symbolPrefix = currentSymbol.slice(0, 6);
