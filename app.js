@@ -174,8 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       el.addEventListener("click", () => {
 
-        document.querySelectorAll("#symbolList .symbol-item")
-          .forEach(item => item.classList.remove("selected"));
+      document.querySelectorAll("#symbolList .symbol-item")
+        .forEach(item => item.classList.remove("selected"));
 
         el.classList.add("selected");
 
