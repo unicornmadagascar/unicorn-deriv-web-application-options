@@ -111,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let rocContracts = [];
   let rocProposal = null;
   let contracttype__ = "";
+  let contractid__;
   const MAX_HISTORY = 1000; // max taille du buffer
   let proposal__ = [];
   let rocproposal__ = [];
@@ -1103,6 +1104,7 @@ document.addEventListener("DOMContentLoaded", () => {
          const poc = data.proposal_open_contract;
          console.log("📄 Proposal Open Contract received:", poc);
          contracttype__ = poc.contract_type; // "MULTUP" or "MULTDOWN"
+         contractid__ = poc.contract_id;
       }
         
       if (data.msg_type === "portfolio") {
@@ -1115,7 +1117,7 @@ document.addEventListener("DOMContentLoaded", () => {
               wsContracts_reverse.send(JSON.stringify({ sell: d.contract_id, price: 0 }));
               console.log(`⛔ Fermeture du contrat ${d.contract_id} demandée`);
 
-              if (poc.contract_id && contracts.length > 0) {  
+              if (contractid__ && contracts.length > 0) {  
                 return;   
               }
 
@@ -1147,7 +1149,7 @@ document.addEventListener("DOMContentLoaded", () => {
               wsContracts_reverse.send(JSON.stringify({ sell: d.contract_id, price: 0 }));
               console.log(`⛔ Fermeture du contrat ${d.contract_id} demandée`);
 
-              if (poc.contract_id && contracts.length > 0) {
+              if (contractid__ && contracts.length > 0) {
                 return;
               }
 
