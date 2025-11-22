@@ -1871,7 +1871,7 @@ function GetProfitgraphical() {
         const txs = data.profit_table.transactions;
 
         // === Transformation des transactions en série exploitable ===
-        const profitData = txs
+        const profitData = txs  
           .filter(t => t.sell_time && !isNaN(t.sell_price)) // uniquement les clôturées
           .map(t => ({
             time: Number(t.sell_time),                  // timestamp UNIX en secondes
