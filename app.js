@@ -2756,6 +2756,7 @@ window.addEventListener("error", function (e) {
       console.log("Current Chart Type : " +currentChartType);     
       if (!currentSymbol) return;
       if (currentChartType === "candlestick") {
+        wspl.send(JSON.stringify( { forget_all: ["candles","ticks"] } )); // oublie l'ancien symbole
         connect(currentSymbol, currentInterval, currentChartType);
       } else {
         ws.send(JSON.stringify( { forget_all: ["candles","ticks"] } )); // oublie l'ancien symbole
