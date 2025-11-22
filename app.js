@@ -382,7 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
     currentSymbol = symbol;
     initChart(currentChartType);
     console.log("Connexion...");
-
+   
     ws = new WebSocket(WS_URL);
 
     ws.onopen = () => {
@@ -1476,6 +1476,7 @@ closeAll.onclick=()=>{
 
    // --- 🧱 Connexion WebSocket
   function connectDeriv_table() {   
+    if (wsplContracts) { wsplContracts.close(); wsplContracts = null; }
 
     if (wsplContracts === null)
     {
