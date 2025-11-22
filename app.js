@@ -870,7 +870,7 @@ document.addEventListener("DOMContentLoaded", () => {
            return;
         } 
         
-        if (data.msg_type === "tick")
+        if (data.msg_type === "tick")   
         {
            const price = parseFloat(data.tick.quote);
            tickHistory__arr.push(price);
