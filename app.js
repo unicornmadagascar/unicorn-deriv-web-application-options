@@ -464,6 +464,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- CONNECT DERIV ---
   function connectDeriv() {
+    if (wspl) { wspl.close(); wspl = null; }
+
     if (wspl === "null") {
       wspl = new WebSocket(WS_URL);
       wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
