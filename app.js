@@ -1479,7 +1479,7 @@ closeAll.onclick=()=>{
 
     if (wsplContracts === null)
     {
-     wsplContracts = new WebSocket(WS_URL);
+     wsplContracts = new WebSocket(WS_URL);  
      wsplContracts.onopen=()=>{ wsplContracts.send(JSON.stringify({ authorize: TOKEN })); };
     }
   
@@ -1497,7 +1497,7 @@ closeAll.onclick=()=>{
     wsplContracts.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
     wsplContracts.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
     wsplContracts.onmessage=msg=>{
-      const data=JSON.parse(msg.data);
+      const data=JSON.parse(msg.data);   
       switch (data.msg_type) {
         case "authorize":
           console.log("✅ Authorized, fetching open contracts...");
