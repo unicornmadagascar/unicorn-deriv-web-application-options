@@ -1192,7 +1192,7 @@ document.addEventListener("DOMContentLoaded", () => {
           currency: CURRENCY.toString(),
           basis: "stake",
           amount: stake.toFixed(2),
-          multiplier: multiplier,
+          multiplier: multiplier,   
           //limit_order: { take_profit: 150, stop_loss: 130 }
         }
       };
