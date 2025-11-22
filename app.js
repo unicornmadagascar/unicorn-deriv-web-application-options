@@ -784,7 +784,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       console.log(`📤 Ouverture d’un contrat ${direction} (${mainType})`);
 
-      if (typeof multiplier !== "number" || typeof stake !== "number" || typeof repeat !== "number" || typeof mainType !== "string") {
+      if ((typeof multiplier !== "number" && multiplier === "") || (typeof stake !== "number" && stake === "") || (typeof repeat !== "number" && repeat === "")) {
           console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
           return;
       }
@@ -885,9 +885,9 @@ document.addEventListener("DOMContentLoaded", () => {
                   const multiplier = parseInt(multiplierInput.value)||50;
                   numb_ = parseInt(buyNumber.value) || 1;
                   
-                  if (typeof multiplier !== "number" || typeof stake !== "number" || typeof numb_ !== "number") {
-                    console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
-                    return;
+                  if ((typeof multiplier !== "number" && multiplier === "") || (typeof stake !== "number" && stake === "") || (typeof numb_ !== "number" && numb_ === "")) {
+                     console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
+                     return;
                   }
 
                   for (let i=0;i < numb_; i++)
@@ -925,9 +925,9 @@ document.addEventListener("DOMContentLoaded", () => {
                   const multiplier = parseInt(multiplierInput.value)||40;
                   numb_ = parseInt(sellNumber.value) || 1;
 
-                  if (typeof multiplier !== "number" || typeof stake !== "number" || typeof numb_ !== "number") {
-                    console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
-                    return;
+                  if ((typeof multiplier !== "number" && multiplier === "") || (typeof stake !== "number" && stake === "") || (typeof numb_ !== "number" && numb_ === "")) {
+                     console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
+                     return;
                   }
 
                   for (let i=0;i < numb_; i++)
@@ -966,9 +966,9 @@ document.addEventListener("DOMContentLoaded", () => {
                   const multiplier = parseInt(multiplierInput.value)||40;
                   numb_ = parseInt(sellNumber.value) || 1;
 
-                  if (typeof multiplier !== "number" || typeof stake !== "number" || typeof numb_ !== "number") {
-                    console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
-                    return;
+                  if ((typeof multiplier !== "number" && multiplier === "") || (typeof stake !== "number" && stake === "") || (typeof numb_ !== "number" && numb_ === "")) {
+                     console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
+                     return;
                   }
 
                   for (let i=0;i < numb_; i++)
@@ -1006,9 +1006,9 @@ document.addEventListener("DOMContentLoaded", () => {
                   const multiplier = parseInt(multiplierInput.value)||50;
                   numb_ = parseInt(buyNumber.value) || 1;
 
-                  if (typeof multiplier !== "number" || typeof stake !== "number" || typeof numb_ !== "number") {
-                    console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
-                    return;
+                  if ((typeof multiplier !== "number" && multiplier === "") || (typeof stake !== "number" && stake === "") || (typeof numb_ !== "number" && numb_ === "")) {
+                     console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
+                     return;
                   }
 
                   for (let i=0;i < numb_; i++)
