@@ -569,7 +569,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // update chartData and series   
     if (!currentSeries || !chart) return;
-
+  
     const point = { time: epoch, value: quote };
      
     // if first data point, setData with small array to initialize
