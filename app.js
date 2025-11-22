@@ -520,6 +520,7 @@ document.addEventListener("DOMContentLoaded", () => {
       accountInfo.textContent = "";
       wspl = null;
       authorized = false;
+      setTimeout(connectDeriv, 500);
     };
 
     wspl.onerror = (e) => {
@@ -814,26 +815,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function startAutomation() {
+    if (wsAutomation) {wsAutomation.close(); wsAutomation = null;};
+
+    if (!currentSymbol) return;
 
     const symbol_test = currentSymbol.slice(0,3);
-
-    if (wsAutomation === null)
-    {
-     wsAutomation = new WebSocket(WS_URL);
-     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-  
-    if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
-    {
-     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
-    if (wsAutomation  && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING))
-    {
-     wsAutomation = new WebSocket(WS_URL);
-     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-    }
- 
+    wsAutomation = new WebSocket(WS_URL);
+    wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
     wsAutomation.onmessage = (msg) => {
         const data = JSON.parse(msg.data);
 
@@ -857,8 +845,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.msg_type === "tick")
         {
            const price = parseFloat(data.tick.quote);
-           const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
-
            tickHistory.push(price);
            if (it >= 3 && tickHistory.length > 3) // garder seulement les 3 derniers ticks
            {  
@@ -889,28 +875,25 @@ document.addEventListener("DOMContentLoaded", () => {
                   if (proposal__.contract_id) return;
                  
                   console.log("📤 Ouverture d'un nouveau contrat BUY...");
-                  if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
-                      currentSymbol === "CRASH1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500")
+                 
+                  const stake = parseFloat(stakeInput.value) || 1;
+                  const multiplier = parseInt(multiplierInput.value)||50;
+                  numb_ = parseInt(buyNumber.value) || 1;
+                  for (let i=0;i < numb_; i++)
                   {
-                    const stake = parseFloat(stakeInput.value) || 1;
-                    const multiplier = parseInt(multiplierInput.value)||50;
-                    numb_ = parseInt(buyNumber.value) || 1;
-                    for (let i=0;i < numb_; i++)
-                    {
-                      wsAutomation.send(JSON.stringify({
-                           buy: 1,
-                           price: stake.toFixed(2),
-                           parameters: {
-                             contract_type: "MULTUP",
-                             symbol: currentSymbol,
-                             currency: "USD",
-                             basis: "stake",
-                             amount: stake.toFixed(2),
-                             multiplier: multiplier,
-                           }
-                        }
-                      ));
-                    }
+                    wsAutomation.send(JSON.stringify({
+                          buy: 1,
+                          price: stake.toFixed(2),
+                          parameters: {
+                            contract_type: "MULTUP",
+                            symbol: currentSymbol,
+                            currency: "USD",
+                            basis: "stake",
+                            amount: stake.toFixed(2),
+                            multiplier: multiplier,
+                         }
+                       }
+                    ));
                   }
                   setTimeout(() => {     
                   },5000);
@@ -927,15 +910,12 @@ document.addEventListener("DOMContentLoaded", () => {
                   if (proposal__.contract_id) return;
                   
                   console.log("📤 Ouverture d'un nouveau contrat SELL...");
-                  if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
-                      currentSymbol === "CRASH1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500")
+                  const stake = parseFloat(stakeInput.value) || 1;
+                  const multiplier = parseInt(multiplierInput.value)||40;
+                  numb_ = parseInt(sellNumber.value) || 1;
+                  for (let i=0;i < numb_; i++)
                   {
-                    const stake = parseFloat(stakeInput.value) || 1;
-                    const multiplier = parseInt(multiplierInput.value)||50;
-                    numb_ = parseInt(sellNumber.value) || 1;
-                    for (let i=0;i < numb_; i++)
-                    {
-                      wsAutomation.send(JSON.stringify({
+                    wsAutomation.send(JSON.stringify({
                            buy: 1,
                            price: stake.toFixed(2),
                            parameters: {
@@ -947,8 +927,7 @@ document.addEventListener("DOMContentLoaded", () => {
                              multiplier: multiplier,
                            }
                         }
-                      ));
-                    }
+                    ));
                   }
                 }
                }
@@ -966,15 +945,12 @@ document.addEventListener("DOMContentLoaded", () => {
                   if (proposal__.contract_id) return;
 
                   console.log("📤 Ouverture d'un nouveau contrat SELL...");
-                  if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
-                      currentSymbol === "CRASH1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500")
+                  const stake = parseFloat(stakeInput.value) || 1;
+                  const multiplier = parseInt(multiplierInput.value)||40;
+                  numb_ = parseInt(sellNumber.value) || 1;
+                  for (let i=0;i < numb_; i++)
                   {
-                    const stake = parseFloat(stakeInput.value) || 1;
-                    const multiplier = parseInt(multiplierInput.value)||50;
-                    numb_ = parseInt(sellNumber.value) || 1;
-                    for (let i=0;i < numb_; i++)
-                    {
-                      wsAutomation.send(JSON.stringify({
+                    wsAutomation.send(JSON.stringify({
                            buy: 1,
                            price: stake.toFixed(2),
                            parameters: {
@@ -986,8 +962,7 @@ document.addEventListener("DOMContentLoaded", () => {
                              multiplier: multiplier,
                            }
                         }
-                      ));
-                    }
+                    ));
                   }
                   setTimeout(() => {
                   },5000);
@@ -1004,15 +979,12 @@ document.addEventListener("DOMContentLoaded", () => {
                   if (proposal__.contract_id) return;
 
                   console.log("📤 Ouverture d'un nouveau contrat BUY...");
-                  if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
-                      currentSymbol === "CRASH1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500")
-                  {
-                    const stake = parseFloat(stakeInput.value) || 1;
-                    const multiplier = parseInt(multiplierInput.value)||50;
-                    numb_ = parseInt(buyNumber.value) || 1;
-                    for (let i=0;i < numb_; i++)
-                    {
-                      wsAutomation.send(JSON.stringify({
+                  const stake = parseFloat(stakeInput.value) || 1;
+                  const multiplier = parseInt(multiplierInput.value)||50;
+                  numb_ = parseInt(buyNumber.value) || 1;
+                  for (let i=0;i < numb_; i++)
+                   {
+                     wsAutomation.send(JSON.stringify({
                            buy: 1,
                            price: stake.toFixed(2),
                            parameters: {
@@ -1024,25 +996,23 @@ document.addEventListener("DOMContentLoaded", () => {
                              multiplier: multiplier,
                            }
                         }
-                      ));
-                    }
-                  }
-                }
+                     ));
+                   }
+                 }
                }
              }
            }   // if (it)
         }  
 
-        it = it + 1;
-        if (it > 700)    
+        if (tickHistory.length > 700)    
         {
-         tickHistory.shift();
-         ROC.shift(); 
+         tickHistory.splice(0,100);
         }
     };
 
     wsAutomation.onclose = () => {
       console.log("Disconnected");
+      setTimeout(startAutomation, 5000);
     };
 
     wsAutomation.onerror = (err) => {
