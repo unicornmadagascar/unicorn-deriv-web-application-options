@@ -560,12 +560,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const change = quote - prev;
     recentChanges.push(change);
-    if (recentChanges.length > 60) recentChanges.shift();
+    if (recentChanges.length > 60) recentChanges.splice(0,1);
 
     // update chartData and series   
     if (!currentSeries || !chart) return;
 
     const point = { time: epoch, value: quote };
+
+    if (!point) return;
 
     // if first data point, setData with small array to initialize
     if (!chartData.length) {
