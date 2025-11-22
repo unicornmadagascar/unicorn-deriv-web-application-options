@@ -2543,13 +2543,13 @@ function extractValue(event, key) {
   toggleAutomationBtn.addEventListener("click", () => {
     automationRunning = !automationRunning;
     if (automationRunning) {
-      toggleAutomationBtn.textContent = "Stop Automation";
+      toggleAutomationBtn.textContent = "Stop BC Automation";
       toggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       toggleAutomationBtn.style.color = "white";
       automationRunning = true;
       ROCtoggleAutomationBtn.disabled = true;
     } else {
-      toggleAutomationBtn.textContent = "Launch Automation";
+      toggleAutomationBtn.textContent = "Launch BC Automation";
       toggleAutomationBtn.style.background = "white";
       toggleAutomationBtn.style.color = "gray";
       automationRunning = false;
@@ -2835,11 +2835,11 @@ window.addEventListener("error", function (e) {
 
   // BC Automation
   setInterval(() => {
-    if (toggleAutomationBtn.textContent.trim()==="Stop Automation")
+    if (toggleAutomationBtn.textContent.trim()==="Stop BC Automation")
     {
      startAutomation();
     }
-    else if (toggleAutomationBtn.textContent.trim()==="Launch Automation")
+    else if (toggleAutomationBtn.textContent.trim()==="Launch BC Automation")
     {
      stopAutomation();   
     }
