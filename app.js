@@ -2846,7 +2846,7 @@ window.addEventListener("error", function (e) {
   setInterval(() => {
     if (BCtoggleAutomationBtn.textContent.trim()==="Stop BC Automation")
     {
-     startAutomation();
+     startAutomation();  
     }
     else if (BCtoggleAutomationBtn.textContent.trim()==="Launch BC Automation")
     {
