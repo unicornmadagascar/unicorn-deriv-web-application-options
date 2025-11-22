@@ -681,7 +681,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("🟢 WebSocket ROC connecté");
       wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };   
       wsROC.onmessage = (msg) => handleMessage(JSON.parse(msg.data));   
-      wsROC.onclose = () => console.log("🔴 WebSocket ROC fermé");      
+      wsROC.onclose = () => { setTimeout(connectWebSocket, 500); };      
       wsROC.onerror = (err) => console.error("WebSocket error:", err);
     }
 
@@ -1012,7 +1012,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     wsAutomation.onclose = () => {
       console.log("Disconnected");
-      setTimeout(startAutomation, 5000);
+      setTimeout(startAutomation, 500);
     };
 
     wsAutomation.onerror = (err) => {
