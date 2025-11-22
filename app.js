@@ -866,7 +866,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.msg_type === "proposal_open_contract") 
         {
            proposal__ = data.proposal_open_contract;
-           console.log("Proposal :", proposal__);
+           console.log("Proposal :", proposal__);   
            return;
         } 
         
