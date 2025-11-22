@@ -2550,7 +2550,7 @@ function extractValue(event, key) {
       ROCtoggleAutomationBtn.disabled = true;
     } else {
       toggleAutomationBtn.textContent = "Launch BC Automation";
-      toggleAutomationBtn.style.background = "white";
+      toggleAutomationBtn.style.background = "white";  
       toggleAutomationBtn.style.color = "gray";
       automationRunning = false;
       ROCtoggleAutomationBtn.disabled = false;
