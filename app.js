@@ -215,8 +215,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentChartType === "area") {
       currentSeries = chart.addAreaSeries({
         lineColor: "#bd06ddff",
-        topColor: "rgba(41,98,255,0.28)",
-        bottomColor: "rgba(41,98,255,0.05)",
+        topColor: "#bd06ddff",
+        bottomColor: "#bd06ddff",
         lineWidth: 2,
       });
     } else if (currentChartType === "candlestick") {
