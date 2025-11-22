@@ -682,7 +682,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };   
       wsROC.onmessage = (msg) => handleMessage(JSON.parse(msg.data));   
       wsROC.onclose = () => { setTimeout(connectWebSocket, 500); };      
-      wsROC.onerror = (err) => console.error("WebSocket error:", err);
+      wsROC.onerror = (err) => { console.error("WebSocket error:", err); wsROC.close(); wsROC = null; setTimeout(connectWebSocket, 500); };  
     }
 
     function handleMessage(data) {
@@ -1046,6 +1046,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     wsAutomation.onerror = (err) => {
       console.error("WebSocket error:", err);
+      wsAutomation.close();
+      wsAutomation = null;
+      setTimeout(startAutomation, 500);
     };
   }
 
