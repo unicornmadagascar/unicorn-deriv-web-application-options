@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Historique local des ticks
   let tickHistory = [];
   let tickHistory__ = [];
-  let tickHistory__arr = [];
+  let tickHistory__arr = [];   
   let candleHistory__ = [];
   let closePrice; 
   let tickHistory4openpricelines = [];
