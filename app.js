@@ -2844,16 +2844,16 @@ window.addEventListener("error", function (e) {
 
   // BC Automation
   setInterval(() => {
-    if (toggleAutomationBtn.textContent.trim()==="Stop BC Automation")
+    if (BCtoggleAutomationBtn.textContent.trim()==="Stop BC Automation")
     {
      startAutomation();
     }
-    else if (toggleAutomationBtn.textContent.trim()==="Launch BC Automation")
+    else if (BCtoggleAutomationBtn.textContent.trim()==="Launch BC Automation")
     {
      stopAutomation();   
     }
   },500);
-
+  
   // ROC Automation
   setInterval(() => {
     if (ROCtoggleAutomationBtn.textContent.trim()==="Stop ROC Automation")
