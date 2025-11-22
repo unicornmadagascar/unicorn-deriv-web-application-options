@@ -571,13 +571,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!currentSeries || !chart) return;
 
     const point = { time: epoch, value: quote };
-
-    if (!point) return;
-   
+     
     // if first data point, setData with small array to initialize
     if (!chartData.length) {
       chartData.push(point);
-      if (chartData.length > 600) chartData.splice(0,5);    
+      if (chartData.length > 600) chartData.splice(0,1);    
       try {
         currentSeries.setData(chartData);  
       } catch (e) {
