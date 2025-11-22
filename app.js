@@ -1053,7 +1053,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
          tickHistory.splice(0,100);
         }
-    };
+    };   
 
     wsAutomation.onclose = () => {
       console.log("Disconnected");
