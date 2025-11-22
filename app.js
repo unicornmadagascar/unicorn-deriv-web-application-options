@@ -213,11 +213,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // === Type de graphique dynamique ===  
     if (currentChartType === "area") {
-      currentSeries = chart.addAreaSeries({
-        lineColor: "#bd06ddff",
-        topColor: "#bd06ddff",
-        bottomColor: "#bd06ddff",
-        lineWidth: 2,
+       currentSeries = chart.addAreaSeries({
+         lineColor: "rgba(189, 6, 221, 1)",
+         lineWidth: 3,
+         topColor: "rgba(189, 6, 221, 0.35)",
+         bottomColor: "rgba(189, 6, 221, 0.0)",
       });
     } else if (currentChartType === "candlestick") {
       currentSeries = chart.addCandlestickSeries({
