@@ -1189,7 +1189,7 @@ document.addEventListener("DOMContentLoaded", () => {
         parameters: {  
           contract_type: type==="BUY"?"MULTUP":"MULTDOWN",
           symbol: currentSymbol,
-          currency: CURRENCY.toString(),
+          currency: CURRENCY.toString(),   
           basis: "stake",
           amount: stake.toFixed(2),
           multiplier: multiplier,   
