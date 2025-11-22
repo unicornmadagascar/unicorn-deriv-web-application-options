@@ -1196,15 +1196,9 @@ document.addEventListener("DOMContentLoaded", () => {
           //limit_order: { take_profit: 150, stop_loss: 130 }
         }
       };
-
-      if (type === "BUY")
-       {
-        numb_ = parseInt(buyNumber.value)||1;
-       }
-      else if (type === "SELL")
-       {
-        numb_ = parseInt(sellNumber.value)||1;
-       }  
+      
+      const numb_ = type === BUY ? parseInt(buyNumber.value) || 1
+                                 : parseInt(sellNumber.value) || 1;
 
       for (let i=0;i < numb_; i++)
        {
