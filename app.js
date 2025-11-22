@@ -2753,7 +2753,7 @@ window.addEventListener("error", function (e) {
       } else {
         ws.send(JSON.stringify( { forget_all: ["candles","ticks"] } )); // oublie l'ancien symbole
         subscribeSymbol(currentSymbol, currentChartType);
-      }
+      }  
     });
   });  
 
