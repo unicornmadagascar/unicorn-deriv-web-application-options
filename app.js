@@ -820,13 +820,29 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function startAutomation() {
-    if (wsAutomation) {wsAutomation.close(); wsAutomation = null;};
 
     if (!currentSymbol) return;
 
     const symbol_test = currentSymbol.slice(0,3);
-    wsAutomation = new WebSocket(WS_URL);
-    wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+
+    if (wsAutomation === null)
+    {
+      wsAutomation = new WebSocket(WS_URL);
+      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
+    {
+     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (wsAutomation && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING))
+    {
+      wsAutomation = null;
+      wsAutomation = new WebSocket(WS_URL);
+      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
     wsAutomation.onmessage = (msg) => {
         const data = JSON.parse(msg.data);
 
