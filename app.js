@@ -859,11 +859,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.msg_type === "portfolio") 
         {
            contracts = data.portfolio.contracts;
-        } 
+           console.log("Contracts :", contracts);
+           return;
+        }   
 
         if (data.msg_type === "proposal_open_contract") 
         {
            proposal__ = data.proposal_open_contract;
+           console.log("Proposal :", proposal__);
+           return;
         } 
         
         if (data.msg_type === "tick")
