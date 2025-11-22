@@ -1476,7 +1476,6 @@ closeAll.onclick=()=>{
 
    // --- 🧱 Connexion WebSocket
   function connectDeriv_table() {   
-    if (wsplContracts) { wsplContracts.close(); wsplContracts = null; }
 
     if (wsplContracts === null)
     {
