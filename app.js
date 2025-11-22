@@ -1182,29 +1182,37 @@ document.addEventListener("DOMContentLoaded", () => {
     wsContracts = new WebSocket(WS_URL);
     wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
 
-    if(wsContracts && wsContracts.readyState===WebSocket.OPEN){
-       const payload = {
-        buy: 1,   
-        price: stake.toFixed(2),
-        parameters: {  
-          contract_type: type==="BUY"?"MULTUP":"MULTDOWN",
-          symbol: currentSymbol,
-          currency: CURRENCY.toString(),   
-          basis: "stake",
-          amount: stake.toFixed(2),
-          multiplier: multiplier,   
-          //limit_order: { take_profit: 150, stop_loss: 130 }
+    wsContracts.onmessage = (msg) => {
+       const data = JSON.parse(msg.data);
+       if (data.authorize && data.msg_type === "authorize")
+       {
+        const payload = {
+          buy: 1,   
+          price: stake.toFixed(2),
+          parameters: {  
+            contract_type: type==="BUY"?"MULTUP":"MULTDOWN",
+            symbol: currentSymbol,
+            currency: CURRENCY.toString(),   
+            basis: "stake",
+            amount: stake.toFixed(2),
+            multiplier: multiplier,   
+            //limit_order: { take_profit: 150, stop_loss: 130 }
+          }
         }
-      };
-      
-      const numb_ = type === BUY ? parseInt(buyNumber.value) || 1
+
+        const numb_ = type === "BUY" ? parseInt(buyNumber.value) || 1
                                  : parseInt(sellNumber.value) || 1;
 
-      for (let i=0;i < numb_; i++)
-       {
-         wsContracts.send(JSON.stringify(payload));
-       }
-    }  
+        for (let i=0;i < numb_; i++){
+          wsContracts.send(JSON.stringify(payload));
+        }
+      }
+
+      if (data.ping && data.msg_type === "ping")
+      {
+       wsContracts.send(JSON.stringify({ ping: 1}));
+      }
+    };
   }
 
   closewinning.onclick=()=>{
