@@ -481,7 +481,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   
     wspl.onmessage = (evt) => {
-        const data = JSON.parse(evt.data);
+        const data = JSON.parse(evt.data);  
         // authorize response
         if (data.msg_type === "authorize" && data.authorize) {   
           authorized = true;            
@@ -544,7 +544,7 @@ document.addEventListener("DOMContentLoaded", () => {
         connectBtn.textContent = "Connect";
         accountInfo.textContent = "";
         authorized = false;
-        console.log("Socket Closed");
+        console.log("Socket Closed");   
       }
     }, 500);  
   }
