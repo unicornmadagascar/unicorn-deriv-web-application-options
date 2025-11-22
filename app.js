@@ -214,7 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // === Type de graphique dynamique ===  
     if (currentChartType === "area") {
       currentSeries = chart.addAreaSeries({
-        lineColor: "#2962FF",
+        lineColor: "#bd06ddff",
         topColor: "rgba(41,98,255,0.28)",
         bottomColor: "rgba(41,98,255,0.05)",
         lineWidth: 2,
