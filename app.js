@@ -777,12 +777,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 3. Ouvrir un nouveau contrat
       const stake = parseFloat(stakeInput.value) || 1;
-      const multiplier = parseInt(multiplierInput.value) || 50;
+      const multiplier = parseInt(multiplierInput.value) || 40;
       const repeat = direction === "BUY"
         ? (parseInt(buyNumber.value) || 1)
         : (parseInt(sellNumber.value) || 1);
 
       console.log(`📤 Ouverture d’un contrat ${direction} (${mainType})`);
+
+      if (typeof multiplier !== "number" || typeof stake !== "number" || typeof repeat !== "number" || typeof mainType !== "string") {
+          console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
+          return;
+      }
 
       for (let i = 0; i < repeat; i++) {
         wsROC.send(JSON.stringify({
@@ -879,6 +884,12 @@ document.addEventListener("DOMContentLoaded", () => {
                   const stake = parseFloat(stakeInput.value) || 1;
                   const multiplier = parseInt(multiplierInput.value)||50;
                   numb_ = parseInt(buyNumber.value) || 1;
+                  
+                  if (typeof multiplier !== "number" || typeof stake !== "number" || typeof numb_ !== "number") {
+                    console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
+                    return;
+                  }
+
                   for (let i=0;i < numb_; i++)
                   {
                     wsAutomation.send(JSON.stringify({
@@ -913,6 +924,12 @@ document.addEventListener("DOMContentLoaded", () => {
                   const stake = parseFloat(stakeInput.value) || 1;
                   const multiplier = parseInt(multiplierInput.value)||40;
                   numb_ = parseInt(sellNumber.value) || 1;
+
+                  if (typeof multiplier !== "number" || typeof stake !== "number" || typeof numb_ !== "number") {
+                    console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
+                    return;
+                  }
+
                   for (let i=0;i < numb_; i++)
                   {
                     wsAutomation.send(JSON.stringify({
@@ -948,6 +965,12 @@ document.addEventListener("DOMContentLoaded", () => {
                   const stake = parseFloat(stakeInput.value) || 1;
                   const multiplier = parseInt(multiplierInput.value)||40;
                   numb_ = parseInt(sellNumber.value) || 1;
+
+                  if (typeof multiplier !== "number" || typeof stake !== "number" || typeof numb_ !== "number") {
+                    console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
+                    return;
+                  }
+
                   for (let i=0;i < numb_; i++)
                   {
                     wsAutomation.send(JSON.stringify({
@@ -982,6 +1005,12 @@ document.addEventListener("DOMContentLoaded", () => {
                   const stake = parseFloat(stakeInput.value) || 1;
                   const multiplier = parseInt(multiplierInput.value)||50;
                   numb_ = parseInt(buyNumber.value) || 1;
+
+                  if (typeof multiplier !== "number" || typeof stake !== "number" || typeof numb_ !== "number") {
+                    console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
+                    return;
+                  }
+
                   for (let i=0;i < numb_; i++)
                    {
                      wsAutomation.send(JSON.stringify({
