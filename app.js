@@ -1489,8 +1489,8 @@ closeAll.onclick=()=>{
     }
 
     if (wsplContracts && (wsplContracts.readyState === WebSocket.CLOSED || wsplContracts.readyState === WebSocket.CLOSING))
-    {
-      wsplContracts = new WebSocket(WS_URL);
+    {     
+      wsplContracts = new WebSocket(WS_URL);  
       wsplContracts.onopen=()=>{ wsplContracts.send(JSON.stringify({ authorize: TOKEN })); };
     }
     
