@@ -1204,7 +1204,7 @@ document.addEventListener("DOMContentLoaded", () => {
        {
          wsContracts.send(JSON.stringify(payload));
        }
-    }
+    }  
   }
 
   closewinning.onclick=()=>{
