@@ -574,10 +574,10 @@ document.addEventListener("DOMContentLoaded", () => {
      
     // if first data point, setData with small array to initialize
     if (!chartData.length) {
-      chartData.push(point);
+      chartData.push(point);   
       if (chartData.length > 600) chartData.splice(0,1);    
       try {
-        currentSeries.setData(chartData);  
+        currentSeries.setData(chartData);     
       } catch (e) {
         // fallback: try update
         try { currentSeries.update(point); } catch (err) {}   
