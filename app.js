@@ -464,13 +464,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- CONNECT DERIV ---
   function connectDeriv() {
-    if (wspl) {wspl.close(); wspl = null;}
+    if (wspl === "null") {
+      wspl = new WebSocket(WS_URL);
+      wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
+    }
 
-    wspl = new WebSocket(WS_URL);
-    wspl.onopen=()=>{ 
-      console.log("WS open — authorizing");
-      wspl.send(JSON.stringify({ authorize: TOKEN })); 
-    };
+    if (wspl && (wspl.readyState === WebSocket.OPEN || wspl.readyState === WebSocket.CONNECTING)) {
+      wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (wspl && (wspl.readyState === WebSocket.CLOSED || wspl.readyState === WebSocket.CLOSING)) {
+      wspl = new WebSocket(WS_URL);
+      wspl.onopen=()=>{ wspl.send(JSON.stringify({ authorize: TOKEN })); };
+    }
   
     wspl.onmessage = (evt) => {
         const data = JSON.parse(evt.data);
@@ -522,10 +528,6 @@ document.addEventListener("DOMContentLoaded", () => {
       wspl = null;
       authorized = false;
       setTimeout(connectDeriv, 500);
-    };
-
-    wspl.onerror = (e) => {
-      console.error("WS error", e);
     };
   }
 
