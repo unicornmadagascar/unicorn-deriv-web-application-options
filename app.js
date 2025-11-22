@@ -1184,7 +1184,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if(wsContracts && wsContracts.readyState===WebSocket.OPEN){
        const payload = {
-        buy: 1,
+        buy: 1,   
         price: stake.toFixed(2),
         parameters: {  
           contract_type: type==="BUY"?"MULTUP":"MULTDOWN",
