@@ -97,8 +97,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Historique local des ticks
   let tickHistory = [];
   let tickHistory__ = [];
+  let tickHistory__arr = [];
   let candleHistory__ = [];
-  let closePrice;
+  let closePrice; 
   let tickHistory4openpricelines = [];
   const priceLines4openlines = {}; // Stocke les lignes actives (clé = contract_id)
   let Tick_arr = [];
@@ -868,11 +869,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.msg_type === "tick")
         {
            const price = parseFloat(data.tick.quote);
-           tickHistory.push(price);
-           if (it >= 3 && tickHistory.length > 3) // garder seulement les 3 derniers ticks
+           tickHistory__arr.push(price);
+           if (it >= 3 && tickHistory__arr.length > 3) // garder seulement les 3 derniers ticks
            {  
               Tick_arr.length = 3;
-              Tick_arr = tickHistory.slice(-3);
+              Tick_arr = tickHistory__arr.slice(-3);
               
               // On peut aussi normaliser avec la moyenne
               const mean = (Tick_arr[0] + Tick_arr[1] + Tick_arr[2]) / 3;
@@ -1051,9 +1052,9 @@ document.addEventListener("DOMContentLoaded", () => {
            }   // if (it)
         }  
 
-        if (tickHistory.length > 700)    
+        if (tickHistory__arr.length > 700)    
         {
-         tickHistory.splice(0,100);
+         tickHistory__arr.splice(0,100);
         }
     };   
 
