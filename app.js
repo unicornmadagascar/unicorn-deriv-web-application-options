@@ -2823,7 +2823,7 @@ window.addEventListener("error", function (e) {
 
     console.log("Données sauvegardées :");
     console.log({ multiplier, stake, buyNumber, sellNumber, tp_contract, sl_contract });
-
+   
     // Fermer le popup
     document.getElementById("settingsPopup").style.display = "none";
   };
