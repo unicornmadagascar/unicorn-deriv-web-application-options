@@ -1182,7 +1182,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wsContracts = new WebSocket(WS_URL);
     wsContracts.onopen=()=>{ wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
 
-    if(authorized && wsContracts && wsContracts.readyState===WebSocket.OPEN){
+    if(data.authorize && wsContracts && wsContracts.readyState===WebSocket.OPEN){
        const payload = {
         buy: 1,
         price: stake.toFixed(2),
