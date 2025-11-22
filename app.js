@@ -568,7 +568,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const point = { time: epoch, value: quote };
 
     if (!point) return;
-
+   
     // if first data point, setData with small array to initialize
     if (!chartData.length) {
       chartData.push(point);
