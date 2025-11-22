@@ -226,7 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
         wickUpColor: "#26a69a",
         downColor: "#ef5350",
         borderDownColor: "#ef5350",
-        wickDownColor: "#ef5350",
+        wickDownColor: "#ef5350",   
       });
     } else if (currentChartType === "line") {
       currentSeries = chart.addLineSeries({
