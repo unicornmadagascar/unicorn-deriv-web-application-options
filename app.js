@@ -50,7 +50,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const reverseBtn = document.getElementById("reverseBtn");
 
   let totalPL = 0; // cumul des profits et pertes
-  let automationRunning = false;
+  let BCautomationRunning = false;
+  let ROCautomationRunning = false;
   let smoothVol = 0;
   let smoothTrend = 0;
   let ws=null;
@@ -2546,40 +2547,40 @@ function extractValue(event, key) {
 
 
   // === Automation Toggle ===
-  const toggleAutomationBtn = document.getElementById("toggleAutomation");
-  toggleAutomationBtn.addEventListener("click", () => {
-    automationRunning = !automationRunning;
-    if (automationRunning) {
-      toggleAutomationBtn.textContent = "Stop BC Automation";
-      toggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
-      toggleAutomationBtn.style.color = "white";
-      automationRunning = true;
-      ROCtoggleAutomationBtn.disabled = true;
+  const BCtoggleAutomationBtn = document.getElementById("toggleAutomation");
+  BCtoggleAutomationBtn.addEventListener("click", () => {
+    BCautomationRunning = !BCautomationRunning;
+    if (BCautomationRunning) {
+      BCtoggleAutomationBtn.textContent = "Stop BC Automation";
+      BCtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
+      BCtoggleAutomationBtn.style.color = "white";
+      BCautomationRunning = true;
+      BCtoggleAutomationBtn.disabled = true;
     } else {
-      toggleAutomationBtn.textContent = "Launch BC Automation";
-      toggleAutomationBtn.style.background = "white";  
-      toggleAutomationBtn.style.color = "gray";
-      automationRunning = false;
-      ROCtoggleAutomationBtn.disabled = false;
+      BCtoggleAutomationBtn.textContent = "Launch BC Automation";
+      BCtoggleAutomationBtn.style.background = "white";  
+      BCtoggleAutomationBtn.style.color = "gray";
+      BCautomationRunning = false;  
+      BCtoggleAutomationBtn.disabled = false;
     }
   });
 
   // === Automation Toggle ===
   const ROCtoggleAutomationBtn = document.getElementById("ROCtoggleAutomation");
   ROCtoggleAutomationBtn.addEventListener("click", () => {
-    automationRunning = !automationRunning;
-    if (automationRunning) {
+    ROCautomationRunning = !ROCautomationRunning;
+    if (ROCautomationRunning) {
       ROCtoggleAutomationBtn.textContent = "Stop ROC Automation";
       ROCtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       ROCtoggleAutomationBtn.style.color = "white";
-      automationRunning = true;
-      toggleAutomationBtn.disabled = true;
+      ROCautomationRunning = true;
+      ROCtoggleAutomationBtn.disabled = true;
     } else {
       ROCtoggleAutomationBtn.textContent = "Launch ROC Automation";
       ROCtoggleAutomationBtn.style.background = "white";
       ROCtoggleAutomationBtn.style.color = "gray";
-      automationRunning = false;
-      toggleAutomationBtn.disabled = false;
+      ROCautomationRunning = false;
+      ROCtoggleAutomationBtn.disabled = false;
     }
   });
 
