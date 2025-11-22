@@ -2559,7 +2559,7 @@ function extractValue(event, key) {
     } else {
       BCtoggleAutomationBtn.textContent = "Launch BC Automation";
       BCtoggleAutomationBtn.style.background = "white";  
-      BCtoggleAutomationBtn.style.color = "gray";
+      BCtoggleAutomationBtn.style.color = "gray"; 
       BCautomationRunning = false;  
       BCtoggleAutomationBtn.disabled = false;
     }
