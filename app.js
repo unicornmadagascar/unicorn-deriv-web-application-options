@@ -2751,6 +2751,7 @@ window.addEventListener("error", function (e) {
       if (currentChartType === "candlestick") {
         connect(currentSymbol, currentInterval, currentChartType);
       } else {
+        ws.send(JSON.stringly( { forget_all: ["candles","ticks"] } )); // oublie l'ancien symbole
         subscribeSymbol(currentSymbol, currentChartType);
       }
     });
