@@ -830,21 +830,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const symbol_test = currentSymbol.slice(0,3);
 
     function BC_connectWebSocket() {
-
-      if (wsAutomation === null){
-         wsAutomation = new WebSocket(WS_URL);
-         wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); }; 
-      }   
-
-      if (wsAutomation && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING)){
-         wsAutomation = new WebSocket(WS_URL);   
-         wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); }; 
-      }
-
-      if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING)){
-         wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); }; 
-      }
-           
+      if (wsAutomation) { wsAutomation.close(); wsAutomation = null; }
+      
+      wsAutomation = new WebSocket(WS_URL);
+  
+      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); }; 
       wsAutomation.onmessage = (msg) => BC_handleMessage(JSON.parse(msg.data));   
       wsAutomation.onclose = () => { setTimeout(BC_connectWebSocket, 500); };      
       wsAutomation.onerror = (err) => { console.error("WebSocket error:", err); wsAutomation.close(); wsAutomation = null; setTimeout(BC_connectWebSocket, 500); };  
