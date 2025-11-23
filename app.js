@@ -875,7 +875,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           break;
 
-        case "tick":
+        case "tick":   
           BC_handleTicks(data.tick);
           break;
       }
