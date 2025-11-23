@@ -903,8 +903,7 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log(`📈 Signal : ${signal.toFixed(6)}`);
 
           if (currentChartType !== "candlestick") {
-             console.log("Probability (Tick) :", signal.toFixed(4));
-
+  
              if (symbol_test === "BOO") {
                if (signal < 0.34) {
                   BC_handleSignal("BUY");
@@ -923,8 +922,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           else if (currentChartType === "candlestick") 
           {
-            console.log("Probability (Candles) :", signal.toFixed(4));
-
             if (symbol_test === "BOO") {
               if (signal < 0.34) {
                 BC_handleSignal("BUY");
@@ -963,7 +960,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 2. Vérifier si un contrat actif existe avant d'ouvrir
       if (proposal__.contract_id) {
-        console.log("⏸️ Contrat déjà actif, attente...");
         return;
       }
 
