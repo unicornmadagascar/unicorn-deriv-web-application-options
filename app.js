@@ -992,7 +992,7 @@ document.addEventListener("DOMContentLoaded", () => {
                if (signal < 0.34) {
                  setTimeout(() => {
                     BC_handleSignal("BUY");
-                 }, 5000);
+                 }, 10000);
                }
 
                closeAllContracts();
