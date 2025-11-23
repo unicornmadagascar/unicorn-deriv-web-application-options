@@ -899,49 +899,43 @@ document.addEventListener("DOMContentLoaded", () => {
           if (currentChartType !== "candlestick") {
              console.log("Probability (Tick) :", signal.toFixed(4));
 
-            if (["BOO", "CRA"].includes(symbolPrefix)) {
-
-               if (symbol_test === "BOO") {
-                  if (signal < 0.34) {
-                     BC_handleSignal("BUY");
-                  } else {
-                     BC_handleSignal("SELL");
-                  }
+             if (symbol_test === "BOO") {
+               if (signal < 0.34) {
+                  BC_handleSignal("BUY");
+               } else {
+                  BC_handleSignal("SELL");
                }
-               else if (symbol_test === "CRA")
-               {
-                 if (signal > 0.75) {
-                   BC_handleSignal("SELL");
-                 } else {
-                   BC_handleSignal("BUY");
-                 }
+             }
+             else if (symbol_test === "CRA")
+             {
+               if (signal > 0.75) {
+                  BC_handleSignal("SELL");
+               } else {
+                  BC_handleSignal("BUY");
                }
-            }
+             }
           }
           else if (currentChartType === "candlestick") 
           {
             console.log("Probability (Candles) :", signal.toFixed(4));
 
-            if (["BOO", "CRA"].includes(symbolPrefix)) {
-
-               if (symbol_test === "BOO") {
-                  if (signal < 0.34) {
-                     BC_handleSignal("BUY");
-                  } else {
-                     BC_handleSignal("SELL");
-                  }
-               }
-               else if (symbol_test === "CRA")
-               {
-                 if (signal > 0.75) {
-                   BC_handleSignal("SELL");
-                 } else {
-                   BC_handleSignal("BUY");
-                 }
-               }
+            if (symbol_test === "BOO") {
+              if (signal < 0.34) {
+                BC_handleSignal("BUY");
+              } else {
+                BC_handleSignal("SELL");
+              }
+            }
+            else if (symbol_test === "CRA") 
+            {
+              if (signal > 0.75) {
+                BC_handleSignal("SELL");
+              } else {
+                BC_handleSignal("BUY");
+              }
             }
           }
-       }
+        }
       }
 
        if (tickHistory__bc.length > MAX_HISTORY) {
