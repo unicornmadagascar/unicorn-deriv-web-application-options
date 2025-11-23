@@ -878,6 +878,47 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    function closeAllContracts() {
+      if (wsAutomation) { wsAutomation.close(); wsAutomation = null; }
+
+      const wsAutomation = new WebSocket(WS_URL);
+
+      wsAutomation.onopen = () => {
+        wsAutomation.send(JSON.stringify({ authorize: TOKEN }));
+      };
+
+      wsAutomation.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+
+        // Autorisé → demander la liste des contrats
+        if (data.authorize) {
+            wsAutomation.send(JSON.stringify({ portfolio: 1 }));
+        }
+
+        // Liste des contrats ouverts reçue
+        if (data.portfolio) {
+            const list = data.portfolio.contracts;
+
+            if (list === undefined || list === null || list.length === 0) {
+               return;
+            }
+
+            // Fermer chaque contrat (prix marché)
+            for (let c of list) {
+                wsAutomation.send(JSON.stringify({
+                    sell: c.contract_id,
+                    price: 0
+                }));
+            }
+        }
+
+        // Confirmation d’un contrat fermé
+        if (data.sell) {
+            console.log("Fermé :", data.sell.contract_id);
+        }
+      };
+    }
+
     function BC_handleTicks(tick) {
       const symbolPrefix = currentSymbol.slice(0, 6);
       const price = parseFloat(tick.quote);
@@ -903,37 +944,43 @@ document.addEventListener("DOMContentLoaded", () => {
      
              if (symbol_test === "BOO") {
                if (signal < 0.34) {
-                  BC_handleSignal("BUY");
-               } else {
-                  BC_handleSignal("SELL");
+                 setTimeout(() => {
+                    BC_handleSignal("BUY");
+                 }, 5000);
                }
+
+               closeAllContracts();
              }
-             else if (symbol_test === "CRA")
-             {
+             else if (symbol_test === "CRA"){
                if (signal > 0.75) {
-                  BC_handleSignal("SELL");
-               } else {
-                  BC_handleSignal("BUY");
-               }
+                 setTimeout(() => {
+                    BC_handleSignal("SELL");
+                 }, 5000);
+               } 
+
+               closeAllContracts();
              }
           }
           else if (currentChartType === "candlestick") 
           {
             if (symbol_test === "BOO") {
-              if (signal < 0.34) {
-                BC_handleSignal("BUY");
-              } else {
-                BC_handleSignal("SELL");
-              }
-            }
-            else if (symbol_test === "CRA") 
-            {
-              if (signal > 0.75) {
-                BC_handleSignal("SELL");
-              } else {
-                BC_handleSignal("BUY");
-              }
-            }
+               if (signal < 0.34) {
+                 setTimeout(() => {
+                    BC_handleSignal("BUY");
+                 }, 5000);
+               }
+
+               closeAllContracts();
+             }
+             else if (symbol_test === "CRA"){
+               if (signal > 0.75) {
+                 setTimeout(() => {
+                    BC_handleSignal("SELL");
+                 }, 5000);
+               } 
+
+               closeAllContracts();
+             }
           }
         }
       }
