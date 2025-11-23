@@ -848,7 +848,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING)){
          wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); }; 
       }
-        
+           
       wsAutomation.onmessage = (msg) => BC_handleMessage(JSON.parse(msg.data));   
       wsAutomation.onclose = () => { setTimeout(BC_connectWebSocket, 500); };      
       wsAutomation.onerror = (err) => { console.error("WebSocket error:", err); wsAutomation.close(); wsAutomation = null; setTimeout(BC_connectWebSocket, 500); };  
