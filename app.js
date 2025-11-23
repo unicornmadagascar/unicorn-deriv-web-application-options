@@ -2816,11 +2816,11 @@ window.addEventListener("error", function (e) {
   
   // ROC Automation
   setInterval(() => {
-    if (ROCtoggleAutomationBtn.textContent.trim()==="Stop ROC Automation")
+    if (ROCautomationRunning === true)
     {
      RocstartAutomation();
     }
-    else if (ROCtoggleAutomationBtn.textContent.trim()==="Launch ROC Automation")
+    else if (ROCautomationRunning === false)
     {
      RocstopAutomation();
     }
