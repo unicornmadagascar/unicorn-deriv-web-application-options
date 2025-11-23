@@ -2387,7 +2387,7 @@ function extractValue(event, key) {
       connection.onmessage = (msg) => {
         const data = JSON.parse(msg.data);
         if (data.msg_type === "authorize") {
-          console.log("✅ Authorized successfully :", data.authorize.loginid);
+          //console.log("✅ Authorized successfully :", data.authorize.loginid);
           connection.send(JSON.stringify({ get_settings: 1 }));
           connection.send(JSON.stringify({ balance: 1, subscribe: 1 }));
 
