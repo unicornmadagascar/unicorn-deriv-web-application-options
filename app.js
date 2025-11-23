@@ -835,10 +835,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function BC_connectWebSocket() {
       if (wsAutomation) {wsAutomation.close(); wsAutomation = null;}
-      
-      wsAutomation = new WebSocket(WS_URL);
-      console.log("🟢 WebSocket ROC connecté");
-      wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };   
+
+      if (wsAutomation === null){
+         wsAutomation = new WebSocket(WS_URL);
+         wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); }; 
+      }
+
+      if (wsAutomation && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING)){
+         wsAutomation = new WebSocket(WS_URL);
+         wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); }; 
+      }
+
+      if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING)){
+         wsAutomation = new WebSocket(WS_URL);
+         wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); }; 
+      }
+        
       wsAutomation.onmessage = (msg) => BC_handleMessage(JSON.parse(msg.data));   
       wsAutomation.onclose = () => { setTimeout(BC_connectWebSocket, 500); };      
       wsAutomation.onerror = (err) => { console.error("WebSocket error:", err); wsAutomation.close(); wsAutomation = null; setTimeout(BC_connectWebSocket, 500); };  
@@ -893,7 +905,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (["BOO", "CRA"].includes(symbolPrefix)) {
 
                if (symbol_test === "BOO") {
-                  if (signal > 0.34) {
+                  if (signal < 0.34) {
                      BC_handleSignal("BUY");
                   } else {
                      BC_handleSignal("SELL");
@@ -916,7 +928,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (["BOO", "CRA"].includes(symbolPrefix)) {
 
                if (symbol_test === "BOO") {
-                  if (signal > 0.34) {
+                  if (signal < 0.34) {
                      BC_handleSignal("BUY");
                   } else {
                      BC_handleSignal("SELL");
@@ -999,6 +1011,7 @@ document.addEventListener("DOMContentLoaded", () => {
        // Envoyer unsubscribe avant de fermer
        wsAutomation.send(JSON.stringify({ forget_all: ["Candles","ticks"] }));
        wsAutomation.close();
+       wsAutomation = null;
     }
   }
 
@@ -2768,7 +2781,7 @@ window.addEventListener("error", function (e) {
     }
     else if (BCautomationRunning === false)
     {
-     stopAutomation();   
+     stopAutomation(); 
     }
   },500);   
   
