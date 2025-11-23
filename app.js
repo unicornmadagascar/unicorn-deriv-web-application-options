@@ -755,7 +755,7 @@ document.addEventListener("DOMContentLoaded", () => {
               }
             }
           }
-       }
+       } 
 
        if (tickHistory__.length > MAX_HISTORY || candleHistory__.length > MAX_HISTORY) {
           tickHistory__.splice(0,3); // enlever l'élément le plus ancien
@@ -809,6 +809,8 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }));
       }
+
+      Openpositionlines(currentSeries);
     }
 
     // Démarrage de la connexion WS
@@ -940,9 +942,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-       if (tickHistory__bc.length > MAX_HISTORY) {
+      if (tickHistory__bc.length > MAX_HISTORY) {
           tickHistory__bc.splice(0,20); // enlever l'élément le plus ancien
-       }
+      }
     }
 
     function BC_handleSignal(direction) {
@@ -990,6 +992,8 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }));
       }
+
+      Openpositionlines(currentSeries);
     }   
 
     // Démarrage de la connexion WS
