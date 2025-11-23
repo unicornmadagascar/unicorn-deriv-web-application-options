@@ -2572,7 +2572,7 @@ function extractValue(event, key) {
   ROCtoggleAutomationBtn.addEventListener("click", () => {
     ROCautomationRunning = !ROCautomationRunning;
     if (ROCautomationRunning) {
-      ROCtoggleAutomationBtn.textContent = "Stop ROC Automation";
+      ROCtoggleAutomationBtn.textContent = "Stop ROC Automation";   
       ROCtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       ROCtoggleAutomationBtn.style.color = "white";
       ROCautomationRunning = true;
