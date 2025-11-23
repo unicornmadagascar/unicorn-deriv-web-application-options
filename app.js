@@ -1015,7 +1015,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }   
   }
 
-  // Fonction pour calculer l’écart-type (population)
+  // Fonction pour calculer l’écart-type (population)    
   function ecartType(values) {
     if (values.length === 0) return 0;
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
