@@ -834,7 +834,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const symbol_test = currentSymbol.slice(0,3);
 
     function BC_connectWebSocket() {
-      if (wsAutomation) {wsAutomation.close(); wsAutomation = null;}
 
       if (wsAutomation === null){
          wsAutomation = new WebSocket(WS_URL);
