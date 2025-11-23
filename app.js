@@ -953,12 +953,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        if (data.ping)
+        if (data.ping && data.msg_type === "ping")
         {
           wsAutomation.send(JSON.stringify({ ping: 1 }));
         }
 
-        // Confirmation d’un contrat fermé
+        // Confirmation d’un contrat fermé 
         if (data.sell) {
             console.log("Fermé :", data.sell.contract_id);
         }
