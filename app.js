@@ -684,7 +684,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (wsROC) {wsROC.close(); wsROC = null;}
       
       wsROC = new WebSocket(WS_URL);
-      console.log("🟢 WebSocket ROC connecté");
       wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };   
       wsROC.onmessage = (msg) => handleMessage(JSON.parse(msg.data));   
       wsROC.onclose = () => { setTimeout(connectWebSocket, 500); };      
@@ -700,11 +699,17 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
 
         case "portfolio":   
-          rocContracts = data.portfolio.contracts;    
+          rocContracts = data.portfolio.contracts;   
+          if (rocContracts === undefined || rocContracts === null)
+             return; 
+
           break;
 
         case "proposal_open_contract":
           rocProposal = data.proposal_open_contract;
+          if (rocProposal === undefined || rocProposal === null)
+             return;
+
           break;
 
         case "tick":
@@ -722,8 +727,6 @@ document.addEventListener("DOMContentLoaded", () => {
            const currentPrice = tickHistory__[tickHistory__.length - 1];
            const pastPrice = tickHistory__[tickHistory__.length - 21];
            const rocTick = 100 * (currentPrice - pastPrice) / pastPrice;
-
-           console.log("ROC (Tick) :", rocTick.toFixed(4));
 
            if (["cryBTC", "frxXAU"].includes(symbolPrefix)) {
 
@@ -743,8 +746,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const currentClose = candleHistory__[candleHistory__.length - 1];
             const pastClose = candleHistory__[candleHistory__.length - 21];
             const rocCandle = 100 * (currentClose - pastClose) / pastClose;
-
-            console.log("ROC (Candles) :", rocCandle.toFixed(4));
 
             if (["cryBTC", "frxXAU"].includes(symbolPrefix)) {
 
@@ -771,13 +772,11 @@ document.addEventListener("DOMContentLoaded", () => {
       rocContracts
         .filter(c => c.symbol === currentSymbol && c.contract_type === oppositeType)
         .forEach(c => {
-          console.log("🛑 Fermeture contrat", oppositeType);
           wsROC.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
         });
 
       // 2. Vérifier si un contrat actif existe avant d'ouvrir
       if (rocProposal?.contract_id) {
-        console.log("⏸️ Contrat déjà actif, attente...");
         return;
       }
 
@@ -788,10 +787,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ? (parseInt(buyNumber.value) || 1)
         : (parseInt(sellNumber.value) || 1);
 
-      console.log(`📤 Ouverture d’un contrat ${direction} (${mainType})`);
-
       if ((typeof multiplier !== "number" && multiplier === "") || (typeof stake !== "number" && stake === "") || (typeof repeat !== "number" && repeat === "")) {
-          console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
           return;
       }
 
