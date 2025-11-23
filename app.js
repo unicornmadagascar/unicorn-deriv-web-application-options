@@ -681,10 +681,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const symbolPrefix = currentSymbol.slice(0, 6);
 
     function connectWebSocket() {
-      if (wsROC) {wsROC.close(); wsROC = null;}
-      
-      wsROC = new WebSocket(WS_URL);
-      wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };   
+      if (wsROC === null)
+      {
+       wsROC = new WebSocket(WS_URL);
+      }
+  
+      if (wsROC && (wsROC.readyState === WebSocket.OPEN || wsROC.readyState === WebSocket.CONNECTING))
+      {
+       wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+
+      if (wsROC && (wsROC.readyState === WebSocket.CLOSED || wsROC.readyState === WebSocket.CLOSING))
+      {
+       wsROC = new WebSocket(WS_URL);
+       wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+
       wsROC.onmessage = (msg) => handleMessage(JSON.parse(msg.data));   
       wsROC.onclose = () => { setTimeout(connectWebSocket, 500); };      
       wsROC.onerror = (err) => { console.error("WebSocket error:", err); wsROC.close(); wsROC = null; setTimeout(connectWebSocket, 500); };  
