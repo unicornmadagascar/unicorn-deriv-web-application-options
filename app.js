@@ -334,7 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
              low: Number(c.low),
              close: Number(c.close),
           }));
-          currentSeries.setData(candles);
+          currentSeries.setData(candles);  
           chart.timeScale().fitContent();
        }
 
@@ -357,7 +357,6 @@ document.addEventListener("DOMContentLoaded", () => {
              // Nouvelle bougie
              candles.push(bar);
              currentSeries.update(bar);
-             console.log("🟢 Nouvelle bougie :", bar);
           } else {
              // Mise à jour de la dernière bougie
              candles[candles.length - 1] = bar;
