@@ -681,6 +681,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const symbolPrefix = currentSymbol.slice(0, 6);
 
     function connectWebSocket() {
+
       if (wsROC === null)
       {
        wsROC = new WebSocket(WS_URL);
@@ -881,13 +882,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function closeAllContracts() {
-      if (wsAutomation) { wsAutomation.close(); wsAutomation = null; }
 
-      const wsAutomation = new WebSocket(WS_URL);
+      if (wsAutomation === null)
+      {
+       wsAutomation = new WebSocket(WS_URL);
+      }
+  
+      if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
+      {
+       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+      }
 
-      wsAutomation.onopen = () => {
-        wsAutomation.send(JSON.stringify({ authorize: TOKEN }));
-      };
+      if (wsAutomation && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING))
+      {
+       wsAutomation = new WebSocket(WS_URL);
+       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+
+      wsAutomation.onclose = () => { setTimeout(closeAllContracts,500); };
 
       wsAutomation.onmessage = (e) => {
         const data = JSON.parse(e.data);
