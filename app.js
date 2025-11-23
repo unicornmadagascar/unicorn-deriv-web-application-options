@@ -854,7 +854,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         case "portfolio":   
           bcContracts = data.portfolio.contracts;      
-          break;
+          break;  
 
         case "proposal_open_contract":  
           proposal__ = data.proposal_open_contract;
