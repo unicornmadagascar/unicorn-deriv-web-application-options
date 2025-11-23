@@ -1012,7 +1012,7 @@ document.addEventListener("DOMContentLoaded", () => {
        wsAutomation.send(JSON.stringify({ forget_all: ["Candles","ticks"] }));
        wsAutomation.close();
        wsAutomation = null;
-    }
+    }   
   }
 
   // Fonction pour calculer l’écart-type (population)
