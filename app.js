@@ -2557,13 +2557,13 @@ function extractValue(event, key) {
       BCtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       BCtoggleAutomationBtn.style.color = "white";
       BCautomationRunning = true;
-      BCtoggleAutomationBtn.disabled = true;
+      ROCtoggleAutomationBtn.disabled = true;
     } else {
       BCtoggleAutomationBtn.textContent = "Launch Automation";
       BCtoggleAutomationBtn.style.background = "white";  
       BCtoggleAutomationBtn.style.color = "gray"; 
       BCautomationRunning = false;  
-      BCtoggleAutomationBtn.disabled = false;
+      ROCtoggleAutomationBtn.disabled = false;
     }
   });
 
@@ -2576,13 +2576,13 @@ function extractValue(event, key) {
       ROCtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       ROCtoggleAutomationBtn.style.color = "white";
       ROCautomationRunning = true;
-      ROCtoggleAutomationBtn.disabled = true;
+      BCtoggleAutomationBtn.disabled = true;
     } else {
       ROCtoggleAutomationBtn.textContent = "Launch ROC Automation";
       ROCtoggleAutomationBtn.style.background = "white";
       ROCtoggleAutomationBtn.style.color = "gray";
       ROCautomationRunning = false;
-      ROCtoggleAutomationBtn.disabled = false;
+      BCtoggleAutomationBtn.disabled = false;
     }
   });
 
