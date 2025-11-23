@@ -767,7 +767,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (["cryBTC", "frxXAU"].includes(symbolPrefix)) {
 
               if (rocCandle > 0.01) {
-                 handleSignal("BUY");
+                 handleSignal("BUY");   
               } else if (rocCandle < -0.01) {
                  handleSignal("SELL");
               }
