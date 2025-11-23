@@ -862,11 +862,17 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
 
         case "portfolio":   
-          bcContracts = data.portfolio.contracts;      
+          bcContracts = data.portfolio.contracts; 
+          if (bcContracts === undefined || bcContracts === null) 
+             return;
+
           break;  
 
         case "proposal_open_contract":  
           proposal__ = data.proposal_open_contract;
+          if (proposal__ === undefined || proposal__ === null) 
+             return;
+
           break;
 
         case "tick":
