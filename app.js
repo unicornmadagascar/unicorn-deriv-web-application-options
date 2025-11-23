@@ -903,7 +903,7 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log(`📈 Signal : ${signal.toFixed(6)}`);
 
           if (currentChartType !== "candlestick") {
-  
+     
              if (symbol_test === "BOO") {
                if (signal < 0.34) {
                   BC_handleSignal("BUY");
