@@ -1010,7 +1010,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 1. Fermer les contrats opposés
       bcContracts
-        .filter(c => c.symbol === currentSymbol && c.contract_type === oppositeType)
+        .filter(c => c.symbol === currentSymbol && c.contract_type === oppositeType)   
         .forEach(c => {
           console.log("🛑 Fermeture contrat", oppositeType);
           wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
