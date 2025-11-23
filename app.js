@@ -328,7 +328,7 @@ document.addEventListener("DOMContentLoaded", () => {
        const msg = JSON.parse(data);
        if (msg.msg_type === "candles" && Array.isArray(msg.candles)) {
            candles = msg.candles.map(c => ({
-             time: Number(c.epoch),
+             time: Number(c.epoch),   
              open: Number(c.open),
              high: Number(c.high),
              low: Number(c.low),
