@@ -364,6 +364,11 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
 
+        if (data.ping && data.msg_type === "ping")
+        {
+          ws.send(JSON.stringify({ ping: 1 }));
+        }
+
         Openpositionlines(currentSeries);
     };
 
@@ -523,6 +528,11 @@ document.addEventListener("DOMContentLoaded", () => {
           handleTick(data.tick);     
           return;
         }
+
+        if (data.ping && data.msg_type === "ping")
+        {
+          wspl.send(JSON.stringify({ ping: 1 }));
+        }
     };   
 
     wspl.onclose = () => {
@@ -667,6 +677,11 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log(`📍 Ligne ajoutée pour ${type} @ ${entryPrice}`);
         }
       }
+
+      if (data.ping && data.msg_type === "ping")
+      { 
+       wsOpenLines.send(JSON.stringify({ ping: 1 }));
+      }
     };
 
     wsOpenLines.onerror = (e) => console.log("⚠️ WS error:", e);
@@ -727,6 +742,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         case "tick":
           handleTicks(data.tick);
+          break;
+        
+        case "ping":
+          wsROC.send(JSON.stringify({ ping: 1 }));
           break;
       }
     }  
@@ -882,6 +901,10 @@ document.addEventListener("DOMContentLoaded", () => {
         case "tick":   
           BC_handleTicks(data.tick);
           break;
+
+        case "ping":
+          wsAutomation.send(JSON.stringify({ ping: 1 }));
+          break;
       }
     }
 
@@ -928,6 +951,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     price: 0
                 }));
             }
+        }
+
+        if (data.ping)
+        {
+          wsAutomation.send(JSON.stringify({ ping: 1 }));
         }
 
         // Confirmation d’un contrat fermé
