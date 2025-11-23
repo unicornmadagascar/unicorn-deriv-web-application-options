@@ -841,7 +841,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function BC_handleMessage(data) {
-      switch (data.msg_type) {
+      switch (data.msg_type) {   
         case "authorize":
           wsAutomation.send(JSON.stringify({ ticks: currentSymbol, subscribe: 1 }));
           wsAutomation.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
