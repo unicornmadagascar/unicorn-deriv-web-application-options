@@ -741,6 +741,8 @@ document.addEventListener("DOMContentLoaded", () => {
            const pastPrice = tickHistory__[tickHistory__.length - 21];
            const rocTick = 100 * (currentPrice - pastPrice) / pastPrice;
 
+           console.log('ROC :',rocTick.toFixed(4));
+
            if (["cryBTC", "frxXAU"].includes(symbolPrefix)) {
 
               if (rocTick > 0.01) {
@@ -759,6 +761,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const currentClose = candleHistory__[candleHistory__.length - 1];
             const pastClose = candleHistory__[candleHistory__.length - 21];
             const rocCandle = 100 * (currentClose - pastClose) / pastClose;
+
+            console.log('ROC :',rocCandle.toFixed(4));
 
             if (["cryBTC", "frxXAU"].includes(symbolPrefix)) {
 
