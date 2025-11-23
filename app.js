@@ -746,7 +746,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         case "ping":
           wsROC.send(JSON.stringify({ ping: 1 }));
-          break;
+          break;  
       }
     }  
 
