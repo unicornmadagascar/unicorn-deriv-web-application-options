@@ -1144,7 +1144,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const multiplier = parseInt(multiplierInput.value) || 40;
       const qty = (contracttype__ === "MULTUP")
           ? (parseInt(sellNumber.value) || 1)
-          : (parseInt(buyNumber.value) || 1);
+          : (parseInt(buyNumber.value) || 1);   
 
       // 4. Close all matching contracts   
       contracts
@@ -1158,7 +1158,7 @@ document.addEventListener("DOMContentLoaded", () => {
       for (let i = 0; i < qty; i++) {
           wsContracts_reverse.send(JSON.stringify({
               buy: 1,
-              price: stake.toFixed(2),
+              price: stake.toFixed(2),  
               parameters: {
                   contract_type: oppositeType,
                   symbol: currentSymbol,
@@ -1200,8 +1200,8 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
 
-        const numb_ = type === "BUY" ? parseInt(buyNumber.value) || 1
-                                 : parseInt(sellNumber.value) || 1;
+        const numb_ = (type === "BUY") ? (parseInt(buyNumber.value) || 1)
+                                       : (parseInt(sellNumber.value) || 1);
 
         for (let i=0;i < numb_; i++){
           wsContracts.send(JSON.stringify(payload));
