@@ -2854,7 +2854,7 @@ window.addEventListener("error", function (e) {
     {
      stopAutomation();   
     }
-  },500);
+  },500);   
   
   // ROC Automation
   setInterval(() => {
