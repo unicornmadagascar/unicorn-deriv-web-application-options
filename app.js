@@ -467,7 +467,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- CONNECT DERIV ---
   function connectDeriv() {
-    if (wspl) { wspl.close(); wspl = null; }
 
     if (wspl === null) {
       wspl = new WebSocket(WS_URL);
@@ -486,7 +485,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wspl.onmessage = (evt) => {
         const data = JSON.parse(evt.data);  
         // authorize response
-        if (data.msg_type === "authorize" && data.authorize) {   
+        if (data.msg_type === "authorize" && data.authorize) {     
           authorized = true;            
           const acc = data.authorize.loginid;
           const bal = data.authorize.balance;
