@@ -494,7 +494,7 @@ document.addEventListener("DOMContentLoaded", () => {
           accountInfo.textContent = `Account: ${acc} | ${Number(bal).toFixed(2)} ${currency}`;
 
           // subscribe balance updates
-          wspl.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+          wspl.send(JSON.stringify({ balance: 1, subscribe: 1 }));   
           // if there was a pending subscribe requested earlier, do it now   
           if (pendingSubscribe) {
             // small delay to ensure WS state consistent
