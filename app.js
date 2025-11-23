@@ -954,7 +954,7 @@ document.addEventListener("DOMContentLoaded", () => {
              else if (symbol_test === "CRA"){
                if (signal > 0.75) {
                  setTimeout(() => {
-                    BC_handleSignal("SELL");
+                    BC_handleSignal("SELL");   
                  }, 5000);
                } 
 
