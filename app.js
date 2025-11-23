@@ -969,7 +969,7 @@ document.addEventListener("DOMContentLoaded", () => {
                if (signal > 0.75) {
                  setTimeout(() => {
                     BC_handleSignal("SELL");   
-                 }, 5000);
+                 }, 10000);
                } 
 
                closeAllContracts();
@@ -981,7 +981,7 @@ document.addEventListener("DOMContentLoaded", () => {
                if (signal < 0.34) {
                  setTimeout(() => {
                     BC_handleSignal("BUY");
-                 }, 5000);
+                 }, 10000);
                }
 
                closeAllContracts();
@@ -990,7 +990,7 @@ document.addEventListener("DOMContentLoaded", () => {
                if (signal > 0.75) {
                  setTimeout(() => {
                     BC_handleSignal("SELL");
-                 }, 5000);
+                 }, 10000);
                } 
 
                closeAllContracts();
