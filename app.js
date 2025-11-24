@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsContracts_winning = null;   
   let wsAutomation_sell = null;
   let wsAutomation_buy = null;
+  let wsAutomation_close = null;
   let connection_ws = null;   
   let connection_ws_htx = null;
   let wshistorical = null;
@@ -1293,31 +1294,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function closeAllContracts() {
 
-      if (wsAutomation === null)
+      if (wsAutomation_close === null)
       {
-       wsAutomation = new WebSocket(WS_URL);
-       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+       wsAutomation_close  = new WebSocket(WS_URL);
+       wsAutomation_close.onopen=()=>{ wsAutomation_close.send(JSON.stringify({ authorize: TOKEN })); };
       }
   
-      if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
+      if (wsAutomation_close  && (wsAutomation_close.readyState === WebSocket.OPEN || wsAutomation_close.readyState === WebSocket.CONNECTING))
       {
-       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+       wsAutomation_close.onopen=()=>{ wsAutomation_close.send(JSON.stringify({ authorize: TOKEN })); };
       }
 
-      if (wsAutomation && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING))
+      if (wsAutomation_close && (wsAutomation_close.readyState === WebSocket.CLOSED || wsAutomation_close.readyState === WebSocket.CLOSING))
       {
-       wsAutomation = new WebSocket(WS_URL);
-       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+       wsAutomation_close = new WebSocket(WS_URL);
+       wsAutomation_close.onopen=()=>{ wsAutomation_close.send(JSON.stringify({ authorize: TOKEN })); };
       }
 
-      wsAutomation.onclose = () => { setTimeout(closeAllContracts,500); };
-
-      wsAutomation.onmessage = (e) => {
+      wsAutomation_close.onclose = () => { setTimeout(closeAllContracts,500); };
+      wsAutomation_close.onmessage = (e) => {
         const data = JSON.parse(e.data);
 
         // Autorisé → demander la liste des contrats
         if (data.authorize) {
-            wsAutomation.send(JSON.stringify({ portfolio: 1 }));
+            wsAutomation_close.send(JSON.stringify({ portfolio: 1 }));
         }
 
         // Liste des contrats ouverts reçue
@@ -1330,7 +1330,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Fermer chaque contrat (prix marché)
             for (let c of list) {
-                wsAutomation.send(JSON.stringify({
+                wsAutomation_close.send(JSON.stringify({
                     sell: c.contract_id,
                     price: 0
                 }));
