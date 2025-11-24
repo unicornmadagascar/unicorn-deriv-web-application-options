@@ -365,7 +365,7 @@ document.addEventListener("DOMContentLoaded", () => {
               close: Number(o.close),
           };
 
-          if (!bar) return;  
+          if (!bar || candles === null || candles === undefined) return;  
      
           const last = candles[candles.length - 1];
 
