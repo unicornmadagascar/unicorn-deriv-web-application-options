@@ -1223,7 +1223,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!currentSymbol) return;
 
     const symbol_test = currentSymbol.slice(0,3);
-
+    
     function BC_connectWebSocket() {
       if (wsAutomation) { wsAutomation.close(); wsAutomation = null; }
       
