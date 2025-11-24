@@ -361,11 +361,11 @@ document.addEventListener("DOMContentLoaded", () => {
               time: openTime,
               open: Number(o.open),
               high: Number(o.high),
-              low: Number(o.low),
+              low: Number(o.low),   
               close: Number(o.close),
           };
 
-          if (!bar || candles === null || candles === undefined) return;  
+          if (!bar || candles === null || candles === undefined) return;   
      
           const last = candles[candles.length - 1];
 
