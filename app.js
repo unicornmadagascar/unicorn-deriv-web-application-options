@@ -1185,7 +1185,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
       }
 
-      for (let i = 0; i < repeat; i++) {
+      for (let i = 0; i < repeat; i++) {  
         wsROC.send(JSON.stringify({
           buy: 1,  
           price: stake.toFixed(2),
