@@ -410,7 +410,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ws.onopen = () => {
       console.log("Connecté");
       ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
-      setInterval(() => ws.send(JSON.stringify({ ping:1 })), 60000);
     };
 
     ws.onmessage = ({ data }) => {
@@ -446,10 +445,16 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
+      if (data.msg_type === "ping")
+      {
+       ws.send(JSON.stringify({ ping: 1 }));
+      }
+
       if (msg.msg_type === "error") {
         console.error("Erreur WS:", msg);   
         console.log("Erreur réseau ou payload");
-      }   
+      } 
+      
     };
 
     ws.onclose = () => console.log("Déconnecté");
