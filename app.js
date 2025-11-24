@@ -324,7 +324,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function connect(symbol,currentInterval,currentChartType) {
 
-    if (ws === null) { ws.close(); ws = null; }
+    if (ws) { ws.close(); ws = null; }
 
     if (!symbol) return;
 
