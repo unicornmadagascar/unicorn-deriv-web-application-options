@@ -1408,7 +1408,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const stake = parseFloat(stakeInput.value) || 1;
       const multiplier = parseInt(multiplierInput.value) || 40;
       const repeat = direction === "BUY"
-        ? (parseInt(buyNumber.value) || 1)
+        ? (parseInt(buyNumber.value) || 1)   
         : (parseInt(sellNumber.value) || 1);
 
       if ((typeof multiplier !== "number" && multiplier === "") || (typeof stake !== "number" && stake === "") || (typeof repeat !== "number" && repeat === "")) {
