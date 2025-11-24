@@ -1261,9 +1261,6 @@ document.addEventListener("DOMContentLoaded", () => {
           BC_handleTicks(data.tick);
           break;
 
-        case "ping":
-          wsAutomation.send(JSON.stringify({ ping: 1 }));
-          break;
       }
     }
 
@@ -1311,11 +1308,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     price: 0
                 }));
             }
-        }
-
-        if (data.ping && data.msg_type === "ping")
-        {
-          wsAutomation.send(JSON.stringify({ ping: 1 }));
         }
 
         // Confirmation d’un contrat fermé 
@@ -1446,7 +1438,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!wsAutomation || wsAutomation.readyState > 1) {
       BC_connectWebSocket();
     }
-  }
+  }  
 
   function stopAutomation() {   
     if (wsAutomation  && wsAutomation.readyState === WebSocket.OPEN) {  
