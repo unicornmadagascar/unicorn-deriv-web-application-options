@@ -366,7 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
           };
 
           if (!bar) return;  
-   
+     
           const last = candles[candles.length - 1];
 
           if (!last || last.time !== openTime) {
