@@ -68,7 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let connection_ws_htx = null;
   let wshistorical = null;
   let wsAutomation = null;
-  let wsIA = null;
   let wsContracts = null;
   let wsplContracts = null;
   let wsContracts__ = null;    
@@ -118,6 +117,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let rocContracts = [];
   let bcContracts = [];
   let rocProposal = null;
+  let AIProposal = null;
+  let AIContracts = null;
+  let wsAI = null;
   let contracttype__ = "";
   let contractid__;
   const MAX_HISTORY = 500; // max taille du buffer
@@ -151,6 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
  *  CONFIG GLOBAL
  *******************************************************************************************/
  let prices = [];
+ let price;
  let model;
  let smoothAngle = 0;
 
@@ -700,82 +703,110 @@ document.addEventListener("DOMContentLoaded", () => {
     wsOpenLines.onclose = () => console.log("❌ WS closed for open lines");
   }
 
-  /*******************************************************************************************
-  *  UTILITAIRES CALCUL EMA20 / ROC / ANGLE
-  *******************************************************************************************/
-  function computeEMA20(prices) {
-    const k = 2 / (20 + 1);
-    let ema = prices[0];
-    const out = [ema];
+  function AI() {
 
-    for (let i = 1; i < prices.length; i++) {
-        ema = prices[i] * k + ema * (1 - k);
-        out.push(ema);
-    }
-    return out;
-  }
+    /*******************************************************************************************
+    *  CONNECT WEBSOCKET
+    *******************************************************************************************/
+    function AI_connectWebSocket(model) {
 
-  function computeROC(priceNow, priceOld) {
-     return 100 * (priceNow - priceOld) / priceOld;
-  }
-
-  function computeAngle(emaBuffer, prevSmoothAngle, multiplicator = 0.65) {
-    const radToDeg = 180 / Math.PI;
-    const rawAngle = Math.atan(emaBuffer[0] - emaBuffer[1]) * radToDeg;
-    return multiplicator * rawAngle + (1 - multiplicator) * prevSmoothAngle;
-  }
-
-  /*******************************************************************************************
-  *  MODELE TENSORFLOW.JS LEGER
-  *******************************************************************************************/
-  async function buildModel() {
-    const model = tf.sequential();
-
-    model.add(tf.layers.gru({
-        units: 8,
-        inputShape: [3, 2],
-        returnSequences: false
-    }));
-
-    model.add(tf.layers.dense({ units: 8, activation: "relu" }));
-    model.add(tf.layers.dense({ units: 3, activation: "softmax" })); // BUY / SELL / NEUTRAL
-
-    model.compile({
-        optimizer: tf.train.adam(0.001),
-        loss: "categoricalCrossentropy",
-        metrics: ["accuracy"]
-    });
-
-    return model;
-  }
+      if (wsAI === null)
+      {
+       wsAI = new WebSocket(WS_URL);
+      }
   
-  /*******************************************************************************************
-  *  TRAILING STOP INTELLIGENT (Sans casser votre code)
-  *******************************************************************************************/
-  function openBuy(price, wsIA) {
-    activeTrade = {
+      if (wsAI && (wsAI.readyState === WebSocket.OPEN || wsAI.readyState === WebSocket.CONNECTING))
+      {
+       wsAI.onopen=()=>{ wsAI.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+
+      if (wsAI && (wsAI.readyState === WebSocket.CLOSED || wsAI.readyState === WebSocket.CLOSING))
+      {
+       wsAI = new WebSocket(WS_URL);
+       wsAI.onopen=()=>{ wsAI.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+
+      wsAI.onmessage = (msg) => AI_handleMessage(JSON.parse(msg.data), model, wsAI);   
+      wsAI.onclose = () => { setTimeout(AI_connectWebSocket, 500); };      
+      wsAI.onerror = (err) => { console.error("WebSocket error:", err); wsAI.close(); wsAI = null; setTimeout(AI_connectWebSocket, 500); };  
+    }
+
+    /*******************************************************************************************
+    *  UTILITAIRES CALCUL EMA20 / ROC / ANGLE
+    *******************************************************************************************/
+    function computeEMA20(prices) {
+      const k = 2 / (20 + 1);
+      let ema = prices[0];
+      const out = [ema];
+
+      for (let i = 1; i < prices.length; i++) {
+          ema = prices[i] * k + ema * (1 - k);
+          out.push(ema);
+      }
+      return out;
+    }
+
+    function computeROC(priceNow, priceOld) {
+       return 100 * (priceNow - priceOld) / priceOld;
+    }
+
+    function computeAngle(emaBuffer, prevSmoothAngle, multiplicator = 0.65) {
+      const radToDeg = 180 / Math.PI;
+      const rawAngle = Math.atan(emaBuffer[0] - emaBuffer[1]) * radToDeg;
+      return multiplicator * rawAngle + (1 - multiplicator) * prevSmoothAngle;
+    }
+
+    /*******************************************************************************************
+    *  MODELE TENSORFLOW.JS LEGER
+    *******************************************************************************************/
+    async function buildModel() {
+      const model = tf.sequential();
+
+      model.add(tf.layers.gru({
+          units: 8,
+          inputShape: [3, 2],
+          returnSequences: false
+      }));
+
+      model.add(tf.layers.dense({ units: 8, activation: "relu" }));
+      model.add(tf.layers.dense({ units: 3, activation: "softmax" })); // BUY / SELL / NEUTRAL
+
+      model.compile({
+          optimizer: tf.train.adam(0.001),
+          loss: "categoricalCrossentropy",
+          metrics: ["accuracy"]
+      });
+
+      return model;
+    }
+  
+    /*******************************************************************************************
+    *  TRAILING STOP INTELLIGENT (Sans casser votre code)
+    *******************************************************************************************/
+    function openBuy(price, wsAI) {
+      activeTrade = {
         type: "BUY",
         entry: price,
         sl: price - TRAILING_DISTANCE,
         status: "OPEN"
-    };
-    placeBuyContract(wsIA);     // votre fonction existante
-  }
+      };
+      AI_handleSignal("BUY",wsAI);     // votre fonction existante
+    }
 
-  function openSell(price, wsIA) {
-    activeTrade = {
-        type: "SELL",
-        entry: price,
-        sl: price + TRAILING_DISTANCE,
-        status: "OPEN"
-    };
-    placeSellContract(wsIA);    // votre fonction existante
-  }
+    function openSell(price, wsAI) {
+      activeTrade = {
+          type: "SELL",
+          entry: price,
+          sl: price + TRAILING_DISTANCE,
+          status: "OPEN"
+      };
+      AI_handleSignal("SELL",wsAI);    // votre fonction existante
+    }
 
-  function updateTrailingStop(currentPrice, wsIA) {
-    if (!activeTrade || activeTrade.status !== "OPEN") return;
+    function updateTrailingStop(currentPrice, wsAI) {
+      if (!activeTrade || activeTrade.status !== "OPEN") return;
 
-    if (activeTrade.type === "BUY") {
+      if (activeTrade.type === "BUY") {
         const newSL = currentPrice - TRAILING_DISTANCE;
 
         if (newSL > activeTrade.sl && currentPrice > activeTrade.entry) {
@@ -785,42 +816,42 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (currentPrice <= activeTrade.sl) {
             console.log("STOP LOSS BUY HIT => closing");
-            closeActiveTrade(wsIA);
+            closeActiveTrade(wsAI);
         }
-    }
+      }
 
-    if (activeTrade.type === "SELL") {
-        const newSL = currentPrice + TRAILING_DISTANCE;
+      if (activeTrade.type === "SELL") {
+          const newSL = currentPrice + TRAILING_DISTANCE;
 
-        if (newSL < activeTrade.sl && currentPrice < activeTrade.entry) {
+          if (newSL < activeTrade.sl && currentPrice < activeTrade.entry) {
             activeTrade.sl = newSL;
             console.log("TSL SELL moved to:", activeTrade.sl.toFixed(5));
-        }
+          }
 
-        if (currentPrice >= activeTrade.sl) {
-            console.log("STOP LOSS SELL HIT => closing");
-            closeActiveTrade(wsIA);
-        }
+          if (currentPrice >= activeTrade.sl) {
+              console.log("STOP LOSS SELL HIT => closing");
+              closeActiveTrade(wsAI);
+          }
+      }
     }
-  }
 
-  function closeActiveTrade(wsIA) {
-    if (!activeTrade) return;
+    function closeActiveTrade(wsAI) {
+      if (!activeTrade) return;
 
-    closeContractWS(wsIA);  // votre fonction existante
-    console.log("TRADE CLOSED BY STOP LOSS");
+      closeContractWS(wsAI);  // votre fonction existante
+      console.log("TRADE CLOSED BY STOP LOSS");
 
-    activeTrade = null;
-  } 
+      activeTrade = null;
+    } 
 
-    function closeContractWS(wsIA) {
+    function closeContractWS(wsAI) {
 
       if (!activeTrade) {
           console.log("Aucun contrat actif à fermer.");
           return;
       }
 
-      if (!activeTrade.contractId) {
+      if (!AIProposal.contractId) {
         console.log("Aucun contractId enregistré pour le contrat actif.");
         activeTrade = null;
         return;
@@ -842,51 +873,77 @@ document.addEventListener("DOMContentLoaded", () => {
       activeTrade = null;
     }
 
-    function IAhandleMessage(data) {
+    function AI_handleMessage(data, model, wsAI) {
       switch (data.msg_type) {
         case "authorize":
-          wsROC.send(JSON.stringify({ ticks: currentSymbol, subscribe: 1 }));
-          wsROC.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
-          wsROC.send(JSON.stringify({ portfolio: 1 }));
+          wsAI.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
+          wsAI.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
+          wsAI.send(JSON.stringify({ portfolio: 1 }));  
           break;
 
         case "portfolio":   
-          rocContracts = data.portfolio.contracts;   
-          if (rocContracts === undefined || rocContracts === null)
+          AIContracts = data.portfolio.contracts;   
+          if (AIContracts === undefined || AIContracts === null)
              return; 
 
           break;
 
         case "proposal_open_contract":
-          rocProposal = data.proposal_open_contract;
-          if (rocProposal === undefined || rocProposal === null)
+          AIProposal = data.proposal_open_contract;
+          if (AIProposal === undefined || AIProposal === null)
              return;
 
           break;
-
+        
         case "tick":
-          IAhandleTicks(data.tick);
+          const data__ = data.tick;
+          price = parseFloat(data__.tick.quote);
+          prices.push(price);
+          maincontrol(price, prices, model, wsAI);
+          break;
+
+        case "ohlc":
+          const O = data.ohlc;
+          price = parseFloat(O.close);
+          prices.push(price);
+          maincontrol(price, prices, model, wsAI);
           break;
         
         case "ping":
-          wsROC.send(JSON.stringify({ ping: 1 }));
+          wsAI.send(JSON.stringify({ ping: 1 }));
           break;  
       }
     }
 
-    function IA_handleSignal(direction) {
+     async function maincontrol(price, prices, model, wsIA)
+    {
+      const res = await processIncomingData(prices, model, wsIA);
+      if (!res) return;
+
+      console.log("ROC:", res.roc.toFixed(4), 
+                  "Angle:", smoothAngle.toFixed(2),
+                  "Action:", res.action);
+
+      if (res.action === "BUY") openBuy(price, wsIA);
+      if (res.action === "SELL") openSell(price, wsIA);
+
+      // TRAILING STOP À CHAQUE TICK
+      updateTrailingStop(price, wsIA);
+    }
+
+    function AI_handleSignal(direction) {
      const oppositeType = direction === "BUY" ? "MULTDOWN" : "MULTUP";
       const mainType = direction === "BUY" ? "MULTUP" : "MULTDOWN";
 
       // 1. Fermer les contrats opposés
-      IAContracts
+      AIContracts
         .filter(c => c.symbol === currentSymbol && c.contract_type === oppositeType)
         .forEach(c => {
-          wsROC.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+          wsAI.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
         });
 
       // 2. Vérifier si un contrat actif existe avant d'ouvrir
-      if (rocProposal?.contract_id) {
+      if (AIProposal?.contract_id) {
         return;
       }
 
@@ -902,7 +959,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       for (let i = 0; i < repeat; i++) {
-        wsROC.send(JSON.stringify({
+        wsAI.send(JSON.stringify({
           buy: 1,
           price: stake.toFixed(2),
           parameters: {
@@ -956,48 +1013,24 @@ document.addEventListener("DOMContentLoaded", () => {
       return { roc, smoothAngle, action };
     }
 
-  /*******************************************************************************************
-   *  SYSTEME WEBSOCKET DERIV COMPLET
-   *******************************************************************************************/
-   async function start() {
+   /*******************************************************************************************
+    *  SYSTEME WEBSOCKET DERIV COMPLET
+    *******************************************************************************************/
+    async function start() {
+
       model = await buildModel();
 
-      const wsIA = new WebSocket(WS_URL);
-
-      wsIA.onopen = () => {
-          wsIA.send(JSON.stringify({
-              ticks_history: currentSymbol,
-              style: styleType(currentChartType),      // changer "candles" si vous voulez
-              count: 1000,
-              end: "latest",
-              granularity: convertTF(currentInterval),
-              subscribe: 1
-          }));
-      };
-
-      wsIA.onmessage = async (msg) => {
-          const data = JSON.parse(msg.data);
-
-          if (data.tick) {
-              const price = parseFloat(data.tick.quote);
-              prices.push(price);
-
-              const res = await processIncomingData(prices, model, wsIA);
-              if (!res) return;
-
-              console.log("ROC:", res.roc.toFixed(4), 
-                          "Angle:", smoothAngle.toFixed(2),
-                          "Action:", res.action);
-
-              if (res.action === "BUY") openBuy(price, wsIA);
-              if (res.action === "SELL") openSell(price, wsIA);
-
-              // TRAILING STOP À CHAQUE TICK
-              updateTrailingStop(price, wsIA);
-          }
-      };
+      if (!wsAI || wsAI.readyState > 1)
+       {
+        AI_connectWebSocket(model);
+       }
     }
-
+    
+    /*******************************************************************************************
+    *  LANCEMENT DU SYSTEME
+    *******************************************************************************************/
+    start();
+  }
 
   function stop() {
     if (wsIA && wsIA.readyState === WebSocket.OPEN) {
@@ -3201,7 +3234,7 @@ window.addEventListener("error", function (e) {
   // IA Automation
   setInterval(() => {
     if (IAautomationRunning === true) {
-     start();
+     AI();
     }
     else if (IAautomationRunning === false) {
      stop();
