@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ws.onopen = () => {
       console.log("Connecté");
       ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
-      ws.send(JSON.parse({ ping: 1 }));
+      ws.send(JSON.stringify({ ping: 1 }));
     };
 
     ws.onmessage = ({ data }) => {  
