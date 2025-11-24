@@ -1445,7 +1445,7 @@ document.addEventListener("DOMContentLoaded", () => {
        // Envoyer unsubscribe avant de fermer
        wsAutomation.send(JSON.stringify({ forget_all: ["Candles","ticks"] }));
        wsAutomation.close();
-       wsAutomation = null;
+       wsAutomation = null;   
     }   
   }
 
