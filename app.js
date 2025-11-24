@@ -279,7 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
         adjust_start_time: 1,
         style: styleType(currentChartType),
         granularity: convertTF(currentInterval),  
-        count: 430,
+        count: 750,
         subscribe: 1,
         end: "latest",   
         start: 1
