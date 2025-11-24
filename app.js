@@ -3235,7 +3235,7 @@ window.addEventListener("error", function (e) {
   setInterval(() => {
     if (IAautomationRunning === true) {
      AI();
-    }
+    }   
     else if (IAautomationRunning === false) {
      stop();
     }
