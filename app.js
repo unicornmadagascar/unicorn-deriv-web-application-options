@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let multiplier = 40;
   let stake = 1;
   let buyNum = 1;
-  let sellNum = 1;
+  let sellNum = 1;   
   let tp_contract = 0;
   let sl_contract = 0;
   //------
