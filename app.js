@@ -336,7 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-      ws.onopen = () => {
+      ws.onopen = () => {   
         console.log("Connecté");
         ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
       };
