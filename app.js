@@ -1236,7 +1236,7 @@ document.addEventListener("DOMContentLoaded", () => {
       {
        wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };   
       }
-
+   
       if (wsAutomation && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING))
       {
        wsAutomation = new WebSocket(WS_URL);
