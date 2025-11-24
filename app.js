@@ -133,6 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let style_type = "ticks";
   let candlesData = [];
   let candlesCache = [];
+  let candles = [];
   let cache = [];
   //------
   let multiplier = 40;
