@@ -1033,10 +1033,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function stop() {
-    if (wsIA && wsIA.readyState === WebSocket.OPEN) {
-      wsIA.send(JSON.stringify({ forget_all: ["candles", "ticks"] }));
-      wsIA.close();
-      wsIA = null;
+    if (wsAI && wsAI.readyState === WebSocket.OPEN) {
+      wsAI.send(JSON.stringify({ forget_all: ["candles", "ticks"] }));
+      wsAI.close();
+      wsAI = null;
      }
   }
   
