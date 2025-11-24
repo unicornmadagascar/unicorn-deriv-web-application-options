@@ -368,7 +368,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!bar || candles === null || candles === undefined) return;   
      
           const last = candles[candles.length - 1];
-
+   
           if (!last || last.time !== openTime) {
              // Nouvelle bougie
              candles.push(bar);
