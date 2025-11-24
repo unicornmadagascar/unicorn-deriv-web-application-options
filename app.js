@@ -718,6 +718,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (wsAI === null)
       {
        wsAI = new WebSocket(WS_URL);
+       wsAI.onopen=()=>{ wsAI.send(JSON.stringify({ authorize: TOKEN })); };
       }
   
       if (wsAI && (wsAI.readyState === WebSocket.OPEN || wsAI.readyState === WebSocket.CONNECTING))
@@ -1055,6 +1056,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (wsROC === null)
       {
        wsROC = new WebSocket(WS_URL);
+       wsROC.onopen=()=>{ wsROC.send(JSON.stringify({ authorize: TOKEN })); };
       }
   
       if (wsROC && (wsROC.readyState === WebSocket.OPEN || wsROC.readyState === WebSocket.CONNECTING))
