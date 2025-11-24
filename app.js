@@ -52,6 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let totalPL = 0; // cumul des profits et pertes
   let BCautomationRunning = false;
   let ROCautomationRunning = false;
+  let IAautomationRunning = false;
   let smoothVol = 0;
   let smoothTrend = 0;
   let ws=null;
@@ -67,6 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let connection_ws_htx = null;
   let wshistorical = null;
   let wsAutomation = null;
+  let wsIA = null;
   let wsContracts = null;
   let wsplContracts = null;
   let wsContracts__ = null;    
@@ -144,7 +146,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- NEW: current symbol & pending subscribe ---
   let currentSymbol = "cryBTCUSD"; // symbole par défaut
   let pendingSubscribe = null;
-  let authorized = false;      
+  let authorized = false;  
+  /*******************************************************************************************
+ *  CONFIG GLOBAL
+ *******************************************************************************************/
+ let prices = [];
+ let model;
+ let smoothAngle = 0;
+
+ // TRAILING STOP CONFIG
+ let activeTrade = null;
+ const TRAILING_DISTANCE = 0.0005;  // Ajustez selon votre actif    
   // Exemple de données
 
   const SYMBOLS = [
@@ -688,11 +700,209 @@ document.addEventListener("DOMContentLoaded", () => {
     wsOpenLines.onclose = () => console.log("❌ WS closed for open lines");
   }
 
+  /*******************************************************************************************
+  *  UTILITAIRES CALCUL EMA20 / ROC / ANGLE
+  *******************************************************************************************/
+  function computeEMA20(prices) {
+    const k = 2 / (20 + 1);
+    let ema = prices[0];
+    const out = [ema];
+
+    for (let i = 1; i < prices.length; i++) {
+        ema = prices[i] * k + ema * (1 - k);
+        out.push(ema);
+    }
+    return out;
+  }
+
+  function computeROC(priceNow, priceOld) {
+     return 100 * (priceNow - priceOld) / priceOld;
+  }
+
+  function computeAngle(emaBuffer, prevSmoothAngle, multiplicator = 0.65) {
+    const radToDeg = 180 / Math.PI;
+    const rawAngle = Math.atan(emaBuffer[0] - emaBuffer[1]) * radToDeg;
+    return multiplicator * rawAngle + (1 - multiplicator) * prevSmoothAngle;
+  }
+
+  /*******************************************************************************************
+  *  MODELE TENSORFLOW.JS LEGER
+  *******************************************************************************************/
+  async function buildModel() {
+    const model = tf.sequential();
+
+    model.add(tf.layers.gru({
+        units: 8,
+        inputShape: [3, 2],
+        returnSequences: false
+    }));
+
+    model.add(tf.layers.dense({ units: 8, activation: "relu" }));
+    model.add(tf.layers.dense({ units: 3, activation: "softmax" })); // BUY / SELL / NEUTRAL
+
+    model.compile({
+        optimizer: tf.train.adam(0.001),
+        loss: "categoricalCrossentropy",
+        metrics: ["accuracy"]
+    });
+
+    return model;
+  }
   
+  /*******************************************************************************************
+  *  TRAILING STOP INTELLIGENT (Sans casser votre code)
+  *******************************************************************************************/
+  function openBuy(price, ws) {
+    activeTrade = {
+        type: "BUY",
+        entry: price,
+        sl: price - TRAILING_DISTANCE,
+        status: "OPEN"
+    };
+    placeBuyContract(ws);     // votre fonction existante
+  }
+
+  function openSell(price, ws) {
+    activeTrade = {
+        type: "SELL",
+        entry: price,
+        sl: price + TRAILING_DISTANCE,
+        status: "OPEN"
+    };
+    placeSellContract(ws);    // votre fonction existante
+  }
+
+  function updateTrailingStop(currentPrice, ws) {
+    if (!activeTrade || activeTrade.status !== "OPEN") return;
+
+    if (activeTrade.type === "BUY") {
+        const newSL = currentPrice - TRAILING_DISTANCE;
+
+        if (newSL > activeTrade.sl && currentPrice > activeTrade.entry) {
+            activeTrade.sl = newSL;
+            console.log("TSL BUY moved to:", activeTrade.sl.toFixed(5));
+        }
+
+        if (currentPrice <= activeTrade.sl) {
+            console.log("STOP LOSS BUY HIT => closing");
+            closeActiveTrade(ws);
+        }
+    }
+
+    if (activeTrade.type === "SELL") {
+        const newSL = currentPrice + TRAILING_DISTANCE;
+
+        if (newSL < activeTrade.sl && currentPrice < activeTrade.entry) {
+            activeTrade.sl = newSL;
+            console.log("TSL SELL moved to:", activeTrade.sl.toFixed(5));
+        }
+
+        if (currentPrice >= activeTrade.sl) {
+            console.log("STOP LOSS SELL HIT => closing");
+            closeActiveTrade(ws);
+        }
+    }
+  }
+
+  function closeActiveTrade(wsIA) {
+    if (!activeTrade) return;
+
+    closeContractWS(ws);  // votre fonction existante
+    console.log("TRADE CLOSED BY STOP LOSS");
+
+    activeTrade = null;
+  } 
+
+  /*******************************************************************************************
+  *  PIPELINE : DATA → EMA20 → ROC → ANGLE → PREDICTION → TRADE
+  *******************************************************************************************/
+  async function processIncomingData(prices, model, ws) {
+    if (prices.length < 25) return;
+
+    const ema20 = computeEMA20(prices);
+    const last3ema = ema20.slice(-3);
+
+    const roc = computeROC(last3ema[2], last3ema[0]);
+    smoothAngle = computeAngle([last3ema[2], last3ema[1]], smoothAngle);
+
+    const inputTensor = tf.tensor([[
+        [roc, smoothAngle],
+        [roc, smoothAngle],
+        [roc, smoothAngle]
+    ]]);
+
+    const prediction = model.predict(inputTensor);
+    const probs = await prediction.data();
+
+    const buyProb = probs[0];
+    const sellProb = probs[1];
+
+    let action = "HOLD";
+
+    if (roc > 0.01 && smoothAngle > 70 && smoothAngle <= 89 && buyProb > 0.45) {
+        action = "BUY";
+    }
+
+    if (roc < -0.01 && smoothAngle < -70 && smoothAngle >= -89 && sellProb > 0.45) {
+        action = "SELL";
+    }
+
+    return { roc, smoothAngle, action };
+  }
+
+/*******************************************************************************************
+ *  SYSTEME WEBSOCKET DERIV COMPLET
+ *******************************************************************************************/
+ async function start() {
+    model = await buildModel();
+
+    const wsIA = new WebSocket(WS_URL);
+
+    wsIA.onopen = () => {
+        wsIA.send(JSON.stringify({
+            ticks_history: currentSymbol,
+            style: styleType(currentChartType),      // changer "candles" si vous voulez
+            count: 1000,
+            end: "latest",
+            subscribe: 1
+        }));
+    };
+
+    wsIA.onmessage = async (msg) => {
+        const data = JSON.parse(msg.data);
+
+        if (data.tick) {
+            const price = parseFloat(data.tick.quote);
+            prices.push(price);
+
+            const res = await processIncomingData(prices, model, wsIA);
+            if (!res) return;
+
+            console.log("ROC:", res.roc.toFixed(4), 
+                        "Angle:", smoothAngle.toFixed(2),
+                        "Action:", res.action);
+
+            if (res.action === "BUY") openBuy(price, wsIA);
+            if (res.action === "SELL") openSell(price, wsIA);
+
+            // TRAILING STOP À CHAQUE TICK
+            updateTrailingStop(price, wsIA);
+        }
+    };
+  }
+
+  function stop() {
+    if (wsIA && wsIA.readyState === WebSocket.OPEN) {
+      wsIA.send(JSON.stringify({ forget_all: ["candles", "ticks"] }));
+      wsIA.close();
+      wsIA = null;
+     }
+  }
+  
+
   function RocstartAutomation() {
     
     if (!currentSymbol) return;
-
     const symbolPrefix = currentSymbol.slice(0, 6);
 
     function connectWebSocket() {
@@ -854,8 +1064,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function RocstopAutomation() {
     if (wsROC  && wsROC.readyState === WebSocket.OPEN) {
        // Envoyer unsubscribe avant de fermer
-       wsROC.send(JSON.stringify({ forget_all: "ticks" }));
+       wsROC.send(JSON.stringify({ forget_all: ["candles","ticks"] }));
        wsROC.close();
+       wsROC = null;
     }
   }
 
@@ -1044,7 +1255,6 @@ document.addEventListener("DOMContentLoaded", () => {
       bcContracts
         .filter(c => c.symbol === currentSymbol && c.contract_type === oppositeType)   
         .forEach(c => {
-          console.log("🛑 Fermeture contrat", oppositeType);
           wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
         });
 
@@ -1059,8 +1269,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const repeat = direction === "BUY"
         ? (parseInt(buyNumber.value) || 1)
         : (parseInt(sellNumber.value) || 1);
-
-      console.log(`📤 Ouverture d’un contrat ${direction} (${mainType})`);
 
       if ((typeof multiplier !== "number" && multiplier === "") || (typeof stake !== "number" && stake === "") || (typeof repeat !== "number" && repeat === "")) {
           console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
@@ -2572,11 +2780,33 @@ function extractValue(event, key) {
       BCtoggleAutomationBtn.style.color = "white";
       BCautomationRunning = true;
       ROCtoggleAutomationBtn.disabled = true;
+      IAtoggleAutomationBtn.disabled = false;
     } else {
       BCtoggleAutomationBtn.textContent = "Launch Automation";
       BCtoggleAutomationBtn.style.background = "white";  
       BCtoggleAutomationBtn.style.color = "gray"; 
       BCautomationRunning = false;  
+      ROCtoggleAutomationBtn.disabled = false;
+      IAtoggleAutomationBtn.disabled = false;
+    }
+  });
+
+   // === Automation Toggle ===
+  const IAtoggleAutomationBtn = document.getElementById("IAtoggleAutomation");
+  IAtoggleAutomationBtn.addEventListener("click", () => {
+    IAautomationRunning = !IAautomationRunning;
+    if (IAautomationRunning) {
+      IAtoggleAutomationBtn.textContent = "Stop IA Automation";
+      IAtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
+      IAtoggleAutomationBtn.style.color = "white";
+      IAautomationRunning = true;
+      ROCtoggleAutomationBtn.disabled = true;
+      BCtoggleAutomationBtn.disabled = true;
+    } else {
+      IAtoggleAutomationBtn.textContent = "Launch IA Automation";
+      IAtoggleAutomationBtn.style.background = "white";  
+      IAtoggleAutomationBtn.style.color = "gray"; 
+      IAautomationRunning = false;  
       ROCtoggleAutomationBtn.disabled = false;
     }
   });
@@ -2591,12 +2821,14 @@ function extractValue(event, key) {
       ROCtoggleAutomationBtn.style.color = "white";
       ROCautomationRunning = true;
       BCtoggleAutomationBtn.disabled = true;
+      IAtoggleAutomationBtn.disabled = false;
     } else {
       ROCtoggleAutomationBtn.textContent = "Launch ROC Automation";
       ROCtoggleAutomationBtn.style.background = "white";   
       ROCtoggleAutomationBtn.style.color = "gray";
       ROCautomationRunning = false;
       BCtoggleAutomationBtn.disabled = false;
+      IAtoggleAutomationBtn.disabled = false;
     }
   });
 
@@ -2857,6 +3089,16 @@ window.addEventListener("error", function (e) {
       connectDeriv_table();
     }
   }, 300);
+
+  // IA Automation
+  setInterval(() => {
+    if (IAautomationRunning === true) {
+     start();
+    }
+    else if (IAautomationRunning === false) {
+     stop();
+    }
+  },500);
 
   // BC Automation
   setInterval(() => {
