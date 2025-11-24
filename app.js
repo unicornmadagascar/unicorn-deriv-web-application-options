@@ -1187,7 +1187,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       for (let i = 0; i < repeat; i++) {
         wsROC.send(JSON.stringify({
-          buy: 1,
+          buy: 1,  
           price: stake.toFixed(2),
           parameters: {
             contract_type: mainType,
