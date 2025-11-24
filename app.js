@@ -1041,7 +1041,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   
 
-  function RocstartAutomation() {
+  function RocstartAutomation() {   
     
     if (!currentSymbol) return;
     const symbolPrefix = currentSymbol.slice(0, 6);
