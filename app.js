@@ -337,6 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ws.onopen = () => {
       console.log("Connecté");
       ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
+      ws.send(JSON.parse({ ping: 1 }));
     };
 
     ws.onmessage = ({ data }) => {  
@@ -1271,6 +1272,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (wsAutomation === null)
       {
        wsAutomation = new WebSocket(WS_URL);
+       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
       }
   
       if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
