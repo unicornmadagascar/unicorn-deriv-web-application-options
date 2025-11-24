@@ -1040,7 +1040,6 @@ document.addEventListener("DOMContentLoaded", () => {
      }
   }
   
-
   function RocstartAutomation() {   
     
     if (!currentSymbol) return;
