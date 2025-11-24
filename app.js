@@ -1311,7 +1311,7 @@ document.addEventListener("DOMContentLoaded", () => {
        wsAutomation_close.onopen=()=>{ wsAutomation_close.send(JSON.stringify({ authorize: TOKEN })); };
       }
 
-      wsAutomation_close.onclose = () => { setTimeout(closeAllContracts,500); };
+      wsAutomation_close.onclose = () => { setTimeout(closeAllContracts,500); };   
       wsAutomation_close.onmessage = (e) => {
         const data = JSON.parse(e.data);
 
