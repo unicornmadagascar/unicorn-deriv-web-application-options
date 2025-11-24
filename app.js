@@ -335,6 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Connexion...");      
 
     ws = new WebSocket(WS_URL);
+    
     ws.onopen = () => {   
       console.log("Connecté");
       ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
