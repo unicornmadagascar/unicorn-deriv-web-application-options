@@ -133,7 +133,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let style_type = "ticks";
   let candlesData = [];
   let candlesCache = [];
-  let candles = [];  
   let cache = [];
   //------
   let multiplier = 40;
@@ -325,36 +324,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function connect(symbol,currentInterval,currentChartType) {
 
+    if (ws === null) { ws.close(); ws = null; }
+
     if (!symbol) return;
 
     if (currentChartType !== "candlestick") return;
 
-    if (ws === null) {
-      ws = new WebSocket(WS_URL);
-      ws.onopen = () => {   
-         console.log("Connecté");
-         ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
-      };
-    }
-
-    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-      ws.onopen = () => {   
-        console.log("Connecté");
-        ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
-      };
-    }
-
-    if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING)) {
-      ws = new WebSocket(WS_URL);
-      ws.onopen = () => {
-        console.log("Connecté");
-        ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
-      };
-    }
-
     currentSymbol = symbol;   
     initChart(currentChartType);   
-    console.log("Connexion...");     
+    console.log("Connexion...");    
+
+    ws = new WebSocket(WS_URL);
+    ws.onopen = () => {   
+      console.log("Connecté");
+      ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
+    };
 
     ws.onmessage = ({ data }) => {  
        const msg = JSON.parse(data);
