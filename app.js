@@ -332,7 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     currentSymbol = symbol;   
     initChart(currentChartType);   
-    console.log("Connexion...");    
+    console.log("Connexion...");      
 
     ws = new WebSocket(WS_URL);
     ws.onopen = () => {   
