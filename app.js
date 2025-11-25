@@ -247,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
         downColor: "#ffffff",
         borderDownColor: "#4d4b4bff",   
         wickDownColor: "#4d4b4bff",
-      });   
+      });      
     } else if (currentChartType === "line") {
       currentSeries = chart.addLineSeries({      
         color: "#2962FF",   
