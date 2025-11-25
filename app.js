@@ -155,8 +155,8 @@ document.addEventListener("DOMContentLoaded", () => {
  *******************************************************************************************/
  let prices = [];
  let price;
- let model;
  let smoothAngle = 0;
+ let model = null;
 
  // TRAILING STOP CONFIG
  let activeTrade = null;
@@ -768,7 +768,8 @@ document.addEventListener("DOMContentLoaded", () => {
     *  MODELE TENSORFLOW.JS LEGER
     *******************************************************************************************/
     async function buildModel() {
-      const model = tf.sequential();
+      await tf.ready();
+      model = tf.sequential();
 
       model.add(tf.layers.gru({
           units: 8,
@@ -1002,10 +1003,13 @@ document.addEventListener("DOMContentLoaded", () => {
           [roc, smoothAngle]
       ]]);
 
+      if (!model) {
+        console.warn("⚠️ Modèle non chargé, skip tick");
+        return;
+      }
+
       const prediction = model.predict(inputTensor);
       const probs = await prediction.data();
-
-      console.log("prediction :" + prediction);
 
       const buyProb = probs[0];
       const sellProb = probs[1];
