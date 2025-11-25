@@ -1278,7 +1278,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (data.msg_type === "proposal_open_contract") 
         {
-           proposal__ = data.proposal_open_contract;
+          if (data.proposal_open_contract) {
+             proposal__ = data.proposal_open_contract;
+          } else {   
+             return; // On ignore ce message car il n'a pas de POC
+          }
         } 
         
         if (data.msg_type === "tick")
