@@ -1019,22 +1019,22 @@ document.addEventListener("DOMContentLoaded", () => {
         const buyProb = probs[0];
         const sellProb = probs[1];
 
+        let action = "HOLD";
+
+        if (roc > 0.0025 && smoothAngle > 40 && smoothAngle <= 89 && buyProb > 0.45) {
+          action = "BUY";  
+        }
+
+        if (roc < -0.0025 && smoothAngle < -40 && smoothAngle >= -89 && sellProb > 0.45) {
+          action = "SELL";    
+        }
+
       } catch (err) {
          console.error("❌ Erreur pendant predict() :", err);
           
          // Si model bug → on le recharge
          model = await buildModel();
          return;
-      }
-
-      let action = "HOLD";
-
-      if (roc > 0.0025 && smoothAngle > 40 && smoothAngle <= 89 && buyProb > 0.45) {
-          action = "BUY";  
-      }
-
-      if (roc < -0.0025 && smoothAngle < -40 && smoothAngle >= -89 && sellProb > 0.45) {
-        action = "SELL";    
       }
 
       return { roc, smoothAngle, action };
