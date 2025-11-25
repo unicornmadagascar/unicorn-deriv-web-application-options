@@ -241,12 +241,12 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     } else if (currentChartType === "candlestick") {
       currentSeries = chart.addCandlestickSeries({
-        upColor: "#26a69a",
-        borderUpColor: "#26a69a",
-        wickUpColor: "#26a69a",
-        downColor: "#ef5350",
-        borderDownColor: "#ef5350",
-        wickDownColor: "#ef5350",   
+        upColor: "rgba(153, 51, 255, 0.65)",
+        borderUpColor: "rgba(153, 51, 255, 0.95)",
+        wickUpColor: "rgba(204, 153, 255, 1)",
+        downColor: "rgba(255, 255, 255, 0.42)",
+        borderDownColor: "rgba(255, 255, 255, 0.75)",
+        wickDownColor: "rgba(240, 240, 240, 1)",
       });
     } else if (currentChartType === "line") {
       currentSeries = chart.addLineSeries({
