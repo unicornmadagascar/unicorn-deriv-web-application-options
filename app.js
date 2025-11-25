@@ -1019,7 +1019,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const probs = await prediction.data();   
 
         const buyProb = probs[0];
-        const sellProb = probs[1];
+        const sellProb = probs[1];  
 
         if (roc > 0.0025 && smoothAngle > 40 && smoothAngle <= 89 && buyProb > 0.45) {
           action = "BUY";  
