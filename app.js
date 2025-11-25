@@ -1885,7 +1885,7 @@ closeAll.onclick=()=>{
           break;
         case "proposal_open_contract":
           handleContractDetails(data);
-          break;
+          break;  
         case "sell":
           console.log("💰 Sell response:", data);
           break;
