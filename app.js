@@ -1271,14 +1271,18 @@ document.addEventListener("DOMContentLoaded", () => {
          wsAutomation.send(JSON.stringify({ portfolio: 1 }));
         }
 
-        if (data.msg_type === "portfolio") 
+        if (data.msg_type === "portfolio" && data.portfolio) 
         {
-          contracts = data.portfolio.contracts;
+          contracts = data.portfolio.contracts || [];
         } 
 
-        if (data.msg_type === "proposal_open_contract") 
+        if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) 
         {
-          proposal__ = data.proposal_open_contract;
+          if(data.proposal_open_contract) {
+            proposal__ = data.proposal_open_contract;
+          } else {
+            return;
+          }
         } 
         
         if (data.msg_type === "tick")
