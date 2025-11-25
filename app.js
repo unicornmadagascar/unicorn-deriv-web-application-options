@@ -1283,7 +1283,7 @@ document.addEventListener("DOMContentLoaded", () => {
           } else {
             return;
           }
-        } 
+        }    
         
         if (data.msg_type === "tick")
         {
