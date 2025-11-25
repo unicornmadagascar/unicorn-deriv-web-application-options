@@ -1018,9 +1018,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const buyProb = probs[0];
         const sellProb = probs[1];
+
       } catch (err) {
          console.error("❌ Erreur pendant predict() :", err);
-        
+          
          // Si model bug → on le recharge
          model = await buildModel();
          return;
