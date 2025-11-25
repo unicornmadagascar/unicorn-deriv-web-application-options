@@ -241,8 +241,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     } else if (currentChartType === "candlestick") {
       currentSeries = chart.addCandlestickSeries({
-        upColor: "#9b36ff",
-        borderUpColor: "#c27dff",
+        upColor: "rgba(189, 6, 221, 1)",
+        borderUpColor: "rgba(189, 6, 221, 1)",
         wickUpColor: "#d4adff",
         downColor: "#ffffff",
         borderDownColor: "#4d4b4bff",
