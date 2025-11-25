@@ -839,8 +839,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
           if (mode === "candles") {
               // use close price from candle
-              if (prices[i] && prices[i].close !== undefined) {
-                v = Number(prices[i].close);
+              if (prices[i] && prices[i] !== undefined) {
+                v = Number(prices[i]);
               }
           }
 
