@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
         borderUpColor: "rgba(189, 6, 221, 1)",
         wickUpColor: "#d4adff",
         downColor: "#ffffff",
-        borderDownColor: "#4d4b4bff",
+        borderDownColor: "#4d4b4bff",   
         wickDownColor: "#4d4b4bff",
       });
     } else if (currentChartType === "line") {
