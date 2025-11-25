@@ -826,15 +826,43 @@ document.addEventListener("DOMContentLoaded", () => {
    /*******************************************************************************************
     *  PREDICT ROC MODEL
     *******************************************************************************************/
-   function predictROC(model, prices) {
-      if (prices.length < 21) return null;
+   function predictROC(model, prices, mode = "ticks") {
+      const raw = [];
 
-      const window = prices.slice(-21);
+      for (let i = 0; i < prices.length; i++) {
+          let v;
 
-      const input = tf.tensor3d([window], [1, 21, 1]);
+          if (mode === "ticks") {
+              // value is directly the tick price
+              v = Number(prices[i]);
+          }
+
+          if (mode === "candles") {
+              // use close price from candle
+              if (prices[i] && prices[i].close !== undefined) {
+                v = Number(prices[i].close);
+              }
+          }
+
+          if (!isNaN(v)) raw.push(v);
+      }
+
+      if (raw.length < 21) return null;
+
+      const window = raw.slice(-21);
+
+      const input = tf.tensor3d(
+          [window.map(v => [v])],
+          [1, 21, 1]
+      );
+
       const output = model.predict(input);
+      const result = output.dataSync()[0];
 
-      return output.dataSync()[0];
+      input.dispose();
+      output.dispose();
+
+      return result;
    }
 
    /*******************************************************************************************
@@ -877,14 +905,14 @@ document.addEventListener("DOMContentLoaded", () => {
           const data__ = data.tick;
           price = parseFloat(data__.tick.quote);
           prices.push(price);
-          maincontrol(price, prices, model, wsAI);
+          maincontrol(price, prices, model, wsAI, "ticks");
           break;
 
         case "ohlc":
           const O = data.ohlc;
           price = parseFloat(O.close);
           prices.push(price);
-          maincontrol(price, prices, model, wsAI);
+          maincontrol(price, prices, model, wsAI, "candles");
           break;
         
         case "ping":
@@ -943,7 +971,7 @@ document.addEventListener("DOMContentLoaded", () => {
      /*******************************************************************************************
     *  MAIN CONTROL
     *******************************************************************************************/
-    async function maincontrol(price, prices, model, wsIA)
+    async function maincontrol(price, prices, model, wsIA, mode)
     {
       if (prices.length > 2000) prices.shift();
 
@@ -954,7 +982,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // Predict ROC live
-      const predROC = predictROC(model, prices);
+      const predROC = predictROC(model, prices, mode);
       if (predROC === null) return;
 
       console.log("ROC prédit :", predROC.toFixed(5));
