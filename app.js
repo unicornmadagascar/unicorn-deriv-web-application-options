@@ -1335,8 +1335,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     ));
                   }
-                  setTimeout(() => {     
-                  },5000);
                 }
                 else
                 {
@@ -1404,8 +1402,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     ));
                   }
-                  setTimeout(() => {
-                  },5000);
                  }
                  else
                  {
@@ -1443,7 +1439,7 @@ document.addEventListener("DOMContentLoaded", () => {
              }
            }   // if (it)
            
-           if (tickHistory.length > 700) {
+           if (tickHistory.length > 700) {  
              tickHistory.splice(0,20);
            }
         }  
