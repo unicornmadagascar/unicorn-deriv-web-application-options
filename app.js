@@ -244,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
         upColor: "rgba(213, 11, 248, 1)",
         borderUpColor: "rgba(213, 11, 248, 1)",
         wickUpColor: "#d4adff",
-        downColor: "#ffffff",
+        downColor: "whitesmoke",
         borderDownColor: "#4d4b4bff",   
         wickDownColor: "#4d4b4bff",
       });      
