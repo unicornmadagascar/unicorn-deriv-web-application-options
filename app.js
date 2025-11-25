@@ -246,7 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
         wickUpColor: "rgba(204, 153, 255, 1)",
         downColor: "rgba(255, 255, 255, 0.42)",
         borderDownColor: "rgba(255, 255, 255, 0.75)",
-        wickDownColor: "rgba(240, 240, 240, 1)",
+        wickDownColor: "rgba(240, 240, 240, 1)",  
       });
     } else if (currentChartType === "line") {
       currentSeries = chart.addLineSeries({
