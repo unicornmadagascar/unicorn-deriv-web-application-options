@@ -1273,16 +1273,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (data.msg_type === "portfolio") 
         {
-           contracts = data.portfolio.contracts || [];
+          contracts = data.portfolio.contracts;
         } 
 
         if (data.msg_type === "proposal_open_contract") 
         {
-          if (data.proposal_open_contract) {
-             proposal__ = data.proposal_open_contract;
-          } else {   
-             return; // On ignore ce message car il n'a pas de POC
-          }
+          proposal__ = data.proposal_open_contract;
         } 
         
         if (data.msg_type === "tick")
