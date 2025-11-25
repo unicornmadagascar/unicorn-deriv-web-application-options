@@ -2969,6 +2969,7 @@ function extractValue(event, key) {
       IAtoggleAutomationBtn.style.color = "gray"; 
       IAautomationRunning = false;  
       ROCtoggleAutomationBtn.disabled = false;
+      BCtoggleAutomationBtn.disabled = false;
     }
   });
 
@@ -2989,7 +2990,7 @@ function extractValue(event, key) {
       ROCtoggleAutomationBtn.style.color = "gray";
       ROCautomationRunning = false;
       BCtoggleAutomationBtn.disabled = false;
-      IAtoggleAutomationBtn.disabled = false;
+      IAtoggleAutomationBtn.disabled = false;   
     }
   });
 
