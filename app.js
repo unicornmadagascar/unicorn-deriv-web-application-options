@@ -1034,7 +1034,7 @@ document.addEventListener("DOMContentLoaded", () => {
           
          // Si model bug → on le recharge
          model = await buildModel();
-         return;
+         return;   
       }
 
       return { roc, smoothAngle, action };
