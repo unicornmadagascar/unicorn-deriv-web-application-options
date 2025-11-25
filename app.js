@@ -1005,6 +1005,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const prediction = model.predict(inputTensor);
       const probs = await prediction.data();
 
+      console.log("prediction :" + prediction);
+
       const buyProb = probs[0];
       const sellProb = probs[1];
 
