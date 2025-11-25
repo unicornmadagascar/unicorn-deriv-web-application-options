@@ -870,7 +870,7 @@ document.addEventListener("DOMContentLoaded", () => {
     *******************************************************************************************/
     function tradingDecision(rocPred) {
       if (rocPred > 0.01) return "BUY";
-      if (rocPred < -0.01) return "SELL";
+      if (rocPred < -0.01) return "SELL";   
       return "NO TRADE";
     }
 
