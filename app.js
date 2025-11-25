@@ -1277,7 +1277,7 @@ document.addEventListener("DOMContentLoaded", () => {
         case "proposal_open_contract":  
           if (data.proposal_open_contract) {
              proposal__ = data.proposal_open_contract;
-          } else {
+          } else {   
              return; // On ignore ce message car il n'a pas de POC
           }
 
