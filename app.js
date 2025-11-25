@@ -999,22 +999,32 @@ document.addEventListener("DOMContentLoaded", () => {
       const roc = computeROC(last3ema[2], last3ema[0]);
       smoothAngle = computeAngle([last3ema[2], last3ema[1]], smoothAngle);
 
-      const inputTensor = tf.tensor([[
-          [roc, smoothAngle],
-          [roc, smoothAngle],
-          [roc, smoothAngle]
-      ]]);
-
       if (!model) {
         console.warn("⚠️ Modèle non chargé, skip tick");
+        model = await buildModel();
         return;
       }
 
-      const prediction = model.predict(inputTensor);   
-      const probs = await prediction.data();   
+      try {
 
-      const buyProb = probs[0];
-      const sellProb = probs[1];
+        const inputTensor = tf.tensor([[
+          [roc, smoothAngle],
+          [roc, smoothAngle],
+          [roc, smoothAngle]
+        ]]);
+
+        const prediction = model.predict(inputTensor);   
+        const probs = await prediction.data();   
+
+        const buyProb = probs[0];
+        const sellProb = probs[1];
+      } catch (err) {
+         console.error("❌ Erreur pendant predict() :", err);
+        
+         // Si model bug → on le recharge
+         model = await buildModel();
+         return;
+      }
 
       let action = "HOLD";
 
