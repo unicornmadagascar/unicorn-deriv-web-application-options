@@ -249,7 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
         wickDownColor: "#4d4b4bff",
       });
     } else if (currentChartType === "line") {
-      currentSeries = chart.addLineSeries({   
+      currentSeries = chart.addLineSeries({      
         color: "#2962FF",   
         lineWidth: 2,
       });
