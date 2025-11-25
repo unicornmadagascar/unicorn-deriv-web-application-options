@@ -1871,8 +1871,8 @@ closeAll.onclick=()=>{
       wsplContracts.onopen=()=>{ wsplContracts.send(JSON.stringify({ authorize: TOKEN })); };
     }
     
-    wsplContracts.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
-    wsplContracts.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
+    wsplContracts.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); setTimeout(connectDeriv_table,300); };
+    wsplContracts.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); wsplContracts.close(); wsplContracts = null; setTimeout(connectDeriv_table,300); };
     wsplContracts.onmessage=msg=>{
       const data=JSON.parse(msg.data);   
       switch (data.msg_type) {
