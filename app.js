@@ -905,14 +905,14 @@ document.addEventListener("DOMContentLoaded", () => {
           const data__ = data.tick;
           price = parseFloat(data__.tick.quote);
           prices.push(price);
-          maincontrol(price, prices, model, wsAI, "ticks");
+          maincontrol(prices, model, wsAI, "ticks");
           break;
 
         case "ohlc":
           const O = data.ohlc;
           price = parseFloat(O.close);
           prices.push(price);
-          maincontrol(price, prices, model, wsAI, "candles");
+          maincontrol(prices, model, wsAI, "candles");
           break;
         
         case "ping":
@@ -923,7 +923,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /*******************************************************************************************
     *  SIGNAL
     *******************************************************************************************/
-    function AI_handleSignal(direction) {
+    function AI_handleSignal(direction, wsAI) {
      const oppositeType = direction === "BUY" ? "MULTDOWN" : "MULTUP";
       const mainType = direction === "BUY" ? "MULTUP" : "MULTDOWN";
 
@@ -971,7 +971,7 @@ document.addEventListener("DOMContentLoaded", () => {
      /*******************************************************************************************
     *  MAIN CONTROL
     *******************************************************************************************/
-    async function maincontrol(price, prices, model, wsIA, mode)
+    async function maincontrol(prices, model, wsAI, mode)
     {
       if (prices.length > 2000) prices.shift();
 
@@ -992,10 +992,10 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Signal :", signal);
 
       if (signal === "BUY") {
-         AI_handleSignal("BUY");
+         AI_handleSignal("BUY",wsAI);
       } 
       else if (signal === "SELL") {
-        AI_handleSignal("SELL");
+        AI_handleSignal("SELL",wsAI);
       }
     }
    
