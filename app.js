@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
         borderUpColor: "#26a69a",
         wickUpColor: "#26a69a",
         downColor: "#ef5350",
-        borderDownColor: "#ef5350",
+        borderDownColor: "#ef5350",   
         wickDownColor: "#ef5350",   
       });      
     } else if (currentChartType === "line") {
