@@ -314,7 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!t) return null;
     const timestamp = Number(t);
     return {
-      time: Math.floor(timestamp / (timestamp > 1e12 ? 1000 : 1)),
+      time: Math.floor(timestamp / (timestamp > 1e12 ? 1000 : 1)),   
       open: Number(c.open),
       high: Number(c.high),
       low: Number(c.low),
@@ -331,7 +331,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentChartType !== "candlestick") return;
 
     currentSymbol = symbol;   
-    initChart(currentChartType);   
+    initChart(currentChartType);     
     console.log("Connexion...");      
 
     ws = new WebSocket(WS_URL);
