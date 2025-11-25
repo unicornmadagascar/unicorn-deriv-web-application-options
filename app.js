@@ -732,7 +732,7 @@ document.addEventListener("DOMContentLoaded", () => {
       {
        wsAI = new WebSocket(WS_URL);
        wsAI.onopen=()=>{ wsAI.send(JSON.stringify({ authorize: TOKEN })); };
-      }
+      }   
 
       wsAI.onmessage = (msg) => AI_handleMessage(JSON.parse(msg.data), model, wsAI);   
       wsAI.onclose = () => { setTimeout(AI_connectWebSocket, 500); };      
