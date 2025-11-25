@@ -1242,239 +1242,228 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function startAutomation() {
 
-    if (!currentSymbol) return;
-
     const symbol_test = currentSymbol.slice(0,3);
-    
-    function BC_connectWebSocket() {
 
-      if (wsAutomation === null)
-      {
-       wsAutomation = new WebSocket(WS_URL);
-       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-      }
+    if (wsAutomation === null)
+    {
+     wsAutomation = new WebSocket(WS_URL);
+     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+    }
   
-      if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
-      {
-       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };   
-      }
-   
-      if (wsAutomation && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING))
-      {
-       wsAutomation = new WebSocket(WS_URL);
-       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-        
-      wsAutomation.onmessage = (msg) => BC_handleMessage(JSON.parse(msg.data));     
-      wsAutomation.onclose = () => { setTimeout(BC_connectWebSocket, 500); };         
-      wsAutomation.onerror = (err) => { console.error("WebSocket error:", err); wsAutomation.close(); wsAutomation = null; setTimeout(BC_connectWebSocket, 500); };  
+    if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
+    {
+     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    function BC_handleMessage(data) {
-      switch (data.msg_type) {   
-        case "authorize":
-          wsAutomation.send(JSON.stringify({ ticks: currentSymbol, subscribe: 1 }));
-          wsAutomation.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
-          wsAutomation.send(JSON.stringify({ portfolio: 1 }));
-          break;
-
-        case "portfolio":   
-          bcContracts = data.portfolio?.contracts || []; 
-          if (bcContracts === undefined || bcContracts === null) 
-             return;
-
-          break;  
-
-        case "proposal_open_contract":  
-          if (data.proposal_open_contract) {
-             proposal__ = data.proposal_open_contract;
-          } else {   
-             return; // On ignore ce message car il n'a pas de POC
-          }
-
-          break;
-
-        case "tick":   
-          BC_handleTicks(data.tick);
-          break;
-
-      }
+    if (wsAutomation  && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING))
+    {
+     wsAutomation = new WebSocket(WS_URL);
+     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
     }
+ 
+    wsAutomation.onmessage = (msg) => {
+        const data = JSON.parse(msg.data);
 
-    function closeAllContracts() {
-
-      if (wsAutomation_close === null)
-      {
-       wsAutomation_close  = new WebSocket(WS_URL);
-       wsAutomation_close.onopen=()=>{ wsAutomation_close.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-  
-      if (wsAutomation_close  && (wsAutomation_close.readyState === WebSocket.OPEN || wsAutomation_close.readyState === WebSocket.CONNECTING))
-      {
-       wsAutomation_close.onopen=()=>{ wsAutomation_close.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-
-      if (wsAutomation_close && (wsAutomation_close.readyState === WebSocket.CLOSED || wsAutomation_close.readyState === WebSocket.CLOSING))
-      {
-       wsAutomation_close = new WebSocket(WS_URL);
-       wsAutomation_close.onopen=()=>{ wsAutomation_close.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-
-      wsAutomation_close.onclose = () => { setTimeout(closeAllContracts,500); };   
-      wsAutomation_close.onmessage = (e) => {
-        const data = JSON.parse(e.data);
-
-        // Autorisé → demander la liste des contrats
-        if (data.authorize) {
-            wsAutomation_close.send(JSON.stringify({ portfolio: 1 }));
+        // Autorisation réussie → abonnement aux ticks
+        if (data.msg_type === "authorize") {
+         wsAutomation.send(JSON.stringify({ ticks: currentSymbol, subscribe: 1 }));
+         wsAutomation.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
+         wsAutomation.send(JSON.stringify({ portfolio: 1 }));
         }
 
-        // Liste des contrats ouverts reçue
-        if (data.portfolio) {
-            const list = data.portfolio.contracts;
-
-            if (list === undefined || list === null || list.length === 0) {
-               return;
-            }
-
-            // Fermer chaque contrat (prix marché)
-            for (let c of list) {
-                wsAutomation_close.send(JSON.stringify({
-                    sell: c.contract_id,
-                    price: 0
-                }));
-            }
-        }
-
-        // Confirmation d’un contrat fermé 
-        if (data.sell) {
-            console.log("Fermé :", data.sell.contract_id);
-        }
-      };
-    }
-
-    function BC_handleTicks(tick) {
-      const symbolPrefix = currentSymbol.slice(0, 6);
-      const price = parseFloat(tick.quote);
-      tickHistory__bc.push(price);
-
-      if (tickHistory__bc.length >= 3) // garder seulement les 3 derniers ticks
-       {  
-        Tick_arr.length = 3;
-        Tick_arr = tickHistory__bc.slice(-3);
-              
-        // On peut aussi normaliser avec la moyenne
-        const mean = (Tick_arr[0] + Tick_arr[1] + Tick_arr[2]) / 3;
-        Dispersion = ecartType(Tick_arr);
-
-        if (Dispersion !==0)
+        if (data.msg_type === "portfolio") 
         {
-          const delta = (Tick_arr[2] - mean) / Dispersion; // variation relative
-          // Application de la sigmoïde
-          signal = (1 - 1 / (1 + Math.exp(-delta)));
-          console.log(`📈 Signal : ${signal.toFixed(6)}`);
+           contracts = data.portfolio.contracts || [];
+        } 
 
-          if (currentChartType !== "candlestick") {
-     
-             if (symbol_test === "BOO") {
-               if (signal < 0.34) {
-                 setTimeout(() => {
-                    BC_handleSignal("BUY");
-                 }, 10000);
+        if (data.msg_type === "proposal_open_contract") 
+        {
+           proposal__ = data.proposal_open_contract;
+        } 
+        
+        if (data.msg_type === "tick")
+        {
+           const price = parseFloat(data.tick.quote);
+           const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
+
+           tickHistory.push(price);
+           if (tickHistory.length >= 3) // garder seulement les 3 derniers ticks
+           {  
+              Tick_arr.length = 3;
+              Tick_arr = tickHistory.slice(-3);
+              
+              // On peut aussi normaliser avec la moyenne
+              const mean = (Tick_arr[0] + Tick_arr[1] + Tick_arr[2]) / 3;
+              Dispersion = ecartType(Tick_arr);
+              if (Dispersion !==0)
+              {
+               const delta = (Tick_arr[2] - mean) / Dispersion; // variation relative
+               // Application de la sigmoïde
+               signal = (1 - 1 / (1 + Math.exp(-delta)));
+               console.log(`📈 Signal : ${signal.toFixed(6)}`);
+
+               if (symbol_test === "BOO")  
+               {
+                if (signal < 0.37)
+                {
+                  // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
+                  contracts
+                     .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTDOWN")
+                     .forEach(c => {
+                        wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                     });
+
+                  if (proposal__.contract_id) return;
+                 
+                  console.log("📤 Ouverture d'un nouveau contrat BUY...");
+                  const stake = parseFloat(stakeInput.value) || 1;
+                  const multiplier = parseInt(multiplierInput.value)||50;
+                  numb_ = parseInt(buyNumber.value) || 1;
+                  for (let i=0;i < numb_; i++)
+                  {
+                    wsAutomation.send(JSON.stringify({
+                           buy: 1,
+                           price: stake.toFixed(2),
+                           parameters: {
+                             contract_type: "MULTUP",
+                             symbol: currentSymbol,
+                             currency: "USD",
+                             basis: "stake",
+                             amount: stake.toFixed(2),
+                             multiplier: multiplier,
+                           }
+                        }
+                    ));
+                  }
+                  setTimeout(() => {     
+                  },5000);
+                }
+                else
+                {
+                  // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
+                  contracts
+                     .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTUP")
+                     .forEach(c => {
+                        wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                     });
+
+                  if (proposal__.contract_id) return;
+                  
+                  console.log("📤 Ouverture d'un nouveau contrat SELL...");
+                  const stake = parseFloat(stakeInput.value) || 1;
+                  const multiplier = parseInt(multiplierInput.value)||50;
+                  numb_ = parseInt(sellNumber.value) || 1;
+                  for (let i=0;i < numb_; i++)
+                  {
+                    wsAutomation.send(JSON.stringify({
+                           buy: 1,
+                           price: stake.toFixed(2),
+                           parameters: {
+                             contract_type: "MULTDOWN",
+                             symbol: currentSymbol,
+                             currency: "USD",
+                             basis: "stake",
+                             amount: stake.toFixed(2),
+                             multiplier: multiplier,
+                           }
+                        }
+                    ));
+                  }
+                }
                }
+               else if (symbol_test === "CRA")
+               {
+                 if (signal > 0.75)
+                 {
+                  // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
+                  contracts
+                     .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTUP")
+                     .forEach(c => {
+                        wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                     });
 
-               closeAllContracts();
-             }
-             else if (symbol_test === "CRA"){
-               if (signal > 0.75) {
-                 setTimeout(() => {
-                    BC_handleSignal("SELL");   
-                 }, 10000);
-               } 
+                  if (proposal__.contract_id) return;
 
-               closeAllContracts();
-             }
-          }
-          else if (currentChartType === "candlestick") 
-          {
-            if (symbol_test === "BOO") {
-               if (signal < 0.34) {
-                 setTimeout(() => {
-                    BC_handleSignal("BUY");
-                 }, 10000);
+                  console.log("📤 Ouverture d'un nouveau contrat SELL...");
+                  const stake = parseFloat(stakeInput.value) || 1;
+                  const multiplier = parseInt(multiplierInput.value)||50;
+                  numb_ = parseInt(sellNumber.value) || 1;
+                  for (let i=0;i < numb_; i++)
+                  {
+                    wsAutomation.send(JSON.stringify({
+                           buy: 1,
+                           price: stake.toFixed(2),
+                           parameters: {
+                             contract_type: "MULTDOWN",
+                             symbol: currentSymbol,
+                             currency: "USD",
+                             basis: "stake",
+                             amount: stake.toFixed(2),
+                             multiplier: multiplier,
+                           }
+                        }
+                    ));
+                  }
+                  setTimeout(() => {
+                  },5000);
+                 }
+                 else
+                 {
+                  // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
+                  contracts
+                     .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTDOWN")
+                     .forEach(c => {
+                        wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+                     });
+
+                  if (proposal__.contract_id) return;
+
+                  console.log("📤 Ouverture d'un nouveau contrat BUY...");
+                  const stake = parseFloat(stakeInput.value) || 1;
+                  const multiplier = parseInt(multiplierInput.value)||50;
+                  numb_ = parseInt(buyNumber.value) || 1;
+                  for (let i=0;i < numb_; i++)
+                  {
+                    wsAutomation.send(JSON.stringify({
+                           buy: 1,
+                           price: stake.toFixed(2),
+                           parameters: {
+                             contract_type: "MULTUP",
+                             symbol: currentSymbol,
+                             currency: "USD",
+                             basis: "stake",
+                             amount: stake.toFixed(2),
+                             multiplier: multiplier,
+                           }
+                        }
+                    ));
+                  }
+                }
                }
-
-               closeAllContracts();
              }
-             else if (symbol_test === "CRA"){
-               if (signal > 0.75) {
-                 setTimeout(() => {
-                    BC_handleSignal("SELL");
-                 }, 10000);
-               } 
+           }   // if (it)
+           
+           if (tickHistory.length > 700)    
+           {
+             tickHistory.splice(0,20);
+           }
+        }  
 
-               closeAllContracts();
-             }
-          }
-        }
-      }
+        
+    };
 
-      if (tickHistory__bc.length > MAX_HISTORY) {
-          tickHistory__bc.splice(0,20); // enlever l'élément le plus ancien
-      }
-    }
+    wsAutomation.onclose = () => {
+      console.log("Disconnected");
+      setTimeout(startAutomation,300);
+    };
 
-    function BC_handleSignal(direction) {
-      const oppositeType = direction === "BUY" ? "MULTDOWN" : "MULTUP";
-      const mainType = direction === "BUY" ? "MULTUP" : "MULTDOWN";
-
-      // 1. Fermer les contrats opposés
-      bcContracts
-        .filter(c => c.symbol === currentSymbol && c.contract_type === oppositeType)   
-        .forEach(c => {
-          wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-        });
-
-      // 2. Vérifier si un contrat actif existe avant d'ouvrir
-      if (proposal__.contract_id) {
-        return;
-      }
-
-      // 3. Ouvrir un nouveau contrat
-      const stake = parseFloat(stakeInput.value) || 1;
-      const multiplier = parseInt(multiplierInput.value) || 40;
-      const repeat = direction === "BUY"
-        ? (parseInt(buyNumber.value) || 1)   
-        : (parseInt(sellNumber.value) || 1);
-
-      if ((typeof multiplier !== "number" && multiplier === "") || (typeof stake !== "number" && stake === "") || (typeof repeat !== "number" && repeat === "")) {
-          console.error("Valeur de multiplicateur invalide. Veuillez vérifier l'entrée.");
-          return;
-      }
-
-      for (let i = 0; i < repeat; i++) {
-        wsAutomation.send(JSON.stringify({
-          buy: 1,
-          price: stake.toFixed(2),
-          parameters: {
-            contract_type: mainType,
-            symbol: currentSymbol,
-            currency: "USD",
-            basis: "stake",
-            amount: stake.toFixed(2),
-            multiplier: multiplier,
-          }
-        }));
-      }
-
-      Openpositionlines(currentSeries);
-    }   
-
-    // Démarrage de la connexion WS
-    if (!wsAutomation || wsAutomation.readyState > 1) {
-      BC_connectWebSocket();
-    }
-  }  
+    wsAutomation.onerror = (err) => {
+      console.error("WebSocket error:", err);
+      wsAutomation.close();
+      wsAutomation = null;
+      setTimeout(startAutomation,300);
+    };
+  }
 
   function stopAutomation() {   
     if (wsAutomation  && wsAutomation.readyState === WebSocket.OPEN) {  
