@@ -849,7 +849,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (raw.length < 21) return null;
 
-      const window = raw.slice(-21);
+      const window = raw.slice(-21);   
 
       const input = tf.tensor3d(
           [window.map(v => [v])],
