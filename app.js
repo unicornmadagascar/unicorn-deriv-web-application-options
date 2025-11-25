@@ -1017,11 +1017,11 @@ document.addEventListener("DOMContentLoaded", () => {
       let action = "HOLD";
 
       if (roc > 0.0025 && smoothAngle > 40 && smoothAngle <= 89 && buyProb > 0.45) {
-          action = "BUY";
+          action = "BUY";  
       }
 
       if (roc < -0.0025 && smoothAngle < -40 && smoothAngle >= -89 && sellProb > 0.45) {
-        action = "SELL";  
+        action = "SELL";    
       }
 
       return { roc, smoothAngle, action };
