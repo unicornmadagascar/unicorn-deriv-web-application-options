@@ -891,16 +891,18 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
 
         case "portfolio":   
-          AIContracts = data.portfolio.contracts;   
+          AIContracts = data.portfolio?.contracts || [];   
           if (AIContracts === undefined || AIContracts === null)
              return; 
 
           break;
 
-        case "proposal_open_contract":
-          AIProposal = data.proposal_open_contract;
-          if (AIProposal === undefined || AIProposal === null)
-             return;
+        case "proposal_open_contract": 
+          if (data.proposal_open_contract) {
+             AIProposal = data.proposal_open_contract;
+          } else {
+             return; // On ignore ce message car il n'a pas de POC
+          }
 
           break;
         
@@ -1092,16 +1094,18 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
 
         case "portfolio":   
-          rocContracts = data.portfolio.contracts;   
+          rocContracts = data.portfolio?.contracts || [];   
           if (rocContracts === undefined || rocContracts === null)
              return; 
 
           break;
 
         case "proposal_open_contract":
-          rocProposal = data.proposal_open_contract;
-          if (rocProposal === undefined || rocProposal === null)
-             return;
+          if (data.proposal_open_contract) {
+             rocProposal = data.proposal_open_contract;
+          } else {
+             return; // On ignore ce message car il n'a pas de POC
+          }
 
           break;
 
@@ -1264,16 +1268,18 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
 
         case "portfolio":   
-          bcContracts = data.portfolio.contracts; 
+          bcContracts = data.portfolio?.contracts || []; 
           if (bcContracts === undefined || bcContracts === null) 
              return;
 
           break;  
 
         case "proposal_open_contract":  
-          proposal__ = data.proposal_open_contract;
-          if (proposal__ === undefined || proposal__ === null) 
-             return;
+          if (data.proposal_open_contract) {
+             proposal__ = data.proposal_open_contract;
+          } else {
+             return; // On ignore ce message car il n'a pas de POC
+          }
 
           break;
 
