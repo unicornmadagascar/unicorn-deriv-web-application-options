@@ -844,7 +844,7 @@ document.addEventListener("DOMContentLoaded", () => {
               }
           }
 
-          if (!isNaN(v)) raw.push(v);
+          if (!isNaN(v)) raw.push(v);   
       }
 
       if (raw.length < 21) return null;
