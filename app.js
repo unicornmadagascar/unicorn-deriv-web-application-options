@@ -732,7 +732,7 @@ document.addEventListener("DOMContentLoaded", () => {
       {
        wsAI = new WebSocket(WS_URL);
        wsAI.onopen=()=>{ wsAI.send(JSON.stringify({ authorize: TOKEN })); };
-      }   
+      }
 
       wsAI.onmessage = (msg) => AI_handleMessage(JSON.parse(msg.data), model, wsAI);   
       wsAI.onclose = () => { setTimeout(AI_connectWebSocket, 500); };      
@@ -740,143 +740,153 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /*******************************************************************************************
-    *  DATASET PREPARATION
+    *  UTILITAIRES CALCUL EMA20 / ROC / ANGLE
     *******************************************************************************************/
-    function prepareDataset(prices) {
-      const X = [];
-      const Y = [];
+    function computeEMA20(prices) {
+      const k = 2 / (20 + 1);
+      let ema = prices[0];
+      const out = [ema];
 
-      for (let i = 20; i < prices.length; i++) {
-        const win = prices.slice(i - 20, i + 1);
-        const pNow = prices[i];
-        const pOld = prices[i - 20];
-        const roc = 100 * (pNow - pOld) / pOld;
-
-        X.push(win);
-        Y.push(roc);
+      for (let i = 1; i < prices.length; i++) {
+          ema = prices[i] * k + ema * (1 - k);
+          out.push(ema);
       }
+      return out;
+    }
 
-      return {
-        xs: tf.tensor3d(X, [X.length, 21, 1]),
-        ys: tf.tensor2d(Y, [Y.length, 1])
-      };
+    function computeROC(priceNow, priceOld) {
+       return 100 * (priceNow - priceOld) / priceOld;
+    }
+
+    function computeAngle(emaBuffer, prevSmoothAngle, multiplicator = 0.65) {
+      const radToDeg = 180 / Math.PI;
+      const rawAngle = Math.atan(emaBuffer[0] - emaBuffer[1]) * radToDeg;
+      return multiplicator * rawAngle + (1 - multiplicator) * prevSmoothAngle;
     }
 
     /*******************************************************************************************
     *  MODELE TENSORFLOW.JS LEGER
     *******************************************************************************************/
-    async function createLightROCModel() {
-        await tf.ready();
-        const model = tf.sequential();
+    async function buildModel() {
+      await tf.ready();
+      model = tf.sequential();
 
-       if (!model) {
-        model = await createLightROCModel();
+      if (!model) {
+        model = await buildModel();
         return;
       }
 
-      model.add(tf.layers.conv1d({
-        inputShape: [21, 1],
-        filters: 8,
-        kernelSize: 3,
-        activation: 'relu'
+      model.add(tf.layers.gru({
+          units: 8,
+          inputShape: [3, 2],
+          returnSequences: false
       }));
 
-      model.add(tf.layers.flatten());
-
-      model.add(tf.layers.dense({
-        units: 16,
-        activation: 'relu'
-      }));
-
-      model.add(tf.layers.dense({
-        units: 1   // ROC prédictif
-      }));
+      model.add(tf.layers.dense({ units: 8, activation: "relu" }));
+      model.add(tf.layers.dense({ units: 3, activation: "softmax" })); // BUY / SELL / NEUTRAL
 
       model.compile({
-        optimizer: tf.train.adam(0.001),
-        loss: 'meanSquaredError'
+          optimizer: tf.train.adam(0.001),
+          loss: "categoricalCrossentropy",
+          metrics: ["accuracy"]
       });
 
       return model;
     }
   
     /*******************************************************************************************
-    *  TRAINNING MODEL
+    *  TRAILING STOP INTELLIGENT (Sans casser votre code)
     *******************************************************************************************/
-    async function trainLightModel(model, prices) {
-      if (prices.length < 200) return;
+    function openBuy(price, wsAI) {
+      activeTrade = {
+        type: "BUY",
+        entry: price,
+        sl: price - TRAILING_DISTANCE,
+        status: "OPEN"
+      };
+      AI_handleSignal("BUY",wsAI);     // votre fonction existante
+    }
 
-      const { xs, ys } = prepareDataset(prices);
+    function openSell(price, wsAI) {
+      activeTrade = {
+          type: "SELL",
+          entry: price,
+          sl: price + TRAILING_DISTANCE,
+          status: "OPEN"
+      };
+      AI_handleSignal("SELL",wsAI);    // votre fonction existante
+    }
 
-      if (!model) {
-        model = await createLightROCModel();
+    function updateTrailingStop(currentPrice, wsAI) {
+      if (!activeTrade || activeTrade.status !== "OPEN") return;
+
+      if (activeTrade.type === "BUY") {
+        const newSL = currentPrice - TRAILING_DISTANCE;
+
+        if (newSL > activeTrade.sl && currentPrice > activeTrade.entry) {
+            activeTrade.sl = newSL;
+            console.log("TSL BUY moved to:", activeTrade.sl.toFixed(5));
+        }
+
+        if (currentPrice <= activeTrade.sl) {
+            console.log("STOP LOSS BUY HIT => closing");
+            closeActiveTrade(wsAI);
+        }
+      }
+
+      if (activeTrade.type === "SELL") {
+          const newSL = currentPrice + TRAILING_DISTANCE;
+
+          if (newSL < activeTrade.sl && currentPrice < activeTrade.entry) {
+            activeTrade.sl = newSL;
+            console.log("TSL SELL moved to:", activeTrade.sl.toFixed(5));
+          }
+
+          if (currentPrice >= activeTrade.sl) {
+              console.log("STOP LOSS SELL HIT => closing");
+              closeActiveTrade(wsAI);
+          }
+      }
+    }
+
+    function closeActiveTrade(wsAI) {
+      if (!activeTrade) return;
+
+      closeContractWS(wsAI);  // votre fonction existante
+      console.log("TRADE CLOSED BY STOP LOSS");
+
+      activeTrade = null;
+    } 
+
+    function closeContractWS(wsAI) {
+
+      if (!activeTrade) {
+          console.log("Aucun contrat actif à fermer.");
+          return;
+      }
+
+      if (!AIProposal.contractId) {
+        console.log("Aucun contractId enregistré pour le contrat actif.");
+        activeTrade = null;
         return;
       }
 
-      await model.fit(xs, ys, {
-         epochs: 15,
-         batchSize: 16,
-         shuffle: true,
-         verbose: 0
-      });
-  
-      console.log("Modèle entraîné");
+      // Préparer la requête de fermeture pour le marché (price non défini)
+      const request = {
+          sell: activeTrade.contractId,   // ID du contrat actif
+          price: 0
+      };
+
+      // Envoyer la requête à Deriv via WebSocket
+      wsIA.send(JSON.stringify(request));
+
+      console.log("Commande de fermeture envoyée pour le contrat :", activeTrade.contractId);
+
+      // Marquer le trade comme fermé côté code
+      activeTrade.status = "CLOSED";
+      activeTrade = null;
     }
 
-   /*******************************************************************************************
-    *  PREDICT ROC MODEL
-    *******************************************************************************************/
-   function predictROC(model, prices, mode = "ticks") {
-      const raw = [];
-
-      for (let i = 0; i < prices.length; i++) {
-          let v;
-
-          if (mode === "ticks") {
-              // value is directly the tick price
-              v = Number(prices[i]);
-          }
-
-          if (mode === "candles") {
-              // use close price from candle
-              if (prices[i] && prices[i] !== undefined) {
-                v = Number(prices[i]);
-              }
-          }
-
-          if (!isNaN(v)) raw.push(v);   
-      }
-
-      if (raw.length < 21) return null;
-
-      const window = raw.slice(-21);   
-
-      const input = tf.tensor3d(
-          [window.map(v => [v])],
-          [1, 21, 1]
-      );
-
-      const output = model.predict(input);
-      const result = output.dataSync()[0];
-
-      input.dispose();
-      output.dispose();
-
-      return result;
-   }
-
-   /*******************************************************************************************
-    *  DECISION
-    *******************************************************************************************/
-    function tradingDecision(rocPred) {
-      if (rocPred > 0.01) return "BUY";
-      if (rocPred < -0.01) return "SELL";   
-      return "NO TRADE";
-    }
-
-    /*******************************************************************************************
-    *  MESSAGE
-    *******************************************************************************************/
     function AI_handleMessage(data, model, wsAI) {
       switch (data.msg_type) {
         case "authorize":
@@ -905,14 +915,14 @@ document.addEventListener("DOMContentLoaded", () => {
           const data__ = data.tick;
           price = parseFloat(data__.tick.quote);
           prices.push(price);
-          maincontrol(prices, model, wsAI, "ticks");
+          maincontrol(price, prices, model, wsAI);
           break;
 
         case "ohlc":
           const O = data.ohlc;
           price = parseFloat(O.close);
           prices.push(price);
-          maincontrol(prices, model, wsAI, "candles");
+          maincontrol(price, prices, model, wsAI);
           break;
         
         case "ping":
@@ -920,10 +930,24 @@ document.addEventListener("DOMContentLoaded", () => {
           break;  
       }
     }
-    /*******************************************************************************************
-    *  SIGNAL
-    *******************************************************************************************/
-    function AI_handleSignal(direction, wsAI) {
+
+     async function maincontrol(price, prices, model, wsIA)
+    {
+      const res = await processIncomingData(prices, model, wsIA);
+      if (!res) return;
+
+      console.log("ROC:", res.roc.toFixed(4), 
+                  "Angle:", smoothAngle.toFixed(2),
+                  "Action:", res.action);
+
+      if (res.action === "BUY") openBuy(price, wsIA);
+      if (res.action === "SELL") openSell(price, wsIA);
+
+      // TRAILING STOP À CHAQUE TICK
+      updateTrailingStop(price, wsIA);
+    }
+
+    function AI_handleSignal(direction) {
      const oppositeType = direction === "BUY" ? "MULTDOWN" : "MULTUP";
       const mainType = direction === "BUY" ? "MULTUP" : "MULTDOWN";
 
@@ -967,44 +991,66 @@ document.addEventListener("DOMContentLoaded", () => {
 
       Openpositionlines(currentSeries);
     }
-    
-     /*******************************************************************************************
-    *  MAIN CONTROL
+
+    /*******************************************************************************************
+    *  PIPELINE : DATA → EMA20 → ROC → ANGLE → PREDICTION → TRADE
     *******************************************************************************************/
-    async function maincontrol(prices, model, wsAI, mode)
-    {
-      if (prices.length > 2000) prices.shift();
+    async function processIncomingData(prices, model, wsIA) {
+      if (prices.length < 25) return;
 
-      // Auto training
-      if (prices.length === 300) {
-        console.log("Entraînement initial...");
-        await trainLightModel(model, prices);
+      const ema20 = computeEMA20(prices);
+      const last3ema = ema20.slice(-3);
+
+      const roc = computeROC(last3ema[2], last3ema[0]);
+      smoothAngle = computeAngle([last3ema[2], last3ema[1]], smoothAngle);
+
+      if (!model) {
+        console.warn("⚠️ Modèle non chargé, skip tick");
+        model = await buildModel();
+        return;
       }
 
-      // Predict ROC live
-      const predROC = predictROC(model, prices, mode);
-      if (predROC === null) return;
+      try {
 
-      console.log("ROC prédit :", predROC.toFixed(5));
+        const inputTensor = tf.tensor([[
+          [roc, smoothAngle],
+          [roc, smoothAngle],
+          [roc, smoothAngle]
+        ]]);
 
-      // Decision Trading
-      const signal = tradingDecision(predROC);
-      console.log("Signal :", signal);
+        const prediction = model.predict(inputTensor);   
+        const probs = await prediction.data();   
 
-      if (signal === "BUY") {
-         AI_handleSignal("BUY",wsAI);
-      } 
-      else if (signal === "SELL") {
-        AI_handleSignal("SELL",wsAI);
+        const buyProb = probs[0];
+        const sellProb = probs[1];
+
+        let action = "HOLD";
+
+        if (roc > 0.0025 && smoothAngle > 40 && smoothAngle <= 89 && buyProb > 0.45) {
+          action = "BUY";  
+        }
+
+        if (roc < -0.0025 && smoothAngle < -40 && smoothAngle >= -89 && sellProb > 0.45) {
+          action = "SELL";    
+        }
+
+      } catch (err) {
+         console.error("❌ Erreur pendant predict() :", err);
+          
+         // Si model bug → on le recharge
+         model = await buildModel();
+         return;   
       }
+
+      return { roc, smoothAngle, action };
     }
-   
+
    /*******************************************************************************************
-    *  SYSTEM WEBSOCKET DERIV COMPLET
+    *  SYSTEME WEBSOCKET DERIV COMPLET
     *******************************************************************************************/
     async function start() {
 
-      model = await createLightROCModel();
+      model = await buildModel();
 
       if (!wsAI || wsAI.readyState > 1)
        {
