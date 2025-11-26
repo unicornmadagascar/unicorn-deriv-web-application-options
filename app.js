@@ -1285,9 +1285,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           if (data.proposal_open_contract) {
              proposal__ = data.proposal_open_contract;
-          }
-          else
-          {
+          } else {
            return;
           }
         } 
