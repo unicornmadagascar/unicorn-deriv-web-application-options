@@ -1293,7 +1293,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.msg_type === "tick")
         {
            const price = parseFloat(data.tick.quote);
-           const time = new Date(data.tick.epoch * 1000).toLocaleTimeString();
+
+           if (!data.tick.quote || data.tick.quote === undefined || data.tick.quote === null) return;
 
            tickHistory.push(price);
            if (tickHistory.length >= 3) // garder seulement les 3 derniers ticks
