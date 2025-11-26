@@ -1010,6 +1010,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      let action = "HOLD";
+
       try {
 
         const inputTensor = tf.tensor([[
@@ -1023,8 +1025,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const buyProb = probs[0];
         const sellProb = probs[1];
-
-        let action = "HOLD";
 
         if (roc > 0.0025 && smoothAngle > 40 && smoothAngle <= 89 && buyProb > 0.45) {
           action = "BUY";  
