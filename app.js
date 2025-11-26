@@ -1138,6 +1138,9 @@ document.addEventListener("DOMContentLoaded", () => {
     function handleTicks(tick) {
       const symbolPrefix = currentSymbol.slice(0, 6);
       const price = parseFloat(tick.quote);
+
+      if (!tick.quote || tick.quote === undefined || tick.quote === null) return;
+
       if (currentChartType !== "candlestick") {
          tickHistory__.push(price);
          if (tickHistory__.length >= 21) {
@@ -1164,7 +1167,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (candleHistory__.length >= 21) {
             const currentClose = candleHistory__[candleHistory__.length - 1];
             const pastClose = candleHistory__[candleHistory__.length - 21];
-            const rocCandle = 100 * (currentClose - pastClose) / pastClose;
+            const rocCandle = 100 * (currentClose - pastClose) / pastClose;  
 
             console.log('ROC :',rocCandle.toFixed(4));
 
