@@ -1285,9 +1285,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         case "portfolio":   
           bcContracts = data.portfolio?.contracts || []; 
-          if (bcContracts === undefined || bcContracts === null) 
-             return;
-
           break;  
 
         case "proposal_open_contract":  
