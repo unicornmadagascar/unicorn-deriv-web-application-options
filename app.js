@@ -1304,7 +1304,7 @@ document.addEventListener("DOMContentLoaded", () => {
               
               // On peut aussi normaliser avec la moyenne
               const mean = (Tick_arr[0] + Tick_arr[1] + Tick_arr[2]) / 3;
-              Dispersion = ecartType(Tick_arr);
+              Dispersion = ecartType(Tick_arr);  
               if (Dispersion !==0)
               {
                const delta = (Tick_arr[2] - mean) / Dispersion; // variation relative
@@ -1408,7 +1408,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     console.log("📤 Ouverture d'un nouveau contrat SELL...");
                     const stake = parseFloat(stakeInput.value) || 1;
                     const multiplier = parseInt(multiplierInput.value)||50;
-                    numb_ = parseInt(sellNumber.value) || 1;
+                    numb_ = parseInt(sellNumber.value) || 1;  
                     setTimeout(() => {
                       for (let i=0;i < numb_; i++)
                       {
