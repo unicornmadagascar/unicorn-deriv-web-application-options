@@ -1344,10 +1344,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 setTimeout(() => {
                   BC_handleSignal("SELL");   
                 }, 5000);
-             } else {  
+             } else {    
                  BC_handleSignal("BUY");   
              }  
-          }
+          }   
         }
       }
 
