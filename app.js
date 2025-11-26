@@ -770,7 +770,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function buildModel() {
       await tf.ready();
       model = tf.sequential();
-
+   
       if (!model) {
         model = await buildModel();
         return;
