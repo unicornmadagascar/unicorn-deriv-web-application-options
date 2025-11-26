@@ -1167,7 +1167,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (candleHistory__.length >= 21) {
             const currentClose = candleHistory__[candleHistory__.length - 1];
             const pastClose = candleHistory__[candleHistory__.length - 21];
-            const rocCandle = 100 * (currentClose - pastClose) / pastClose;  
+            const rocCandle = 100 * (currentClose - pastClose) / pastClose;
 
             console.log('ROC :',rocCandle.toFixed(4));
 
@@ -1282,6 +1282,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.msg_type === "portfolio") 
         {
            contracts = data.portfolio.contracts || [];
+           if (!contracts || contracts === undefined || contracts === null) return;
         } 
 
         if (data.msg_type === "proposal_open_contract") 
