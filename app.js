@@ -1445,7 +1445,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   {
                     console.log("📤 Ouverture d'un nouveau contrat BUY...");
                     const stake = parseFloat(stakeInput.value) || 1;
-                    const multiplier = parseInt(multiplierInput.value)||50;
+                    const multiplier = parseInt(multiplierInput.value)||50;    
                     numb_ = parseInt(buyNumber.value) || 1;
                     for (let i=0;i < numb_; i++)
                     {
