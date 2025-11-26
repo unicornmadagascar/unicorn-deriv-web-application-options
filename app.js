@@ -1012,7 +1012,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let action = "HOLD";
 
-      try {
+      try {   
 
         const inputTensor = tf.tensor([[
           [roc, smoothAngle],
