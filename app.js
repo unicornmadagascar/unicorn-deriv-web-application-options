@@ -1325,10 +1325,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   if (proposal__.contract_id) return;
                  
-                  console.log("📤 Ouverture d'un nouveau contrat BUY...");
                   if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
                       currentSymbol === "CRASH1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500")
                   {
+                    console.log("📤 Ouverture d'un nouveau contrat BUY...");
                     const stake = parseFloat(stakeInput.value) || 1;
                     const multiplier = parseInt(multiplierInput.value)||50;
                     numb_ = parseInt(buyNumber.value) || 1;
@@ -1471,7 +1471,7 @@ document.addEventListener("DOMContentLoaded", () => {
            
            if (tickHistory.length > 700) {  
              tickHistory.splice(0,20);
-           }
+           }  
         }  
 
         
