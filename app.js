@@ -1457,6 +1457,7 @@ document.addEventListener("DOMContentLoaded", () => {
         it = it + 1;
         if (it > 700)    
         {
+        it = 0;
          tickHistory.splice(0,20);
         }
     };
