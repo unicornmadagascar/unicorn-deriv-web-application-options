@@ -1432,7 +1432,7 @@ document.addEventListener("DOMContentLoaded", () => {
                  else
                  {
                   // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
-                  contracts
+                  contracts  
                      .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTDOWN")
                      .forEach(c => {
                         wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
@@ -1440,13 +1440,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   if (proposal__.contract_id) return;
 
-                  console.log("📤 Ouverture d'un nouveau contrat BUY...");
-                  const stake = parseFloat(stakeInput.value) || 1;
-                  const multiplier = parseInt(multiplierInput.value)||50;
-                  numb_ = parseInt(buyNumber.value) || 1;
-                  for (let i=0;i < numb_; i++)
+                  if (currentSymbol === "BOOM1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500" ||
+                      currentSymbol === "CRASH1000" || currentSymbol === "BOOM900" || currentSymbol === "BOOM600" || currentSymbol === "BOOM500")
                   {
-                    wsAutomation.send(JSON.stringify({
+                    console.log("📤 Ouverture d'un nouveau contrat BUY...");
+                    const stake = parseFloat(stakeInput.value) || 1;
+                    const multiplier = parseInt(multiplierInput.value)||50;
+                    numb_ = parseInt(buyNumber.value) || 1;
+                    for (let i=0;i < numb_; i++)
+                    {
+                      wsAutomation.send(JSON.stringify({
                            buy: 1,
                            price: stake.toFixed(2),
                            parameters: {
@@ -1458,7 +1461,8 @@ document.addEventListener("DOMContentLoaded", () => {
                              multiplier: multiplier,
                            }
                         }
-                    ));
+                      ));
+                    }
                   }
                 }
                }
