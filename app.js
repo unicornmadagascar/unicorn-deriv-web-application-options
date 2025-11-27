@@ -773,9 +773,9 @@ document.addEventListener("DOMContentLoaded", () => {
             currentContract = "BUY";
    
              // reset Bears
-             maxBearsPercent = null;
+             maxBearsPercent = null;   
              waitingFor = null;
-
+   
              return;
          }
          return;
