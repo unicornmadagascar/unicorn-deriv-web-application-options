@@ -786,7 +786,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
          if (maxBearsPercent === null || bearsP > maxBearsPercent) {
              maxBearsPercent = bearsP;
-             console.log("🔴 Nouveau EXTREMUM Bears :", maxBearsPercent.toFixed(2));
+             console.log("🔴 Nouveau EXTREMUM Bears :", maxBearsPercent.toFixed(2));  
           }
 
           const drop = ((maxBearsPercent - bearsP) / maxBearsPercent) * 100;
@@ -840,8 +840,10 @@ document.addEventListener("DOMContentLoaded", () => {
           if (drop >= 30) {
               console.log("🔴 SORTIE BUY — drop 30%");
               //closeAllContracts();
-              AI_handleSignal("SELL");  
-
+              setTimeout(() =>{
+                 AI_handleSignal("SELL"); 
+              },3000);
+               
               inTrade = false;
               currentContract = null;
 
@@ -888,7 +890,9 @@ document.addEventListener("DOMContentLoaded", () => {
           if (drop >= 30) {
               console.log("🔴 SORTIE SELL — drop 30%");
               //closeAllContracts();
-              AI_handleSignal("BUY");  
+              setTimeout(() =>{
+                 AI_handleSignal("BUY"); 
+              },3000);
 
               inTrade = false;
               currentContract = null;
