@@ -765,7 +765,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const drop = ((maxBullsPercent - bullsP) / maxBullsPercent) * 100;
         console.log("🟦 Attente nouveau BUY — drop% :", drop.toFixed(2));
 
-        if (drop >= 20) {
+        if (drop >= 40) {
             console.log("💚 RÉOUVERTURE BUY après nouvel extrémum !");
             AI_handleSignal("BUY");
 
@@ -792,7 +792,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const drop = ((maxBearsPercent - bearsP) / maxBearsPercent) * 100;
           console.log("🟥 Attente nouveau SELL — drop% :", drop.toFixed(2));
 
-          if (drop >= 20) {
+          if (drop >= 40) {
              console.log("❤️ RÉOUVERTURE SELL après nouvel extrémum !");
              AI_handleSignal("SELL");
 
@@ -837,7 +837,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const drop = ((maxBullsPercent - bullsP) / maxBullsPercent) * 100;
           console.log("🟡 BUY drop% :", drop.toFixed(2));
 
-          if (drop >= 20) {
+          if (drop >= 40) {
               console.log("🔴 SORTIE BUY — drop 30%");
               closeAllContracts();
 
@@ -884,7 +884,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const drop = ((maxBearsPercent - bearsP) / maxBearsPercent) * 100;
           console.log("🟠 SELL drop% :", drop.toFixed(2));
 
-          if (drop >= 20) {
+          if (drop >= 40) {
               console.log("🔴 SORTIE SELL — drop 30%");
               closeAllContracts();
 
@@ -989,10 +989,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
      if (!chart || !candleData || candleData.length === 0) return;
 
-     // Supprimer l’ancienne EMA si elle existe
-     if (emaSeries) {
+      // Supprimer l’ancienne EMA si elle existe
+      if (emaSeries) {
         try { chart.removeSeries(emaSeries); } catch(e) {}
-     }
+      }
 
       // Ajouter la série EMA
       emaSeries = chart.addLineSeries({
@@ -1008,7 +1008,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Convertir au format lightweight
       const emaPlot = emaValues.map((v, i) => ({
-          time: candleData[i].time,  
+          time: candleData[i].time,
           value: v
       }));
 
@@ -1056,6 +1056,10 @@ document.addEventListener("DOMContentLoaded", () => {
              return; // On ignore ce message car il n'a pas de POC
           }
 
+          break;
+
+        case "tick":
+          price = parseFloat(data.tick.quote);
           break;
 
         case "candles":
