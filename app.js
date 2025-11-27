@@ -3349,7 +3349,7 @@ window.addEventListener("error", function (e) {
   setInterval(() => {
     if (BCautomationRunning === true)
     {
-     startAutomation();  
+     startAutomation();    
     }
     else if (BCautomationRunning === false)
     {
