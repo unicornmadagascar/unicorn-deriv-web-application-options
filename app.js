@@ -947,7 +947,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const k = 2 / (period + 1);
       let ema = values[0];
 
-      for (let i = 1; i < values.length; i++) {  
+      for (let i = 1; i < values.length; i++) {   
           ema = values[i] * k + ema * (1 - k);     
       }
       return ema;
