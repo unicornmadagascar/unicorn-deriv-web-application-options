@@ -841,7 +841,7 @@ document.addEventListener("DOMContentLoaded", () => {
               console.log("🔴 SORTIE BUY — drop 30%");
               //closeAllContracts();
               setTimeout(() =>{
-                 AI_handleSignal("SELL"); 
+                 AI_handleSignal("SELL");   
               },3000);  
                
               inTrade = false;
