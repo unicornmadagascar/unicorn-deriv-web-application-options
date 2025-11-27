@@ -75,6 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsOpenLines = null;
   let wsplgauge = null;  
   let currentSeries = null;
+  let emaSeries = null;
   let wspl = null;   
   let connection__ = null;
   let chart = null;
@@ -935,6 +936,73 @@ document.addEventListener("DOMContentLoaded", () => {
 
       analysis(bullsP, bearsP);
     }
+
+   // ======================================================
+   // CALCUL EMA LISTE COMPLÈTE
+   // ======================================================
+   function calcEMAseries(values, period) {
+      if (values.length < period) return [];
+
+      const k = 2 / (period + 1);
+      let emaArray = [];
+      let ema = values[0];
+
+      emaArray.push(ema);
+
+      for (let i = 1; i < values.length; i++) {
+          ema = values[i] * k + ema * (1 - k);
+          emaArray.push(ema);
+      }
+
+      return emaArray;
+    }
+
+    // ======================================================
+    // UPDATE EMA
+    // ======================================================
+
+    function updateEMA(newClose, newTime) {
+
+      if (!newClose || !newTime || newClose === undefined || newClose === null || newTime === undefined || newTime === null) return;
+
+      closes.push(newClose);
+
+      const emaValues = calcEMAseries(closes, emaPeriod);
+
+      emaSeries.update({
+          time: newTime,
+          value: emaValues[emaValues.length - 1]
+      });
+    }
+
+   // ======================================================
+   //  FONCTION PRINCIPALE : TRACER EMA SUR LE CHART
+   // ======================================================
+   function renderEMA(candleData, period, color = "rgba(255, 200, 0, 1)") {
+
+    if (!chart || !candleData || candleData.length === 0) return;
+
+      // Ajouter la série EMA
+      emaSeries = chart.addLineSeries({
+          color,
+          lineWidth: 2,
+      });
+
+      // Extraire les clôtures
+      const closes = candleData.map(c => c.close);
+
+      // Calcul EMA complète
+      const emaValues = calcEMAseries(closes, period);
+
+      // Convertir au format lightweight
+      const emaPlot = emaValues.map((v, i) => ({
+          time: candleData[i].time,
+          value: v
+      }));
+
+      // Tracer
+      emaSeries.setData(emaPlot);
+    }
    
     /*******************************************************************************************
     *  EMA CALCUL
@@ -992,6 +1060,7 @@ document.addEventListener("DOMContentLoaded", () => {
              low: Number(c.low),
              close: Number(c.close),
           }));
+          renderEMA(candles__, 20, "rgba(255, 200, 0, 1)");
           break;
            
         case "ohlc":
@@ -1007,6 +1076,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           if (!bar || candles__ === null || candles__ === undefined) return;   
           const last = candles__[candles__.length - 1];
+
           if (!last || last.time !== openTime) {
              // Nouvelle bougie
              candles__.push(bar);
@@ -1015,6 +1085,7 @@ document.addEventListener("DOMContentLoaded", () => {
              candles__[candles__.length - 1] = bar;
           }
           processCandles(candles__,20);
+          updateEMA(bar.close, bar.time);
           break;
         
         case "ping":
