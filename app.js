@@ -765,7 +765,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const drop = ((maxBullsPercent - bullsP) / maxBullsPercent) * 100;
         console.log("🟦 Attente nouveau BUY — drop% :", drop.toFixed(2));
 
-        if (drop >= 40) {
+        if (drop >= 10) {
             console.log("💚 RÉOUVERTURE BUY après nouvel extrémum !");
             AI_handleSignal("BUY");
 
@@ -792,7 +792,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const drop = ((maxBearsPercent - bearsP) / maxBearsPercent) * 100;
           console.log("🟥 Attente nouveau SELL — drop% :", drop.toFixed(2));
 
-          if (drop >= 40) {
+          if (drop >= 10) {
              console.log("❤️ RÉOUVERTURE SELL après nouvel extrémum !");
              AI_handleSignal("SELL");
 
@@ -837,7 +837,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const drop = ((maxBullsPercent - bullsP) / maxBullsPercent) * 100;
           console.log("🟡 BUY drop% :", drop.toFixed(2));
 
-          if (drop >= 40) {
+          if (drop >= 10) {
               console.log("🔴 SORTIE BUY — drop 30%");
               closeAllContracts();
 
@@ -884,7 +884,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const drop = ((maxBearsPercent - bearsP) / maxBearsPercent) * 100;
           console.log("🟠 SELL drop% :", drop.toFixed(2));
 
-          if (drop >= 40) {
+          if (drop >= 10) {
               console.log("🔴 SORTIE SELL — drop 30%");
               closeAllContracts();
 
@@ -903,7 +903,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /*******************************************************************************************
     *  CALCUL BULLS% / BEARS% A PARTIR DES BOUGIES
     *******************************************************************************************/
-    function processCandles(candles, period = 20) {
+    function processCandles(candles, period = 50) {
 
       if (!candles || candles.length < period) {
          console.warn("Pas assez de bougies pour le calcul.");
@@ -916,7 +916,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // --- EMA ---
       const ema = emaCalc(closes, period);
-      if (!ema) return;
+      if (!ema) return;   
 
       // Dernière bougie
       const H = highs[highs.length - 1];
