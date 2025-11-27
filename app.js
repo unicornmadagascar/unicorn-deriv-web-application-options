@@ -1174,10 +1174,10 @@ document.addEventListener("DOMContentLoaded", () => {
         // Liste des contrats ouverts reçue
         if (data.portfolio) {
             const list = data.portfolio.contracts;
-
+   
             if (!list || list === undefined || list === null || list.length === 0) return;
 
-            // Fermer chaque contrat (prix marché)
+            // Fermer chaque contrat (prix marché)  
             for (let c of list) {
                 wsAutomation_close.send(JSON.stringify({
                     sell: c.contract_id,
