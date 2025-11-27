@@ -947,7 +947,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const k = 2 / (period + 1);
       let emaArray = [];
       let ema = values[0];
-
+   
       emaArray.push(ema);
 
       for (let i = 1; i < values.length; i++) {
@@ -970,7 +970,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       closes.push(newClose);
 
-      const emaValues = calcEMAseries(closes, 20);
+      const emaValues = calcEMAseries(closes, 50);
       
       try {
         emaSeries.update({
@@ -1071,7 +1071,7 @@ document.addEventListener("DOMContentLoaded", () => {
              low: Number(c.low),
              close: Number(c.close),
           }));
-          renderEMA(candles__, 20, "rgba(255, 200, 0, 1)");
+          renderEMA(candles__, 50, "rgba(255, 200, 0, 1)");
           break;
            
         case "ohlc":
@@ -1095,7 +1095,7 @@ document.addEventListener("DOMContentLoaded", () => {
              // Mise à jour de la dernière bougie
              candles__[candles__.length - 1] = bar;
           }
-          processCandles(candles__,20);
+          processCandles(candles__,50);
           updateEMA(bar.close, bar.time);
           break;
         
