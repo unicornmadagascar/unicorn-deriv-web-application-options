@@ -1202,6 +1202,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function removeEMA() {
+    if (emaSeries) {
+        chart.removeSeries(emaSeries);
+        emaSeries = null;
+    }
+  }
+
   function stop() {
     if (wsAI && wsAI.readyState === WebSocket.OPEN) {
       wsAI.send(JSON.stringify({ forget_all: ["candles", "ticks"] }));
@@ -3413,6 +3420,7 @@ window.addEventListener("error", function (e) {
      AI();
     }   
     else if (IAautomationRunning === false) {
+     removeEMA();
      stop();
     }
   },500);
