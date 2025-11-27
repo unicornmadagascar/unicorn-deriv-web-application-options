@@ -1094,7 +1094,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    function AI_handleSignal(direction) {
+    function AI_handleSignal(direction) {  
      const oppositeType = direction === "BUY" ? "MULTDOWN" : "MULTUP";
       const mainType = direction === "BUY" ? "MULTUP" : "MULTDOWN";
 
