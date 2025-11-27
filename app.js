@@ -763,7 +763,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const drop = ((maxBullsPercent - bullsP) / maxBullsPercent) * 100;
         console.log("🟦 Attente nouveau BUY — drop% :", drop.toFixed(2));
 
-        if (drop >= 5) {
+        if (drop >= 20) {
             console.log("💚 RÉOUVERTURE BUY après nouvel extrémum !");
             AI_handleSignal("BUY");
 
@@ -790,7 +790,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const drop = ((maxBearsPercent - bearsP) / maxBearsPercent) * 100;
           console.log("🟥 Attente nouveau SELL — drop% :", drop.toFixed(2));
 
-          if (drop >= 5) {
+          if (drop >= 20) {
              console.log("❤️ RÉOUVERTURE SELL après nouvel extrémum !");
              AI_handleSignal("SELL");
 
@@ -835,7 +835,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const drop = ((maxBullsPercent - bullsP) / maxBullsPercent) * 100;
           console.log("🟡 BUY drop% :", drop.toFixed(2));
 
-          if (drop >= 5) {
+          if (drop >= 20) {
               console.log("🔴 SORTIE BUY — drop 30%");
               closeAllContracts();
 
@@ -882,7 +882,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const drop = ((maxBearsPercent - bearsP) / maxBearsPercent) * 100;
           console.log("🟠 SELL drop% :", drop.toFixed(2));
 
-          if (drop >= 5) {
+          if (drop >= 20) {
               console.log("🔴 SORTIE SELL — drop 30%");
               closeAllContracts();
 
