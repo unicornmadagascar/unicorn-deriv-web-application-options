@@ -76,6 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsplgauge = null;  
   let currentSeries = null;
   let emaSeries = null;
+  let closes = []; 
   let wspl = null;   
   let connection__ = null;
   let chart = null;
