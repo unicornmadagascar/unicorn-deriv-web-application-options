@@ -769,7 +769,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("💚 RÉOUVERTURE BUY après nouvel extrémum !");
             AI_handleSignal("BUY");
 
-            inTrade = true;
+            inTrade = true;   
             currentContract = "BUY";
 
              // reset Bears
