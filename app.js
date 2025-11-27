@@ -842,7 +842,7 @@ document.addEventListener("DOMContentLoaded", () => {
               //closeAllContracts();
               setTimeout(() =>{
                  AI_handleSignal("SELL"); 
-              },3000);
+              },3000);  
                
               inTrade = false;
               currentContract = null;
