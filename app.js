@@ -937,84 +937,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       analysis(bullsP, bearsP);
     }
-
-   // ======================================================
-   // CALCUL EMA LISTE COMPLÈTE
-   // ======================================================
-   function calcEMAseries(values, period) {
-      if (values.length < period) return [];
-
-      const k = 2 / (period + 1);
-      let emaArray = [];
-      let ema = values[0];
-   
-      emaArray.push(ema);
-
-      for (let i = 1; i < values.length; i++) {
-          ema = values[i] * k + ema * (1 - k);
-          emaArray.push(ema);
-      }
-
-      return emaArray;
-    }
-
-    // ======================================================
-    // UPDATE EMA
-    // ======================================================
-
-    function updateEMA(newClose, newTime) {
-
-      if (!newClose || !newTime || newClose === undefined || newClose === null || newTime === undefined || newTime === null) return;
-
-      if (!emaSeries) return;  // ← évite “Object is disposed”
-
-      closes.push(newClose);
-
-      const emaValues = calcEMAseries(closes, 50);
-      
-      try {
-        emaSeries.update({
-           time: newTime,
-           value: emaValues[emaValues.length - 1]
-        });
-      } catch (e) {
-        console.warn("EMA update skipped (series destroyed)", e);
-      }
-    }
-
-   // ======================================================
-   //  FONCTION PRINCIPALE : TRACER EMA SUR LE CHART
-   // ======================================================
-   function renderEMA(candleData, period, color = "rgba(255, 200, 0, 1)") {
-
-     if (!chart || !candleData || candleData.length === 0) return;
-
-      // Supprimer l’ancienne EMA si elle existe
-      if (emaSeries) {
-        try { chart.removeSeries(emaSeries); } catch(e) {}
-      }
-
-      // Ajouter la série EMA
-      emaSeries = chart.addLineSeries({
-          color,
-          lineWidth: 2,
-      });
-
-      // Extraire les clôtures
-      const closes = candleData.map(c => c.close);
-
-      // Calcul EMA complète
-      const emaValues = calcEMAseries(closes, period);
-
-      // Convertir au format lightweight
-      const emaPlot = emaValues.map((v, i) => ({
-          time: candleData[i].time,
-          value: v
-      }));
-
-      // Tracer
-      emaSeries.setData(emaPlot);
-    }
    
     /*******************************************************************************************
     *  EMA CALCUL
@@ -1071,7 +993,6 @@ document.addEventListener("DOMContentLoaded", () => {
              low: Number(c.low),
              close: Number(c.close),
           }));
-          renderEMA(candles__, 50, "rgba(255, 200, 0, 1)");
           break;
            
         case "ohlc":
@@ -1096,7 +1017,6 @@ document.addEventListener("DOMContentLoaded", () => {
              candles__[candles__.length - 1] = bar;
           }
           processCandles(candles__,50);
-          updateEMA(bar.close, bar.time);
           break;
         
         case "ping":
@@ -1209,13 +1129,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!wsAI || wsAI.readyState > 1)
     {
      AI_connectWebSocket();
-    }
-  }
-
-  function removeEMA() {
-    if (emaSeries) {
-        chart.removeSeries(emaSeries);
-        emaSeries = null;
     }
   }
 
@@ -3430,7 +3343,6 @@ window.addEventListener("error", function (e) {
      AI();
     }   
     else if (IAautomationRunning === false) {
-     removeEMA();
      stop();
     }
   },500);
