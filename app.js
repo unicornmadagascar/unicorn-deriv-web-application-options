@@ -840,6 +840,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (drop >= 30) {
               console.log("🔴 SORTIE BUY — drop 30%");
               //closeAllContracts();
+              AI_handleSignal("SELL");
 
               inTrade = false;
               currentContract = null;
@@ -887,6 +888,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (drop >= 30) {
               console.log("🔴 SORTIE SELL — drop 30%");
               //closeAllContracts();
+              AI_handleSignal("BUY");  
 
               inTrade = false;
               currentContract = null;
