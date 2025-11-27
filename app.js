@@ -747,7 +747,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /*******************************************************************************************
     *  ANALYSIS
     *******************************************************************************************/
-    function analysis(bullsP, bearsP) {
+    function analysis(bullsP, bearsP) {   
 
       // -------------------------------
       // 1 — MODE ATTENTE D’UN NOUVEL EXTREMUM AVANT D’OUVRIR MÊME TYPE
