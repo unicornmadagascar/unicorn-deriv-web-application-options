@@ -1008,7 +1008,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Convertir au format lightweight
       const emaPlot = emaValues.map((v, i) => ({
-          time: candleData[i].time,
+          time: candleData[i].time,  
           value: v
       }));
 
