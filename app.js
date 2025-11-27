@@ -968,7 +968,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       closes.push(newClose);
 
-      const emaValues = calcEMAseries(closes, emaPeriod);
+      const emaValues = calcEMAseries(closes, 20);
 
       emaSeries.update({
           time: newTime,
