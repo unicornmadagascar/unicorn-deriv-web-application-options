@@ -966,14 +966,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!newClose || !newTime || newClose === undefined || newClose === null || newTime === undefined || newTime === null) return;
 
+      if (!emaSeries) return;  // ← évite “Object is disposed”
+
       closes.push(newClose);
 
       const emaValues = calcEMAseries(closes, 20);
-
-      emaSeries.update({
-          time: newTime,
-          value: emaValues[emaValues.length - 1]
-      });
+      
+      try {
+        emaSeries.update({
+           time: newTime,
+           value: emaValues[emaValues.length - 1]
+        });
+      } catch (e) {
+        console.warn("EMA update skipped (series destroyed)", e);
+      }
     }
 
    // ======================================================
@@ -981,7 +987,12 @@ document.addEventListener("DOMContentLoaded", () => {
    // ======================================================
    function renderEMA(candleData, period, color = "rgba(255, 200, 0, 1)") {
 
-    if (!chart || !candleData || candleData.length === 0) return;
+     if (!chart || !candleData || candleData.length === 0) return;
+
+     // Supprimer l’ancienne EMA si elle existe
+     if (emaSeries) {
+        try { chart.removeSeries(emaSeries); } catch(e) {}
+     }
 
       // Ajouter la série EMA
       emaSeries = chart.addLineSeries({
@@ -1045,11 +1056,6 @@ document.addEventListener("DOMContentLoaded", () => {
              return; // On ignore ce message car il n'a pas de POC
           }
 
-          break;
-        
-        case "tick":
-          const data__ = data.tick;
-          price = parseFloat(data__.tick.quote);
           break;
 
         case "candles":
@@ -1169,11 +1175,11 @@ document.addEventListener("DOMContentLoaded", () => {
         // Autorisé → demander la liste des contrats
         if (data.authorize) {
             wsAutomation_close.send(JSON.stringify({ portfolio: 1 }));
-        }
+        }   
 
         // Liste des contrats ouverts reçue
         if (data.portfolio) {
-            const list = data.portfolio.contracts;
+            const list = data.portfolio.contracts;   
    
             if (!list || list === undefined || list === null || list.length === 0) return;
 
