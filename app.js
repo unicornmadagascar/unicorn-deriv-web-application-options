@@ -779,10 +779,10 @@ document.addEventListener("DOMContentLoaded", () => {
              return;
          }
          return;
-      }
+      }  
 
 
-      if (!inTrade && waitingFor === "SELL_EXTREMUM") {
+      if (!inTrade && waitingFor === "SELL_EXTREMUM") {  
 
          if (maxBearsPercent === null || bearsP > maxBearsPercent) {
              maxBearsPercent = bearsP;
