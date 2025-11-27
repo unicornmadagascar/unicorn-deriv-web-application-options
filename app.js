@@ -1018,7 +1018,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ema = values[i] * k + ema * (1 - k);  
       }
       return ema;
-    }
+    }  
   
     /*******************************************************************************************
     *  TRAILING STOP INTELLIGENT (Sans casser votre code)
