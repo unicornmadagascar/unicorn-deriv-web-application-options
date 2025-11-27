@@ -799,7 +799,7 @@ document.addEventListener("DOMContentLoaded", () => {
              inTrade = true;
              currentContract = "SELL";
 
-             maxBullsPercent = null;
+             maxBullsPercent = null;  
              waitingFor = null;
 
              return;
