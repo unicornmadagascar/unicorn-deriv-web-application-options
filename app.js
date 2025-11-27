@@ -903,7 +903,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /*******************************************************************************************
     *  CALCUL BULLS% / BEARS% A PARTIR DES BOUGIES
     *******************************************************************************************/
-    function processCandles(candles, period = 50) {
+    function processCandles(candles, period = 10) {
 
       if (!candles || candles.length < period) {
          console.warn("Pas assez de bougies pour le calcul.");
@@ -947,7 +947,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const k = 2 / (period + 1);
       let ema = values[0];
 
-      for (let i = 1; i < values.length; i++) {
+      for (let i = 1; i < values.length; i++) {  
           ema = values[i] * k + ema * (1 - k);  
       }
       return ema;
@@ -1016,7 +1016,7 @@ document.addEventListener("DOMContentLoaded", () => {
              // Mise à jour de la dernière bougie
              candles__[candles__.length - 1] = bar;
           }
-          processCandles(candles__,50);
+          processCandles(candles__,10);
           break;
         
         case "ping":
