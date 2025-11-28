@@ -1095,7 +1095,7 @@ document.addEventListener("DOMContentLoaded", () => {
     {
      //AI_connectWebSocket();
     }  
-
+  
   }
 
   function stop() {
