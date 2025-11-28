@@ -823,7 +823,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // LSTM layer
       model.add(tf.layers.lstm({
         units: LSTM_UNITS,
-        inputShape: inpShape,
+        inputShape: inpShape,  
         recurrentInitializer: 'glorotUniform',
         kernelInitializer: 'glorotUniform',
         recurrentActivation: 'sigmoid'
