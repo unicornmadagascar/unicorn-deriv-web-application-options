@@ -3067,7 +3067,7 @@ function extractValue(event, key) {
     } else {
       IAtoggleAutomationBtn.textContent = "Launch IA Automation";
       IAtoggleAutomationBtn.style.background = "white";  
-      IAtoggleAutomationBtn.style.color = "gray";   
+      IAtoggleAutomationBtn.style.color = "gray";      
       IAautomationRunning = false;  
       setTimeout(stop,2000);
       ROCtoggleAutomationBtn.disabled = false;
