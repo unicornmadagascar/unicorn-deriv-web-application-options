@@ -980,7 +980,7 @@ document.addEventListener("DOMContentLoaded", () => {
         case "portfolio":   
           AIContracts = data.portfolio?.contracts || [];   
           if (!AIContracts || AIContracts === undefined || AIContracts === null)
-             return; 
+             return;   
 
           break;
 
