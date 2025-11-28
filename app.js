@@ -821,7 +821,7 @@ document.addEventListener("DOMContentLoaded", () => {
           model.dispose();
           model = null;
       }
-
+  
       await tf.ready();
       model = tf.sequential();
 
@@ -1080,7 +1080,7 @@ document.addEventListener("DOMContentLoaded", () => {
     {
      AI_connectWebSocket();
     }
-    
+
   }
 
   function stop() {
