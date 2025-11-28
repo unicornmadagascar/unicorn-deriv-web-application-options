@@ -815,6 +815,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function buildLSTMModel(windowSize=WINDOW_SIZE, features=FEATURES){
       const inpShape = [windowSize, features]; // [timesteps, features]
+
+      // 1. Supprimer l'ancien modèle si il existe
+      if (model) {
+          model.dispose();
+          model = null;
+      }
+
       await tf.ready();
       model = tf.sequential();
 
@@ -1067,12 +1074,13 @@ document.addEventListener("DOMContentLoaded", () => {
     /*******************************************************************************************
     *  LANCEMENT DU SYSTEME
     *******************************************************************************************/
-    initLSTMHarmonic();
 
     if (!wsAI || wsAI.readyState > 1)
     {
      AI_connectWebSocket();
     }
+
+    return { initLSTMHarmonic };
   }
 
   function stop() {
@@ -2989,7 +2997,6 @@ function extractValue(event, key) {
       IAtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       IAtoggleAutomationBtn.style.color = "white";
       IAautomationRunning = true;
-      AI();
       ROCtoggleAutomationBtn.disabled = true;
       BCtoggleAutomationBtn.disabled = true;
     } else {
@@ -3281,6 +3288,14 @@ window.addEventListener("error", function (e) {
       connectDeriv_table();
     }
   }, 300);
+
+  // BC Automation
+  setInterval(() => {
+    if (IAautomationRunning === true)
+    {
+     AI();    
+    }
+  },500);   
 
   // BC Automation
   setInterval(() => {
