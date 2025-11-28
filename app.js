@@ -727,7 +727,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /*******************************************************************************************
     *  CONNECT WEBSOCKET
     *******************************************************************************************/
-    function AI_connectWebSocket() {
+    function AI_connectWebSocket(model) {
 
       if (wsAI === null)
       {
@@ -746,7 +746,7 @@ document.addEventListener("DOMContentLoaded", () => {
        wsAI.onopen=()=>{ wsAI.send(JSON.stringify({ authorize: TOKEN })); };
       }
 
-      wsAI.onmessage = (msg) => AI_handleMessage(JSON.parse(msg.data), wsAI);   
+      wsAI.onmessage = (msg) => AI_handleMessage(JSON.parse(msg.data),model, wsAI);   
       wsAI.onclose = () => { setTimeout(AI_connectWebSocket, 500); };      
       wsAI.onerror = (err) => { console.error("WebSocket error:", err); wsAI.close(); wsAI = null; setTimeout(AI_connectWebSocket, 500); };  
     }
@@ -871,7 +871,7 @@ document.addEventListener("DOMContentLoaded", () => {
     *  ONLINE TRAINING STEP
     *******************************************************************************************/
 
-    async function onlineTrainStep(){
+    async function onlineTrainStep(model){
       if(!model) return;
       if(isTraining) return;
       const batch = sampleTrainingBatch();
@@ -893,7 +893,7 @@ document.addEventListener("DOMContentLoaded", () => {
     *  OSCILLATOR PREDICTION
     *******************************************************************************************/
 
-    function predictOscillatorFromBuffer(){
+    function predictOscillatorFromBuffer(model){
       if(!model) return null;
       if(emaBuffer.length < WINDOW_SIZE) return null;
       // prepare input: last WINDOW_SIZE values
@@ -910,7 +910,7 @@ document.addEventListener("DOMContentLoaded", () => {
     *  EMA CALCUL
     *******************************************************************************************/
 
-    async function processTick(rawPrice){
+    async function processTick(rawPrice, model){
       // 1) update smoothed EMA
       const ema = updateSmoothedEMA(rawPrice);
 
@@ -923,11 +923,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if(now - lastPredTime > RE_TRAIN_EVERY_MS){
         lastPredTime = now;
         // run training in background (non-blocking)
-        onlineTrainStep().catch(e=>console.error(e));
+        onlineTrainStep(model).catch(e=>console.error(e));
       }
 
       // 4) prediction (fast) — here we predict each tick as well
-      const pred = predictOscillatorFromBuffer();
+      const pred = predictOscillatorFromBuffer(model);
       return { ema, prediction: pred };
     }   
 
@@ -939,9 +939,13 @@ document.addEventListener("DOMContentLoaded", () => {
       model = await buildLSTMModel();
       console.log('model exists?', !!model);
       console.log('layers count:', model ? model.layers.length : 'no model');
+
       if (!model) return;
 
-      AI_connectWebSocket();
+      if (!wsAI || wsAI.readyState > 1)
+      {
+       AI_connectWebSocket(model);
+      }
     }
 
     /*******************************************************************************************
@@ -990,8 +994,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         case "tick":
           (async () => {
-               const price = Number(data.tick.quote);
-               const { ema, prediction } = await processTick(price);
+               const price = parseFloat(data.tick.quote);
+               const { ema, prediction } = await processTick(price, model);
                Contractfunction(prediction);
           })();
           break;
@@ -1030,7 +1034,7 @@ document.addEventListener("DOMContentLoaded", () => {
                  // Mise à jour de la dernière bougie
                  candles__[candles__.length - 1] = bar;
               }
-              const { ema_, prediction_ } = await processTick(bar.close);
+              const { ema_, prediction_ } = await processTick(bar.close, model);
               Contractfunction(prediction_);
            })();
           break;
@@ -1091,11 +1095,6 @@ document.addEventListener("DOMContentLoaded", () => {
     *******************************************************************************************/
     initLSTMHarmonic();
 
-    if (!wsAI || wsAI.readyState > 1)
-    {
-     //AI_connectWebSocket();
-    }  
-  
   }
 
   function stop() {
