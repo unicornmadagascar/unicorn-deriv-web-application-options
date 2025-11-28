@@ -722,357 +722,385 @@ document.addEventListener("DOMContentLoaded", () => {
     wsOpenLines.onclose = () => console.log("❌ WS closed for open lines");
   }
 
-  function AI() {
 
-    /*******************************************************************************************
-    *  CONNECT WEBSOCKET
-    *******************************************************************************************/
-    function AI_connectWebSocket(model) {
+   // ---------- AI module corrected (replace previous functions with this block) ----------
 
-      if (wsAI === null)
-      {
-       wsAI = new WebSocket(WS_URL);
-       wsAI.onopen=()=>{ wsAI.send(JSON.stringify({ authorize: TOKEN })); };
+   function AI() {
+     // MODULE-SCOPE variables (shared by inner functions)
+     let model = null;
+     let wsAI = window.wsAI || null; // conserve wsAI si défini ailleurs
+     let smoothEMA = null;
+     let previousMomentum = 0;
+     const emaBuffer = window.emaBuffer || []; // si tu avais déjà une variable globale
+     const windowDataset = window.windowDataset || [];
+     let isTraining = false;
+     let lastPredTime = 0;
+     // Assure-toi que ces constantes existent globalement : SMOOTH_PERIOD, WINDOW_SIZE, FEATURES, LSTM_UNITS, DENSE_UNITS, LEARNING_RATE, BATCH_SIZE, MIN_WINDOWS_TO_TRAIN, MAX_BUFFER, RE_TRAIN_EVERY_MS, TOKEN, WS_URL, currentSymbol, currentInterval, currentChartType, stakeInput, multiplierInput, buyNumber, sellNumber, Openpositionlines, AIContracts, AIProposal, etc.
+
+  /*******************************************************************************************
+   *  CONNECT WEBSOCKET
+   *******************************************************************************************/
+    function AI_connectWebSocket() {
+      try {
+        if (!wsAI || wsAI.readyState > 1) {
+          wsAI = new WebSocket(WS_URL);
+        }
+
+        wsAI.onopen = () => {
+          try {
+            wsAI.send(JSON.stringify({ authorize: TOKEN }));
+          } catch (e) { console.warn('wsAI send authorize failed', e); }
+        };
+
+        wsAI.onmessage = (msg) => {
+          try {
+            const data = JSON.parse(msg.data);
+            AI_handleMessage(data);
+          } catch (e) {
+            console.error('WS message parse error', e);
+          }
+        };
+
+        wsAI.onclose = () => {
+          // reconnect after short delay
+          setTimeout(() => AI_connectWebSocket(), 500);
+        };
+
+        wsAI.onerror = (err) => {
+          console.error("WebSocket error:", err);
+          try { wsAI.close(); } catch(e) {}
+            wsAI = null;
+            setTimeout(() => AI_connectWebSocket(), 500);
+        };
+      } catch (e) {
+        console.error('AI_connectWebSocket error', e);
       }
-  
-      if (wsAI && (wsAI.readyState === WebSocket.OPEN || wsAI.readyState === WebSocket.CONNECTING))
-      {
-       wsAI.onopen=()=>{ wsAI.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-
-      if (wsAI && (wsAI.readyState === WebSocket.CLOSED || wsAI.readyState === WebSocket.CLOSING))
-      {
-       wsAI = new WebSocket(WS_URL);
-       wsAI.onopen=()=>{ wsAI.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-
-      wsAI.onmessage = (msg) => AI_handleMessage(JSON.parse(msg.data),model, wsAI);   
-      wsAI.onclose = () => { setTimeout(AI_connectWebSocket, 500); };      
-      wsAI.onerror = (err) => { console.error("WebSocket error:", err); wsAI.close(); wsAI = null; setTimeout(AI_connectWebSocket, 500); };  
     }
 
-    /*******************************************************************************************
-    *  ANALYSIS
-    *******************************************************************************************/
-
+  /*******************************************************************************************
+   *  ANALYSIS / EMA LISSÉE
+   *******************************************************************************************/
     function initSmoothedEMA(initialPrice) {
-      smoothEMA = initialPrice;
-     }
-
-    /*******************************************************************************************
-    *  CALCUL BULLS% / BEARS% A PARTIR DES BOUGIES
-    *******************************************************************************************/
+       smoothEMA = initialPrice;
+    }
 
     function updateSmoothedEMA(price) {
       if (smoothEMA === null) initSmoothedEMA(price);
-
-      // Formula: smoothed = prev + (price - prev) / period
       smoothEMA = smoothEMA + (price - smoothEMA) / SMOOTH_PERIOD;
-
-     return smoothEMA;
+      return smoothEMA;
     }
 
-    /*******************************************************************************************
-    *  COMPUTE HARMONIC
-    *******************************************************************************************/
-
-    function computeHarmonicFromEMA(emaNow, emaPrev, Beta=0.25, Omega0=0.1, dt=1){
-      // Use EMA values as "prices"
-      const momentum = (emaNow - emaPrev) / dt;
-      const acceleration = (momentum - previousMomentum) / dt;
-      previousMomentum = momentum;
-      const deviation = emaNow - emaNow; // for smoothed EMA this tends to 0; we still include star for completeness
-      const osc = acceleration + 2 * Beta * momentum + (Omega0 * Omega0) * deviation;
-      return { osc, momentum, acceleration, deviation };
+  /*******************************************************************************************
+   *  COMPUTE HARMONIC
+   *******************************************************************************************/
+    function computeHarmonicFromEMA(emaNow, emaPrev, Beta = 0.25, Omega0 = 0.1, dt = 1) {
+       const momentum = (emaNow - emaPrev) / dt;
+       const acceleration = (momentum - previousMomentum) / dt;
+       previousMomentum = momentum;
+       const deviation = 0; // emaNow - emaNow is always 0 for smoothed EMA
+       const osc = acceleration + 2 * Beta * momentum + (Omega0 * Omega0) * deviation;
+       return { osc, momentum, acceleration, deviation };
     }
 
-    /*******************************************************************************************
-    *  EMA CALCUL
-    *******************************************************************************************/
+  /*******************************************************************************************
+   *  BUILD WINDOWS / PUSH EMA
+   *******************************************************************************************/
+    function pushEMA(ema) {
+       emaBuffer.push(ema);
+       if (emaBuffer.length > MAX_BUFFER) emaBuffer.shift();
 
-    function pushEMA(ema){
-      emaBuffer.push(ema);
-      if(emaBuffer.length > MAX_BUFFER) emaBuffer.shift();
-      // build windows when enough values
-      if(emaBuffer.length >= WINDOW_SIZE + 1){
-         // create last window of length WINDOW_SIZE and its target oscillator (next-step)
-         const startIdx = emaBuffer.length - 1 - WINDOW_SIZE; // window starts here
-         const inputWindow = emaBuffer.slice(startIdx, startIdx + WINDOW_SIZE); // length WINDOW_SIZE
-         // compute target oscillator using ema at t+0 (latest) and t-1 (previous)
-         const emaPrev = emaBuffer[emaBuffer.length - 2];
-         const emaNow = emaBuffer[emaBuffer.length - 1];
-         const { osc } = computeHarmonicFromEMA(emaNow, emaPrev);
-         // store window-target pair (as plain arrays)
-         windowDataset.push({ x: inputWindow.slice(), y: osc });
-         // keep dataset bounded
-         if(windowDataset.length > 2000) windowDataset.shift();
-       } 
+       if (emaBuffer.length >= WINDOW_SIZE + 1) {
+          const startIdx = emaBuffer.length - 1 - WINDOW_SIZE;
+          const inputWindow = emaBuffer.slice(startIdx, startIdx + WINDOW_SIZE);
+          const emaPrev = emaBuffer[emaBuffer.length - 2];
+          const emaNow = emaBuffer[emaBuffer.length - 1];
+          const { osc } = computeHarmonicFromEMA(emaNow, emaPrev);
+          windowDataset.push({ x: inputWindow.slice(), y: osc });
+          if (windowDataset.length > 2000) windowDataset.shift();
+
+          // light logging every 50 windows to avoid spam
+          if (windowDataset.length % 50 === 0) {
+            console.log('pushEMA: windowDataset length =', windowDataset.length, 'emaBuffer =', emaBuffer.length);
+          }
+       }
     }
 
-    /*******************************************************************************************
-    *  EMA CALCUL
-    *******************************************************************************************/
-
+  /*******************************************************************************************
+   *  BUILD LSTM MODEL
+   *******************************************************************************************/
     async function buildLSTMModel(windowSize = WINDOW_SIZE, features = FEATURES) {
-      await tf.ready();
+       try {
+          await tf.ready();
 
-      // Si un ancien modèle existe, on le détruit proprement
-      if (typeof model !== 'undefined' && model && typeof model.dispose === 'function') {
-        try { model.dispose(); } catch(e){ console.warn('dispose error', e); }
-        model = null;
+          // Dispose previous safely
+          if (model && typeof model.dispose === 'function') {
+            try { model.dispose(); } catch (e) { console.warn('dispose error', e); }
+            model = null;
+          }
+
+          const m = tf.sequential();
+          m.add(tf.layers.lstm({
+             units: LSTM_UNITS,
+             inputShape: [windowSize, features],
+             recurrentInitializer: 'glorotUniform',
+             kernelInitializer: 'glorotUniform',
+             recurrentActivation: 'sigmoid'
+          }));
+          m.add(tf.layers.dense({ units: DENSE_UNITS, activation: 'relu' }));
+          m.add(tf.layers.dense({ units: 1, activation: 'linear' }));
+
+          const opt = tf.train.adam(LEARNING_RATE);
+          m.compile({ optimizer: opt, loss: 'meanSquaredError' });
+
+          console.log('LSTM model built:');
+          m.summary();
+
+          model = m;
+          return model;
+      } catch (e) {
+          console.error('buildLSTMModel error', e);
+          throw e;
       }
-
-      // Crée le modèle localement puis l'assigne à la variable globale
-      const m = tf.sequential();
-      m.add(tf.layers.lstm({
-        units: LSTM_UNITS,
-        inputShape: [windowSize, features],
-        recurrentInitializer: 'glorotUniform',
-        kernelInitializer: 'glorotUniform',
-        recurrentActivation: 'sigmoid'
-      }));
-      m.add(tf.layers.dense({ units: DENSE_UNITS, activation: 'relu' }));
-      m.add(tf.layers.dense({ units: 1, activation: 'linear' }));
-
-      const opt = tf.train.adam(LEARNING_RATE);
-      m.compile({ optimizer: opt, loss: 'meanSquaredError' });
-
-      // Affiche la summary (ne retourne rien)
-      console.log('LSTM model built:');
-      m.summary();
-
-      // Assigne globalement et retourne
-      model = m;
-      return model;
     }
 
-    /*******************************************************************************************
-    *  EMA CALCUL
-    *******************************************************************************************/
-
-    function sampleTrainingBatch(batchSize = BATCH_SIZE){
-      if(windowDataset.length < MIN_WINDOWS_TO_TRAIN) return null;
-      // sample up to batchSize examples randomly
-      const n = Math.min(batchSize, windowDataset.length);
-      const xs = [];
-      const ys = [];
-      for(let i=0;i<n;i++){
-         const idx = Math.floor(Math.random() * windowDataset.length);
-         xs.push(windowDataset[idx].x.map(v=>[v])); // shape: [WINDOW_SIZE, FEATURES]
-         ys.push([windowDataset[idx].y]); // scalar
+  /*******************************************************************************************
+   *  SAMPLE BATCH
+   *******************************************************************************************/
+    function sampleTrainingBatch(batchSize = BATCH_SIZE) {
+      try {
+         if (windowDataset.length < MIN_WINDOWS_TO_TRAIN) return null;
+         const n = Math.min(batchSize, windowDataset.length);
+         const xs = [];
+         const ys = [];
+         for (let i = 0; i < n; i++) {
+            const idx = Math.floor(Math.random() * windowDataset.length);
+            xs.push(windowDataset[idx].x.map(v => [v]));
+            ys.push([windowDataset[idx].y]);
+         }
+         const Xt = tf.tensor3d(xs, [n, WINDOW_SIZE, FEATURES]);
+         const yt = tf.tensor2d(ys, [n, 1]);
+         return { Xt, yt };
+      } catch (e) {
+         console.error('sampleTrainingBatch error', e);
+         return null;
       }
-      // convert to tensors
-      const Xt = tf.tensor3d(xs, [n, WINDOW_SIZE, FEATURES]);
-      const yt = tf.tensor2d(ys, [n, 1]);
-      return { Xt, yt };
     }
 
-    /*******************************************************************************************
-    *  ONLINE TRAINING STEP
-    *******************************************************************************************/
-
-    async function onlineTrainStep(model){
-      if(!model) return;
-      if(isTraining) return;
-      const batch = sampleTrainingBatch();
-      if(!batch) return;
-      isTraining = true;
-      try{
-        // small epochs to adapt quickly
-        await model.fit(batch.Xt, batch.yt, { epochs: 2, batchSize: Math.min(8, batch.Xt.shape[0]), shuffle: true, verbose: 0 });
-      }catch(err){
-        console.error('Train error', err);
-      }finally{
-        batch.Xt.dispose();
-        batch.yt.dispose();
+  /*******************************************************************************************
+   *  ONLINE TRAIN STEP (safe)
+   *******************************************************************************************/
+   async function onlineTrainStep() {
+     if (!model) {
+       // console.warn('onlineTrainStep: no model yet');
+       return;
+     }
+     if (isTraining) {
+        // already running
+        return;
+     }
+     const batch = sampleTrainingBatch();
+     if (!batch) return;
+     isTraining = true;
+     try {
+       console.log('onlineTrainStep: start training on', batch.Xt.shape[0], 'samples');
+       await model.fit(batch.Xt, batch.yt, {
+         epochs: 2,
+         batchSize: Math.min(8, batch.Xt.shape[0]),
+         shuffle: true,
+         verbose: 0
+       });
+       console.log('onlineTrainStep: training done');
+     } catch (err) {
+       console.error('Train error', err);
+     } finally {
+       try { batch.Xt.dispose(); batch.yt.dispose(); } catch (e) { console.warn('dispose error', e); }
         isTraining = false;
-      }
-    }
-    
-    /*******************************************************************************************
-    *  OSCILLATOR PREDICTION
-    *******************************************************************************************/
+     }
+   }
 
-    function predictOscillatorFromBuffer(model){
-      if(!model) return null;
-      if(emaBuffer.length < WINDOW_SIZE) return null;
-      // prepare input: last WINDOW_SIZE values
-      const seq = emaBuffer.slice(-WINDOW_SIZE).map(v=>[v]); // shape [WINDOW_SIZE, FEATURES]
-      return tf.tidy(() => {
+  /*******************************************************************************************
+   *  PREDICTION
+   *******************************************************************************************/
+   function predictOscillatorFromBuffer() {
+     try {
+       if (!model) return null;
+       if (emaBuffer.length < WINDOW_SIZE) return null;
+       const seq = emaBuffer.slice(-WINDOW_SIZE).map(v => [v]);
+       return tf.tidy(() => {
          const input = tf.tensor3d([seq], [1, WINDOW_SIZE, FEATURES]);
          const out = model.predict(input);
          const val = out.dataSync()[0];
-        return val;
-      });
+         return val;
+       });
+     } catch (e) {
+       console.error('predictOscillatorFromBuffer error', e);
+       return null;
+     }
     }
 
-    /*******************************************************************************************
-    *  EMA CALCUL
-    *******************************************************************************************/
+  /*******************************************************************************************
+   *  PROCESS TICK (safe)
+   *******************************************************************************************/
+    async function processTick(rawPrice) {
+      try {
+         const ema = updateSmoothedEMA(rawPrice);
+         pushEMA(ema);
 
-    async function processTick(rawPrice, model){
-      // 1) update smoothed EMA
-      const ema = updateSmoothedEMA(rawPrice);
+         const now = Date.now();
+         if (now - lastPredTime >= RE_TRAIN_EVERY_MS) {
+            lastPredTime = now;
+            // fire and forget (training handles isTraining)
+            onlineTrainStep().catch(e => console.error('onlineTrainStep failed:', e));
+         }
 
-      // 2) push EMA to buffers & build windows
-      pushEMA(ema);
-
-      // 3) optionally trigger a quick online train step (fast)
-      // train every RE_TRAIN_EVERY_MS or when many windows
-      const now = Date.now();
-      if(now - lastPredTime > RE_TRAIN_EVERY_MS){
-        lastPredTime = now;
-        // run training in background (non-blocking)
-        onlineTrainStep(model).catch(e=>console.error(e));
+         const pred = predictOscillatorFromBuffer();
+         return { ema, prediction: pred };
+      } catch (err) {
+         console.error('processTick error', err);
+         return { ema: null, prediction: null };
       }
+    }
 
-      // 4) prediction (fast) — here we predict each tick as well
-      const pred = predictOscillatorFromBuffer(model);
-      return { ema, prediction: pred };
-    }   
-
-    /*******************************************************************************************
-    *  INIT LSTM HARMONIC
-    *******************************************************************************************/
-
-    async function initLSTMHarmonic(){   
-      model = await buildLSTMModel();
+  /*******************************************************************************************
+   *  INIT LSTM HARMONIC
+   *******************************************************************************************/
+  async function initLSTMHarmonic() {
+    try {
+      await buildLSTMModel();
       console.log('model exists?', !!model);
       console.log('layers count:', model ? model.layers.length : 'no model');
 
-      if (!model) return;
+      // start WS only after model built
+      if (!wsAI || wsAI.readyState > 1) {
+        AI_connectWebSocket();
+      }
+    } catch (e) {
+      console.error('initLSTMHarmonic error', e);
+    }
+  }
 
-      if (!wsAI || wsAI.readyState > 1)
-      {
-       AI_connectWebSocket(model);
+  /*******************************************************************************************
+   *  CONTRACT DECISION
+   *******************************************************************************************/
+  function Contractfunction(prediction) {
+    if (prediction !== null) {
+      const upThreshold = 0.0005, downThreshold = -0.0005;
+      if (prediction > upThreshold) {
+        AI_handleSignal("BUY");
+      } else if (prediction < downThreshold) {
+        AI_handleSignal("SELL");
       }
     }
+  }
 
-    /*******************************************************************************************
-    *  EMA CALCUL
-    *******************************************************************************************/
-
-    function Contractfunction(prediction)
-     {
-      // decide using prediction value threshold
-      if(prediction !== null){
-        const upThreshold = 0.0005, downThreshold = -0.0005;
-        if(prediction > upThreshold) {
-          AI_handleSignal("BUY");
-        } else if (prediction < downThreshold) {     
-          AI_handleSignal("SELL");
-        }
-      }
-     }
-
-    /*******************************************************************************************
-    *  TRAILING STOP INTELLIGENT (Sans casser votre code)
-    *******************************************************************************************/
-
-    function AI_handleMessage(data, model, wsAI) {
+  /*******************************************************************************************
+   *  MESSAGE HANDLER (uses closure model & wsAI)
+   *******************************************************************************************/
+  function AI_handleMessage(data) {
+    try {
       switch (data.msg_type) {
         case "authorize":
-          wsAI.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
-          wsAI.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
-          wsAI.send(JSON.stringify({ portfolio: 1 }));  
+          try {
+            wsAI.send(JSON.stringify(Payloadforsubscription(currentSymbol, currentInterval, currentChartType)));
+            wsAI.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
+            wsAI.send(JSON.stringify({ portfolio: 1 }));
+          } catch (e) { console.warn('authorize send failed', e); }
           break;
 
-        case "portfolio":   
-          AIContracts = data.portfolio?.contracts || [];   
-          if (!AIContracts || AIContracts === undefined || AIContracts === null)
-             return;   
-
+        case "portfolio":
+          AIContracts = data.portfolio?.contracts || [];
           break;
 
-        case "proposal_open_contract": 
-          if (data.proposal_open_contract) {
-             AIProposal = data.proposal_open_contract;
-          } else {
-             return; // On ignore ce message car il n'a pas de POC
-          }
+        case "proposal_open_contract":
+          if (data.proposal_open_contract) AIProposal = data.proposal_open_contract;
           break;
 
         case "tick":
           (async () => {
-               const price = parseFloat(data.tick.quote);
-               const { ema, prediction } = await processTick(price, model);
-               Contractfunction(prediction);
+            try {
+              const price = parseFloat(data.tick.quote);
+              const { ema, prediction } = await processTick(price);
+              Contractfunction(prediction);
+            } catch (e) {
+              console.error('tick handler error', e);
+            }
           })();
           break;
 
         case "candles":
-          const cd = data.candles;
+          const cd = data.candles || [];
           candles__ = cd.map(c => ({
-             time: Number(c.epoch),   
-             open: Number(c.open),
-             high: Number(c.high),
-             low: Number(c.low),
-             close: Number(c.close),
+            time: Number(c.epoch),
+            open: Number(c.open),
+            high: Number(c.high),
+            low: Number(c.low),
+            close: Number(c.close),
           }));
           break;
-           
+
         case "ohlc":
-           (async () => {     
+          (async () => {
+            try {
               const o = data.ohlc;
-              const openTime = Number(o.open_time);  // time of the current candle
+              const openTime = Number(o.open_time);
               const bar = {
-                 time: openTime,
-                 open: Number(o.open),
-                 high: Number(o.high),
-                 low: Number(o.low),   
-                 close: Number(o.close),
+                time: openTime,
+                open: Number(o.open),
+                high: Number(o.high),
+                low: Number(o.low),
+                close: Number(o.close),
               };
-
-              if (!bar || candles__ === null || candles__ === undefined) return;   
-
+              if (!bar || !candles__) return;
               const last = candles__[candles__.length - 1];
+              if (!last || last.time !== openTime) candles__.push(bar);
+              else candles__[candles__.length - 1] = bar;
 
-              if (!last || last.time !== openTime) {
-                 // Nouvelle bougie
-                 candles__.push(bar);
-              } else {
-                 // Mise à jour de la dernière bougie
-                 candles__[candles__.length - 1] = bar;
-              }
-              const { ema_, prediction_ } = await processTick(bar.close, model);
+              const { ema: ema_, prediction: prediction_ } = await processTick(bar.close);
               Contractfunction(prediction_);
-           })();
+            } catch (e) {
+              console.error('ohlc handler error', e);
+            }
+          })();
           break;
-        
+
         case "ping":
-          wsAI.send(JSON.stringify({ ping: 1 }));  
-          break;  
+          try { wsAI.send(JSON.stringify({ ping: 1 })); } catch (e) { }
+          break;
       }
+    } catch (e) {
+      console.error('AI_handleMessage error', e);
+    }
+  }
+
+  /*******************************************************************************************
+   *  SIGNAL / ORDER (intact)
+   *******************************************************************************************/
+  function AI_handleSignal(direction) {
+    const oppositeType = direction === "BUY" ? "MULTDOWN" : "MULTUP";
+    const mainType = direction === "BUY" ? "MULTUP" : "MULTDOWN";
+
+    // close opposite contracts
+    AIContracts
+      .filter(c => c.symbol === currentSymbol && c.contract_type === oppositeType)
+      .forEach(c => {
+        try { wsAI.send(JSON.stringify({ sell: c.contract_id, price: 0 })); } catch (e) { }
+      });
+
+    // if a contract active exists, skip
+    if (AIProposal?.contract_id) return;
+
+    const stake = parseFloat(stakeInput.value) || 1;
+    const multiplier = parseInt(multiplierInput.value) || 40;
+    const repeat = direction === "BUY"
+      ? (parseInt(buyNumber.value) || 1)
+      : (parseInt(sellNumber.value) || 1);
+
+    if ((typeof multiplier !== "number" && multiplier === "") || (typeof stake !== "number" && stake === "") || (typeof repeat !== "number" && repeat === "")) {
+      return;
     }
 
-    function AI_handleSignal(direction) {  
-     const oppositeType = direction === "BUY" ? "MULTDOWN" : "MULTUP";
-      const mainType = direction === "BUY" ? "MULTUP" : "MULTDOWN";
-
-      // 1. Fermer les contrats opposés
-      AIContracts
-        .filter(c => c.symbol === currentSymbol && c.contract_type === oppositeType)
-        .forEach(c => {
-          wsAI.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-        });
-
-      // 2. Vérifier si un contrat actif existe avant d'ouvrir
-      if (AIProposal?.contract_id) {
-        return;
-      }
-
-      // 3. Ouvrir un nouveau contrat
-      const stake = parseFloat(stakeInput.value) || 1;
-      const multiplier = parseInt(multiplierInput.value) || 40;
-      const repeat = direction === "BUY"
-        ? (parseInt(buyNumber.value) || 1)
-        : (parseInt(sellNumber.value) || 1);
-
-      if ((typeof multiplier !== "number" && multiplier === "") || (typeof stake !== "number" && stake === "") || (typeof repeat !== "number" && repeat === "")) {
-          return;
-      }
-
-      for (let i = 0; i < repeat; i++) {
+    for (let i = 0; i < repeat; i++) {
+      try {
         wsAI.send(JSON.stringify({
           buy: 1,
           price: stake.toFixed(2),
@@ -1085,17 +1113,36 @@ document.addEventListener("DOMContentLoaded", () => {
             multiplier: multiplier,
           }
         }));
-      }
-
-      Openpositionlines(currentSeries);
+      } catch (e) { console.warn('buy send failed', e); }
     }
 
-    /*******************************************************************************************
-    *  LANCEMENT DU SYSTEME
-    *******************************************************************************************/
-    initLSTMHarmonic();
-
+    Openpositionlines(currentSeries);
   }
+
+  // expose public API minimal
+    return {
+      initLSTMHarmonic,
+      processTick,
+      predictOscillatorFromBuffer,
+      AI_connectWebSocket,
+      AI_handleSignal,
+      debugState: function () {
+        try {
+          console.log('--- DEBUG STATE ---');
+          console.log('emaBuffer.length =', emaBuffer.length);
+          console.log('windowDataset.length =', windowDataset.length);
+          console.log('isTraining =', !!isTraining);
+          console.log('model exists =', !!model);
+          if (model) console.log('model.layers =', model.layers.length);
+          if (typeof tf !== 'undefined') console.log('tf.memory():', tf.memory());
+          console.log('lastPredTime =', lastPredTime);
+          console.log('RE_TRAIN_EVERY_MS =', RE_TRAIN_EVERY_MS);
+          console.log('--------------------');
+        } catch (e) { console.error('debugState error', e); }
+      }
+    };
+  } // end AI()
+
 
   function stop() {
     if (wsAI && wsAI.readyState === WebSocket.OPEN) {
@@ -3011,13 +3058,16 @@ function extractValue(event, key) {
       IAtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       IAtoggleAutomationBtn.style.color = "white";
       IAautomationRunning = true;
-      AI();
+      // ---------- Create and start AI instance ----------
+      const ai = AI();
+      ai.initLSTMHarmonic(); // call once
+      // optionally: ai.AI_connectWebSocket(); // already called inside init if needed
       ROCtoggleAutomationBtn.disabled = true;
       BCtoggleAutomationBtn.disabled = true;
     } else {
       IAtoggleAutomationBtn.textContent = "Launch IA Automation";
       IAtoggleAutomationBtn.style.background = "white";  
-      IAtoggleAutomationBtn.style.color = "gray"; 
+      IAtoggleAutomationBtn.style.color = "gray";   
       IAautomationRunning = false;  
       setTimeout(stop,2000);
       ROCtoggleAutomationBtn.disabled = false;
