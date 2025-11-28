@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
    Configuration (tweakable)
   ============================= */
   const SMOOTH_PERIOD = 250;       // EMA smoothed period
-  const WINDOW_SIZE = 40;          // nb de timesteps passés observés par LSTM (16..32 good)
+  const WINDOW_SIZE = 30;          // nb de timesteps passés observés par LSTM (16..32 good)
   const FEATURES = 1;              // ici on n'utilise que l'EMA par timestep (peut étendre)
   const LSTM_UNITS = 32;           // unités LSTM (perf / précision tradeoff)
   const DENSE_UNITS = 16;
