@@ -917,7 +917,7 @@ document.addEventListener("DOMContentLoaded", () => {
     *  EMA CALCUL
     *******************************************************************************************/
 
-    function initLSTMHarmonic(){
+    function initLSTMHarmonic(){   
       buildLSTMModel();
       console.log('Init complete. Waiting for ticks to gather EMA buffer...');
     }
