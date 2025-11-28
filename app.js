@@ -144,31 +144,36 @@ document.addEventListener("DOMContentLoaded", () => {
   let tp_contract = 0;
   let sl_contract = 0;
   //------
-  let candleSeries;
   let currentChartType = "candlestick"; // par défaut
   let currentInterval = "1 minute";  // par défaut
 
   // --- NEW: current symbol & pending subscribe ---
   let currentSymbol = "cryBTCUSD"; // symbole par défaut
-  let pendingSubscribe = null;
+  let pendingSubscribe = null; 
   let authorized = false;  
-  /*******************************************************************************************
- *  CONFIG GLOBAL
- *******************************************************************************************/
- let prices = [];
- let price;
- let smoothAngle = 0;
- let model = null;
+  /* =============================
+   Configuration (tweakable)
+  ============================= */
+  const SMOOTH_PERIOD = 250;       // EMA smoothed period
+  const WINDOW_SIZE = 40;          // nb de timesteps passés observés par LSTM (16..32 good)
+  const FEATURES = 1;              // ici on n'utilise que l'EMA par timestep (peut étendre)
+  const LSTM_UNITS = 32;           // unités LSTM (perf / précision tradeoff)
+  const DENSE_UNITS = 16;
+  const LEARNING_RATE = 0.001;
+  const BATCH_SIZE = 8;
+  const RE_TRAIN_EVERY_MS = 12_000; // ré-entraîner toutes les X ms si on a des nouvelles fenêtres
+  const MIN_WINDOWS_TO_TRAIN = 8;   // garder petit pour training online
+  const PREDICT_INTERVAL_MS = 500;  // fréquence prédiction (ou déclenchée sur tick)
+  const MAX_BUFFER = 1000;          // taille max buffer EMA
 
- let inTrade = false;
- let currentContract = null;
-
- let waitingFor = null;  
- // null = mode normal
- // "BUY_EXTREMUM"  = attendre un extrémum Bulls pour BUY
- // "SELL_EXTREMUM" = attendre un extrémum Bears pour SELL
- let maxBullsPercent = null;
- let maxBearsPercent = null;
+  const emaBuffer = [];            // oldest ... newest
+  const windowDataset = [];        // stores windows (arrays) for training
+  let model = null;
+  let isTraining = false;
+  let lastPredTime = 0;
+  // previousMomentum is kept across ticks for derivative calc
+  let previousMomentum = 0;
+  let smoothEMA = null;
 
   const SYMBOLS = [
     { symbol: "BOOM1000", name: "Boom 1000" },
@@ -749,219 +754,199 @@ document.addEventListener("DOMContentLoaded", () => {
     /*******************************************************************************************
     *  ANALYSIS
     *******************************************************************************************/
-    function analysis(bullsP, bearsP) {   
 
-      // -------------------------------
-      // 1 — MODE ATTENTE D’UN NOUVEL EXTREMUM AVANT D’OUVRIR MÊME TYPE
-      // -------------------------------
-      if (!inTrade && waitingFor === "BUY_EXTREMUM") {
-
-        // Met à jour nouvel extrémum Bulls
-        if (maxBullsPercent === null || bullsP > maxBullsPercent) {
-            maxBullsPercent = bullsP;
-            console.log("🔵 Nouveau EXTREMUM Bulls :", maxBullsPercent.toFixed(2));
-        }
-
-        const drop = ((maxBullsPercent - bullsP) / maxBullsPercent) * 100;
-        console.log("🟦 Attente nouveau BUY — drop% :", drop.toFixed(2));
-
-        if (drop >= 30) {
-            console.log("💚 RÉOUVERTURE BUY après nouvel extrémum !");
-            AI_handleSignal("BUY");
-
-            inTrade = true;   
-            currentContract = "BUY";
-   
-             // reset Bears
-             maxBearsPercent = null;   
-             waitingFor = null;
-   
-             return;
-         }
-         return;
-      }  
-
-
-      if (!inTrade && waitingFor === "SELL_EXTREMUM") {  
-
-         if (maxBearsPercent === null || bearsP > maxBearsPercent) {
-             maxBearsPercent = bearsP;
-             console.log("🔴 Nouveau EXTREMUM Bears :", maxBearsPercent.toFixed(2));  
-          }
-
-          const drop = ((maxBearsPercent - bearsP) / maxBearsPercent) * 100;
-          console.log("🟥 Attente nouveau SELL — drop% :", drop.toFixed(2));
-
-          if (drop >= 30) {
-             console.log("❤️ RÉOUVERTURE SELL après nouvel extrémum !");
-             AI_handleSignal("SELL");
-
-             inTrade = true;
-             currentContract = "SELL";
-
-             maxBullsPercent = null;  
-             waitingFor = null;
-
-             return;
-          }
-          return;
-      }
-
-      // -------------------------------
-      // 2 — OUVERTURE BUY INITIALE
-      // -------------------------------
-      if (!inTrade && bullsP > bearsP && waitingFor === null) {
-
-        console.log("📈 BUY lancé");
-        AI_handleSignal("BUY");
-
-        inTrade = true;
-        currentContract = "BUY";
-
-        maxBullsPercent = bullsP;
-        maxBearsPercent = null;
-
-         return;
-      }
- 
-
-      // -------------------------------
-      // 3 — SUIVI DU BUY
-      // -------------------------------
-      if (inTrade && currentContract === "BUY") {
-
-          if (bullsP > maxBullsPercent) {
-              maxBullsPercent = bullsP;
-          }
-
-          const drop = ((maxBullsPercent - bullsP) / maxBullsPercent) * 100;
-          console.log("🟡 BUY drop% :", drop.toFixed(2));
-
-          if (drop >= 30) {
-              console.log("🔴 SORTIE BUY — drop 30%");
-              //closeAllContracts();
-              setTimeout(() =>{
-                 AI_handleSignal("SELL");   
-              },3000);  
-               
-              inTrade = false;
-              currentContract = null;
-
-              // Version A → attendre un NOUVEL EXTREMUM BULLS pour réouvrir BUY
-              waitingFor = "BUY_EXTREMUM";
-              console.log("🟦 Mode attente d’un nouveau EXTREMUM Bulls");
-
-              // On garde l’ancien extremum pour comparaison
-              // maxBullsPercent reste tel quel
-
-              return;
-          }
-      }
-
-      // -------------------------------
-      // 4 — OUVERTURE SELL INITIALE
-      // -------------------------------
-      if (!inTrade && bearsP > bullsP && waitingFor === null) {
-
-          console.log("📉 SELL lancé");
-          AI_handleSignal("SELL");
-
-          inTrade = true;
-          currentContract = "SELL";
-
-          maxBearsPercent = bearsP;
-          maxBullsPercent = null;
-
-          return;
-      }
-
-      // -------------------------------
-      // 5 — SUIVI DU SELL
-      // -------------------------------
-      if (inTrade && currentContract === "SELL") {
-
-          if (bearsP > maxBearsPercent) {
-              maxBearsPercent = bearsP;
-          }
-
-          const drop = ((maxBearsPercent - bearsP) / maxBearsPercent) * 100;
-          console.log("🟠 SELL drop% :", drop.toFixed(2));
-
-          if (drop >= 30) {
-              console.log("🔴 SORTIE SELL — drop 30%");
-              //closeAllContracts();
-              setTimeout(() =>{
-                 AI_handleSignal("BUY"); 
-              },3000);
-
-              inTrade = false;
-              currentContract = null;
-
-              // Version A → réouvrir un SELL après un nouvel extrémum Bears
-              waitingFor = "SELL_EXTREMUM";
-              console.log("🟥 Mode attente d’un nouveau EXTREMUM Bears");
-
-              return;
-          }
-      }  
-    }
+    function initSmoothedEMA(initialPrice) {
+      smoothEMA = initialPrice;
+     }
 
     /*******************************************************************************************
     *  CALCUL BULLS% / BEARS% A PARTIR DES BOUGIES
     *******************************************************************************************/
-    function processCandles(candles, period = 10) {
 
-      if (!candles || candles.length < period) {
-         console.warn("Pas assez de bougies pour le calcul.");
-         return;
-      }
+    function updateSmoothedEMA(price) {
+      if (smoothEMA === null) initSmoothedEMA(price);
 
-      const closes = candles.map(c => c.close);
-      const highs  = candles.map(c => c.high);
-      const lows   = candles.map(c => c.low);
+      // Formula: smoothed = prev + (price - prev) / period
+      smoothEMA = smoothEMA + (price - smoothEMA) / SMOOTH_PERIOD;
 
-      // --- EMA ---
-      const ema = emaCalc(closes, period);
-      if (!ema) return;   
-
-      // Dernière bougie
-      const H = highs[highs.length - 1];
-      const L = lows[lows.length - 1];
-
-      // Bulls / Bears
-      const bulls = H - ema;
-      const bears = L - ema;
-
-      const bullsP = (bulls / ema) * 100;
-      const bearsP = (Math.abs(bears) / ema) * 100;
-
-      console.log(
-          "BULLS%:", bullsP.toFixed(2),
-          "BEARS%:", bearsP.toFixed(2),
-          "EMA:", ema.toFixed(2)
-      );
-
-      analysis(bullsP, bearsP);
+     return smoothEMA;
     }
-   
+
+    /*******************************************************************************************
+    *  COMPUTE HARMONIC
+    *******************************************************************************************/
+
+    function computeHarmonicFromEMA(emaNow, emaPrev, Beta=0.25, Omega0=0.1, dt=1){
+      // Use EMA values as "prices"
+      const momentum = (emaNow - emaPrev) / dt;
+      const acceleration = (momentum - previousMomentum) / dt;
+      previousMomentum = momentum;
+      const deviation = emaNow - emaNow; // for smoothed EMA this tends to 0; we still include star for completeness
+      const osc = acceleration + 2 * Beta * momentum + (Omega0 * Omega0) * deviation;
+      return { osc, momentum, acceleration, deviation };
+    }
+
     /*******************************************************************************************
     *  EMA CALCUL
     *******************************************************************************************/
-    function emaCalc(values, period) {
-      if (!values || values.length < period) return null;  
 
-      const k = 2 / (period + 1);
-      let ema = values[0];
+    function pushEMA(ema){
+      emaBuffer.push(ema);
+      if(emaBuffer.length > MAX_BUFFER) emaBuffer.shift();
+      // build windows when enough values
+      if(emaBuffer.length >= WINDOW_SIZE + 1){
+         // create last window of length WINDOW_SIZE and its target oscillator (next-step)
+         const startIdx = emaBuffer.length - 1 - WINDOW_SIZE; // window starts here
+         const inputWindow = emaBuffer.slice(startIdx, startIdx + WINDOW_SIZE); // length WINDOW_SIZE
+         // compute target oscillator using ema at t+0 (latest) and t-1 (previous)
+         const emaPrev = emaBuffer[emaBuffer.length - 2];
+         const emaNow = emaBuffer[emaBuffer.length - 1];
+         const { osc } = computeHarmonicFromEMA(emaNow, emaPrev);
+         // store window-target pair (as plain arrays)
+         windowDataset.push({ x: inputWindow.slice(), y: osc });
+         // keep dataset bounded
+         if(windowDataset.length > 2000) windowDataset.shift();
+       } 
+    }
 
-      for (let i = 1; i < values.length; i++) {   
-          ema = values[i] * k + ema * (1 - k);     
+    /*******************************************************************************************
+    *  EMA CALCUL
+    *******************************************************************************************/
+
+    async function buildLSTMModel(windowSize=WINDOW_SIZE, features=FEATURES){
+      const inpShape = [windowSize, features]; // [timesteps, features]
+      await tf.ready();
+      model = tf.sequential();
+
+      if (!model) { model = await buildLSTMModel(windowSize=WINDOW_SIZE,features=FEATURES); return; }
+      // LSTM layer: returnSequences false for single output
+      model.add(tf.layers.lstm({ units: LSTM_UNITS, inputShape: inpShape, recurrentActivation: 'sigmoid' }));
+      model.add(tf.layers.dense({ units: DENSE_UNITS, activation: 'relu' }));
+      model.add(tf.layers.dense({ units: 1, activation: 'linear' })); // regression -> oscillator value
+      const opt = tf.train.adam(LEARNING_RATE);
+      model.compile({ optimizer: opt, loss: 'meanSquaredError' });
+      console.log('LSTM model built:', model.summary ? model.summary() : 'summary unavailable');
+    }
+
+    /*******************************************************************************************
+    *  EMA CALCUL
+    *******************************************************************************************/
+
+    function sampleTrainingBatch(batchSize = BATCH_SIZE){
+      if(windowDataset.length < MIN_WINDOWS_TO_TRAIN) return null;
+      // sample up to batchSize examples randomly
+      const n = Math.min(batchSize, windowDataset.length);
+      const xs = [];
+      const ys = [];
+      for(let i=0;i<n;i++){
+         const idx = Math.floor(Math.random() * windowDataset.length);
+         xs.push(windowDataset[idx].x.map(v=>[v])); // shape: [WINDOW_SIZE, FEATURES]
+         ys.push([windowDataset[idx].y]); // scalar
       }
-      return ema;
-    }  
-  
+      // convert to tensors
+      const Xt = tf.tensor3d(xs, [n, WINDOW_SIZE, FEATURES]);
+      const yt = tf.tensor2d(ys, [n, 1]);
+      return { Xt, yt };
+    }
+
+    /*******************************************************************************************
+    *  ONLINE TRAINING STEP
+    *******************************************************************************************/
+
+    async function onlineTrainStep(){
+      if(!model) return;
+      if(isTraining) return;
+      const batch = sampleTrainingBatch();
+      if(!batch) return;
+      isTraining = true;
+      try{
+        // small epochs to adapt quickly
+        await model.fit(batch.Xt, batch.yt, { epochs: 2, batchSize: Math.min(8, batch.Xt.shape[0]), shuffle: true, verbose: 0 });
+      }catch(err){
+        console.error('Train error', err);
+      }finally{
+        batch.Xt.dispose();
+        batch.yt.dispose();
+        isTraining = false;
+      }
+    }
+    
+    /*******************************************************************************************
+    *  OSCILLATOR PREDICTION
+    *******************************************************************************************/
+
+    function predictOscillatorFromBuffer(){
+      if(!model) return null;
+      if(emaBuffer.length < WINDOW_SIZE) return null;
+      // prepare input: last WINDOW_SIZE values
+      const seq = emaBuffer.slice(-WINDOW_SIZE).map(v=>[v]); // shape [WINDOW_SIZE, FEATURES]
+      return tf.tidy(() => {
+         const input = tf.tensor3d([seq], [1, WINDOW_SIZE, FEATURES]);
+         const out = model.predict(input);
+         const val = out.dataSync()[0];
+        return val;
+      });
+    }
+
+    /*******************************************************************************************
+    *  EMA CALCUL
+    *******************************************************************************************/
+
+    async function processTick(rawPrice){
+      // 1) update smoothed EMA
+      const ema = updateSmoothedEMA(rawPrice);
+
+      // 2) push EMA to buffers & build windows
+      pushEMA(ema);
+
+      // 3) optionally trigger a quick online train step (fast)
+      // train every RE_TRAIN_EVERY_MS or when many windows
+      const now = Date.now();
+      if(now - lastPredTime > RE_TRAIN_EVERY_MS){
+        lastPredTime = now;
+        // run training in background (non-blocking)
+        onlineTrainStep().catch(e=>console.error(e));
+      }
+
+      // 4) prediction (fast) — here we predict each tick as well
+      const pred = predictOscillatorFromBuffer();
+      return { ema, prediction: pred };
+    }
+
+    /*******************************************************************************************
+    *  EMA CALCUL
+    *******************************************************************************************/
+
+    function initLSTMHarmonic(){
+      buildLSTMModel();
+      console.log('Init complete. Waiting for ticks to gather EMA buffer...');
+      // set interval to periodically call small online train (safety)
+      setInterval(()=> {
+         onlineTrainStep().catch(e=>console.error(e));
+      }, RE_TRAIN_EVERY_MS);
+    }
+
+    /*******************************************************************************************
+    *  EMA CALCUL
+    *******************************************************************************************/
+
+    function Contractfunction(prediction)
+     {
+      // decide using prediction value threshold
+      if(prediction !== null){
+        const upThreshold = 0.0005, downThreshold = -0.0005;
+        if(prediction > upThreshold) {
+          AI_handleSignal("BUY");
+        } else if (prediction < downThreshold) {
+          AI_handleSignal("SELL");
+        }
+      }
+     }
+
     /*******************************************************************************************
     *  TRAILING STOP INTELLIGENT (Sans casser votre code)
     *******************************************************************************************/
+
     function AI_handleMessage(data, wsAI) {
       switch (data.msg_type) {
         case "authorize":
@@ -983,11 +968,14 @@ document.addEventListener("DOMContentLoaded", () => {
           } else {
              return; // On ignore ce message car il n'a pas de POC
           }
-
           break;
 
         case "tick":
-          price = parseFloat(data.tick.quote);
+          (async () => {
+               const price = Number(data.tick.quote);
+               const { ema, prediction } = await processTick(price);
+               Contractfunction(prediction);
+          })();
           break;
 
         case "candles":
@@ -1002,27 +990,31 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
            
         case "ohlc":
-          const o = data.ohlc;
-          const openTime = Number(o.open_time);  // time of the current candle
-          const bar = {
-              time: openTime,
-              open: Number(o.open),
-              high: Number(o.high),
-              low: Number(o.low),   
-              close: Number(o.close),
-          };
+           (async () => {
+              const o = data.ohlc;
+              const openTime = Number(o.open_time);  // time of the current candle
+              const bar = {
+                 time: openTime,
+                 open: Number(o.open),
+                 high: Number(o.high),
+                 low: Number(o.low),   
+                 close: Number(o.close),
+              };
 
-          if (!bar || candles__ === null || candles__ === undefined) return;   
-          const last = candles__[candles__.length - 1];
+              if (!bar || candles__ === null || candles__ === undefined) return;   
 
-          if (!last || last.time !== openTime) {
-             // Nouvelle bougie
-             candles__.push(bar);
-          } else {
-             // Mise à jour de la dernière bougie
-             candles__[candles__.length - 1] = bar;
-          }
-          processCandles(candles__,10);
+              const last = candles__[candles__.length - 1];
+
+              if (!last || last.time !== openTime) {
+                 // Nouvelle bougie
+                 candles__.push(bar);
+              } else {
+                 // Mise à jour de la dernière bougie
+                 candles__[candles__.length - 1] = bar;
+              }
+              const { ema_, prediction_ } = await processTick(bar.close);
+              Contractfunction(prediction_);
+           })();
           break;
         
         case "ping":
@@ -1077,61 +1069,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /*******************************************************************************************
-    *  CLOSE ALL CONTRACTS
-    *******************************************************************************************/
-    function closeAllContracts() {
-
-      if (wsAutomation_close === null)
-      {
-       wsAutomation_close  = new WebSocket(WS_URL);
-       wsAutomation_close.onopen=()=>{ wsAutomation_close.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-  
-      if (wsAutomation_close  && (wsAutomation_close.readyState === WebSocket.OPEN || wsAutomation_close.readyState === WebSocket.CONNECTING))
-      {
-       wsAutomation_close.onopen=()=>{ wsAutomation_close.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-
-      if (wsAutomation_close && (wsAutomation_close.readyState === WebSocket.CLOSED || wsAutomation_close.readyState === WebSocket.CLOSING))
-      {
-       wsAutomation_close = new WebSocket(WS_URL);
-       wsAutomation_close.onopen=()=>{ wsAutomation_close.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-
-      wsAutomation_close.onclose = () => { setTimeout(closeAllContracts,300); };   
-      wsAutomation_close.onmessage = (e) => {
-        const data = JSON.parse(e.data);
-
-        // Autorisé → demander la liste des contrats
-        if (data.authorize) {
-            wsAutomation_close.send(JSON.stringify({ portfolio: 1 }));
-        }   
-
-        // Liste des contrats ouverts reçue
-        if (data.portfolio) {
-            const list = data.portfolio.contracts;   
-   
-            if (!list || list === undefined || list === null || list.length === 0) return;
-
-            // Fermer chaque contrat (prix marché)  
-            for (let c of list) {
-                wsAutomation_close.send(JSON.stringify({
-                    sell: c.contract_id,
-                    price: 0
-                }));
-            }
-        }
-
-        // Confirmation d’un contrat fermé 
-        if (data.sell) {
-            console.log("Fermé :", data.sell.contract_id);
-        }
-      };
-    }
-    
-    /*******************************************************************************************
     *  LANCEMENT DU SYSTEME
     *******************************************************************************************/
+    initLSTMHarmonic();
+
     if (!wsAI || wsAI.readyState > 1)
     {
      AI_connectWebSocket();
@@ -3052,6 +2993,7 @@ function extractValue(event, key) {
       IAtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       IAtoggleAutomationBtn.style.color = "white";
       IAautomationRunning = true;
+      AI();
       ROCtoggleAutomationBtn.disabled = true;
       BCtoggleAutomationBtn.disabled = true;
     } else {
@@ -3059,6 +3001,7 @@ function extractValue(event, key) {
       IAtoggleAutomationBtn.style.background = "white";  
       IAtoggleAutomationBtn.style.color = "gray"; 
       IAautomationRunning = false;  
+      setTimeout(stop,2000);
       ROCtoggleAutomationBtn.disabled = false;
       BCtoggleAutomationBtn.disabled = false;
     }
@@ -3342,16 +3285,6 @@ window.addEventListener("error", function (e) {
       connectDeriv_table();
     }
   }, 300);
-
-  // IA Automation
-  setInterval(() => {
-    if (IAautomationRunning === true) {
-     AI();
-    }   
-    else if (IAautomationRunning === false) {
-     stop();
-    }
-  },500);
 
   // BC Automation
   setInterval(() => {
