@@ -816,13 +816,8 @@ document.addEventListener("DOMContentLoaded", () => {
     async function buildLSTMModel(windowSize=WINDOW_SIZE, features=FEATURES){
       const inpShape = [windowSize, features]; // [timesteps, features]
 
-      // 1. Supprimer l'ancien modèle si il existe
-      if (model) {
-          model.dispose();
-          model = null;
-      }
-    
       await tf.ready();
+    
       model = tf.sequential();
 
       if (!model) { return; }  
@@ -924,9 +919,8 @@ document.addEventListener("DOMContentLoaded", () => {
     *  EMA CALCUL
     *******************************************************************************************/
 
-    function initLSTMHarmonic(){   
-      buildLSTMModel();
-      console.log('Init complete. Waiting for ticks to gather EMA buffer...');
+    async function initLSTMHarmonic(){   
+      await buildLSTMModel();
     }
 
     /*******************************************************************************************
