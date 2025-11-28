@@ -932,7 +932,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }   
 
     /*******************************************************************************************
-    *  EMA CALCUL
+    *  INIT LSTM HARMONIC
     *******************************************************************************************/
 
     async function initLSTMHarmonic(){   
