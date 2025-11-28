@@ -825,7 +825,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await tf.ready();
       model = tf.sequential();
 
-      if (!model) { return; }
+      if (!model) { return; }  
       // LSTM layer: returnSequences false for single output
       model.add(tf.layers.lstm({ units: LSTM_UNITS, inputShape: inpShape, recurrentInitializer: 'glorotUniform', kernelInitializer: 'glorotUniform', recurrentActivation: 'sigmoid' }));
       model.add(tf.layers.dense({ units: DENSE_UNITS, activation: 'relu' }));
