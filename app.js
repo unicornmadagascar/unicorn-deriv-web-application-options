@@ -1074,13 +1074,13 @@ document.addEventListener("DOMContentLoaded", () => {
     /*******************************************************************************************
     *  LANCEMENT DU SYSTEME
     *******************************************************************************************/
+    initLSTMHarmonic();
 
     if (!wsAI || wsAI.readyState > 1)
     {
      AI_connectWebSocket();
     }
-
-    return { initLSTMHarmonic };
+    
   }
 
   function stop() {
@@ -3290,7 +3290,7 @@ window.addEventListener("error", function (e) {
   }, 300);
 
   // BC Automation
-  setInterval(() => {
+  setInterval((ai) => {
     if (IAautomationRunning === true)
     {
      AI();    
