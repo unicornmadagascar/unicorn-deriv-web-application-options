@@ -911,7 +911,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 4) prediction (fast) — here we predict each tick as well
       const pred = predictOscillatorFromBuffer();
       return { ema, prediction: pred };
-    }
+    }   
 
     /*******************************************************************************************
     *  EMA CALCUL
