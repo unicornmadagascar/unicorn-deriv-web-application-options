@@ -969,7 +969,7 @@ document.addEventListener("DOMContentLoaded", () => {
     *  TRAILING STOP INTELLIGENT (Sans casser votre code)
     *******************************************************************************************/
 
-    function AI_handleMessage(data, wsAI) {
+    function AI_handleMessage(data, model, wsAI) {
       switch (data.msg_type) {
         case "authorize":
           wsAI.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
