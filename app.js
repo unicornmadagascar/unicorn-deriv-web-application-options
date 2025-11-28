@@ -808,7 +808,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function pushEMA(ema) {
        emaBuffer.push(ema);
        if (emaBuffer.length > MAX_BUFFER) emaBuffer.shift();
-
+   
        if (emaBuffer.length >= WINDOW_SIZE + 1) {
           const startIdx = emaBuffer.length - 1 - WINDOW_SIZE;
           const inputWindow = emaBuffer.slice(startIdx, startIdx + WINDOW_SIZE);
