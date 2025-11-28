@@ -987,7 +987,7 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
            
         case "ohlc":
-           (async () => {
+           (async () => {  
               const o = data.ohlc;
               const openTime = Number(o.open_time);  // time of the current candle
               const bar = {
