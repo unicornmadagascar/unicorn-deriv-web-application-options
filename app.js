@@ -3294,7 +3294,7 @@ window.addEventListener("error", function (e) {
     if (IAautomationRunning === true)
     {
      AI();    
-    }
+    }  
   },500);   
 
   // BC Automation
