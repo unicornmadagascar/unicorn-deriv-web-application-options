@@ -793,7 +793,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /*******************************************************************************************
    *  COMPUTE HARMONIC
    *******************************************************************************************/
-    function computeHarmonicFromEMA(emaNow, emaPrev, Beta = 0.25, Omega0 = 0.1, dt = 1) {
+    function computeHarmonicFromEMA(emaNow, emaPrev, Beta = 0.05, Omega0 = 0.001, dt = 1) {
        const momentum = (emaNow - emaPrev) / dt;
        const acceleration = (momentum - previousMomentum) / dt;
        previousMomentum = momentum;
@@ -1108,7 +1108,7 @@ document.addEventListener("DOMContentLoaded", () => {
           parameters: {
             contract_type: mainType,
             symbol: currentSymbol,
-            currency: "USD",
+            currency: CURRENCY.toString(),
             basis: "stake",
             amount: stake.toFixed(2),
             multiplier: multiplier,
