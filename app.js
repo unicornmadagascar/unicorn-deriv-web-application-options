@@ -1093,7 +1093,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!wsAI || wsAI.readyState > 1)
     {
-     AI_connectWebSocket();
+     //AI_connectWebSocket();
     }  
 
   }
