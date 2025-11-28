@@ -989,7 +989,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (prediction > upThreshold) {  
         AI_handleSignal("BUY");
       } else if (prediction < downThreshold) {
-        AI_handleSignal("SELL");
+        AI_handleSignal("SELL");   
       }
     }
   }
