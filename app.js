@@ -920,10 +920,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function initLSTMHarmonic(){
       buildLSTMModel();
       console.log('Init complete. Waiting for ticks to gather EMA buffer...');
-      // set interval to periodically call small online train (safety)
-      setInterval(()=> {
-         onlineTrainStep().catch(e=>console.error(e));
-      }, RE_TRAIN_EVERY_MS);
     }
 
     /*******************************************************************************************
