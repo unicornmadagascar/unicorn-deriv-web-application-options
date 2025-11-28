@@ -152,7 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let pendingSubscribe = null; 
   let authorized = false;  
   /* =============================
-   Configuration (tweakable)
+   Configuration (tweakable)  
   ============================= */
   const SMOOTH_PERIOD = 250;       // EMA smoothed period
   const WINDOW_SIZE = 30;          // nb de timesteps passés observés par LSTM (16..32 good)
