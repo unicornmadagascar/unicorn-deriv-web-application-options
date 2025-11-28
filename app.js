@@ -3305,7 +3305,7 @@ window.addEventListener("error", function (e) {
   }, 300);
 
   // BC Automation
-  setInterval(() => {
+  setInterval(() => {  
     if (BCautomationRunning === true)        
     {   
      startAutomation();    
