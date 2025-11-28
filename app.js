@@ -813,22 +813,39 @@ document.addEventListener("DOMContentLoaded", () => {
     *  EMA CALCUL
     *******************************************************************************************/
 
-    async function buildLSTMModel(windowSize=WINDOW_SIZE, features=FEATURES){
-      const inpShape = [windowSize, features]; // [timesteps, features]
+    async function buildLSTMModel(windowSize = WINDOW_SIZE, features = FEATURES) {
+      const inpShape = [windowSize, features];
 
       await tf.ready();
-    
-      model = tf.sequential();
 
-      if (!model) { return; }  
-      // LSTM layer: returnSequences false for single output
-      model.add(tf.layers.lstm({ units: LSTM_UNITS, inputShape: inpShape, recurrentInitializer: 'glorotUniform', kernelInitializer: 'glorotUniform', recurrentActivation: 'sigmoid' }));
+      const model = tf.sequential();
+
+      // LSTM layer
+      model.add(tf.layers.lstm({
+        units: LSTM_UNITS,
+        inputShape: inpShape,
+        recurrentInitializer: 'glorotUniform',
+        kernelInitializer: 'glorotUniform',
+        recurrentActivation: 'sigmoid'
+      }));
+
+      // Dense layers
       model.add(tf.layers.dense({ units: DENSE_UNITS, activation: 'relu' }));
-      model.add(tf.layers.dense({ units: 1, activation: 'linear' })); // regression -> oscillator value
-      const opt = tf.train.adam(LEARNING_RATE);
-      model.compile({ optimizer: opt, loss: 'meanSquaredError' });
-      console.log('LSTM model built:', model.summary ? model.summary() : 'summary unavailable');
+      model.add(tf.layers.dense({ units: 1, activation: 'linear' }));
+
+      // Compile
+      model.compile({
+        optimizer: tf.train.adam(LEARNING_RATE),
+        loss: 'meanSquaredError'
+      });
+
+      // Print summary BEFORE returning
+      console.log("LSTM model built:");
+      model.summary();
+
+      return model;  // ⬅️ indispensable
     }
+
 
     /*******************************************************************************************
     *  EMA CALCUL
@@ -920,7 +937,9 @@ document.addEventListener("DOMContentLoaded", () => {
     *******************************************************************************************/
 
     async function initLSTMHarmonic(){   
-      await buildLSTMModel();
+      model = await buildLSTMModel();
+
+      if (!model) return;
     }
 
     /*******************************************************************************************
@@ -1073,7 +1092,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!wsAI || wsAI.readyState > 1)
     {
      AI_connectWebSocket();
-    }
+    }  
 
   }
 
