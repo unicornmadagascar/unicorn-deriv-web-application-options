@@ -814,38 +814,37 @@ document.addEventListener("DOMContentLoaded", () => {
     *******************************************************************************************/
 
     async function buildLSTMModel(windowSize = WINDOW_SIZE, features = FEATURES) {
-      const inpShape = [windowSize, features];
-
       await tf.ready();
 
-      const model = tf.sequential();
+      // Si un ancien modèle existe, on le détruit proprement
+      if (typeof model !== 'undefined' && model && typeof model.dispose === 'function') {
+        try { model.dispose(); } catch(e){ console.warn('dispose error', e); }
+        model = null;
+      }
 
-      // LSTM layer
-      model.add(tf.layers.lstm({
+      // Crée le modèle localement puis l'assigne à la variable globale
+      const m = tf.sequential();
+      m.add(tf.layers.lstm({
         units: LSTM_UNITS,
-        inputShape: inpShape,  
+        inputShape: [windowSize, features],
         recurrentInitializer: 'glorotUniform',
         kernelInitializer: 'glorotUniform',
         recurrentActivation: 'sigmoid'
       }));
+      m.add(tf.layers.dense({ units: DENSE_UNITS, activation: 'relu' }));
+      m.add(tf.layers.dense({ units: 1, activation: 'linear' }));
 
-      // Dense layers
-      model.add(tf.layers.dense({ units: DENSE_UNITS, activation: 'relu' }));
-      model.add(tf.layers.dense({ units: 1, activation: 'linear' }));
+      const opt = tf.train.adam(LEARNING_RATE);
+      m.compile({ optimizer: opt, loss: 'meanSquaredError' });
 
-      // Compile
-      model.compile({
-        optimizer: tf.train.adam(LEARNING_RATE),
-        loss: 'meanSquaredError'
-      });
+      // Affiche la summary (ne retourne rien)
+      console.log('LSTM model built:');
+      m.summary();
 
-      // Print summary BEFORE returning
-      console.log("LSTM model built:");
-      model.summary();
-
-      return model;  // ⬅️ indispensable
+      // Assigne globalement et retourne
+      model = m;
+      return model;
     }
-
 
     /*******************************************************************************************
     *  EMA CALCUL
@@ -938,8 +937,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function initLSTMHarmonic(){   
       model = await buildLSTMModel();
-
+      console.log('model exists?', !!model);
+      console.log('layers count:', model ? model.layers.length : 'no model');
       if (!model) return;
+
+      AI_connectWebSocket();
     }
 
     /*******************************************************************************************
