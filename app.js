@@ -1040,7 +1040,7 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
         
         case "ping":
-          wsAI.send(JSON.stringify({ ping: 1 }));
+          wsAI.send(JSON.stringify({ ping: 1 }));  
           break;  
       }
     }
@@ -3011,6 +3011,7 @@ function extractValue(event, key) {
       IAtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       IAtoggleAutomationBtn.style.color = "white";
       IAautomationRunning = true;
+      AI();
       ROCtoggleAutomationBtn.disabled = true;
       BCtoggleAutomationBtn.disabled = true;
     } else {
@@ -3304,22 +3305,14 @@ window.addEventListener("error", function (e) {
   }, 300);
 
   // BC Automation
-  setInterval((ai) => {
-    if (IAautomationRunning === true)
-    {
-     AI();    
-    }  
-  },500);   
-
-  // BC Automation
   setInterval(() => {
-    if (BCautomationRunning === true)
-    {
+    if (BCautomationRunning === true)        
+    {   
      startAutomation();    
     }
     else if (BCautomationRunning === false)
     {
-     stopAutomation(); 
+     stopAutomation();    
     }
   },500);   
   
