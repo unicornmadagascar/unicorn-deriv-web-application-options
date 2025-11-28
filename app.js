@@ -821,7 +821,7 @@ document.addEventListener("DOMContentLoaded", () => {
           model.dispose();
           model = null;
       }
-  
+    
       await tf.ready();
       model = tf.sequential();
 
