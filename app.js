@@ -1400,7 +1400,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                if (symbol_test === "BOO")  
                {
-                if (digit === 1 || digit === 2 || digit === 3)
+                if (digit === 1 || digit === 2 || digit === 3)  
                 {
                   // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
                   contracts
