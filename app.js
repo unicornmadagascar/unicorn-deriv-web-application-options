@@ -1467,7 +1467,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                }
                else if (symbol_test === "CRA")
-               {
+               {  
                  if (digit === 7)
                  {
                   // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
