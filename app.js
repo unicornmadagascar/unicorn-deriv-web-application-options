@@ -1395,13 +1395,11 @@ document.addEventListener("DOMContentLoaded", () => {
                const delta = -(Tick_arr[2] - mean) / Dispersion; // variation relative
                // Application de la sigmoïde
                signal = 0.5 * (delta/(1 + Math.abs(delta))) + 0.5;
-               console.log(`📈 Signal : ${signal.toFixed(6)}`);
-               const digit = parseInt((signal*10).toString().slice(0,1));   
-               console.log("Digit :",digit);       
+               const digit = parseInt((signal*10).toString().slice(0,1));          
 
                if (symbol_test === "BOO")    
                {
-                if (digit === 1 || digit === 2 || digit === 3)  
+                if (digit === 2)  
                 {
                   // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
                   contracts
@@ -1470,7 +1468,7 @@ document.addEventListener("DOMContentLoaded", () => {
                }
                else if (symbol_test === "CRA")
                {
-                 if (digit === 6 || digit === 7 || digit === 8)
+                 if (digit === 7)
                  {
                   // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
                   contracts
