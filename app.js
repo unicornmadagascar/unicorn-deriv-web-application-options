@@ -1396,7 +1396,7 @@ document.addEventListener("DOMContentLoaded", () => {
                // Application de la sigmoïde
                signal = 0.5 * (delta/(1 + Math.abs(delta))) + 0.5;
                console.log(`📈 Signal : ${signal.toFixed(6)}`);
-               const digit = signal.slice(2,1);      
+               const digit = Number(signal.toString().slice(2,1));       
 
                if (symbol_test === "BOO")  
                {
