@@ -1399,7 +1399,7 @@ document.addEventListener("DOMContentLoaded", () => {
                const digit = Number((signal*10).toString().slice(0,1));   
                console.log("Digit :",digit);     
 
-               if (symbol_test === "BOO")  
+               if (symbol_test === "BOO")    
                {
                 if (digit === 1 || digit === 2 || digit === 3)  
                 {
