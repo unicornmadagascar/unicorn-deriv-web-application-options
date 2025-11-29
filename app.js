@@ -1525,7 +1525,7 @@ document.addEventListener("DOMContentLoaded", () => {
                            parameters: {
                              contract_type: "MULTUP",
                              symbol: currentSymbol,
-                             currency: CURRENCY.toString(),
+                             currency: CURRENCY.toString(),  
                              basis: "stake",
                              amount: stake.toFixed(2),
                              multiplier: multiplier,
