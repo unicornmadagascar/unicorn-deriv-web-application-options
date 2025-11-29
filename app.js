@@ -1410,7 +1410,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
                      });
 
-                  if (proposal__.contract_id) return;
+                  if (proposal__.contract_id) return;  
                  
                   console.log("📤 Ouverture d'un nouveau contrat BUY...");
                   const stake = parseFloat(stakeInput.value) || 1;
