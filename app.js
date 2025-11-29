@@ -1397,7 +1397,7 @@ document.addEventListener("DOMContentLoaded", () => {
                signal = 0.5 * (delta/(1 + Math.abs(delta))) + 0.5;
                console.log(`📈 Signal : ${signal.toFixed(6)}`);
                const digit = parseInt((signal*10).toString().slice(0,1));   
-               console.log("Digit :",digit);     
+               console.log("Digit :",digit);       
 
                if (symbol_test === "BOO")    
                {
