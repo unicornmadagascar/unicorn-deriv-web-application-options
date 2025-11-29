@@ -1382,7 +1382,7 @@ document.addEventListener("DOMContentLoaded", () => {
            if (!data.tick.quote || data.tick.quote === undefined || data.tick.quote === null) return;
 
            tickHistory.push(price);
-           if (it >= 3 && tickHistory.length > 3) // garder seulement les 3 derniers ticks
+           if (tickHistory.length > 3) // garder seulement les 3 derniers ticks
            {  
               Tick_arr.length = 3;
               Tick_arr = tickHistory.slice(-3);
@@ -1392,14 +1392,15 @@ document.addEventListener("DOMContentLoaded", () => {
               Dispersion = ecartType(Tick_arr);
               if (Dispersion !==0)
               {
-               const delta = (Tick_arr[2] - mean) / Dispersion; // variation relative
+               const delta = -(Tick_arr[2] - mean) / Dispersion; // variation relative
                // Application de la sigmoïde
-               signal = (1 - 1 / (1 + Math.exp(-delta)));
+               signal = 0.5 * (delta/(1 + Math.abs(delta))) + 0.5;
                console.log(`📈 Signal : ${signal.toFixed(6)}`);
+               const digit = signal.slice(2,1);
 
                if (symbol_test === "BOO")  
                {
-                if (signal < 0.37)
+                if (digit === 1 || digit === 2 || digit === 3)
                 {
                   // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
                   contracts
@@ -1413,7 +1414,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   console.log("📤 Ouverture d'un nouveau contrat BUY...");
                   const stake = parseFloat(stakeInput.value) || 1;
                   const multiplier = parseInt(multiplierInput.value)||50;
-                  numb_ = parseInt(buyNum.value) || 1;
+                  numb_ = parseInt(buyNumber.value) || 1;
                   for (let i=0;i < numb_; i++)
                   {
                     wsAutomation.send(JSON.stringify({
@@ -1447,7 +1448,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   console.log("📤 Ouverture d'un nouveau contrat SELL...");
                   const stake = parseFloat(stakeInput.value) || 1;
                   const multiplier = parseInt(multiplierInput.value)||50;
-                  numb_ = parseInt(sellNum.value) || 1;
+                  numb_ = parseInt(sellNumber.value) || 1;
                   for (let i=0;i < numb_; i++)
                   {
                     wsAutomation.send(JSON.stringify({
@@ -1468,7 +1469,7 @@ document.addEventListener("DOMContentLoaded", () => {
                }
                else if (symbol_test === "CRA")
                {
-                 if (signal > 0.75)
+                 if (digit === 6 || digit === 7 || digit === 8)
                  {
                   // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
                   contracts
@@ -1482,7 +1483,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   console.log("📤 Ouverture d'un nouveau contrat SELL...");
                   const stake = parseFloat(stakeInput.value) || 1;
                   const multiplier = parseInt(multiplierInput.value)||50;
-                  numb_ = parseInt(sellNum.value) || 1;
+                  numb_ = parseInt(sellNumber.value) || 1;
                   for (let i=0;i < numb_; i++)
                   {
                     wsAutomation.send(JSON.stringify({
@@ -1516,7 +1517,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   console.log("📤 Ouverture d'un nouveau contrat BUY...");
                   const stake = parseFloat(stakeInput.value) || 1;
                   const multiplier = parseInt(multiplierInput.value)||50;
-                  numb_ = parseInt(buyNum.value) || 1;
+                  numb_ = parseInt(buyNumber.value) || 1;
                   for (let i=0;i < numb_; i++)
                   {
                     wsAutomation.send(JSON.stringify({
@@ -1539,10 +1540,8 @@ document.addEventListener("DOMContentLoaded", () => {
            }   // if (it)
         }  
 
-        it = it + 1;
-        if (it > 700)    
+        if (tickHistory.length > MAX_HISTORY)    
         {
-         it = 0;
          tickHistory.splice(0,20);
         }
     };
