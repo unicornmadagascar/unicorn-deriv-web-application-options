@@ -1362,7 +1362,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (data.msg_type === "portfolio") 
         {
-           contracts = data.portfolio.contracts || [];
+           contracts = data.portfolio.contracts || [];  
            if (!contracts || contracts === undefined || contracts === null) return;
         } 
 
