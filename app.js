@@ -1534,7 +1534,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           model = m;
           return model;   
-      } catch (e) {
+      } catch (e) {  
           console.error('createTCNModel error', e);
           throw e;
       }
