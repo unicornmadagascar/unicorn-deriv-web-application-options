@@ -412,7 +412,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
       
   function connectInit(symbol,currentInterval,currentChartType) {
-    if (ws) ws.close();
 
     if (!symbol) return;
     
@@ -422,16 +421,30 @@ document.addEventListener("DOMContentLoaded", () => {
     initChart(currentChartType);
     console.log("Connexion...");
    
-    ws = new WebSocket(WS_URL);
+    if (ws === null) {
+      ws = new WebSocket(WS_URL);
+      ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
+    }
 
-    ws.onopen = () => {
-      console.log("Connecté");
-      ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
-    };
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+      ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING)) {
+      ws = new WebSocket(WS_URL);
+      ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };    
+    }
+
+    ws.onclose = () => {setTimeout(connectInit,500);};
 
     ws.onmessage = ({ data }) => {
       let msg = {};
       try { msg = JSON.parse(data); } catch(e){ return; }
+
+      if (msg.msg_type === "authorize" && msg.authorize) {
+        console.log("Connecté");
+        ws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
+       }
    
       // Historique initial ou mise à jour live   
       if (msg.msg_type === "candles" && msg.candles) {
@@ -474,7 +487,6 @@ document.addEventListener("DOMContentLoaded", () => {
       
     };
 
-    ws.onclose = () => console.log("Déconnecté");
     ws.onerror = (e) => {
       console.error("WS Error:", e);
       console.log("Erreur WebSocket");
