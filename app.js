@@ -1407,7 +1407,7 @@ document.addEventListener("DOMContentLoaded", () => {
           case "candles":
             try {
                const cd = data.candles || [];
-               candles__ = cd.map(c => ({
+               candles__ = cd.map(c => ({   
                  time: Number(c.epoch),
                  open: Number(c.open),
                  high: Number(c.high),
