@@ -177,6 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
   //---- BC MODEL ////////////////////////
   let prices__ = [];
   let lastProb = null;
+  let candles__ = [];
 
   const SYMBOLS = [
     { symbol: "BOOM1000", name: "Boom 1000" },
