@@ -1347,8 +1347,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function startAutomation() {
 
-    const symbol_test = currentSymbol.slice(0,3);
-
     function BC_ConnectWebsocket()
     {
       if (wsAutomation === null)
@@ -1589,8 +1587,11 @@ document.addEventListener("DOMContentLoaded", () => {
    }
 
    function onNewTick(price) {
+      const symbol_test = currentSymbol.slice(0,3);
       prices__.push(price);
       if (prices__.length > 500) prices__.shift();
+
+      if (!["BOO", "CRA"].includes(symbol_test)) return;
 
       const signal = decisionWeakTrend(model, prices__);
 
@@ -1598,7 +1599,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (signal.action === "BUY") {
          BC_handleSignal("BUY");
-      } else if (signal.action === "SELL") {
+      } else if (signal.action === "SELL") {  
          BC_handleSignal("SELL");
       }
    }
