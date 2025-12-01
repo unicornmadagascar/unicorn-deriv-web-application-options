@@ -3090,7 +3090,7 @@ function extractValue(event, key) {
       BCtoggleAutomationBtn.style.color = "white";
       BCautomationRunning = true; 
       // ---------- Create and start AI instance ----------
-      const bc = startAutomation();
+      const bc = startAutomation();  
       bc.initTCNModel(); // call once
       // optionally: ai.BC_connectWebSocket(); // already called inside init if needed
       ROCtoggleAutomationBtn.disabled = true;
