@@ -1434,7 +1434,7 @@ document.addEventListener("DOMContentLoaded", () => {
               const last = candles__[candles__.length - 1];
               if (!last || last.time !== openTime) candles__.push(bar);
               else candles__[candles__.length - 1] = bar;
-              onNewTick(bar.close);
+              //onNewTick(bar.close);
             } catch (e) {
               console.error('ohlc handler error', e);
             }
@@ -1543,27 +1543,40 @@ document.addEventListener("DOMContentLoaded", () => {
     function prepareInput(prices) {
       if (prices.length < 20) return null;
 
-      const seq = prices.slice(-20);
+      // Conversion obligatoire !
+      const seq = prices.slice(-20).map(v => Number(v));
 
-      // Normalisation essentielle
-      const mean = seq.reduce((a,b)=>a+b,0) / seq.length;
-      const std = Math.sqrt(seq.map(p => (p-mean)**2).reduce((a,b)=>a+b) / seq.length) || 1;
+      // Vérification : si un élément est NaN → STOP
+      if (seq.some(v => isNaN(v))) {
+          console.error("Invalid price data received:", seq);
+          return null;
+      }
+
+      // Normalisation (Z-score)
+      const mean = seq.reduce((a, b) => a + b, 0) / seq.length;
+      const std = Math.sqrt(
+        seq.map(p => (p - mean) ** 2).reduce((a, b) => a + b) / seq.length
+      ) || 1;
 
       const normalized = seq.map(v => (v - mean) / std);
 
+      // Tensor OK
       return tf.tensor3d([normalized], [1, 20, 1]);
-    }
+    }   
     
     function predictWeakSignal(model, prices) {
       if (!model) return;
       const input = prepareInput(prices);
       if (!input) return null;
 
-      return model.predict(input).dataSync()[0];
+      const prob = model.predict(input).dataSync()[0];
+      input.dispose();
+      return prob;
     }
 
     function decisionWeakTrend(model, prices, tolerance = 0.02) {
-      if (!model) return;
+      if (!model) return null;
+
       const prob = predictWeakSignal(model, prices);
       if (prob === null) return { action: "WAIT", prob: 0 };
 
@@ -1571,13 +1584,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (lastProb !== null) {
 
-          // Si la probabilité FAIBLIT → BUY
+          // Probabilité diminue → BUY
           if (prob < lastProb - tolerance) {
               action = "BUY";
 
-          // Sinon même stable = SELL
+          // Probabilité augmente → SELL
           } else {
-              action = "SELL";
+             action = "SELL";
           }
       }
 
