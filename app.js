@@ -1399,7 +1399,7 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 const price = parseFloat(data.tick.quote);
                 onNewTick(price);
-            } catch (e) {
+            } catch (e) {   
                 console.error('tick handler error', e);
             }
             break;
