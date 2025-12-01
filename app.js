@@ -431,7 +431,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING)) {
-      ws = new WebSocket(WS_URL);
+      ws = new WebSocket(WS_URL);   
       ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };      
     }
 
