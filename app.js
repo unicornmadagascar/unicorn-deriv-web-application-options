@@ -174,6 +174,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // previousMomentum is kept across ticks for derivative calc
   let previousMomentum = 0;
   let smoothEMA = null;
+  //---- BC MODEL ////////////////////////
+  let prices__ = [];
+  let lastProb = null;
 
   const SYMBOLS = [
     { symbol: "BOOM1000", name: "Boom 1000" },
@@ -1333,227 +1336,277 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const symbol_test = currentSymbol.slice(0,3);
 
-    if (wsAutomation === null)
+    function BC_ConnectWebsocket()
     {
-     wsAutomation = new WebSocket(WS_URL);
-     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-    }
+      if (wsAutomation === null)
+      {
+        wsAutomation = new WebSocket(WS_URL);
+        wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+      }
   
-    if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
-    {
-     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+      if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
+      {
+       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+
+      if (wsAutomation  && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING))
+      {
+       wsAutomation = new WebSocket(WS_URL);
+       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+
+      wsAutomation.onclose = () => { setTimeout(BC_ConnectWebsocket,300); }
+      wsAutomation.onerror = () => { wsAutomation.close(); wsAutomation=null; setTimeout(BC_ConnectWebsocket,300); };
+      wsAutomation.onmessage = (msg) => BC_handleMessage(JSON.parse(msg.data));
     }
 
-    if (wsAutomation  && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING))
-    {
-     wsAutomation = new WebSocket(WS_URL);
-     wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-    }
- 
-    wsAutomation.onmessage = (msg) => {
-        const data = JSON.parse(msg.data);
+    function BC_handleMessage(data) {  
+      try {
+        switch(data.msg_type){
+          case "authorize":
+            wsAutomation.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
+            wsAutomation.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
+            wsAutomation.send(JSON.stringify({ portfolio: 1 }));
+            break;
 
-        // Autorisation réussie → abonnement aux ticks
-        if (data.msg_type === "authorize") {
-         wsAutomation.send(JSON.stringify({ ticks: currentSymbol, subscribe: 1 }));
-         wsAutomation.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
-         wsAutomation.send(JSON.stringify({ portfolio: 1 }));
+          case "portfolio":   
+            bcContracts = data.portfolio?.contracts || [];   
+            if (bcContracts === undefined || bcContracts === null)
+               return; 
+
+            break;
+
+          case "proposal_open_contract":
+            if (data.proposal_open_contract) {
+               proposal__ = data.proposal_open_contract;
+            } else {
+               return; // On ignore ce message car il n'a pas de POC
+            }
+            break;
+
+          case "tick":
+            try {
+                const price = parseFloat(data.tick.quote);
+                onNewTick(price);
+            } catch (e) {
+                console.error('tick handler error', e);
+            }
+            break;
+
+          case "candles":
+            try {
+               const cd = data.candles || [];
+               candles__ = cd.map(c => ({
+                 time: Number(c.epoch),
+                 open: Number(c.open),
+                 high: Number(c.high),
+                 low: Number(c.low),
+                 close: Number(c.close),
+              }));
+            } catch (e) {
+              console.error('Candles handler error', e);
+            } 
+            break;
+
+          case "ohlc":
+            try {
+              const o = data.ohlc;
+              const openTime = Number(o.open_time);
+              const bar = {
+                  time: openTime,
+                  open: Number(o.open),
+                  high: Number(o.high),
+                  low: Number(o.low),
+                  close: Number(o.close),
+              };
+              if (!bar || !candles__) return;
+              const last = candles__[candles__.length - 1];
+              if (!last || last.time !== openTime) candles__.push(bar);
+              else candles__[candles__.length - 1] = bar;
+              onNewTick(bar.close);
+            } catch (e) {
+              console.error('ohlc handler error', e);
+            }
+            break;
+
+          case "ping":
+            try { wsAutomation.send(JSON.stringify({ ping: 1 })); } catch (e) { }
+            break;
+    
         }
+      } catch (e) {
+        console.error('AI_handleMessage error', e);
+      }
 
-        if (data.msg_type === "portfolio") 
-        {
-           contracts = data.portfolio.contracts || [];  
-           if (!contracts || contracts === undefined || contracts === null) return;
-        } 
+    }
 
-        if (data.msg_type === "proposal_open_contract") 
-        {
-          if (data.proposal_open_contract) {
-             proposal__ = data.proposal_open_contract;
-          } else {
-           return;
+    function BC_handleSignal(direction) {
+      const oppositeType = direction === "BUY" ? "MULTDOWN" : "MULTUP";
+      const mainType = direction === "BUY" ? "MULTUP" : "MULTDOWN";
+
+      // close opposite contracts
+      bcContracts
+        .filter(c => c.symbol === currentSymbol && c.contract_type === oppositeType)
+        .forEach(c => {
+           try { wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 })); } catch (e) { }
+        });
+
+      // if a contract active exists, skip
+      if (proposal__?.contract_id) return;
+
+      const stake = parseFloat(stakeInput.value) || 1;
+      const multiplier = parseInt(multiplierInput.value) || 40;
+      const repeat = direction === "BUY"
+        ? (parseInt(buyNumber.value) || 1)
+        : (parseInt(sellNumber.value) || 1);
+
+      if ((typeof multiplier !== "number" && multiplier === "") || (typeof stake !== "number" && stake === "") || (typeof repeat !== "number" && repeat === "")) {
+         return;
+      }
+
+      for (let i = 0; i < repeat; i++) {
+        try {
+           wsAutomation.send(JSON.stringify({
+              buy: 1,
+              price: stake.toFixed(2),
+              parameters: {
+                 contract_type: mainType,
+                 symbol: currentSymbol,
+                 currency: CURRENCY.toString(),
+                 basis: "stake",
+                 amount: stake.toFixed(2),
+                 multiplier: multiplier,
+              }
+            }));
+        } catch (e) { console.warn('buy send failed', e); }
+      }
+
+      Openpositionlines(currentSeries);
+   }
+
+    async function createTCNModel() {
+     try {
+          await tf.ready();
+
+          // Dispose previous safely
+          if (model && typeof model.dispose === 'function') {
+            try { model.dispose(); } catch (e) { console.warn('dispose error', e); }
+            model = null;
           }
-        } 
-        
-        if (data.msg_type === "tick")
-        {
-           const price = parseFloat(data.tick.quote);
-           
-           if (!data.tick.quote || data.tick.quote === undefined || data.tick.quote === null) return;
+     
+          const m = tf.sequential();
 
-           tickHistory.push(price);
-           if (tickHistory.length > 3) // garder seulement les 3 derniers ticks
-           {  
-              Tick_arr.length = 3;
-              Tick_arr = tickHistory.slice(-3);
-              
-              // On peut aussi normaliser avec la moyenne
-              const mean = (Tick_arr[0] + Tick_arr[1] + Tick_arr[2]) / 3;
-              Dispersion = ecartType(Tick_arr);
-              if (Dispersion !==0)
-              {
-               const delta = -(Tick_arr[2] - mean) / Dispersion; // variation relative
-               // Application de la sigmoïde
-               signal = 0.5 * (delta/(1 + Math.abs(delta))) + 0.5;
-               const digit = parseInt((signal*10).toString().slice(0,1));          
+          // Convolution très légère + extraction de momentum
+          m.add(tf.layers.conv1d({
+             filters: 8,
+             kernelSize: 3,
+             activation: "relu",
+             inputShape: [20, 1]
+          }));
 
-               if (symbol_test === "BOO")    
-               {
-                if (digit === 2)  
-                {
-                  // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
-                  contracts
-                     .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTDOWN")
-                     .forEach(c => {
-                        wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-                     });
+          // Flatten pour simplifier
+          m.add(tf.layers.flatten());
 
-                  if (proposal__.contract_id) return;  
+          // Dense final = probabilité de montée
+          m.add(tf.layers.dense({
+             units: 1,
+             activation: "sigmoid"
+          }));
+
+          m.compile({
+             optimizer: tf.train.adam(0.001),
+             loss: "binaryCrossentropy"
+          });
                  
-                  console.log("📤 Ouverture d'un nouveau contrat BUY...");
-                  const stake = parseFloat(stakeInput.value) || 1;
-                  const multiplier = parseInt(multiplierInput.value)||50;
-                  numb_ = parseInt(buyNumber.value) || 1;
-                  for (let i=0;i < numb_; i++)
-                  {
-                    wsAutomation.send(JSON.stringify({
-                           buy: 1,
-                           price: stake.toFixed(2),
-                           parameters: {
-                             contract_type: "MULTUP",
-                             symbol: currentSymbol,
-                             currency: CURRENCY.toString(),
-                             basis: "stake",
-                             amount: stake.toFixed(2),
-                             multiplier: multiplier,
-                           }
-                        }
-                    ));
-                  }
-                  setTimeout(() => {     
-                  },5000);
-                }
-                else
-                {
-                  // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
-                  contracts
-                     .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTUP")
-                     .forEach(c => {
-                        wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-                     });
+          console.log("TCN model ready");
+          m.summary();
 
-                  if (proposal__.contract_id) return;
-                  
-                  console.log("📤 Ouverture d'un nouveau contrat SELL...");
-                  const stake = parseFloat(stakeInput.value) || 1;
-                  const multiplier = parseInt(multiplierInput.value)||50;
-                  numb_ = parseInt(sellNumber.value) || 1;
-                  for (let i=0;i < numb_; i++)
-                  {
-                    wsAutomation.send(JSON.stringify({
-                           buy: 1,
-                           price: stake.toFixed(2),
-                           parameters: {
-                             contract_type: "MULTDOWN",
-                             symbol: currentSymbol,
-                             currency: CURRENCY.toString(),
-                             basis: "stake",
-                             amount: stake.toFixed(2),
-                             multiplier: multiplier,
-                           }
-                        }
-                    ));
-                  }
-                }
-               }
-               else if (symbol_test === "CRA")
-               {  
-                 if (digit === 7)
-                 {
-                  // Filtrer les contrats BUY (ex: CALL, RISE, ou basés sur ton type)
-                  contracts
-                     .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTUP")
-                     .forEach(c => {
-                        wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-                     });
+          model = m;
+          return model
+      } catch (e) {
+          console.error('createTCNModel error', e);
+          throw e;
+      }
+    }
 
-                  if (proposal__.contract_id) return;
+    function prepareInput(prices) {
+      if (prices.length < 20) return null;
 
-                  console.log("📤 Ouverture d'un nouveau contrat SELL...");
-                  const stake = parseFloat(stakeInput.value) || 1;
-                  const multiplier = parseInt(multiplierInput.value)||50;
-                  numb_ = parseInt(sellNumber.value) || 1;
-                  for (let i=0;i < numb_; i++)
-                  {
-                    wsAutomation.send(JSON.stringify({
-                           buy: 1,
-                           price: stake.toFixed(2),
-                           parameters: {
-                             contract_type: "MULTDOWN",
-                             symbol: currentSymbol,
-                             currency: CURRENCY.toString(),
-                             basis: "stake",
-                             amount: stake.toFixed(2),
-                             multiplier: multiplier,
-                           }
-                        }
-                    ));
-                  }
-                  setTimeout(() => {
-                  },5000);
-                 }
-                 else
-                 {
-                  // Filtrer les contrats SELL (Boom/Crash → MULTDOWN)
-                  contracts
-                     .filter(c => c.symbol === currentSymbol && c.contract_type === "MULTDOWN")
-                     .forEach(c => {
-                        wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-                     });
+      const seq = prices.slice(-20);
 
-                  if (proposal__.contract_id) return;
+      // Normalisation essentielle
+      const mean = seq.reduce((a,b)=>a+b,0) / seq.length;
+      const std = Math.sqrt(seq.map(p => (p-mean)**2).reduce((a,b)=>a+b) / seq.length) || 1;
 
-                  console.log("📤 Ouverture d'un nouveau contrat BUY...");
-                  const stake = parseFloat(stakeInput.value) || 1;
-                  const multiplier = parseInt(multiplierInput.value)||50;
-                  numb_ = parseInt(buyNumber.value) || 1;
-                  for (let i=0;i < numb_; i++)
-                  {
-                    wsAutomation.send(JSON.stringify({
-                           buy: 1,
-                           price: stake.toFixed(2),
-                           parameters: {
-                             contract_type: "MULTUP",
-                             symbol: currentSymbol,
-                             currency: CURRENCY.toString(),  
-                             basis: "stake",
-                             amount: stake.toFixed(2),
-                             multiplier: multiplier,
-                           }
-                        }
-                    ));
-                  }
-                }
-               }
-             }
-           }   // if (it)
-        }  
+      const normalized = seq.map(v => (v - mean) / std);
 
-        if (tickHistory.length > MAX_HISTORY)    
-        {
-         tickHistory.splice(0,20);
-        }
-    };
+      return tf.tensor3d([normalized], [1, 20, 1]);
+    }
+    
+    function predictWeakSignal(model, prices) {
+      if (!model) return;
+      const input = prepareInput(prices);
+      if (!input) return null;
 
-    wsAutomation.onclose = () => {
-      console.log("Disconnected");
-      setTimeout(startAutomation,300);
-    };
+      return model.predict(input).dataSync()[0];
+    }
 
-    wsAutomation.onerror = (err) => {
-      console.error("WebSocket error:", err);
-      setTimeout(startAutomation,300);
-    };
+    function decisionWeakTrend(model, prices, tolerance = 0.02) {
+      if (!model) return;
+      const prob = predictWeakSignal(model, prices);
+      if (prob === null) return { action: "WAIT", prob: 0 };
+
+      let action = "WAIT";
+
+      if (lastProb !== null) {
+
+          // Si la probabilité FAIBLIT → BUY
+          if (prob < lastProb - tolerance) {
+              action = "BUY";
+
+          // Sinon même stable = SELL
+          } else {
+              action = "SELL";
+          }
+      }
+
+      lastProb = prob;
+
+      return { action, prob };
+   }
+
+   function onNewTick(price) {
+      prices__.push(price);
+      if (prices__.length > 500) prices__.shift();
+
+      const signal = decisionWeakTrend(model, prices__);
+
+      console.log("Signal:", signal);
+
+      if (signal.action === "BUY") {
+         BC_handleSignal("BUY");
+      } else if (signal.action === "SELL") {
+         BC_handleSignal("SELL");
+      }
+   }
+
+   async function initTCNModel() {
+     try {
+       model = await createTCNModel();
+       console.log('model exists?', !!model);
+       console.log('layers count:', model ? model.layers.length : 'no model');
+
+       // start WS only after model built
+       if (!wsAutomation || wsAutomation.readyState > 1) {
+         BC_ConnectWebsocket();
+       }
+     } catch (e) {
+       console.error('Model creation error', e);
+     }
+   }
+   
+   return { initTCNModel }; 
+   
   }
 
   function stopAutomation() {   
@@ -3035,7 +3088,11 @@ function extractValue(event, key) {
       BCtoggleAutomationBtn.textContent = "Stop Automation";
       BCtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       BCtoggleAutomationBtn.style.color = "white";
-      BCautomationRunning = true;
+      BCautomationRunning = true; 
+      // ---------- Create and start AI instance ----------
+      const bc = startAutomation();
+      bc.initTCNModel(); // call once
+      // optionally: ai.BC_connectWebSocket(); // already called inside init if needed
       ROCtoggleAutomationBtn.disabled = true;
       IAtoggleAutomationBtn.disabled = false;
     } else {
@@ -3043,6 +3100,7 @@ function extractValue(event, key) {
       BCtoggleAutomationBtn.style.background = "white";  
       BCtoggleAutomationBtn.style.color = "gray"; 
       BCautomationRunning = false;  
+      setTimeout(stopAutomation,2000);
       ROCtoggleAutomationBtn.disabled = false;
       IAtoggleAutomationBtn.disabled = false;
     }
@@ -3352,18 +3410,6 @@ window.addEventListener("error", function (e) {
       connectDeriv_table();
     }
   }, 300);
-
-  // BC Automation
-  setInterval(() => {  
-    if (BCautomationRunning === true)        
-    {   
-     startAutomation();    
-    }
-    else if (BCautomationRunning === false)
-    {
-     stopAutomation();    
-    }
-  },500);   
   
   // ROC Automation
   setInterval(() => {
