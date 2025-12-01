@@ -180,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let candles__ = [];
 
   const SYMBOLS = [
-    { symbol: "BOOM1000", name: "Boom 1000" },
+    { symbol: "BOOM1000", name: "Boom 1000" },    
     { symbol: "CRASH1000", name: "Crash 1000" },    
     { symbol: "BOOM500", name: "Boom 500" },
     { symbol: "CRASH500", name: "Crash 500" },     
