@@ -1533,7 +1533,7 @@ document.addEventListener("DOMContentLoaded", () => {
           m.summary();
 
           model = m;
-          return model
+          return model;
       } catch (e) {
           console.error('createTCNModel error', e);
           throw e;
