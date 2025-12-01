@@ -427,7 +427,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-      ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };
+      ws.onopen=()=>{ ws.send(JSON.stringify({ authorize: TOKEN })); };  
     }
 
     if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING)) {
