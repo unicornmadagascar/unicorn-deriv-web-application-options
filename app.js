@@ -1547,7 +1547,7 @@ document.addEventListener("DOMContentLoaded", () => {
         units: 1,
         activation: "sigmoid"
       }));
-
+  
      m.compile({
         optimizer: tf.train.adam(0.001),
         loss: "binaryCrossentropy"
@@ -1562,6 +1562,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // PREPARE INPUT (20 derniers prix)
     // ------------------------------------------------------------
     function prepareInput(prices) {
+
       if (!Array.isArray(prices) || prices.length < 20) return null;
 
       let seq = prices.slice(-20).map(v => Number(v));  
