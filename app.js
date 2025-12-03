@@ -1347,294 +1347,316 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function startAutomation() {
 
-    function BC_ConnectWebsocket()
-    {
-      if (wsAutomation === null)
-      {
-        wsAutomation = new WebSocket(WS_URL);
-        wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-  
-      if (wsAutomation && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING))
-      {
-       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-      }
+    // ------------------------------------------------------------
+    // VARIABLES GLOBALES INTERNES
+    // ------------------------------------------------------------
+    let wsAutomation = null;
+    let model = null;
+    let prices__ = [];
+    let candles__ = [];
+    let bcContracts = [];
+    let lastProb = null;
 
-      if (wsAutomation  && (wsAutomation.readyState === WebSocket.CLOSED || wsAutomation.readyState === WebSocket.CLOSING))
-      {
-       wsAutomation = new WebSocket(WS_URL);
-       wsAutomation.onopen=()=>{ wsAutomation.send(JSON.stringify({ authorize: TOKEN })); };
-      }
+    // Vos variables externes doivent exister :
+    // currentSymbol, currentInterval, currentChartType, stakeInput,
+    // multiplierInput, buyNumber, sellNumber, CURRENCY
 
-      wsAutomation.onclose = () => { setTimeout(BC_ConnectWebsocket,300); }
-      wsAutomation.onerror = () => { wsAutomation.close(); wsAutomation=null; setTimeout(BC_ConnectWebsocket,300); };
-      wsAutomation.onmessage = (msg) => BC_handleMessage(JSON.parse(msg.data));
+
+    // ------------------------------------------------------------
+    // WEBSOCKET
+    // ------------------------------------------------------------
+
+    function BC_ConnectWebsocket() {
+      try {
+
+        if (!wsAutomation || wsAutomation.readyState === WebSocket.CLOSED) {
+          wsAutomation = new WebSocket(WS_URL);
+
+          wsAutomation.onopen = () => {
+            wsAutomation.send(JSON.stringify({ authorize: TOKEN }));
+          };
+        }
+
+        wsAutomation.onclose = () => {
+          wsAutomation = null;
+          setTimeout(BC_ConnectWebsocket, 300);
+        };
+
+        wsAutomation.onerror = () => {
+          try { wsAutomation.close(); } catch(e){}
+          wsAutomation = null;
+          setTimeout(BC_ConnectWebsocket, 300);
+        };
+
+        wsAutomation.onmessage = (msg) => {
+          BC_handleMessage(JSON.parse(msg.data));
+        };
+
+      } catch (err) {
+        console.error("WS Error:", err);
+        setTimeout(BC_ConnectWebsocket, 300);
+      }
     }
 
-    function BC_handleMessage(data) {  
+
+   // ------------------------------------------------------------
+   // MESSAGE HANDLER
+   // ------------------------------------------------------------
+   function BC_handleMessage(data) {
       try {
-        switch(data.msg_type){
+        switch(data.msg_type) {
+
           case "authorize":
-            wsAutomation.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
+            wsAutomation.send(JSON.stringify(Payloadforsubscription(
+              currentSymbol, 
+              currentInterval,
+              currentChartType
+            )));
             wsAutomation.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
             wsAutomation.send(JSON.stringify({ portfolio: 1 }));
             break;
 
-          case "portfolio":   
-            bcContracts = data.portfolio?.contracts || [];   
-            if (bcContracts === undefined || bcContracts === null)
-               return; 
 
+          case "portfolio":
+            bcContracts = data.portfolio?.contracts || [];
             break;
+
 
           case "proposal_open_contract":
-            if (data.proposal_open_contract) {
-               proposal__ = data.proposal_open_contract;
-            } else {
-               return; // On ignore ce message car il n'a pas de POC
-            }
+            proposal__ = data.proposal_open_contract;
             break;
+
 
           case "tick":
-            try {
-                const price = parseFloat(data.tick.quote);
-                onNewTick(price);
-            } catch (e) {   
-                console.error('tick handler error', e);
-            }
+            const price = parseFloat(data.tick.quote);
+            if (!isNaN(price)) onNewTick(price);
             break;
+
 
           case "candles":
-            try {
-               const cd = data.candles || [];
-               candles__ = cd.map(c => ({   
-                 time: Number(c.epoch),
-                 open: Number(c.open),
-                 high: Number(c.high),
-                 low: Number(c.low),
-                 close: Number(c.close),
-              }));
-            } catch (e) {
-              console.error('Candles handler error', e);
-            } 
+            candles__ = (data.candles || []).map(c => ({
+              time: Number(c.epoch),
+              open: Number(c.open),
+              high: Number(c.high),
+              low: Number(c.low),
+              close: Number(c.close)
+            }));
             break;
+
 
           case "ohlc":
-            try {
-              const o = data.ohlc;
-              const openTime = Number(o.open_time);
-              const bar = {
-                  time: openTime,
-                  open: Number(o.open),
-                  high: Number(o.high),
-                  low: Number(o.low),
-                  close: Number(o.close),
-              };
-              if (!bar || !candles__) return;
-              const last = candles__[candles__.length - 1];
-              if (!last || last.time !== openTime) candles__.push(bar);
-              else candles__[candles__.length - 1] = bar;
-              //onNewTick(bar.close);
-            } catch (e) {
-              console.error('ohlc handler error', e);
-            }
+            const o = data.ohlc;
+            const bar = {
+              time: Number(o.open_time),
+              open: Number(o.open),
+              high: Number(o.high),
+              low: Number(o.low),
+              close: Number(o.close)
+            };
+
+            if (!candles__.length || candles__[candles__.length-1].time !== bar.time)
+            candles__.push(bar);
+            else
+              candles__[candles__.length-1] = bar;
+
             break;
+
 
           case "ping":
-            try { wsAutomation.send(JSON.stringify({ ping: 1 })); } catch (e) { }
+            wsAutomation.send(JSON.stringify({ ping: 1 }));
             break;
-    
         }
-      } catch (e) {
-        console.error('AI_handleMessage error', e);
+ 
+      } catch (err) {
+        console.error("handleMessage error:", err);
       }
-
     }
 
+
+    // ------------------------------------------------------------
+    // SIGNAL + TRADE MANAGEMENT
+    // ------------------------------------------------------------
     function BC_handleSignal(direction) {
       const oppositeType = direction === "BUY" ? "MULTDOWN" : "MULTUP";
       const mainType = direction === "BUY" ? "MULTUP" : "MULTDOWN";
 
-      // close opposite contracts
+      // fermer les trades opposés
       bcContracts
         .filter(c => c.symbol === currentSymbol && c.contract_type === oppositeType)
         .forEach(c => {
-           try { wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 })); } catch (e) { }
+          try {
+            wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+          } catch(e){}
         });
 
-      // if a contract active exists, skip
+      // si un trade actif → rien
       if (proposal__?.contract_id) return;
 
-      const stake = parseFloat(stakeInput.value) || 1;
-      const multiplier = parseInt(multiplierInput.value) || 40;
+      const stake = Number(stakeInput.value) || 1;
+      const multiplier = Number(multiplierInput.value) || 40;
       const repeat = direction === "BUY"
-        ? (parseInt(buyNumber.value) || 1)
-        : (parseInt(sellNumber.value) || 1);
-
-      if ((typeof multiplier !== "number" && multiplier === "") || (typeof stake !== "number" && stake === "") || (typeof repeat !== "number" && repeat === "")) {
-         return;
-      }
+          ? Number(buyNumber.value) || 1
+          : Number(sellNumber.value) || 1;  
 
       for (let i = 0; i < repeat; i++) {
         try {
-           wsAutomation.send(JSON.stringify({
-              buy: 1,
-              price: stake.toFixed(2),
-              parameters: {
-                 contract_type: mainType,
-                 symbol: currentSymbol,
-                 currency: CURRENCY.toString(),
-                 basis: "stake",
-                 amount: stake.toFixed(2),
-                 multiplier: multiplier,
-              }
-            }));
-        } catch (e) { console.warn('buy send failed', e); }
+          wsAutomation.send(JSON.stringify({
+            buy: 1,
+            price: stake.toFixed(2),
+            parameters: {
+              contract_type: mainType,
+              symbol: currentSymbol,
+              currency: CURRENCY,
+              basis: "stake",
+              amount: stake.toFixed(2),
+              multiplier: multiplier
+            }
+          }));
+        } catch(e){
+          console.warn("Trade send failed:", e);
+        }
       }
 
       Openpositionlines(currentSeries);
-   }
-
-    async function createTCNModel() {
-     try {
-          await tf.ready();
-
-          // Dispose previous safely
-          if (model && typeof model.dispose === 'function') {
-            try { model.dispose(); } catch (e) { console.warn('dispose error', e); }
-            model = null;
-          }
-     
-          const m = tf.sequential();
-
-          // Convolution très légère + extraction de momentum
-          m.add(tf.layers.conv1d({
-             filters: 8,
-             kernelSize: 3,
-             activation: "relu",
-             inputShape: [20, 1]
-          }));
-
-          // Flatten pour simplifier
-          m.add(tf.layers.flatten());
-
-          // Dense final = probabilité de montée
-          m.add(tf.layers.dense({
-             units: 1,
-             activation: "sigmoid"
-          }));
-
-          m.compile({
-             optimizer: tf.train.adam(0.001),
-             loss: "binaryCrossentropy"
-          });
-                 
-          console.log("TCN model ready");
-          m.summary();
-
-          model = m;
-          return model;   
-      } catch (e) {  
-          console.error('createTCNModel error', e);
-          throw e;
-      }
     }
 
+ 
+    // ------------------------------------------------------------
+    // IA MODEL TCN
+    // ------------------------------------------------------------
+    async function createTCNModel() {
+      await tf.ready();
+
+      if (model && model.dispose) {
+        try { model.dispose(); } catch(e){}
+      }
+
+      const m = tf.sequential();
+
+      m.add(tf.layers.conv1d({
+        filters: 8,
+        kernelSize: 3,
+        activation: "relu",
+        inputShape: [20, 1]
+      }));
+
+      m.add(tf.layers.flatten());
+
+      m.add(tf.layers.dense({
+        units: 1,
+        activation: "sigmoid"
+      }));
+
+     m.compile({
+        optimizer: tf.train.adam(0.001),
+        loss: "binaryCrossentropy"
+      });
+
+      model = m;
+      return model;
+    }
+
+
+    // ------------------------------------------------------------
+    // PREPARE INPUT (20 derniers prix)
+    // ------------------------------------------------------------
     function prepareInput(prices) {
       if (prices.length < 20) return null;
 
-      // Conversion obligatoire !
-      const seq = prices.slice(-20).map(v => Number(v));
+      const seq = prices.slice(-20).map(Number);
+      if (seq.some(v => isNaN(v))) return null;
+ 
+      const mean = seq.reduce((a,b)=>a+b,0) / seq.length;
+      const variance = seq.reduce((s,x)=>s+(x-mean)**2,0) / seq.length;
+      const std = Math.sqrt(variance);
 
-      // Vérification : si un élément est NaN → STOP
-      if (seq.some(v => isNaN(v))) {
-          console.error("Invalid price data received:", seq);
-          return null;
-      }
+      const normalized = std === 0
+        ? seq.map(()=>0)
+        : seq.map(v => (v - mean) / std);
 
-      // Normalisation (Z-score)
-      const mean = seq.reduce((a, b) => a + b, 0) / seq.length;
-      const std = Math.sqrt(
-        seq.map(p => (p - mean) ** 2).reduce((a, b) => a + b) / seq.length
-      ) || 1;
+      return tf.tensor3d([normalized], [1,20,1]);
+    }
 
-      const normalized = seq.map(v => (v - mean) / std);
 
-      // Tensor OK
-      return tf.tensor3d([normalized], [1, 20, 1]);
-    }   
-    
-    function predictWeakSignal(model, prices) {
-      if (!model) return;
+    // ------------------------------------------------------------
+    // PREDICTION
+    // ------------------------------------------------------------
+    async function predictWeakSignal(model, prices) {
+      if (!model) return null;
+
       const input = prepareInput(prices);
       if (!input) return null;
 
-      const prob = model.predict(input).dataSync()[0];
+      const out = await model.predict(input).data();
       input.dispose();
-      return prob;
+
+      return out[0];
     }
 
-    function decisionWeakTrend(model, prices, tolerance = 0.02) {
-      if (!model) return null;
 
-      const prob = predictWeakSignal(model, prices);
+    // ------------------------------------------------------------
+    // DÉCISION BUY/SELL
+    // ------------------------------------------------------------
+    async function decisionWeakTrend(model, prices, tolerance = 0.02) {
+      const prob = await predictWeakSignal(model, prices);
       if (prob === null) return { action: "WAIT", prob: 0 };
 
       let action = "WAIT";
 
       if (lastProb !== null) {
+        const delta = prob - lastProb;
 
-          // Probabilité diminue → BUY
-          if (prob < lastProb - tolerance) {
-              action = "BUY";
-
-          // Probabilité augmente → SELL
-          } else {
-             action = "SELL";
-          }
+        if (delta > tolerance) {
+          action = "SELL";
+        } else if (delta < -tolerance) {
+          action = "BUY";
+        }
       }
 
       lastProb = prob;
 
       return { action, prob };
-   }
+    }
 
-   function onNewTick(price) {
-      const symbol_test = currentSymbol.slice(0,3);
+
+    // ------------------------------------------------------------
+    // TICK HANDLER
+    // ------------------------------------------------------------
+    async function onNewTick(price) {
       prices__.push(price);
       if (prices__.length > 500) prices__.shift();
 
-      if (!["BOO", "CRA"].includes(symbol_test)) return;
+      const symbol_test = currentSymbol.slice(0,3);
+      if (!["BOO","CRA"].includes(symbol_test)) return;
 
-      const signal = decisionWeakTrend(model, prices__);
+      const signal = await decisionWeakTrend(model, prices__);
 
-      console.log("Signal:", signal);
+      console.log("Decision:", signal);
 
-      if (signal.action === "BUY") {
-         BC_handleSignal("BUY");
-      } else if (signal.action === "SELL") {    
-         BC_handleSignal("SELL");
+      if (signal.action === "BUY") BC_handleSignal("BUY");
+      else if (signal.action === "SELL") BC_handleSignal("SELL");
+    }
+
+
+    // ------------------------------------------------------------
+    // INIT
+    // ------------------------------------------------------------
+    async function initTCNModel() {
+      model = await createTCNModel();
+      console.log("✔️ Model created | Layers:", model.layers.length);
+
+      if (!wsAutomation || wsAutomation.readyState > 1) {
+        BC_ConnectWebsocket();
       }
-   }
+    }
 
-   async function initTCNModel() {
-     try {
-       model = await createTCNModel();
-       console.log('model exists?', !!model);
-       console.log('layers count:', model ? model.layers.length : 'no model');
 
-       // start WS only after model built
-       if (!wsAutomation || wsAutomation.readyState > 1) {
-         BC_ConnectWebsocket();   
-       }
-     } catch (e) {
-       console.error('Model creation error', e);
-     }
-   }
-   
-   return { initTCNModel }; 
-   
+    // ------------------------------------------------------------
+    // RETURN PUBLIC API
+    // ------------------------------------------------------------
+    return { initTCNModel };
   }
+
 
   function stopAutomation() {   
     if (wsAutomation  && wsAutomation.readyState === WebSocket.OPEN) {  
