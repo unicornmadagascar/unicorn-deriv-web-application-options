@@ -1652,11 +1652,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       console.log("Decision:", signal);
 
-      if (signal.action === "BUY") BC_handleSignal("BUY");
+      if (signal.action === "BUY") setTimeout(()=> {BC_handleSignal("BUY");},5000);
       else if (signal.action === "SELL") BC_handleSignal("SELL");
     }   
 
-
+   
     // ------------------------------------------------------------
     // INIT
     // ------------------------------------------------------------
