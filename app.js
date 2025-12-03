@@ -1562,53 +1562,39 @@ document.addEventListener("DOMContentLoaded", () => {
     // PREPARE INPUT (20 derniers prix)
     // ------------------------------------------------------------
     function prepareInput(prices) {
-      if (!Array.isArray(prices)) {
-          console.error("prepareInput error: prices is not an array:", prices);
-          return null;
-      }
+      if (!Array.isArray(prices) || prices.length < 20) return null;
 
-      if (prices.length < 20) {
-          console.warn("prepareInput: not enough data", prices.length);
-          return null;
-      }
-
-      // Derniers 20 prix
       let seq = prices.slice(-20).map(v => Number(v));
 
-      // Vérification profonde : toutes valeurs doivent être validées
-      for (let i = 0; i < seq.length; i++) {
-          if (!isFinite(seq[i])) {
-              console.error("prepareInput invalid value detected:", seq);
-              return null;
-          }
+      // Validation
+      if (seq.some(v => !isFinite(v))) {
+          console.error("Invalid sequence:", seq);
+          return null;
       }
 
-      // Moyenne
       const mean = seq.reduce((a,b)=>a+b,0) / seq.length;
-
-      // Variance
       const variance = seq.reduce((s,x)=>s+(x-mean)**2,0) / seq.length;
-
-      // éviter std = 0
       const std = Math.sqrt(variance) || 1;
 
       const normalized = seq.map(v => (v - mean) / std);
 
-      // Re-vérification finale
       if (normalized.some(v => !isFinite(v))) {
-          console.error("prepareInput normalization produced invalid values:", normalized);
+          console.error("Normalization error:", normalized);
           return null;
       }
 
-      // Tensor validé
       try {
-          return tf.tensor3d([normalized], [1, 20, 1]);
+          // reshape → [20][1]
+          const arr = normalized.map(v => [v]);
+
+          // final reshape → [1,20,1]
+          return tf.tensor3d([arr], [1, 20, 1]);
+
       } catch (err) {
           console.error("tensor3d creation failed:", err, "input:", normalized);
           return null;
       }
     }
-
 
 
     // ------------------------------------------------------------
