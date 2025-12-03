@@ -1468,7 +1468,7 @@ document.addEventListener("DOMContentLoaded", () => {
             break;
         }
  
-      } catch (err) {
+      } catch (err) {   
         console.error("handleMessage error:", err);
       }
     }
