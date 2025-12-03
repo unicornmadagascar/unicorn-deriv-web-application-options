@@ -1706,7 +1706,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       console.log("Decision:", signal);
 
-      if (signal.action === "BUY") setTimeout(()=> {BC_handleSignal("BUY");},5000);
+      if (signal.action === "BUY") setTimeout(()=> {BC_handleSignal("BUY");},10000);
       else if (signal.action === "SELL") closeAllContracts();     
     }   
 
