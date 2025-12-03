@@ -1702,7 +1702,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const symbol_test = currentSymbol.slice(0,3);
       if (!["BOO","CRA"].includes(symbol_test)) return;
 
-      const signal = await decisionWeakTrend(model, prices__);
+      const signal = await decisionWeakTrend(model, prices__);   
 
       console.log("Decision:", signal);
 
