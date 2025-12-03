@@ -1629,12 +1629,11 @@ document.addEventListener("DOMContentLoaded", () => {
       let action = "WAIT";
 
       if (lastProb !== null) {
-        const delta = prob - lastProb;
-
-        if (delta > tolerance) {
-          action = "SELL";
-        } else if (delta < -tolerance) {
+        const digit = parseInt((prob*10).toString().slice(0,1));
+        if (digit === 3) {
           action = "BUY";
+        } else {
+          action = "SELL";
         }
       }
 
