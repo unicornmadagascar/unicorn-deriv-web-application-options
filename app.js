@@ -1626,18 +1626,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const prob = await predictWeakSignal(model, prices);
       if (prob === null) return { action: "WAIT", prob: 0 };
 
-      let action = "WAIT";
+      const digit = parseInt((prob*10).toString().slice(0,1));
 
-      if (lastProb !== null) {
-        const digit = parseInt((prob*10).toString().slice(0,1));
-        if (digit === 3) {
-          action = "BUY";
-        } else {
-          action = "SELL";
-        }
+      if (digit === 3) {
+        action = "BUY";
+      } else {
+        action = "SELL";
       }
-
-      lastProb = prob;
 
       return { action, prob };
     }
