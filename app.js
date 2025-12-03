@@ -1680,12 +1680,18 @@ document.addEventListener("DOMContentLoaded", () => {
       const prob = await predictWeakSignal(model, prices);
       if (prob === null) return { action: "WAIT", prob: 0 };
 
+      const symbol_test = currentSymbol.slice(0,3);
+      if (!["BOO","CRA"].includes(symbol_test)) return;
+
       const digit = parseInt((prob*10).toString().slice(0,1));
 
-      if (digit === 3) {
-        action = "BUY";
-      } else {
-        action = "SELL";
+      if (symbol_test === "BOO") {
+         if (digit === 3) action = "BUY";
+         else action = "SELL";
+      }
+      else if (symbol_test === "CRA"){
+         if (digit === 5 || digit === 4) action = "SELL";
+         else action = "BUY";
       }
 
       return { action, prob };
@@ -1705,9 +1711,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const signal = await decisionWeakTrend(model, prices__);   
 
       console.log("Decision:", signal);
-
-      if (signal.action === "BUY") setTimeout(()=> {BC_handleSignal("BUY");},10000);
-      else if (signal.action === "SELL") closeAllContracts();     
+      
+      if (symbol_test === "BOO") {
+         if (signal.action === "BUY") setTimeout(()=> {BC_handleSignal("BUY");},10000);
+         else if (signal.action === "SELL") closeAllContracts();    
+      } else if (symbol_test === "CRA") {
+         if (signal.action === "SELL") setTimeout(()=> {BC_handleSignal("SELL");},10000);
+         else if (signal.action === "BUY") closeAllContracts();    
+      } 
     }   
 
    
