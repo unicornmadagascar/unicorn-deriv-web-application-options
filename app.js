@@ -1542,12 +1542,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }));
 
       m.add(tf.layers.flatten());
-
+  
       m.add(tf.layers.dense({
         units: 1,
         activation: "sigmoid"
       }));
-  
+    
      m.compile({
         optimizer: tf.train.adam(0.001),
         loss: "binaryCrossentropy"
