@@ -1732,7 +1732,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!wsAutomation || wsAutomation.readyState > 1) {
         BC_ConnectWebsocket();
       }
-    }
+    }   
 
 
     // ------------------------------------------------------------
