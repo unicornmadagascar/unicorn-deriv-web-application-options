@@ -1397,7 +1397,61 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(BC_ConnectWebsocket, 300);
       }
     }
+    
+   // ------------------------------------------------------------
+   // CLOSE ALL CONTRACTS
+   // ------------------------------------------------------------
+    function closeAllContracts() {
 
+      if (wsAutomation_close === null)
+      {
+       wsAutomation_close  = new WebSocket(WS_URL);
+       wsAutomation_close.onopen=()=>{ wsAutomation_close.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+  
+      if (wsAutomation_close  && (wsAutomation_close.readyState === WebSocket.OPEN || wsAutomation_close.readyState === WebSocket.CONNECTING))
+      {
+       wsAutomation_close.onopen=()=>{ wsAutomation_close.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+
+      if (wsAutomation_close && (wsAutomation_close.readyState === WebSocket.CLOSED || wsAutomation_close.readyState === WebSocket.CLOSING))
+      {
+       wsAutomation_close = new WebSocket(WS_URL);
+       wsAutomation_close.onopen=()=>{ wsAutomation_close.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+
+      wsAutomation_close.onclose = () => { setTimeout(closeAllContracts,500); };   
+      wsAutomation_close.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+
+        // Autorisé → demander la liste des contrats
+        if (data.authorize) {
+            wsAutomation_close.send(JSON.stringify({ portfolio: 1 }));
+        }
+
+        // Liste des contrats ouverts reçue
+        if (data.portfolio) {
+            const list = data.portfolio.contracts;
+
+            if (list === undefined || list === null || list.length === 0) {
+               return;
+            }
+
+            // Fermer chaque contrat (prix marché)
+            for (let c of list) {
+                wsAutomation_close.send(JSON.stringify({
+                    sell: c.contract_id,
+                    price: 0
+                }));
+            }
+        }
+
+        // Confirmation d’un contrat fermé 
+        if (data.sell) {
+            console.log("Fermé :", data.sell.contract_id);
+        }
+      };
+    }
 
    // ------------------------------------------------------------
    // MESSAGE HANDLER
@@ -1653,7 +1707,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Decision:", signal);
 
       if (signal.action === "BUY") setTimeout(()=> {BC_handleSignal("BUY");},5000);
-      else if (signal.action === "SELL") BC_handleSignal("SELL");
+      else if (signal.action === "SELL") closeAllContracts();
     }   
 
    
