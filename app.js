@@ -1498,7 +1498,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? Number(buyNumber.value) || 1
           : Number(sellNumber.value) || 1;  
 
-      for (let i = 0; i < repeat; i++) {
+      for (let i = 0; i < repeat; i++) {   
         try {
           wsAutomation.send(JSON.stringify({
             buy: 1,
