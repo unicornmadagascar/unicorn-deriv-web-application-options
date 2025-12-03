@@ -1534,7 +1534,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const m = tf.sequential();
 
-      m.add(tf.layers.conv1d({
+      m.add(tf.layers.conv1d({  
         filters: 8,
         kernelSize: 3,
         activation: "relu",
