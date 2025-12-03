@@ -1458,7 +1458,8 @@ document.addEventListener("DOMContentLoaded", () => {
             candles__.push(bar);
             else
               candles__[candles__.length-1] = bar;
-
+            
+            if (!isNaN(bar.close)) onNewTick(bar.close);
             break;
 
 
