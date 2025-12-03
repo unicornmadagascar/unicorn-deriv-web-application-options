@@ -1654,7 +1654,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (signal.action === "BUY") BC_handleSignal("BUY");
       else if (signal.action === "SELL") BC_handleSignal("SELL");
-    }
+    }   
 
 
     // ------------------------------------------------------------
