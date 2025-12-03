@@ -1625,7 +1625,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
        // start WS only after model built
        if (!wsAutomation || wsAutomation.readyState > 1) {
-         BC_ConnectWebsocket();
+         BC_ConnectWebsocket();   
        }
      } catch (e) {
        console.error('Model creation error', e);
