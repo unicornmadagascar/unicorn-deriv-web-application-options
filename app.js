@@ -1564,7 +1564,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function prepareInput(prices) {
       if (!Array.isArray(prices) || prices.length < 20) return null;
 
-      let seq = prices.slice(-20).map(v => Number(v));
+      let seq = prices.slice(-20).map(v => Number(v));  
 
       // Validation
       if (seq.some(v => !isFinite(v))) {
