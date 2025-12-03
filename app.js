@@ -1492,7 +1492,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // si un trade actif → rien
       if (proposal__?.contract_id) return;
 
-      const stake = Number(stakeInput.value) || 1;
+      const stake = Number(stakeInput.value) || 1;   
       const multiplier = Number(multiplierInput.value) || 40;
       const repeat = direction === "BUY"
           ? Number(buyNumber.value) || 1
