@@ -1695,7 +1695,7 @@ document.addEventListener("DOMContentLoaded", () => {
       else if (symbol_test === "CRA"){
          if (digit === 3) action = "SELL";
          else action = "BUY";    
-      }
+      }  
   
       return { action, prob };  
     }       
