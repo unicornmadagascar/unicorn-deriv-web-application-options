@@ -3279,27 +3279,6 @@ function extractValue(event, key) {
     }
   });
 
-  // === Automation Toggle ===
-  
-  ROCtoggleAutomationBtn.addEventListener("click", () => {
-    ROCautomationRunning = !ROCautomationRunning;
-    if (ROCautomationRunning) {
-      ROCtoggleAutomationBtn.textContent = "Stop ROC Automation";   
-      ROCtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
-      ROCtoggleAutomationBtn.style.color = "white";
-      ROCautomationRunning = true;
-      BCtoggleAutomationBtn.disabled = true;
-      IAtoggleAutomationBtn.disabled = false;
-    } else {
-      ROCtoggleAutomationBtn.textContent = "Launch ROC Automation";
-      ROCtoggleAutomationBtn.style.background = "white";   
-      ROCtoggleAutomationBtn.style.color = "gray";
-      ROCautomationRunning = false;
-      BCtoggleAutomationBtn.disabled = false;
-      IAtoggleAutomationBtn.disabled = false;   
-    }
-  });
-
   // --- TOGGLE PANEL ---
   controlPanelToggle.addEventListener("click", () => {
     if (!controlFormPanel) return;
