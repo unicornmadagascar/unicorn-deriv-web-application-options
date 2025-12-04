@@ -1586,15 +1586,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }   
   }
 
-  // Fonction pour calculer l’écart-type (population)    
-  function ecartType(values) {
-    if (values.length === 0) return 0;
-    const mean = values.reduce((a, b) => a + b, 0) / values.length;
-    const variance = values.map(x => (x - mean) ** 2).reduce((a, b) => a + b, 0) / values.length;
-       
-    return Math.sqrt(variance);
-  }
-
   buyBtn.onclick=()=>executeTrade("BUY");
   sellBtn.onclick=()=>executeTrade("SELL");
   reverseBtn.onclick=()=>{
@@ -1737,7 +1728,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Portfolio received
       if (data.msg_type === "portfolio" && data.portfolio?.contracts?.length > 0) {
-         const contracts = data.portfolio.contracts;
+         const contracts = data.portfolio.contracts || [];
          console.log("📊 Found " + contracts.length + " active contracts.");
 
          contracts.forEach((contract,i) => {
@@ -1803,7 +1794,7 @@ closeAll.onclick=()=>{
 
        // 3️⃣ Quand on reçoit les contrats ouverts
        if (data.msg_type === 'portfolio') {
-          const contracts = data.portfolio.contracts;
+          const contracts = data.portfolio.contracts || [];
           console.log('Contrats ouverts:', contracts);
 
           // 4️⃣ Fermer chaque contrat
