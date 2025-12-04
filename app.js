@@ -1689,11 +1689,11 @@ document.addEventListener("DOMContentLoaded", () => {
       //if (digit === 4 || digit === 5 || digit === 6 || digit === 7) {const gapvalue = digit - 1; }
 
       if (symbol_test === "BOO") {
-         if (digit === 3) action = "BUY";
+         if (digit === 2 || digit === 3 || digit === 6 || digit === 7) action = "BUY";
          else action = "SELL";
       }
       else if (symbol_test === "CRA"){
-         if (digit === 3) action = "SELL";
+         if (digit === 2 || digit === 3 || digit === 6 || digit === 7) action = "SELL";
          else action = "BUY";    
       }  
   
