@@ -48,14 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeModalBtn = document.getElementById("closeModal");    
   const historicalchartcontainer = document.getElementById("HistoricalgraphicalContract");
   const reverseBtn = document.getElementById("reverseBtn");
-  const ROCtoggleAutomationBtn = document.getElementById("ROCtoggleAutomation");
-  const overlay = document.getElementById('overlay');
-  const cancelBtn = document.getElementById('cancelBtn');
-  const validateBtn = document.getElementById('validateBtn');
-  const highInput = document.getElementById('highProb');
-  const lowInput = document.getElementById('lowTol');
-  const showHigh = document.getElementById('showHigh');
-  const showLow = document.getElementById('showLow');
 
   let totalPL = 0; // cumul des profits et pertes
   let BCautomationRunning = false;
@@ -3533,40 +3525,65 @@ window.addEventListener("error", function (e) {
     }
   }, 300);
 
-  // Ouvrir
-ROCtoggleAutomationBtn.addEventListener('click', () => {
+  // Ouvrir popup
+  document.getElementById('aiPopupOpenBtn').addEventListener('click', () => {
+    const overlay = document.getElementById('aiPopupOverlay');
     overlay.classList.add('show');
-    setTimeout(() => highInput.focus(), 80);
-});
+    setTimeout(() => document.getElementById('aiPopupHighInput').focus(), 100);
+  });
 
-// Fermer en cliquant sur le fond
-overlay.addEventListener('click', () => {
-    overlay.classList.remove('show');
-});
 
-// Annuler
-cancelBtn.addEventListener('click', () => {
-    overlay.classList.remove('show');
-});
+  // Fermer popup si on clique sur le fond
+  document.getElementById('aiPopupOverlay').addEventListener('click', () => {
+    document.getElementById('aiPopupOverlay').classList.remove('show');
+  });
 
-// Valider
-validateBtn.addEventListener('click', () => {
-    const h = parseFloat(highInput.value);
-    const l = parseFloat(lowInput.value);
 
-    if (isNaN(h) || isNaN(l)) return alert("Veuillez entrer des valeurs valides.");
-    if (h < 0 || h > 1 || l < 0 || l > 1) return alert("Les valeurs doivent être entre 0 et 1.");
-    if (l > h) return alert("La valeur Low doit être ≤ High.");
+  // Annuler
+  document.getElementById('aiPopupCancel').addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('aiPopupOverlay').classList.remove('show');
+  });
 
-    showHigh.textContent = h.toFixed(3);
-    showLow.textContent = l.toFixed(3);
 
-    overlay.classList.remove('show');
-});
+  // Valider
+  document.getElementById('aiPopupValidate').addEventListener('click', (e) => {
+    e.stopPropagation();
 
-// Fermer avec Échap
-document.addEventListener('keydown', (e) => {
-    if (e.key === "Escape") overlay.classList.remove('show');
-});
+    const h = parseFloat(document.getElementById('aiPopupHighInput').value);
+    const l = parseFloat(document.getElementById('aiPopupLowInput').value);
+
+    if (Number.isNaN(h) || Number.isNaN(l)) {
+        alert('Veuillez entrer des nombres valides entre 0 et 1.');
+        return;
+    }
+
+    if (l < 0 || l > 1 || h < 0 || h > 1) {
+        alert('Les valeurs doivent être entre 0.0 et 1.0');
+        return;
+    }
+
+    if (l > h) {
+        alert('La lower tolerance doit être ≤ high probability.');
+        return;
+    }
+
+    // Appliquer ou envoyer où tu veux
+    document.getElementById('aiPopupHighDisplay').textContent = h.toFixed(3);
+    document.getElementById('aiPopupLowDisplay').textContent = l.toFixed(3);
+
+    // fermer
+    document.getElementById('aiPopupOverlay').classList.remove('show');
+
+    console.log("Applied values:", { high: h, low: l });
+  });
+
+
+  // Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        document.getElementById('aiPopupOverlay').classList.remove('show');
+    }
+  });
   
 });
