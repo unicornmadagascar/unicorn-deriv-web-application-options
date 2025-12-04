@@ -3547,7 +3547,7 @@ window.addEventListener("error", function (e) {
 
   // Fermer popup en cliquant sur le fond (overlay)
   overlay.addEventListener('click', () => {
-    overlay.classList.remove('show');
+    overlay.classList.remove('show');  
   });
 
 
