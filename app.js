@@ -1523,7 +1523,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (symbol_test === "BOO") {
          if (binary === 1) action = "BUY";
-         else action = "SELL";
+         else action = "SELL";  
       }
       else if (symbol_test === "CRA"){  
          if (binary==1) action = "SELL";
