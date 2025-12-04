@@ -1506,7 +1506,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-
     // ------------------------------------------------------------
     // DÉCISION BUY/SELL
     // ------------------------------------------------------------
@@ -1579,7 +1578,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   function stopAutomation() {   
-    if (wsAutomation  && wsAutomation.readyState === WebSocket.OPEN) {  
+    if (wsAutomation  && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING)) {  
        // Envoyer unsubscribe avant de fermer
        wsAutomation.send(JSON.stringify({ forget_all: ["Candles","ticks"] }));
        wsAutomation.close();
