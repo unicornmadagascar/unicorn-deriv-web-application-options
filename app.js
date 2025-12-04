@@ -3358,7 +3358,7 @@ window.addEventListener("error", function (e) {
      setTimeout(() => document.getElementById("aiPopupHighInput").focus(), 100);
   });
 
-  // Fermer en cliquant sur le fond SEULEMENT
+  // Fermer en cliquant sur le fond SEULEMENT  
   overlay.addEventListener("click", () => {
     overlay.classList.remove("show");
   });
