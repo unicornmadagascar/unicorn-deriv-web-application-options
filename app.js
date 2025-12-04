@@ -1696,7 +1696,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
   
       return { action, prob };
-    }
+    }   
 
 
     // ------------------------------------------------------------
