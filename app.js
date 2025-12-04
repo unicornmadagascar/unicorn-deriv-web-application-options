@@ -3350,7 +3350,7 @@ window.addEventListener("error", function (e) {
   }, 300);
 
   // Ouvrir popup
-  document.getElementById('aiPopupOpenBtn').addEventListener('click', () => {
+  document.getElementById('ROCtoggleAutomation').addEventListener('click', () => {
     const overlay = document.getElementById('aiPopupOverlay');
     overlay.classList.add('show');
     setTimeout(() => document.getElementById('aiPopupHighInput').focus(), 100);
