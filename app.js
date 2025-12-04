@@ -3248,7 +3248,7 @@ function extractValue(event, key) {
       BCautomationRunning = false;  
       setTimeout(stopAutomation,2000);
       IAtoggleAutomationBtn.disabled = false;
-    }
+    }   
   });
 
    // === Automation Toggle ===
