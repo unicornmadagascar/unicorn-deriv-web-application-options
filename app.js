@@ -48,6 +48,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeModalBtn = document.getElementById("closeModal");    
   const historicalchartcontainer = document.getElementById("HistoricalgraphicalContract");
   const reverseBtn = document.getElementById("reverseBtn");
+  const ROCtoggleAutomationBtn = document.getElementById("ROCtoggleAutomation");
+  const overlay = document.getElementById('overlay');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const validateBtn = document.getElementById('validateBtn');
+  const highInput = document.getElementById('highProb');
+  const lowInput = document.getElementById('lowTol');
+  const showHigh = document.getElementById('showHigh');
+  const showLow = document.getElementById('showLow');
 
   let totalPL = 0; // cumul des profits et pertes
   let BCautomationRunning = false;
@@ -177,6 +185,8 @@ document.addEventListener("DOMContentLoaded", () => {
   //---- BC MODEL ////////////////////////
   let prices__ = [];
   let lastProb = null;
+  let probsNew = [];
+  let ProbTick = [];
   let candles__ = [];
 
   const SYMBOLS = [
@@ -1676,24 +1686,25 @@ document.addEventListener("DOMContentLoaded", () => {
     // ------------------------------------------------------------
     // DÉCISION BUY/SELL
     // ------------------------------------------------------------
-    async function decisionWeakTrend(model, prices, tolerance = 0.02) {
+    async function decisionWeakTrend(model, prices, tolerance = 0.0012) {
       const prob = await predictWeakSignal(model, prices);
       if (prob === null) return { action: "WAIT", prob: 0 };
 
+      const amplitude_gap = 0.55 - 0.40;
+      const amplitude_seq =  Math.abs(0.55 - prob);
+      const binary = amplitude_seq <= (amplitude_gap + tolerance) ? 0 : 1;
+    
       const symbol_test = currentSymbol.slice(0,3);
       if (!["BOO","CRA"].includes(symbol_test)) return;
 
       const digit = parseInt((prob*10).toString().slice(0,1));  
-      const digit2 = parseInt((prob*100).toString().slice(0,2));
-
-      //if (digit === 4 || digit === 5 || digit === 6 || digit === 7) {const gapvalue = digit - 1; }
 
       if (symbol_test === "BOO") {
-         if (digit === 2 || digit === 3 || digit === 6 || digit === 7) action = "BUY";
+         if (binary === 1) action = "BUY";
          else action = "SELL";
       }
       else if (symbol_test === "CRA"){  
-         if (digit === 2 || digit === 3 || digit === 6 || digit === 7) action = "SELL";
+         if (binary==1) action = "SELL";
          else action = "BUY";    
       }  
   
@@ -3269,7 +3280,7 @@ function extractValue(event, key) {
   });
 
   // === Automation Toggle ===
-  const ROCtoggleAutomationBtn = document.getElementById("ROCtoggleAutomation");
+  
   ROCtoggleAutomationBtn.addEventListener("click", () => {
     ROCautomationRunning = !ROCautomationRunning;
     if (ROCautomationRunning) {
@@ -3546,16 +3557,68 @@ window.addEventListener("error", function (e) {
       connectDeriv_table();
     }
   }, 300);
+
+  // Ouvrir popup
+  ROCtoggleAutomationBtn.addEventListener('click', () => {
+    overlay.classList.add('show');
+    // mettre le focus sur le premier champ pour accessibilité
+    setTimeout(() => highInput.focus(), 100);
+  });
+
+
+  // Fermer popup en cliquant sur le fond (overlay)
+  overlay.addEventListener('click', () => {
+    overlay.classList.remove('show');
+  });
+
+
+  // Annuler (ferme le popup sans appliquer)
+  cancelBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    overlay.classList.remove('show');
+  });
+
+
+  // Valider : appliquer les valeurs puis fermer
+  validateBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+   const h = parseFloat(highInput.value);
+   const l = parseFloat(lowInput.value);
+
+
+   // Validation simple
+   if (Number.isNaN(h) || Number.isNaN(l)) {
+      alert('Veuillez entrer des nombres valides entre 0 et 1.');
+      return;
+   }
+   if (l < 0 || l > 1 || h < 0 || h > 1) {
+      alert('Les valeurs doivent être dans l\'intervalle 0.0 - 1.0');
+      return;
+   }
+   // Optionnel : s'assurer que low <= high
+   if (l > h) {
+     alert('La lower tolerance doit être ≤ high probability.');
+     return;
+   } 
+
+
+   // Appliquer (ici on affiche dans la page, tu peux remplacer par ta logique)
+   showHigh.textContent = h.toFixed(3);
+   showLow.textContent = l.toFixed(3);
+
+
+   // Fermeture
+   overlay.classList.remove('show');
+
+
+   // Exemple : envoyer les valeurs au serveur ou les stocker
+   console.log('Applied values:', { high: h, low: l });
+  });
+
+
+  // Fermer la popup en appuyant sur Échap
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') overlay.classList.remove('show');
+  });
   
-  // ROC Automation
-  setInterval(() => {
-    if (ROCautomationRunning === true)
-    {
-     RocstartAutomation();
-    }
-    else if (ROCautomationRunning === false)
-    {
-     RocstopAutomation();
-    }
-  },500);
 });

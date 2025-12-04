@@ -842,6 +842,37 @@ hr {
     color: #222;
     margin-bottom: 12px;  
  }
+
+/* Bouton d'ouverture */
+.open-btn{padding:10px 16px;border:0;border-radius:8px;background:#1f6feb;color:#fff;cursor:pointer;font-weight:600}
+
+
+/* Overlay (fond cliquable) */
+.overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);z-index:1000}
+
+
+/* Popup (fond blanc demandé) */
+.modal{background:#fff;padding:20px;border-radius:10px;min-width:300px;box-shadow:0 10px 30px rgba(0,0,0,0.12)}
+
+
+.modal h2{margin:0 0 12px 0;font-size:18px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+label{font-size:13px}
+input[type=number]{padding:8px;border:1px solid #ddd;border-radius:6px}
+
+
+.actions{display:flex;gap:8px;justify-content:flex-end}
+.btn{padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
+.btn.validate{background:#10b981;color:#fff}
+.btn.cancel{background:#efefef}
+
+
+/* petite zone d'affichage des valeurs affectées */
+.values{margin-top:18px;font-size:14px}
+.values b{display:inline-block;min-width:160px}
+
+/* Afficher overlay */
+.overlay.show{display:flex}
   
   </style>
 </head>
@@ -859,7 +890,7 @@ hr {
       <!-- Left buttons -->
       <div style="display:flex; gap:12px; flex-wrap:wrap;">
         <button id="toggleAutomation">Launch Automation</button>
-        <button id="ROCtoggleAutomation">Launch ROC Automation</button>   
+        <button class="open-btn" id="ROCtoggleAutomation">Parameters</button>   
         <button id="IAtoggleAutomation">Launch IA Automation</button> 
         <button id="buyBtn">BUY</button>
         <button id="sellBtn">SELL</button>
@@ -943,6 +974,37 @@ hr {
     <div id="chartArea">
       <div id="chartInner"></div>
     </div>  
+  </div>
+
+  <!-- Overlay cliquable : clic sur overlay ferme le popup -->
+  <div class="overlay" id="overlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" id="modal" onclick="event.stopPropagation()">
+      <h2 id="modalTitle">Probability Parameters</h2>
+
+
+      <div class="field">
+       <label for="highProb">High probability (0.0 - 1.0)</label>
+           <input type="number" id="highProb" min="0" max="1" step="0.001" value="0.55" />
+       </div>
+
+
+       <div class="field">
+          <label for="lowTol">Low probability (0.0 - 1.0)</label>
+          <input type="number" id="lowTol" min="0" max="1" step="0.001" value="0.40" />
+       </div>
+
+
+       <div class="actions">
+           <button class="btn cancel" id="cancelBtn" type="button">Annuler</button>
+           <button class="btn validate" id="validateBtn" type="button">Valider</button>
+       </div>
+
+
+       <div class="values" id="appliedValues" aria-live="polite">
+          <div><b>High probability:</b> <span id="showHigh">0.55</span></div>
+          <div><b>Lower tolerance:</b> <span id="showLow">0.40</span></div>
+       </div>
+    </div>
   </div>
 
   <!-- === Popup de sélection === -->
