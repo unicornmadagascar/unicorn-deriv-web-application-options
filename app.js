@@ -3349,65 +3349,49 @@ window.addEventListener("error", function (e) {
     }
   }, 300);
 
+  const overlay = document.getElementById("aiPopupOverlay");
+  const popup = document.getElementById("aiPopupWindow");
+
   // Ouvrir popup
-  document.getElementById('ROCtoggleAutomation').addEventListener('click', () => {
-    const overlay = document.getElementById('aiPopupOverlay');
-    overlay.classList.add('show');
-    setTimeout(() => document.getElementById('aiPopupHighInput').focus(), 100);
+  document.getElementById("ROCtoggleAutomation").addEventListener("click", () => {
+     overlay.classList.add("show");
+     setTimeout(() => document.getElementById("aiPopupHighInput").focus(), 100);
   });
 
-
-  // Fermer popup si on clique sur le fond
-  document.getElementById('aiPopupOverlay').addEventListener('click', () => {
-    document.getElementById('aiPopupOverlay').classList.remove('show');
+  // Fermer en cliquant sur le fond SEULEMENT
+  overlay.addEventListener("click", () => {
+    overlay.classList.remove("show");
   });
 
+  // Empêcher la fermeture quand on clique DANS le popup
+  popup.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
 
   // Annuler
-  document.getElementById('aiPopupCancel').addEventListener('click', (e) => {
+  document.getElementById("aiPopupCancel").addEventListener("click", (e) => {
     e.stopPropagation();
-    document.getElementById('aiPopupOverlay').classList.remove('show');
+    overlay.classList.remove("show");
   });
-
 
   // Valider
-  document.getElementById('aiPopupValidate').addEventListener('click', (e) => {
+  document.getElementById("aiPopupValidate").addEventListener("click", (e) => {
     e.stopPropagation();
 
-    const h = parseFloat(document.getElementById('aiPopupHighInput').value);
-    const l = parseFloat(document.getElementById('aiPopupLowInput').value);
+    const h = parseFloat(document.getElementById("aiPopupHighInput").value);
+    const l = parseFloat(document.getElementById("aiPopupLowInput").value);
 
-    if (Number.isNaN(h) || Number.isNaN(l)) {
-        alert('Veuillez entrer des nombres valides entre 0 et 1.');
-        return;
-    }
+    if (Number.isNaN(h) || Number.isNaN(l)) return alert("Invalid values.");
 
-    if (l < 0 || l > 1 || h < 0 || h > 1) {
-        alert('Les valeurs doivent être entre 0.0 et 1.0');
-        return;
-    }
+    document.getElementById("aiPopupHighDisplay").textContent = h.toFixed(3);
+    document.getElementById("aiPopupLowDisplay").textContent = l.toFixed(3);
 
-    if (l > h) {
-        alert('La lower tolerance doit être ≤ high probability.');
-        return;
-    }
-
-    // Appliquer ou envoyer où tu veux
-    document.getElementById('aiPopupHighDisplay').textContent = h.toFixed(3);
-    document.getElementById('aiPopupLowDisplay').textContent = l.toFixed(3);
-
-    // fermer
-    document.getElementById('aiPopupOverlay').classList.remove('show');  
-
-    console.log("Applied values:", { high: h, low: l });
+    overlay.classList.remove("show");
   });
 
-
   // Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        document.getElementById('aiPopupOverlay').classList.remove('show');
-    }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") overlay.classList.remove("show");
   });
   
 });
