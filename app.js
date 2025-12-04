@@ -149,6 +149,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let sellNum = 1;   
   let tp_contract = 0;
   let sl_contract = 0;
+  let h = 0.55;
+  let l = 0.40;
   //------
   let currentChartType = "candlestick"; // par défaut
   let currentInterval = "1 minute";  // par défaut
@@ -1512,14 +1514,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const prob = await predictWeakSignal(model, prices);
       if (prob === null) return { action: "WAIT", prob: 0 };
 
-      const amplitude_gap = 0.55 - 0.40;
-      const amplitude_seq =  Math.abs(0.55 - prob);
-      const binary = amplitude_seq <= (amplitude_gap + tolerance) ? 0 : 1;
+      const amplitude_gap = h - l;
+      const amplitude_seq =  Math.abs(h - prob);
+      const binary = amplitude_seq < (amplitude_gap + tolerance) ? 0 : 1;
     
       const symbol_test = currentSymbol.slice(0,3);
-      if (!["BOO","CRA"].includes(symbol_test)) return;
-
-      const digit = parseInt((prob*10).toString().slice(0,1));  
+      if (!["BOO","CRA"].includes(symbol_test)) return;  
 
       if (symbol_test === "BOO") {
          if (binary === 1) action = "BUY";
@@ -3362,6 +3362,8 @@ window.addEventListener("error", function (e) {
 
 // Fermeture uniquement si on clique sur le fond
 overlay__.addEventListener("click", () => {
+    h = isNaN(parseFloat(aiPopupHighInput.value)) ? 0.55 : parseFloat(aiPopupHighInput.value);
+    l = isNaN(parseFloat(aiPopupLowInput.value))  ? 0.40 : parseFloat(aiPopupLowInput.value);
     overlay__.classList.remove("show");
 });
 
@@ -3375,6 +3377,8 @@ btnCancel.addEventListener("click", () => {
 });
 
 btnValidate.addEventListener("click", (e) => {
+    h = isNaN(parseFloat(aiPopupHighInput.value)) ? 0.55 : parseFloat(aiPopupHighInput.value);
+    l = isNaN(parseFloat(aiPopupLowInput.value))  ? 0.40 : parseFloat(aiPopupLowInput.value);
     e.stopPropagation();
     overlay__.classList.remove("show");
 });
