@@ -1794,7 +1794,7 @@ closeAll.onclick=()=>{
 
        // 3️⃣ Quand on reçoit les contrats ouverts
        if (data.msg_type === 'portfolio') {
-          const contracts = data.portfolio.contracts || [];
+          const contracts = data.portfolio.contracts || [];  
           console.log('Contrats ouverts:', contracts);
 
           // 4️⃣ Fermer chaque contrat
