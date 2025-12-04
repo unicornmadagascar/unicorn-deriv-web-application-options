@@ -49,6 +49,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const historicalchartcontainer = document.getElementById("HistoricalgraphicalContract");
   const reverseBtn = document.getElementById("reverseBtn");
 
+  const overlay__ = document.getElementById("aiPopupOverlay");
+  const popup__ = document.getElementById("aiPopupWindow");
+  const btnOpen = document.getElementById("ROCtoggleAutomation");
+  const btnCancel = document.getElementById("aiPopupCancel");
+  const btnValidate = document.getElementById("aiPopupValidate");
+
   let totalPL = 0; // cumul des profits et pertes
   let BCautomationRunning = false;
   let ROCautomationRunning = false;
@@ -3349,49 +3355,33 @@ window.addEventListener("error", function (e) {
     }
   }, 300);
 
-  const overlay = document.getElementById("aiPopupOverlay");
-  const popup = document.getElementById("aiPopupWindow");
-
   // Ouvrir popup
-  document.getElementById("ROCtoggleAutomation").addEventListener("click", () => {
-     overlay.classList.add("show");
-     setTimeout(() => document.getElementById("aiPopupHighInput").focus(), 100);
-  });
+ btnOpen.addEventListener("click", () => {
+    overlay__.classList.add("show");
+});
 
-  // Fermer en cliquant sur le fond SEULEMENT  
-  overlay.addEventListener("click", () => {
-    overlay.classList.remove("show");
-  });
+// Fermeture uniquement si on clique sur le fond
+overlay__.addEventListener("click", () => {
+    overlay__.classList.remove("show");
+});
 
-  // Empêcher la fermeture quand on clique DANS le popup
-  popup.addEventListener("click", (e) => {
+// Empêche la fermeture quand on clique dans la popup
+popup__.addEventListener("click", (e) => {
     e.stopPropagation();
-  });
+});
 
-  // Annuler
-  document.getElementById("aiPopupCancel").addEventListener("click", (e) => {
+btnCancel.addEventListener("click", () => {
+    overlay__.classList.remove("show");
+});
+
+btnValidate.addEventListener("click", (e) => {
     e.stopPropagation();
-    overlay.classList.remove("show");
-  });
+    overlay__.classList.remove("show");
+});
 
-  // Valider
-  document.getElementById("aiPopupValidate").addEventListener("click", (e) => {
-    e.stopPropagation();
-
-    const h = parseFloat(document.getElementById("aiPopupHighInput").value);
-    const l = parseFloat(document.getElementById("aiPopupLowInput").value);
-
-    if (Number.isNaN(h) || Number.isNaN(l)) return alert("Invalid values.");
-
-    document.getElementById("aiPopupHighDisplay").textContent = h.toFixed(3);
-    document.getElementById("aiPopupLowDisplay").textContent = l.toFixed(3);
-
-    overlay.classList.remove("show");
-  });
-
-  // Escape
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") overlay.classList.remove("show");
-  });
+// Fermer avec Échap
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") overlay__.classList.remove("show");
+});
   
 });
