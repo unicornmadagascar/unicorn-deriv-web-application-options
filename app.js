@@ -1692,7 +1692,7 @@ document.addEventListener("DOMContentLoaded", () => {
          if (digit === 2 || digit === 3 || digit === 6 || digit === 7) action = "BUY";
          else action = "SELL";
       }
-      else if (symbol_test === "CRA"){
+      else if (symbol_test === "CRA"){  
          if (digit === 2 || digit === 3 || digit === 6 || digit === 7) action = "SELL";
          else action = "BUY";    
       }  
