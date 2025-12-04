@@ -3240,7 +3240,6 @@ function extractValue(event, key) {
       const bc = startAutomation();  
       bc.initTCNModel(); // call once
       // optionally: ai.BC_connectWebSocket(); // already called inside init if needed
-      ROCtoggleAutomationBtn.disabled = true;
       IAtoggleAutomationBtn.disabled = false;
     } else {
       BCtoggleAutomationBtn.textContent = "Launch Automation";
@@ -3248,7 +3247,6 @@ function extractValue(event, key) {
       BCtoggleAutomationBtn.style.color = "gray"; 
       BCautomationRunning = false;  
       setTimeout(stopAutomation,2000);
-      ROCtoggleAutomationBtn.disabled = false;
       IAtoggleAutomationBtn.disabled = false;
     }
   });
@@ -3266,7 +3264,6 @@ function extractValue(event, key) {
       const ai = AI();
       ai.initLSTMHarmonic(); // call once
       // optionally: ai.AI_connectWebSocket(); // already called inside init if needed
-      ROCtoggleAutomationBtn.disabled = true;
       BCtoggleAutomationBtn.disabled = true;
     } else {
       IAtoggleAutomationBtn.textContent = "Launch IA Automation";
@@ -3274,7 +3271,6 @@ function extractValue(event, key) {
       IAtoggleAutomationBtn.style.color = "gray";        
       IAautomationRunning = false;  
       setTimeout(stop,2000);
-      ROCtoggleAutomationBtn.disabled = false;
       BCtoggleAutomationBtn.disabled = false;
     }
   });
