@@ -188,6 +188,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let probsNew = [];
   let ProbTick = [];
   let candles__ = [];
+  // --- Tableau de markers déjà ajoutés sur le chart ---
+  const calendarMarkers = {}; // stocke les markers par rowId
 
   const SYMBOLS = [
     { symbol: "BOOM1000", name: "Boom 1000" },    
@@ -2605,14 +2607,14 @@ function initCalendarTable() {
  }
 
  // ✅ Met à jour les lignes du tableau
- function updateCalendarTable(events) {
+function updateCalendarTable(events) {
   const body = document.getElementById("calendarBody");
   if (!body) return;  
 
   displayedEvents = events; // On garde la liste affichée pour le tri
   let rows = "";
 
-  events.forEach(e => {
+  events.forEach((e, index) => {
     const actual = e.actual?.display_value || "-";
     const previous = e.previous?.display_value  || "-";
     const forecast = e.forecast?.display_value  || "-";
@@ -2632,11 +2634,11 @@ function initCalendarTable() {
     const impactClass = `impact-${Math.min(Math.max(impactValue, 1), 5)}`;
 
     rows += `
-      <tr>
-        <td><input type="checkbox"></td>
+      <tr data-rowid="${index}">
+        <td><input type="checkbox" class="calendar-checkbox"></td>
         <td data-sort="${e.release_date || 0}">${releaseDate}</td>
-        <td>${GetCountrycode(currency).toString()}</td>
-        <td>${GetCountryname(currency).toString()}</td>   
+        <td>${GetCountrycode(currency)}</td>
+        <td>${GetCountryname(currency)}</td>   
         <td>${indicator}</td>
         <td>-</td>
         <td>${currency}</td>
@@ -2658,10 +2660,65 @@ function initCalendarTable() {
   body.innerHTML =
     rows ||
     `<tr><td colspan="13" style="text-align:center; color:gray;">
-        “No events found for this period.”
+        No events found for this period.
      </td></tr>`;
 
-  attachSortHandlers(); // On attache les événements de tri après mise à jour
+  attachSortHandlers();      // Tri du tableau
+  attachCheckboxListener();  // Listener pour chaque checkbox
+}
+
+// --- Fonction pour attacher les checkbox du calendrier ---
+function attachCheckboxListener() {
+    const checkboxes = document.querySelectorAll(".calendar-checkbox");
+
+    checkboxes.forEach(checkbox => {
+        // enlever les anciens listeners pour éviter doublons
+        checkbox.onchange = null;
+
+        checkbox.addEventListener("change", (e) => {
+            const row = e.target.closest("tr");
+            if (!row) return;
+
+            const rowId = row.dataset.rowid;
+            const timeText = row.querySelector(".colTime")?.textContent || "-";
+            const indicator = row.querySelector(".colIndicator")?.textContent || "-";
+            const importance = row.querySelector(".colImportance")?.textContent || "-";
+
+            // --- Convertir l'heure en timestamp pour Lightweight Chart ---
+            let time;
+            if (timeText !== "-") {
+                const dateObj = new Date(timeText);
+                time = Math.floor(dateObj.getTime() / 1000); // en secondes
+            } else {
+                time = Math.floor(Date.now() / 1000);
+            }
+
+            // --- Définir couleur selon l’importance ---
+            let color = "#22cc22"; // faible par défaut
+            if (importance >= 4) color = "#ff4444";
+            else if (importance >= 2) color = "#ffaa00";
+
+            if (e.target.checked) {
+                // --- Ajouter marker sur le chart ---
+                const marker = {
+                    time: time,
+                    position: 'aboveBar',
+                    color: color,
+                    shape: 'circle',
+                    text: `${indicator} (${new Date(time*1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`
+                };
+                priceSeries.setMarkers([... (priceSeries.markers || []), marker]);
+                calendarMarkers[rowId] = marker;
+            } else {
+                // --- Retirer marker ---
+                if (calendarMarkers[rowId]) {
+                    const markers = (priceSeries.markers || []).filter(m => m !== calendarMarkers[rowId]);
+                    priceSeries.setMarkers(markers);
+                    delete calendarMarkers[rowId];
+                }
+            }
+        });
+    });
 }
 
 function GetCountryname(currency)
