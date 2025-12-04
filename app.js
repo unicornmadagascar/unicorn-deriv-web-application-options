@@ -1518,7 +1518,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const amplitude_seq =  Math.abs(h - prob);
       const binary = amplitude_seq < (amplitude_gap + tolerance) ? 0 : 1;
     
-      const symbol_test = currentSymbol.slice(0,3);
+      const symbol_test = currentSymbol.slice(0,3);  
       if (!["BOO","CRA"].includes(symbol_test)) return;  
 
       if (symbol_test === "BOO") {
