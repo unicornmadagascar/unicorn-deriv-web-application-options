@@ -3381,7 +3381,7 @@ btnValidate.addEventListener("click", (e) => {
 
 // Fermer avec Échap
 document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") overlay__.classList.remove("show");
+    if (e.key === "Escape") overlay__.classList.remove("show");  
 });
   
 });
