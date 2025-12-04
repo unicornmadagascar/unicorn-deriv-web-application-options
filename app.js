@@ -1686,6 +1686,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const digit = parseInt((prob*10).toString().slice(0,1));
       const digit2 = parseInt((prob*100).toString().slice(0,1));
 
+      //if (digit === 4 || digit === 5 || digit === 6 || digit === 7) {const gapvalue = digit - 1; }
+
       if (symbol_test === "BOO") {
          if (digit === 3 || digit2 === 54 || digit2 === 52 || digit2 === 53) action = "BUY";
          else action = "SELL";
