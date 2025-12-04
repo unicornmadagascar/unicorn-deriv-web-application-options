@@ -3397,7 +3397,7 @@ window.addEventListener("error", function (e) {
     document.getElementById('aiPopupLowDisplay').textContent = l.toFixed(3);
 
     // fermer
-    document.getElementById('aiPopupOverlay').classList.remove('show');
+    document.getElementById('aiPopupOverlay').classList.remove('show');  
 
     console.log("Applied values:", { high: h, low: l });
   });
