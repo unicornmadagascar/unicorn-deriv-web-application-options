@@ -2707,7 +2707,7 @@ function attachCheckboxListener() {
                     shape: 'circle',
                     text: `${indicator} (${new Date(time*1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`
                 };
-                priceSeries.setMarkers([... (priceSeries.markers || []), marker]);
+                currentSeries.setMarkers([... (currentSeries.markers || []), marker]);
                 calendarMarkers[rowId] = marker;
             } else {
                 // --- Retirer marker ---
