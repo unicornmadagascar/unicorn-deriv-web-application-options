@@ -2643,7 +2643,7 @@ function updateCalendarTable(events) {
         <td>-</td>
         <td>${currency}</td>
         <td>
-          <span class="importance-box ${impactClass}"></span>
+          <span class="importance-box ${impactClass}"></span>  
           ${impactValue ? `Impact ${impactValue}` : ""}
         </td>
         <td style="color:${impactColor}; font-weight:bold;" data-sort="${impactValue}">
