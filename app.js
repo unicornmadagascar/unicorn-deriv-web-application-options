@@ -1684,13 +1684,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!["BOO","CRA"].includes(symbol_test)) return;
 
       const digit = parseInt((prob*10).toString().slice(0,1));
+      const digit2 = parseInt((prob*100).toString().slice(0,1));
 
       if (symbol_test === "BOO") {
-         if (digit === 3) action = "BUY";
+         if (digit === 3 || digit2 === 54) action = "BUY";
          else action = "SELL";
       }
       else if (symbol_test === "CRA"){
-         if (digit === 5 || digit === 4) action = "SELL";
+         if (digit === 3 || digit === 54) action = "SELL";
          else action = "BUY";
       }
 
