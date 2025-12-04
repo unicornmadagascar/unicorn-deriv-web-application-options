@@ -3537,67 +3537,40 @@ window.addEventListener("error", function (e) {
     }
   }, 300);
 
-  // Ouvrir popup
-  ROCtoggleAutomationBtn.addEventListener('click', () => {
+  // Ouvrir
+ROCtoggleAutomationBtn.addEventListener('click', () => {
     overlay.classList.add('show');
-    // mettre le focus sur le premier champ pour accessibilité
-    setTimeout(() => highInput.focus(), 100);
-  });
+    setTimeout(() => highInput.focus(), 80);
+});
 
-
-  // Fermer popup en cliquant sur le fond (overlay)
-  overlay.addEventListener('click', () => {
-    overlay.classList.remove('show');  
-  });
-
-
-  // Annuler (ferme le popup sans appliquer)
-  cancelBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
+// Fermer en cliquant sur le fond
+overlay.addEventListener('click', () => {
     overlay.classList.remove('show');
-  });
+});
 
+// Annuler
+cancelBtn.addEventListener('click', () => {
+    overlay.classList.remove('show');
+});
 
-  // Valider : appliquer les valeurs puis fermer
-  validateBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-   const h = parseFloat(highInput.value);
-   const l = parseFloat(lowInput.value);
+// Valider
+validateBtn.addEventListener('click', () => {
+    const h = parseFloat(highInput.value);
+    const l = parseFloat(lowInput.value);
 
+    if (isNaN(h) || isNaN(l)) return alert("Veuillez entrer des valeurs valides.");
+    if (h < 0 || h > 1 || l < 0 || l > 1) return alert("Les valeurs doivent être entre 0 et 1.");
+    if (l > h) return alert("La valeur Low doit être ≤ High.");
 
-   // Validation simple
-   if (Number.isNaN(h) || Number.isNaN(l)) {
-      alert('Veuillez entrer des nombres valides entre 0 et 1.');
-      return;
-   }
-   if (l < 0 || l > 1 || h < 0 || h > 1) {
-      alert('Les valeurs doivent être dans l\'intervalle 0.0 - 1.0');
-      return;
-   }
-   // Optionnel : s'assurer que low <= high
-   if (l > h) {
-     alert('La lower tolerance doit être ≤ high probability.');
-     return;
-   } 
+    showHigh.textContent = h.toFixed(3);
+    showLow.textContent = l.toFixed(3);
 
+    overlay.classList.remove('show');
+});
 
-   // Appliquer (ici on affiche dans la page, tu peux remplacer par ta logique)
-   showHigh.textContent = h.toFixed(3);
-   showLow.textContent = l.toFixed(3);
-
-
-   // Fermeture
-   overlay.classList.remove('show');
-
-
-   // Exemple : envoyer les valeurs au serveur ou les stocker
-   console.log('Applied values:', { high: h, low: l });
-  });
-
-
-  // Fermer la popup en appuyant sur Échap
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') overlay.classList.remove('show');
-  });
+// Fermer avec Échap
+document.addEventListener('keydown', (e) => {
+    if (e.key === "Escape") overlay.classList.remove('show');
+});
   
 });
