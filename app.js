@@ -2684,7 +2684,7 @@ function attachCheckboxListener(chart, series) {
             const cells = row.querySelectorAll("td");
 
             const releaseTime = Number(cells[1].dataset.sort); // timestamp en secondes  
-            const eventName = cells[4].textContent.trim();
+            const eventName = cells[4].textContent.trim();  
             const impactText = cells[7].textContent.trim();
             const importanceColorClass = cells[7].querySelector(".importance-box")?.className || "";
 
