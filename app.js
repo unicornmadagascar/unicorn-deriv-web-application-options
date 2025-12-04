@@ -1687,11 +1687,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const digit2 = parseInt((prob*100).toString().slice(0,1));
 
       if (symbol_test === "BOO") {
-         if (digit === 3 || digit === 4 || digit === 5 || digit === 6 || digit2 === 54 || digit2 === 52 || digit2 === 53) action = "BUY";
+         if (digit === 3 || digit2 === 54 || digit2 === 52 || digit2 === 53) action = "BUY";
          else action = "SELL";
       }
       else if (symbol_test === "CRA"){
-         if (digit === 3 || digit === 4 || digit === 5 || digit === 6  || digit2 === 54 || digit2 === 52 || digit2 === 53) action = "SELL";
+         if (digit === 3 || digit2 === 54 || digit2 === 52 || digit2 === 53) action = "SELL";
          else action = "BUY";    
       }
   
