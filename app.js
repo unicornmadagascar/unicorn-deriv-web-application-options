@@ -2702,7 +2702,7 @@ function attachCheckboxListener() {
                 // --- Ajouter marker sur le chart ---
                 const marker = {
                     time: time,
-                    position: 'aboveBar',
+                    position: 'aboveBar',  
                     color: color,
                     shape: 'circle',
                     text: `${indicator} (${new Date(time*1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`
