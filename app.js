@@ -3252,10 +3252,10 @@ function extractValue(event, key) {
   });
 
    // === Automation Toggle ===
-  const IAtoggleAutomationBtn = document.getElementById("IAtoggleAutomation");
+  const IAtoggleAutomationBtn = document.getElementById("IAtoggleAutomation");   
   IAtoggleAutomationBtn.addEventListener("click", () => {
     IAautomationRunning = !IAautomationRunning;
-    if (IAautomationRunning) {
+    if (IAautomationRunning) {   
       IAtoggleAutomationBtn.textContent = "Stop IA Automation";
       IAtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       IAtoggleAutomationBtn.style.color = "white";
