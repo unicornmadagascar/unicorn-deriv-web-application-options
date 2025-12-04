@@ -2664,61 +2664,63 @@ function updateCalendarTable(events) {
      </td></tr>`;
 
   attachSortHandlers();      // Tri du tableau
-  attachCheckboxListener();  // Listener pour chaque checkbox
+  attachCheckboxListener(chart, currentSeries);  // Listener pour chaque checkbox
 }
 
 // --- Fonction pour attacher les checkbox du calendrier ---
-function attachCheckboxListener() {
-    const checkboxes = document.querySelectorAll(".calendar-checkbox");
+// Map pour stocker les markers par series
+const currentSeriesMarkersMap = new Map();
 
-    checkboxes.forEach(checkbox => {
-        // enlever les anciens listeners pour éviter doublons
-        checkbox.onchange = null;
+function attachCheckboxListener(chart, series) {
+    const table = document.getElementById("calendarTable");
+    if (!table) return;
 
+    // Sélection des checkbox dans le corps du tableau
+    const checkboxes = table.querySelectorAll("#calendarBody input[type='checkbox']");
+
+    checkboxes.forEach((checkbox, index) => {
         checkbox.addEventListener("change", (e) => {
             const row = e.target.closest("tr");
-            if (!row) return;
+            const cells = row.querySelectorAll("td");
 
-            const rowId = row.dataset.rowid;
-            const timeText = row.querySelector(".colTime")?.textContent || "-";
-            const indicator = row.querySelector(".colIndicator")?.textContent || "-";
-            const importance = row.querySelector(".colImportance")?.textContent || "-";
+            const releaseTime = Number(cells[1].dataset.sort); // timestamp en secondes  
+            const eventName = cells[4].textContent.trim();
+            const impactText = cells[7].textContent.trim();
+            const importanceColorClass = cells[7].querySelector(".importance-box")?.className || "";
 
-            // --- Convertir l'heure en timestamp pour Lightweight Chart ---
-            let time;
-            if (timeText !== "-") {
-                const dateObj = new Date(timeText);
-                time = Math.floor(dateObj.getTime() / 1000); // en secondes
+            // Récupère les markers existants pour cette series
+            let existingMarkers = currentSeriesMarkersMap.get(series) || [];
+
+            if (checkbox.checked) {
+                // Ajouter un marker
+                existingMarkers.push({
+                    time: releaseTime,
+                    position: "above",
+                    color: "#ff4444", // couleur par défaut, tu peux changer selon l'impact
+                    shape: "circle",
+                    text: `${new Date(releaseTime * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${eventName} (${impactText})`
+                });
             } else {
-                time = Math.floor(Date.now() / 1000);
+                // Supprimer le marker correspondant
+                existingMarkers = existingMarkers.filter(m => m.time !== releaseTime || !m.text.includes(eventName));
             }
 
-            // --- Définir couleur selon l’importance ---
-            let color = "#22cc22"; // faible par défaut
-            if (importance >= 4) color = "#ff4444";
-            else if (importance >= 2) color = "#ffaa00";
+            // Sauvegarder dans la Map
+            currentSeriesMarkersMap.set(series, existingMarkers);
 
-            if (e.target.checked) {
-                // --- Ajouter marker sur le chart ---
-                const marker = {
-                    time: time,
-                    position: 'aboveBar',  
-                    color: color,
-                    shape: 'circle',
-                    text: `${indicator} (${new Date(time*1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`
-                };
-                currentSeries.setMarkers([... (currentSeries.markers || []), marker]);
-                calendarMarkers[rowId] = marker;
-            } else {
-                // --- Retirer marker ---
-                if (calendarMarkers[rowId]) {
-                    const markers = (currentSeries.markers || []).filter(m => m !== calendarMarkers[rowId]);
-                    currentSeries.setMarkers(markers);
-                    delete calendarMarkers[rowId];
-                }
-            }
+            // Mettre à jour les markers sur le chart
+            series.setMarkers(existingMarkers);
         });
     });
+
+    // Optionnel : checkbox "Select All"
+    const selectAll = document.getElementById("selectAll__");
+    if (selectAll) {
+        selectAll.addEventListener("change", (e) => {
+            const check = e.target.checked;
+            checkboxes.forEach(cb => { cb.checked = check; cb.dispatchEvent(new Event("change")); });
+        });
+    }
 }
 
 function GetCountryname(currency)
