@@ -1697,7 +1697,7 @@ document.addEventListener("DOMContentLoaded", () => {
          else action = "BUY";    
       }
   
-      return { action, prob };
+      return { action, prob };  
     }       
 
    
