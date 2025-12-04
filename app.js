@@ -2712,8 +2712,8 @@ function attachCheckboxListener() {
             } else {
                 // --- Retirer marker ---
                 if (calendarMarkers[rowId]) {
-                    const markers = (priceSeries.markers || []).filter(m => m !== calendarMarkers[rowId]);
-                    priceSeries.setMarkers(markers);
+                    const markers = (currentSeries.markers || []).filter(m => m !== calendarMarkers[rowId]);
+                    currentSeries.setMarkers(markers);
                     delete calendarMarkers[rowId];
                 }
             }
