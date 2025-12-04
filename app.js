@@ -1694,7 +1694,7 @@ document.addEventListener("DOMContentLoaded", () => {
          if (digit === 3 || digit2 === 54 || digit2 === 52 || digit2 === 53) action = "SELL";
          else action = "BUY";
       }
-
+  
       return { action, prob };
     }
 
