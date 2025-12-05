@@ -2931,7 +2931,7 @@ function GetCountryname(currency)
        }
       else if (currency === "JPY")
        {
-          response = "JP";
+          response = "JP";  
           break;
        }
       else if (currency === "CNY")
