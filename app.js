@@ -2703,24 +2703,24 @@ function attachCheckboxListener() {
 }
 
 function removeEconomicMarker(eventData, index) {
-    if (!series || !series._economicMarkers) return;
+    if (!currentSeries || !currentSeries._economicMarkers) return;
 
     const t = Math.floor(eventData.release_date);
 
-    const filtered = series._economicMarkers.filter(m => m.time !== t);
+    const filtered = currentSeries._economicMarkers.filter(m => m.time !== t);
 
-    series.setMarkers(filtered);
-    series._economicMarkers = filtered;
+    currentSeries.setMarkers(filtered);
+    currentSeries._economicMarkers = filtered;
 
     delete economicMarkers[index];
 }
 
 function addEconomicMarker(eventData, index) {
-    if (!series || !eventData) return;
+    if (!currentSeries || !eventData) return;
 
     const t = Math.floor(eventData.release_date);
 
-    const color =
+    const color =  
         eventData.impact >= 4 ? "red" :
         eventData.impact >= 2 ? "orange" : "green";
 
@@ -2733,16 +2733,16 @@ function addEconomicMarker(eventData, index) {
     };
 
     // Récupère markers existants
-    const prev = series._economicMarkers || [];
+    const prev = currentSeries._economicMarkers || [];
 
     // Ajoute ce marker à la liste
     const newList = [...prev, marker];
 
     // Applique sur le chart
-    series.setMarkers(newList);
+    currentSeries.setMarkers(newList);
 
     // Sauvegarde
-    series._economicMarkers = newList;
+    currentSeries._economicMarkers = newList;
 
     // Sauvegarde spécifique pour cet index
     economicMarkers[index] = marker;
