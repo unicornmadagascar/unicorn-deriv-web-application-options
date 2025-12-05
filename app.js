@@ -2671,7 +2671,7 @@ function updateCalendarTable(events) {
       </tr>
     `;
   });
-
+  
   body.innerHTML =
     rows ||
     `<tr><td colspan="13" style="text-align:center; color:gray;">
