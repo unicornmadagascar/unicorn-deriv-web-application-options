@@ -1582,7 +1582,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function stopAutomation() {   
     if (wsAutomation  && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING)) {  
        // Envoyer unsubscribe avant de fermer
-       wsAutomation.send(JSON.stringify({ forget_all: ["candles","ticks"] }));
+       setTimeout(wsAutomation.send(JSON.stringify({ forget_all: ["candles","ticks"] })),500);
        wsAutomation.close();
        wsAutomation = null;   
     }   
