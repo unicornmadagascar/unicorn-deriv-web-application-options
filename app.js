@@ -2715,37 +2715,52 @@ function removeEconomicMarker(eventData, index) {
     delete economicMarkers[index];
 }
 
+
 function addEconomicMarker(eventData, index) {
     if (!currentSeries || !eventData) return;
 
     const t = Math.floor(eventData.release_date);
 
+    // Détermine couleur et forme selon impact
     const color =  
-        eventData.impact >= 4 ? "red" :
-        eventData.impact >= 2 ? "orange" : "green";
+        eventData.impact >= 4 ? "#ff4444" :   // rouge fort
+        eventData.impact >= 2 ? "#ffaa00" :   // orange moyen
+        "#22cc22";                            // vert faible
 
+    const shape = 
+        eventData.impact >= 4 ? "triangleUp" : 
+        eventData.impact >= 2 ? "circle" : 
+        "square";
+
+    // Marqueur principal avec texte
     const marker = {
         time: t,
         position: "aboveBar",
         color: color,
-        shape: "circle",
-        text: `${eventData.event_name} (${eventData.impact})`
+        shape: shape,
+        text: `${eventData.event_name}\nImpact ${eventData.impact}`
+    };
+
+    // Ligne verticale stylée
+    const verticalLine = {
+        time: t,
+        position: "top",
+        color: color,
+        shape: "none",
+        text: "",
+        lineWidth: 2,
+        lineStyle: 1 // 0=solid,1=dotted,2=dashed
     };
 
     // Récupère markers existants
     const prev = currentSeries._economicMarkers || [];
 
-    // Ajoute ce marker à la liste
-    const newList = [...prev, marker];
+    // Ajoute le marker et la ligne verticale
+    const newList = [...prev, marker, verticalLine];
 
-    // Applique sur le chart
     currentSeries.setMarkers(newList);
-
-    // Sauvegarde
     currentSeries._economicMarkers = newList;
-
-    // Sauvegarde spécifique pour cet index
-    economicMarkers[index] = marker;
+    economicMarkers[index] = { marker, verticalLine };
 }
 
 function GetCountryname(currency)
