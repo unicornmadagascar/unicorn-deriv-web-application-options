@@ -190,6 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let candles__ = [];
   // --- Tableau de markers déjà ajoutés sur le chart ---
   const calendarMarkers = {}; // stocke les markers par rowId
+  let economicMarkers = {}; // index → marker list
 
   const SYMBOLS = [
     { symbol: "BOOM1000", name: "Boom 1000" },    
@@ -2678,63 +2679,73 @@ function updateCalendarTable(events) {
      </td></tr>`;
 
   attachSortHandlers();      // Tri du tableau
-  attachCheckboxListener(chart, currentSeries);  // Listener pour chaque checkbox
+  attachCheckboxListener();  // Listener pour chaque checkbox
 }
 
-// --- Fonction pour attacher les checkbox du calendrier ---
-// Map pour stocker les markers par series
-const currentSeriesMarkersMap = new Map();
+function attachCheckboxListener() {
+    const checkboxes = document.querySelectorAll(".calendar-checkbox");
 
-function attachCheckboxListener(chart, series) {
-    const table = document.getElementById("calendarTable");
-    if (!table) return;
+    checkboxes.forEach((cb, idx) => {
+        cb.addEventListener("change", () => {
+            const row = cb.closest("tr");
+            const index = parseInt(row.dataset.rowid);
 
-    // Sélection des checkbox dans le corps du tableau
-    const checkboxes = table.querySelectorAll("#calendarBody input[type='checkbox']");
+            const eventData = displayedEvents[index];
+            if (!eventData) return;
 
-    checkboxes.forEach((checkbox, index) => {
-        checkbox.addEventListener("change", (e) => {
-            const row = e.target.closest("tr");
-            const cells = row.querySelectorAll("td");
-
-            const releaseTime = Number(cells[1].dataset.sort); // timestamp en secondes  
-            const eventName = cells[4].textContent.trim();  
-            const impactText = cells[7].textContent.trim();
-            const importanceColorClass = cells[7].querySelector(".importance-box")?.className || "";
-
-            // Récupère les markers existants pour cette series
-            let existingMarkers = currentSeriesMarkersMap.get(series) || [];
-
-            if (checkbox.checked) {
-                // Ajouter un marker
-                existingMarkers.push({
-                    time: releaseTime,
-                    position: "above",
-                    color: "#ff4444", // couleur par défaut, tu peux changer selon l'impact
-                    shape: "circle",
-                    text: `${new Date(releaseTime * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${eventName} (${impactText})`
-                });
+            if (cb.checked) {
+                addEconomicMarker(eventData, index);
             } else {
-                // Supprimer le marker correspondant
-                existingMarkers = existingMarkers.filter(m => m.time !== releaseTime || !m.text.includes(eventName));
+                removeEconomicMarker(eventData, index);
             }
-
-            // Sauvegarder dans la Map
-            currentSeriesMarkersMap.set(series, existingMarkers);
-
-            // Mettre à jour les markers sur le chart
-            series.setMarkers(existingMarkers);
         });
     });
+}
 
-    // Optionnel : checkbox "Select All"
-    const selectAll = document.getElementById("selectAll__");
-    if (selectAll) {
-        selectAll.addEventListener("change", (e) => {
-            const check = e.target.checked;
-            checkboxes.forEach(cb => { cb.checked = check; cb.dispatchEvent(new Event("change")); });
-        });
-    }
+function removeEconomicMarker(eventData, index) {
+    if (!series || !series._economicMarkers) return;
+
+    const t = Math.floor(eventData.release_date);
+
+    const filtered = series._economicMarkers.filter(m => m.time !== t);
+
+    series.setMarkers(filtered);
+    series._economicMarkers = filtered;
+
+    delete economicMarkers[index];
+}
+
+function addEconomicMarker(eventData, index) {
+    if (!series || !eventData) return;
+
+    const t = Math.floor(eventData.release_date);
+
+    const color =
+        eventData.impact >= 4 ? "red" :
+        eventData.impact >= 2 ? "orange" : "green";
+
+    const marker = {
+        time: t,
+        position: "aboveBar",
+        color: color,
+        shape: "circle",
+        text: `${eventData.event_name} (${eventData.impact})`
+    };
+
+    // Récupère markers existants
+    const prev = series._economicMarkers || [];
+
+    // Ajoute ce marker à la liste
+    const newList = [...prev, marker];
+
+    // Applique sur le chart
+    series.setMarkers(newList);
+
+    // Sauvegarde
+    series._economicMarkers = newList;
+
+    // Sauvegarde spécifique pour cet index
+    economicMarkers[index] = marker;
 }
 
 function GetCountryname(currency)
