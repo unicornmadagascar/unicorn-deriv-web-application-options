@@ -1558,13 +1558,17 @@ document.addEventListener("DOMContentLoaded", () => {
       } 
     }   
 
-    async function BC_Disconnect()
+    function BC_Disconnect()
     {
       if (wsAutomation  && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING)) {  
         // Envoyer unsubscribe avant de fermer
-        try { setTimeout(wsAutomation.send(JSON.stringify({ forget_all: ["candles","ticks"] })),500); } catch (e) {}
-        wsAutomation.close();
-        wsAutomation = null;      
+        try { 
+           setTimeout(async () => {
+              await wsAutomation.send(JSON.stringify({ forget_all: ["candles","ticks"] })); 
+              wsAutomation.close();
+              wsAutomation = null;  
+           }, 1000);  
+        } catch (e) {}
       }   
     }
 
