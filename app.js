@@ -2984,7 +2984,7 @@ function sortCalendarTable(columnIndex) {
     "previous",
     "forecast",
     "revision",
-  ];
+  ];  
 
   const key = columns[columnIndex];
   if (!key) return;
