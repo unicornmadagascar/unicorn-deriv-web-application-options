@@ -1558,6 +1558,16 @@ document.addEventListener("DOMContentLoaded", () => {
       } 
     }   
 
+    async function BC_Disconnect()
+    {
+      if (wsAutomation  && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING)) {  
+        // Envoyer unsubscribe avant de fermer
+        try { setTimeout(wsAutomation.send(JSON.stringify({ forget_all: ["candles","ticks"] })),500); } catch (e) {}
+        wsAutomation.close();
+        wsAutomation = null;      
+      }   
+    }
+
    
     // ------------------------------------------------------------
     // INIT
@@ -1575,7 +1585,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ------------------------------------------------------------
     // RETURN PUBLIC API
     // ------------------------------------------------------------
-    return { initTCNModel };
+    return { initTCNModel, BC_Disconnect };
   }
 
 
@@ -3116,8 +3126,11 @@ function extractValue(event, key) {
       BCtoggleAutomationBtn.textContent = "Launch Automation";
       BCtoggleAutomationBtn.style.background = "white";  
       BCtoggleAutomationBtn.style.color = "gray"; 
-      BCautomationRunning = false;  
-      setTimeout(stopAutomation,2000);
+      BCautomationRunning = false;    
+      const bc_stop = startAutomation();
+      setTimeout(() => {
+         bc_stop.BC_Disconnect();
+      },2000);
       IAtoggleAutomationBtn.disabled = false;
     }   
   });
