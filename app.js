@@ -1014,7 +1014,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function Contractfunction(prediction) {
     if (prediction !== null) {
       console.log("Prediction :" + prediction);
-      const upThreshold = 0.0005, downThreshold = -0.0005;
+      const upThreshold = 0.00001, downThreshold = -0.0001;
       if (prediction > upThreshold) {  
         AI_handleSignal("BUY");
       } else if (prediction < downThreshold) {
