@@ -57,23 +57,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let totalPL = 0; // cumul des profits et pertes
   let BCautomationRunning = false;
-  let ROCautomationRunning = false;
   let IAautomationRunning = false;
-  let smoothVol = 0;
-  let smoothTrend = 0;
   let ws=null;
   let connection = null;
-  let wsContracts_reverse = null;
-  let wsROC = null;   
+  let wsContracts_reverse = null; 
   let ws_calendar = null;
   let wsContracts__close = null;
   let wsContracts_winning = null;   
-  let wsAutomation_sell = null;
-  let wsAutomation_buy = null;
   let wsAutomation_close = null;
+  let wsAutomation_close_ai = null;
   let connection_ws = null;   
   let connection_ws_htx = null;
-  let wshistorical = null;
   let wsAutomation = null;
   let wsContracts = null;
   let wsplContracts = null;
@@ -106,11 +100,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentSort = { column: null, ascending: true };
   let displayedEvents = []; // Liste filtrée actuellement visible
   // Historique local des ticks
-  let tickHistory = [];
-  let tickHistory__ = [];
-  let tickHistory__arr = [];   
-  let tickHistory__bc = [];
-  let candleHistory__ = [];
   let closePrice; 
   let tickHistory4openpricelines = [];
   const priceLines4openlines = {}; // Stocke les lignes actives (clé = contract_id)
@@ -118,14 +107,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Historique de profits
   let profitHistory = [];
   const contractsData = {}; // stockage des contrats {id: {profits: [], infos: {…}}}
-  let portfolioReceived = false;
-  let existingContract = false;
   let contractSymbol;  
   let contracts = [];
-  let roccontracts = [];
-  let rocContracts = [];
   let bcContracts = [];
-  let rocProposal = null;
   let AIProposal = null;
   let AIContracts = null;
   let wsAI = null;
@@ -133,7 +117,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let contractid__;
   const MAX_HISTORY = 500; // max taille du buffer
   let proposal__ = [];
-  let rocproposal__ = [];
   let transactions__ = [];
   let structresponse = [];
   let datapercent = {};
@@ -142,6 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let candlesData = [];
   let candlesCache = [];
   let cache = [];
+  let type = "";
   //------
   let multiplier = 40;
   let stake = 1;  
@@ -1020,13 +1004,68 @@ document.addEventListener("DOMContentLoaded", () => {
     if (prediction !== null) {
       console.log("Prediction :" + prediction);
       const upThreshold = 0.00001, downThreshold = -0.00001;
-      if (prediction > upThreshold) {  
+      if (prediction > upThreshold) { 
+        closeAllContracts("SELL"); 
         AI_handleSignal("BUY");
       } else if (prediction < downThreshold) {
+        closeAllContracts("BUY");
         AI_handleSignal("SELL");   
       }
     } 
   }
+
+  // ------------------------------------------------------------
+   // CLOSE ALL CONTRACTS
+   // ------------------------------------------------------------
+    function closeAllContracts(direction) {
+
+      if (wsAutomation_close_ai === null)
+      {
+       wsAutomation_close_ai  = new WebSocket(WS_URL);
+       wsAutomation_close_ai.onopen=()=>{ wsAutomation_close_ai.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+  
+      if (wsAutomation_close_ai && (wsAutomation_close_ai.readyState === WebSocket.OPEN || wsAutomation_close_ai.readyState === WebSocket.CONNECTING))
+      {
+       wsAutomation_close_ai.onopen=()=>{ wsAutomation_close_ai.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+
+      if (wsAutomation_close_ai && (wsAutomation_close_ai.readyState === WebSocket.CLOSED || wsAutomation_close_ai.readyState === WebSocket.CLOSING))
+      {
+       wsAutomation_close_ai = new WebSocket(WS_URL);
+       wsAutomation_close_ai.onopen=()=>{ wsAutomation_close_ai.send(JSON.stringify({ authorize: TOKEN })); };
+      }
+
+      wsAutomation_close_ai.onclose = () => { setTimeout(closeAllContracts,500); };   
+      wsAutomation_close_ai.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+
+        // Autorisé → demander la liste des contrats
+        if (data.authorize) {
+            wsAutomation_close_ai.send(JSON.stringify({ portfolio: 1 }));
+        }
+
+        // Liste des contrats ouverts reçue
+        if (data.portfolio) {
+            const list = data.portfolio.contracts || [];
+
+            if (list === undefined || list === null || list.length === 0) {
+               return;
+            }
+
+            type = direction === "BUY" ? "MULTUP" : "MULTDOWN";
+            list
+                .filter(c => c.contract_type === type && c.contract_type === currentSymbol)
+                .forEach(d => wsAutomation_close_ai.send(JSON.stringify({ sell: d.contract_id, price: 0 })));
+
+        }
+
+        // Confirmation d’un contrat fermé 
+        if (data.sell) {
+            console.log("Fermé :", data.sell.contract_id);
+        }
+      };
+    }
 
   /*******************************************************************************************
    *  MESSAGE HANDLER (uses closure model & wsAI)
