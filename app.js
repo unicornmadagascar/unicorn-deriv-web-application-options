@@ -1020,7 +1020,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else if (prediction < downThreshold) {
         AI_handleSignal("SELL");   
       }
-    }
+    } 
   }
 
   /*******************************************************************************************
