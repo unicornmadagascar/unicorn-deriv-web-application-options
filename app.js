@@ -2622,66 +2622,122 @@ function initCalendarTable() {
  }
 
  // ✅ Met à jour les lignes du tableau
-function updateCalendarTable(events) {
-  const body = document.getElementById("calendarBody");
-  if (!body) return;  
+// ================================
+// FONCTION POUR INITIER L’OVERLAY
+// ================================
+function createOverlayCanvas(chartContainer, chart, drawCallback) {
+    const overlayCanvas = document.createElement('canvas');
+    overlayCanvas.style.position = 'absolute';
+    overlayCanvas.style.top = '0';
+    overlayCanvas.style.left = '0';
+    overlayCanvas.style.pointerEvents = 'none';
+    overlayCanvas.width = chartContainer.offsetWidth;
+    overlayCanvas.height = chartContainer.offsetHeight;
+    chartContainer.appendChild(overlayCanvas);
 
-  displayedEvents = events; // On garde la liste affichée pour le tri
-  let rows = "";
+    const ctx = overlayCanvas.getContext('2d');
 
-  events.forEach((e, index) => {
-    const actual = e.actual?.display_value || "-";
-    const previous = e.previous?.display_value  || "-";
-    const forecast = e.forecast?.display_value  || "-";
-    const revision = e.revision?.display_value || "-";
-    const impactValue = e.impact ?? "-";
-    const releaseDate = e.release_date
-      ? new Date(e.release_date * 1000).toLocaleString()
-      : "-";
-    const currency = e.currency || "-";
-    const indicator = e.event_name || "-";
+    chart.subscribeVisibleTimeRangeChange(() => {
+        overlayCanvas.width = chartContainer.offsetWidth;
+        overlayCanvas.height = chartContainer.offsetHeight;
+        drawCallback();
+    });
 
-    // 🎨 Couleur selon l'impact
-    let impactColor = "gray";
-    if (impactValue >= 4) impactColor = "#ff4444";       // fort impact → rouge
-    else if (impactValue >= 2) impactColor = "#ffaa00";  // moyen → orange
-    else if (impactValue > 0) impactColor = "#22cc22";   // faible → vert
-    const impactClass = `impact-${Math.min(Math.max(impactValue, 1), 5)}`;
+    chart.subscribeCrosshairMove(() => drawCallback());
 
-    rows += `
-      <tr data-rowid="${index}">
-        <td><input type="checkbox" class="calendar-checkbox"></td>
-        <td data-sort="${e.release_date || 0}">${releaseDate}</td>
-        <td>${GetCountrycode(currency)}</td>
-        <td>${GetCountryname(currency)}</td>   
-        <td>${indicator}</td>
-        <td>-</td>
-        <td>${currency}</td>
-        <td>
-          <span class="importance-box ${impactClass}"></span>  
-          ${impactValue ? `Impact ${impactValue}` : ""}
-        </td>
-        <td style="color:${impactColor}; font-weight:bold;" data-sort="${impactValue}">
-          ${impactValue}
-        </td>
-        <td>${actual}</td>
-        <td>${previous}</td>
-        <td>${forecast}</td>
-        <td>${revision}</td>
-      </tr>
-    `;
-  });
-  
-  body.innerHTML =
-    rows ||
-    `<tr><td colspan="13" style="text-align:center; color:gray;">
-        No events found for this period.
-     </td></tr>`;
-
-  attachSortHandlers();      // Tri du tableau
-  attachCheckboxListener();  // Listener pour chaque checkbox
+    return ctx;
 }
 
+// ================================
+// FONCTION POUR DESSINER LES LIGNES VERTICALES
+// ================================
+function drawEventLines(chart, overlayCtx, currentSeries) {
+    if (!overlayCtx || !currentSeries) return;
+    overlayCtx.clearRect(0, 0, overlayCtx.canvas.width, overlayCtx.canvas.height);
+
+    const timeScale = chart.timeScale();
+
+    economicEventLines.forEach(line => {
+        const x = timeScale.timeToCoordinate(line.time);
+        if (x === null) return;
+
+        overlayCtx.beginPath();
+        overlayCtx.strokeStyle = line.color;
+        overlayCtx.lineWidth = 2;
+        overlayCtx.setLineDash([4, 4]);
+        overlayCtx.moveTo(x, 0);
+        overlayCtx.lineTo(x, overlayCtx.canvas.height);
+        overlayCtx.stroke();
+    });
+
+    overlayCtx.setLineDash([]);
+}
+
+// ================================
+// FONCTION POUR METTRE À JOUR LE TABLEAU
+// ================================
+function updateCalendarTable(events) {
+    const body = document.getElementById("calendarBody");
+    if (!body) return;  
+
+    displayedEvents = events;
+    let rows = "";
+
+    events.forEach((e, index) => {
+        const actual = e.actual?.display_value || "-";
+        const previous = e.previous?.display_value  || "-";
+        const forecast = e.forecast?.display_value  || "-";
+        const revision = e.revision?.display_value || "-";
+        const impactValue = e.impact ?? "-";
+        const releaseDate = e.release_date
+          ? new Date(e.release_date * 1000).toLocaleString()
+          : "-";
+        const currency = e.currency || "-";
+        const indicator = e.event_name || "-";
+
+        let impactColor = "gray";
+        if (impactValue >= 4) impactColor = "#ff4444";
+        else if (impactValue >= 2) impactColor = "#ffaa00";
+        else if (impactValue > 0) impactColor = "#22cc22";
+        const impactClass = `impact-${Math.min(Math.max(impactValue, 1), 5)}`;
+
+        rows += `
+          <tr data-rowid="${index}">
+            <td><input type="checkbox" class="calendar-checkbox"></td>
+            <td data-sort="${e.release_date || 0}">${releaseDate}</td>
+            <td>${GetCountrycode(currency)}</td>
+            <td>${GetCountryname(currency)}</td>   
+            <td>${indicator}</td>
+            <td>-</td>
+            <td>${currency}</td>
+            <td>
+              <span class="importance-box ${impactClass}"></span>  
+              ${impactValue ? `Impact ${impactValue}` : ""}
+            </td>
+            <td style="color:${impactColor}; font-weight:bold;" data-sort="${impactValue}">
+              ${impactValue}
+            </td>
+            <td>${actual}</td>
+            <td>${previous}</td>
+            <td>${forecast}</td>
+            <td>${revision}</td>
+          </tr>
+        `;
+    });
+
+    body.innerHTML =
+        rows ||
+        `<tr><td colspan="13" style="text-align:center; color:gray;">
+            No events found for this period.
+         </td></tr>`;
+
+    attachSortHandlers();
+    attachCheckboxListener();
+}
+
+// ================================
+// FONCTION POUR LES CHECKBOX
+// ================================
 function attachCheckboxListener() {
     const checkboxes = document.querySelectorAll(".calendar-checkbox");
 
@@ -2689,7 +2745,6 @@ function attachCheckboxListener() {
         cb.addEventListener("change", () => {
             const row = cb.closest("tr");
             const index = parseInt(row.dataset.rowid);
-
             const eventData = displayedEvents[index];
             if (!eventData) return;
 
@@ -2702,65 +2757,52 @@ function attachCheckboxListener() {
     });
 }
 
-function removeEconomicMarker(eventData, index) {
-    if (!currentSeries || !currentSeries._economicMarkers) return;
-
-    const t = Math.floor(eventData.release_date);
-
-    const filtered = currentSeries._economicMarkers.filter(m => m.time !== t);
-
-    currentSeries.setMarkers(filtered);
-    currentSeries._economicMarkers = filtered;
-
-    delete economicMarkers[index];
-}
-
-
+// ================================
+// AJOUT D’UN MARKER + LIGNE
+// ================================
 function addEconomicMarker(eventData, index) {
     if (!currentSeries || !eventData) return;
 
     const t = Math.floor(eventData.release_date);
 
-    // Détermine couleur et forme selon impact
     const color =  
-        eventData.impact >= 4 ? "#ff4444" :   // rouge fort
-        eventData.impact >= 2 ? "#ffaa00" :   // orange moyen
-        "#22cc22";                            // vert faible
+        eventData.impact >= 4 ? "#ff4444" :
+        eventData.impact >= 2 ? "#ffaa00" :
+        "#22cc22";
 
-    const shape = 
-        eventData.impact >= 4 ? "triangleUp" : 
-        eventData.impact >= 2 ? "circle" : 
-        "square";
-
-    // Marqueur principal avec texte
+    // Marker classique
     const marker = {
         time: t,
         position: "aboveBar",
         color: color,
-        shape: shape,
+        shape: "circle",
         text: `${eventData.event_name}\nImpact ${eventData.impact}`
     };
+    const prevMarkers = currentSeries._economicMarkers || [];
+    currentSeries._economicMarkers = [...prevMarkers, marker];
+    currentSeries.setMarkers(currentSeries._economicMarkers);
+    economicMarkers[index] = { marker };
 
-    // Ligne verticale stylée
-    const verticalLine = {
-        time: t,
-        position: "top",
-        color: color,
-        shape: "none",
-        text: "",
-        lineWidth: 2,
-        lineStyle: 1 // 0=solid,1=dotted,2=dashed
-    };
+    // Ligne verticale
+    economicEventLines.push({ time: t, color: color });
+    drawEventLines(chart, overlayCtx, currentSeries);
+}
 
-    // Récupère markers existants
-    const prev = currentSeries._economicMarkers || [];
+// ================================
+// SUPPRESSION D’UN MARKER + LIGNE
+// ================================
+function removeEconomicMarker(eventData, index) {
+    if (!currentSeries || !currentSeries._economicMarkers) return;
 
-    // Ajoute le marker et la ligne verticale
-    const newList = [...prev, marker, verticalLine];
+    const t = Math.floor(eventData.release_date);
 
-    currentSeries.setMarkers(newList);
-    currentSeries._economicMarkers = newList;
-    economicMarkers[index] = { marker, verticalLine };
+    currentSeries._economicMarkers = currentSeries._economicMarkers.filter(m => m.time !== t);
+    currentSeries.setMarkers(currentSeries._economicMarkers);
+
+    economicEventLines = economicEventLines.filter(line => line.time !== t);
+    drawEventLines(chart, overlayCtx, currentSeries);
+
+    delete economicMarkers[index];
 }
 
 function GetCountryname(currency)
@@ -3479,5 +3521,10 @@ btnValidate.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") overlay__.classList.remove("show");  
 });
+
+// ================================
+// INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
+// ================================
+overlayCtx = createOverlayCanvas(chartInner, chart, () => drawEventLines(chart, overlayCtx, currentSeries));
   
 });
