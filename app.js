@@ -1026,7 +1026,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /*******************************************************************************************
    *  MESSAGE HANDLER (uses closure model & wsAI)
    *******************************************************************************************/
-  function AI_handleMessage(data) {
+  function AI_handleMessage(data) {  
     try {
       switch (data.msg_type) {
         case "authorize":
