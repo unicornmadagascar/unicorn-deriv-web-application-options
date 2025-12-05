@@ -190,9 +190,15 @@ document.addEventListener("DOMContentLoaded", () => {
   let candles__ = [];
   // --- Tableau de markers déjà ajoutés sur le chart ---
   const calendarMarkers = {}; // stocke les markers par rowId
-  let economicMarkers = {}; // index → marker list
+  // ================================
+  // VARIABLES GLOBALES
+  // ================================
+  let economicMarkers = {};
+  let economicEventLines = [];
+  let overlayCtx = null;
 
-  const SYMBOLS = [
+
+  const SYMBOLS = [  
     { symbol: "BOOM1000", name: "Boom 1000" },    
     { symbol: "CRASH1000", name: "Crash 1000" },    
     { symbol: "BOOM500", name: "Boom 500" },
