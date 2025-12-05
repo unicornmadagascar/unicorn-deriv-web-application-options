@@ -3119,7 +3119,7 @@ function extractValue(event, key) {
       BCautomationRunning = true; 
       // ---------- Create and start AI instance ----------
       const bc = startAutomation();  
-      bc.initTCNModel(); // call once
+      bc.initTCNModel(); // call once   
       // optionally: ai.BC_connectWebSocket(); // already called inside init if needed
       IAtoggleAutomationBtn.disabled = false;
     } else {
