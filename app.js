@@ -197,7 +197,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let economicEventLines = [];
   let overlayCtx = null;
 
-
   const SYMBOLS = [  
     { symbol: "BOOM1000", name: "Boom 1000" },    
     { symbol: "CRASH1000", name: "Crash 1000" },    
