@@ -2857,7 +2857,7 @@ function GetCountryname(currency)
     {
       if (currency === "EUR")
        {
-          response = "Europe (EU)";
+          response = "Europe (EU)";  
           break;
        }
       else if (currency === "USD")
