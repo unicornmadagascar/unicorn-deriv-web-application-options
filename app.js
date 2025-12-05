@@ -753,6 +753,8 @@ document.addEventListener("DOMContentLoaded", () => {
      const windowDataset = window.windowDataset || [];
      let isTraining = false;
      let lastPredTime = 0;
+     let type = "";
+     let wsAutomation_close_ai = null;
      // Assure-toi que ces constantes existent globalement : SMOOTH_PERIOD, WINDOW_SIZE, FEATURES, LSTM_UNITS, DENSE_UNITS, LEARNING_RATE, BATCH_SIZE, MIN_WINDOWS_TO_TRAIN, MAX_BUFFER, RE_TRAIN_EVERY_MS, TOKEN, WS_URL, currentSymbol, currentInterval, currentChartType, stakeInput, multiplierInput, buyNumber, sellNumber, Openpositionlines, AIContracts, AIProposal, etc.
 
   /*******************************************************************************************
