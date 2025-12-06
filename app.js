@@ -1597,10 +1597,10 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Decision:", signal);
       
       if (symbol_test === "BOO") {
-         if (signal.action === "BUY") setTimeout(()=> {BC_handleSignal("BUY");},10000);
+         if (signal.action === "BUY") {alert("Spike detected!"); setTimeout(()=> {BC_handleSignal("BUY");},10000);}
          else if (signal.action === "SELL") closeAllContracts();    
       } else if (symbol_test === "CRA") {
-         if (signal.action === "SELL") setTimeout(()=> {BC_handleSignal("SELL");},10000);
+         if (signal.action === "SELL") { alert("Spike detected!"); setTimeout(()=> {BC_handleSignal("SELL");},10000); }
          else if (signal.action === "BUY") closeAllContracts();    
       } 
     }   
