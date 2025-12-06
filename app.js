@@ -2812,9 +2812,9 @@ function addEconomicMarker(eventData, index) {
     const t = Math.floor(eventData.release_date);
 
     const color =  
-        eventData.impact >= 4 ? "#ff4444" :
-        eventData.impact >= 2 ? "#ffaa00" :
-        "#22cc22";
+        eventData.impact >= 4 ? "#1b1a1aff" :
+        eventData.impact >= 2 ? "#1b1a1aff"  :
+        "#1b1a1aff";
 
     // Marker classique
     const marker = {
@@ -2822,16 +2822,16 @@ function addEconomicMarker(eventData, index) {
         position: "aboveBar",
         color: color,
         shape: "circle",
-        text: `${eventData.event_name}\nImpact ${eventData.impact}`
+        text: `@${eventData.currency} - ${eventData.event_name}\nImpact ${eventData.impact}`
     };
     const prevMarkers = currentSeries._economicMarkers || [];
     currentSeries._economicMarkers = [...prevMarkers, marker];
     currentSeries.setMarkers(currentSeries._economicMarkers);
     economicMarkers[index] = { marker };   
-
+  
     // Ligne verticale
     economicEventLines.push({ time: t, color: color });
-    drawEventLines(chart, overlayCtx, currentSeries);
+    drawEventLines(chart, overlayCtx, currentSeries);  
 }
 
 // ================================
