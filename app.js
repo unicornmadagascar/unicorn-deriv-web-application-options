@@ -2827,7 +2827,7 @@ function addEconomicMarker(eventData, index) {
     const prevMarkers = currentSeries._economicMarkers || [];
     currentSeries._economicMarkers = [...prevMarkers, marker];
     currentSeries.setMarkers(currentSeries._economicMarkers);
-    economicMarkers[index] = { marker };
+    economicMarkers[index] = { marker };   
 
     // Ligne verticale
     economicEventLines.push({ time: t, color: color });
