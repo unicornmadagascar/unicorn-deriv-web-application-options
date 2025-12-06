@@ -2823,7 +2823,7 @@ function addEconomicMarker(eventData, index) {
         color: color,
         shape: "circle",
         text: `@${eventData.currency} - ${eventData.event_name}\nImpact ${eventData.impact}`
-    };
+    };  
     const prevMarkers = currentSeries._economicMarkers || [];
     currentSeries._economicMarkers = [...prevMarkers, marker];
     currentSeries.setMarkers(currentSeries._economicMarkers);
