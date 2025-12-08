@@ -1160,6 +1160,11 @@ hr {
     </div>
   </div>
 
+  <section class="widget-section full-width" id="gold-info-section">
+     <div class="widget-title">Symbol Info</div>
+     <div id="gold-info-container" class="tradingview-widget-container"></div>
+  </section>
+
   <section class="widget-section full-width" id="forex-screener-section">
     <div class="widget-title">Forex Screener</div>
     <div id="forex-screener-container" class="tradingview-widget-container"></div>
@@ -1254,6 +1259,19 @@ hr {
        "showSymbolLogo":true,
        "displayMode":"adaptive"
       }
+    );
+
+    createTradingViewEmbed(
+        'gold-info-container',
+        'https://s3.tradingview.com/external-embedding/embed-widget-symbol-info.js',
+         {
+          "symbol": "OANDA:XAUUSD",
+          "colorTheme": "light",
+          "isTransparent": false,
+          "locale": "en",
+          "width": "100%"
+         },
+        '<a href="https://www.tradingview.com/symbols/OANDA-XAUUSD/" target="_blank">XAUUSD performance</a>'
     );
 
     // --- 4) Forex Screener ---
