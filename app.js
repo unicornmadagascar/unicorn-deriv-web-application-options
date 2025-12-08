@@ -1511,11 +1511,11 @@ document.addEventListener("DOMContentLoaded", () => {
          });
 
          console.log("✔️ Modèle TFJS créé avec poids fixes (0.01)");
-
+  
          model = m;
          return model;
      }
-
+  
     // ------------------------------------------------------------
     // PREPARE INPUT (20 derniers prix)
     // ------------------------------------------------------------
