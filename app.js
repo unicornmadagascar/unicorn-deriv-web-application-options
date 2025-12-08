@@ -1597,7 +1597,7 @@ async function createTCNModel() {
          if (binary === 1) action = "BUY";
          else action = "SELL";  
       }
-      else if (symbol_test === "CRA"){  
+      else if (symbol_test === "CRA"){    
          if (binary==1) action = "SELL";
          else action = "BUY";    
       }  
