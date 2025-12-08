@@ -1514,7 +1514,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
          model = m;
          return model;
-     }
+     }  
   
     // ------------------------------------------------------------
     // PREPARE INPUT (20 derniers prix)
