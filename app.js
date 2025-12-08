@@ -1466,7 +1466,7 @@ document.addEventListener("DOMContentLoaded", () => {
        await tf.ready(); 
        if (model && model.dispose) { 
           try { model.dispose(); } catch(e){} 
-       }   
+       }     
    
        const m = tf.sequential(); 
        m.add(tf.layers.conv1d({ filters: 8, kernelSize: 3, activation: "relu", inputShape: [20, 1] })); 
