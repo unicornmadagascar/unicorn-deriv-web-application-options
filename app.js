@@ -1582,7 +1582,7 @@ async function createTCNModel() {
     // ------------------------------------------------------------
     // DÉCISION BUY/SELL
     // ------------------------------------------------------------
-    async function decisionWeakTrend(model, prices, tolerance = 0.0012) {
+    async function decisionWeakTrend(model, prices, tolerance = 0.0001) {
       const prob = await predictWeakSignal(model, prices);
       if (prob === null) return { action: "WAIT", prob: 0 };
 
