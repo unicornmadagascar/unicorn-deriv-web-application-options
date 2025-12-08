@@ -1459,65 +1459,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
  
-    // ------------------------------------------------------------
-// IA MODEL TCN – POIDS FIXES
-// ------------------------------------------------------------
-async function createTCNModel() {
-      await tf.ready();
+    // ------------------------------------------------------------ 
+    // IA MODEL TCN 
+    // ------------------------------------------------------------ 
+    async function createTCNModel() { 
+       await tf.ready(); 
+       if (model && model.dispose) { 
+          try { model.dispose(); } catch(e){} 
+       } 
+   
+       const m = tf.sequential(); 
+       m.add(tf.layers.conv1d({ filters: 8, kernelSize: 3, activation: "relu", inputShape: [20, 1] })); 
+       m.add(tf.layers.flatten()); 
+       m.add(tf.layers.dense({ units: 1, activation: "sigmoid" })); 
+       m.compile({ optimizer: tf.train.adam(0.001), loss: "binaryCrossentropy" }); 
 
-      if (model && model.dispose) {
-        try { model.dispose(); } catch (e) {}
-      }
+       model = m; 
 
-      const m = tf.sequential();
-
-      // -----------------------------
-      // 1) Conv1D
-      // -----------------------------
-      m.add(tf.layers.conv1d({
-        filters: 8,
-        kernelSize: 3,
-        activation: "relu",
-        inputShape: [20, 1]
-      }));
-
-      // -----------------------------
-      // 2) Flatten
-      // -----------------------------
-      m.add(tf.layers.flatten());
-
-      // -----------------------------
-      // 3) Dense
-      // -----------------------------
-      m.add(tf.layers.dense({
-        units: 1,
-        activation: "sigmoid"
-      }));
-
-      // Compile
-      m.compile({
-        optimizer: tf.train.adam(0.001),
-        loss: "binaryCrossentropy"
-      });
-
-      // ------------------------------------------------------------
-      // 🎯 REMPLACEMENT DES POIDS ALÉATOIRES PAR DES POIDS FIXES
-      // ------------------------------------------------------------
-      m.layers.forEach(layer => {
-        const w = layer.getWeights();     // liste des tenseurs
-        if (w.length > 0) {
-          const newWeights = w.map(t => tf.fill(t.shape, 0.01));  
-          layer.setWeights(newWeights);
-        }
-      });
-
-      console.log("✔️ Modèle TFJS créé avec poids fixes (0.01)");
-
-      model = m;
-      return model;
+       return model; 
     }
-
-
 
     // ------------------------------------------------------------
     // PREPARE INPUT (20 derniers prix)
