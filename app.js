@@ -2796,9 +2796,9 @@ function addEconomicMarker(eventData, index) {
     const t = Math.floor(eventData.release_date);
 
     const color =  
-        eventData.impact >= 4 ? "#1b1a1aff" :
-        eventData.impact >= 2 ? "#1b1a1aff"  :
-        "#1b1a1aff";
+        eventData.impact >= 4 ? "#484141ff" :
+        eventData.impact >= 2 ? "#484141ff"  :
+        "#484141ff";  
 
     // Marker classique
     const marker = {
