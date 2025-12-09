@@ -1545,7 +1545,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
           // reshape → [20][1]
           const arr = normalized.map(v => [v]);
-
+   
           // final reshape → [1,20,1]
           return tf.tensor3d([arr], [1, 20, 1]);
 
