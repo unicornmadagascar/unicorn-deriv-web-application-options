@@ -3181,6 +3181,12 @@ window.addEventListener("error", function (e) {
     document.getElementById("settingsPopup").style.display = "none";
   };
 
+  window.onload = () => {
+       if (!currentSymbol) return;
+       if (currentChartType !== "candlestick") return;
+       connectInit(currentSymbol, currentInterval, currentChartType);
+  };  
+
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {   
     if (connectBtn.textContent !== "Connect") {   
@@ -3189,13 +3195,7 @@ window.addEventListener("error", function (e) {
     }
   }, 300);
 
-  window.onload = () => {
-       if (!currentSymbol) return;
-       if (currentChartType !== "candlestick") return;
-       connectInit(currentSymbol, currentInterval, currentChartType);
-  };  
-
-  // Ouvrir popup
+  // Ouvrir popup  
  btnOpen.addEventListener("click", () => {
     overlay__.classList.add("show");
 });
