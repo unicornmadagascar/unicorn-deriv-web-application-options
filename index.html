@@ -957,94 +957,187 @@ hr {
     background: #d5d5d5;
 }
 
- /* Overlay noir transparent */
-.cashier-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(4px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 3000;
+/* =====================================================
+   GENERAL RESET & BODY
+===================================================== */
+body {
+    font-family: 'Inter', sans-serif;
+    background: #1e1e2f;
+    color: #fff;
+    margin: 0;
+    padding: 0;
 }
 
-/* Glass panel */
-.cashier-panel {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.2);
-    box-shadow: 0 0 20px rgba(0,255,255,0.4);
-    border-radius: 15px;
-    padding: 25px;
-    width: 350px;
-    animation: fadeIn 0.3s;
-}
-
-.cashier-overlay.active {
-    display: flex;
-}
-
-/* Bouton d'ouverture */
-.open-cashier-btn {
-    padding: 10px 20px;
-    background: #00c2ff;
-    border-radius: 8px;
-    color: #000;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-/* Close button inside popup */
-.close-popup-btn {
-    margin-top: 10px;
-    width: 100%;
-    background: #ff2a4e;
-    color: white;
-    border-radius: 8px;
-    padding: 8px;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to   { opacity: 1; transform: scale(1); }
-}
-
-
-/* Webview popup */
+/* =====================================================
+   POPUP OVERLAY GLASS
+===================================================== */
+.cashier-overlay,
 .webview-popup {
     position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    display: none;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none; /* invisible par défaut */
     align-items: center;
     justify-content: center;
-    z-index: 4000;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
+.cashier-overlay.active,
 .webview-popup.active {
     display: flex;
+    opacity: 1;
 }
 
-.webview-box {
-    width: 90%;
-    height: 80%;
-    background: #111;
-    border: 2px solid #0ff;
+/* =====================================================
+   CASHIER PANEL
+===================================================== */
+.cashier-panel {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 30px;
+    width: 350px;
+    max-width: 90%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    position: relative;
+    animation: slideIn 0.4s ease;
+}
+
+.cashier-panel h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.cashier-panel label {
+    display: block;
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #cfcfcf;
+}
+
+.cashier-panel input,
+.cashier-panel select {
+    width: 100%;
+    padding: 8px 12px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    outline: none;
+    transition: 0.2s;
+}
+
+.cashier-panel input:focus,
+.cashier-panel select:focus {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 8px #2563eb;
+}
+
+.cashier-panel button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 10px;
+    border: none;
     border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#sendEmailBtn {
+    background: #2563eb;
+    color: #fff;
+}
+
+#sendEmailBtn:hover {
+    background: #1e40af;
+}
+
+#validateCodeBtn {
+    background: #10b981;
+    color: #fff;
+}
+
+#validateCodeBtn:hover {
+    background: #059669;
+}
+
+#closeCashierBtn {
+    background: #ef4444;
+    color: #fff;
+}
+
+#closeCashierBtn:hover {
+    background: #b91c1c;
+}
+
+/* =====================================================
+   WEBVIEW POPUP
+===================================================== */
+.webview-box {
+    width: 80%;
+    max-width: 800px;
+    height: 80%;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    animation: slideIn 0.4s ease;
 }
 
 .webview-header {
-    background: #0ff;
-    padding: 10px;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    font-weight: 600;
     text-align: center;
-    font-weight: bold;
 }
 
-#webviewFrame {
-    width: 100%;
-    height: calc(100% - 50px);
+.webview-box iframe {
+    flex: 1;
     border: none;
+    width: 100%;
+    background: #1e1e2f;
+}
+
+.webview-box .close-btn {
+    padding: 12px 20px;
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.webview-box .close-btn:hover {
+    background: #b91c1c;
+}
+
+/* =====================================================
+   ANIMATIONS
+===================================================== */
+@keyframes slideIn {
+    0% { transform: translateY(-50px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+@media (max-width: 600px) {
+    .cashier-panel { width: 90%; padding: 20px; }
+    .webview-box { width: 95%; height: 90%; }
 }
 
   </style>
@@ -1330,57 +1423,55 @@ hr {
   <!-- =======================
      POPUP CASHIER (Glass)
      ======================= -->
-  <div class="cashier-overlay" id="cashierOverlay">
+  <div class="cashier-overlay" id="cashierModal">
 
-    <div class="cashier-panel">
-        <h2>Deriv Cashier</h2>
+  <div class="cashier-panel">
+      <h2>Deriv Cashier</h2>
 
-        <label>Email Deriv</label>
-        <input id="emailInput" placeholder="entrer votre email" />
+      <label>Email Deriv</label>
+      <input id="emailInput" placeholder="entrer votre email" />
 
-        <button id="btnSendEmail">Envoyer email de vérification</button>
+      <button id="sendEmailBtn">Envoyer email de vérification</button>
 
-        <label>Type d'opération</label>
-        <select id="actionSelect">
-            <option value="deposit">Dépôt</option>
-            <option value="withdrawal">Retrait</option>
-        </select>
+      <label>Type d'opération</label>
+      <select id="actionSelect">
+          <option value="deposit">Dépôt</option>
+          <option value="withdrawal">Retrait</option>
+      </select>
 
-        <label>Provider</label>
-        <select id="providerSelect">
-            <option value="cashier">cashier</option>
-            <option value="doughflow">doughflow</option>
-            <option value="crypto">crypto (USDT / BTC / ...)</option>
-        </select>
+      <label>Provider</label>
+      <select id="providerSelect">
+          <option value="cashier">cashier</option>
+          <option value="doughflow">doughflow</option>
+          <option value="crypto">crypto (USDT / BTC / ...)</option>
+      </select>
 
-        <label>Devise (optionnel)</label>
-        <input id="currencySelect" placeholder="USD, USDT..." />
+      <label>Devise (optionnel)</label>
+      <input id="currencySelect" placeholder="USD, USDT..." />
 
-        <label>Code reçu par email</label>
-        <input id="codeInput" placeholder="123456" />
+      <label>Code reçu par email</label>
+      <input id="codeInput" placeholder="123456" />
 
-        <button id="btnGenerate">Générer l'URL</button>
+      <button id="validateCodeBtn">Générer l'URL</button>
 
-        <div id="errorBox"></div>
+      <div id="errorBox"></div>
 
-        <button id="closeCashierPopup" class="close-popup-btn">Fermer</button>
-    </div>
+      <button id="closeCashierBtn" class="close-popup-btn">Fermer</button>
   </div>
-
+  </div>
 
   <!-- =======================
      POPUP WEBVIEW
      ======================= -->
   <div class="webview-popup" id="webviewModal">
-    <div class="webview-box">
-        <div class="webview-header">Opération Deriv</div>
+  <div class="webview-box">
+      <div class="webview-header">Opération Deriv</div>
 
-        <iframe id="webviewFrame"></iframe>
+      <iframe id="cashierFrame"></iframe>
 
-        <button id="closeWebview" class="close-btn">Fermer</button>
-    </div>
+      <button id="closeWebview" class="close-btn">Fermer</button>
   </div>
-
+  </div>
 
   <script>
 
