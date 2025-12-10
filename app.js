@@ -3180,12 +3180,6 @@ window.addEventListener("error", function (e) {
     // Fermer le popup
     document.getElementById("settingsPopup").style.display = "none";
   };
-  
-  window.onload = () => {
-       if (!currentSymbol) return;
-       if (currentChartType !== "candlestick") return;
-       connectInit(currentSymbol, currentInterval, currentChartType);
-  };
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {   
@@ -3224,7 +3218,7 @@ btnValidate.addEventListener("click", (e) => {
 });
 
 // Fermer avec Échap
-document.addEventListener("keydown", (e) => {
+document.addEventListener("keydown", (e) => {  
     if (e.key === "Escape") overlay__.classList.remove("show");  
 });
 
@@ -3240,5 +3234,11 @@ openPopupBtn.onclick = () => {
 closePopupBtn.onclick = () => {
     popupOverlay.classList.remove("active");
 };
+
+ window.onload = () => {
+       if (!currentSymbol) return;
+       if (currentChartType !== "candlestick") return;
+       connectInit(currentSymbol, currentInterval, currentChartType);
+  };
   
 });
