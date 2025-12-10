@@ -1,3 +1,6 @@
+import { DerivWS_for_transaction } from "./modules/websocket.js";
+import { requestEmail, generateLink } from "./modules/cashier.js";
+
 document.addEventListener("DOMContentLoaded", () => {
   const APP_ID = 109310;
   //const TOKEN = "n04kyiO7gVSyQuA";
@@ -55,21 +58,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnCancel = document.getElementById("aiPopupCancel");
   const btnValidate = document.getElementById("aiPopupValidate");
 
-  // Elements UI
+  // Éléments UI
+  const openCashierBtn = document.getElementById("openCashierBtn");
+  const cashierModal = document.getElementById("cashierModal");
   const emailInput = document.getElementById("emailInput");
   const codeInput = document.getElementById("codeInput");
-  const currencySelect = document.getElementById("currencySelect");
-  const providerSelect = document.getElementById("providerSelect");
-  const actionSelect = document.getElementById("actionSelect");
-  const btnSendEmail = document.getElementById("btnSendEmail");
-  const btnGenerate = document.getElementById("btnGenerate");
+  const sendEmailBtn = document.getElementById("sendEmailBtn");
+  const validateCodeBtn = document.getElementById("validateCodeBtn");
+  const cashFrame = document.getElementById("cashierFrame");
 
-  const webviewModal = document.getElementById("webviewModal");
-  const webviewFrame = document.getElementById("webviewFrame");
-  const closeWebview = document.getElementById("closeWebview");
-  const popupOverlay = document.getElementById("cashierOverlay");
-  const openPopupBtn = document.getElementById("IAtoggleAutomation");
-  const closePopupBtn = document.getElementById("closeCashierPopup");
+let wsReady = false;
 
   let totalPL = 0; // cumul des profits et pertes
   let BCautomationRunning = false;
@@ -754,102 +752,6 @@ document.addEventListener("DOMContentLoaded", () => {
     wsOpenLines.onerror = (e) => console.log("⚠️ WS error:", e);
     wsOpenLines.onclose = () => console.log("❌ WS closed for open lines");
   }
-
-  // ---------- AI module corrected (replace previous functions with this block) ---------
-  /* ===========================================================
-   📡 Module: Deriv WebSocket Core
-  =========================================================== */
-
-  const DerivWS_for_transaction = (() => {
-
-    let websocket = null;
-    let connected = false;
-    let token = TOKEN;
-
-    function connect() {
-        return new Promise((resolve, reject) => {
-            websocket = new WebSocket(WS_URL);
-
-            websocket.onopen = () => {
-                connected = true;
-                resolve();
-            };
-            websocket.onerror = (err) => reject(err);
-            websocket.onclose = () => { connected = false; };
-        });
-    }
-
-    function authorize(auth_token) {
-        token = auth_token;
-        return send({ authorize: token });
-    }
-
-    function send(payload) {
-        return new Promise((resolve, reject) => {
-            if (!connected) {
-                reject("WebSocket not connected");
-                return;
-            }
-    
-            websocket.send(JSON.stringify(payload));
-
-            websocket.onmessage = (msg) => {
-                const data = JSON.parse(msg.data);
-
-                if (data.error) reject(data.error.message);
-                else resolve(data);
-            };
-        });
-    }
-
-    return {
-        connect,
-        authorize,
-        send
-    };
-
-  })();
-
-  /* ===========================================================
-   💳 Module: Deriv Cashier
-   =========================================================== */
-
-  const DerivCashier_for_translation = (() => {
-  
-    // ————————————————
-    // 📩 Envoyer email
-    // ————————————————
-    function requestEmail(email) {
-        return DerivWS_for_transaction.send({
-            verify_email: email,
-            type: "payment_withdraw"
-        });
-    }
-
-    // ————————————————
-    // 💸 Générer lien Cashier
-    // ————————————————
-    function generateLink({ action, provider, verificationCode, currency }) {
-
-        let payload = {
-            cashier: action,           // "deposit" ou "withdrawal"
-            provider: provider,        // "cashier", "crypto", "doughflow"
-            verification_code: verificationCode
-        };
-
-        if (provider === "cashier" && currency) {
-            payload.currency = currency;
-        }
-
-        return DerivWS_for_transaction.send(payload);
-    }
-
-    return {
-        requestEmail,
-        generateLink
-    };
-
-  })();
 
 
   function startAutomation() {
@@ -2895,47 +2797,6 @@ function extractValue(event, key) {
       },2000);
     }   
   });
-
-  // 📩 Envoyer email
-  btnSendEmail.onclick = async () => {
-        try {
-            let email = emailInput.value.trim();
-            if (!email) return alert("Email vide.");
-
-            await DerivCashier_for_translation.requestEmail(email);
-            alert("Email envoyé !");
-        } catch (e) {    
-            alert("Erreur : " + e);
-        }
-  };
-  
-  // 🔗 Générer lien Cashier  
-  btnGenerate.onclick = async () => {  
-        try {
-            let code = codeInput.value.trim();
-            if (!code) return alert("Code requis.");
-
-            let result = await DerivCashier_for_translation.generateLink({
-                action: actionSelect.value,
-                provider: providerSelect.value,
-                verificationCode: code,
-                currency: currencySelect.value
-            });
-
-            const url = result.cashier;
-            webviewFrame.src = url;
-            webviewModal.classList.add("active");
-
-        } catch (e) {
-            alert("Erreur : " + e);
-        }
-  };
-
-  // ❌ fermer WebView
-  closeWebview.onclick = () => {
-        webviewModal.classList.remove("active");
-        webviewFrame.src = "";
-  };
   
   // --- TOGGLE PANEL ---
   controlPanelToggle.addEventListener("click", () => {
@@ -3228,17 +3089,73 @@ document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") overlay__.classList.remove("show");  
 });
 
+// -------------------------------------------------------------
+// 1. Quand on ouvre la fenêtre, on initialise le WS + authorize
+// -------------------------------------------------------------
+openCashierBtn.addEventListener("click", async () => {
+    cashierModal.classList.add("active");
+
+    if (!wsReady) {
+        try {
+            console.log("Connexion WebSocket...");
+            await DerivWS_for_transaction.connect();
+
+            console.log("Autorisation...");
+            const auth = await DerivWS_for_transaction.authorize(TOKEN);
+
+            if (auth.error) {
+                alert("Erreur token : " + auth.error.message);
+                return;
+            }
+
+            console.log("✔ Autorisé comme : " + auth.authorize.loginid);
+
+            wsReady = true;
+
+        } catch (err) {
+            alert("Erreur WS : " + err);
+        }
+    }
+});
+
+// -------------------------------------------------------------
+// 2. Envoi email
+// -------------------------------------------------------------
+sendEmailBtn.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    if (!email) return alert("Entrez votre email");
+
+    const result = await requestEmail(email);
+
+    if (result.error) {
+        alert("Erreur : " + result.error.message);
+        return;
+    }
+
+    alert("✔ Email envoyé !");
+});
+
+// -------------------------------------------------------------
+// 3. Génération du lien Cashier
+// -------------------------------------------------------------
+validateCodeBtn.addEventListener("click", async () => {
+    const code = codeInput.value.trim();
+    if (!code) return alert("Entrez le code reçu par email");
+
+    const result = await generateLink(code);
+
+    if (result.error) {
+        alert("Erreur : " + result.error.message);
+        return;
+    }
+
+    cashFrame.src = result.cashier;
+    alert("✔ Cashier prêt !");
+  });
+
 // ================================
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
 // ================================
 overlayCtx = createOverlayCanvas(chartInner, chart, () => drawEventLines(chart, overlayCtx, currentSeries));
-
-openPopupBtn.onclick = () => {
-    popupOverlay.classList.add("active");
-};
-
-closePopupBtn.onclick = () => {
-    popupOverlay.classList.remove("active");
-};
   
 });
