@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsContracts__close = null;
   let wsContracts_winning = null;   
   let wsAutomation_close = null;
-  let wsAutomation_close_ai = null;
+  let wsTransaction = null;
   let connection_ws = null;   
   let connection_ws_htx = null;
   let wsAutomation = null;
@@ -741,493 +741,104 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
-   // ---------- AI module corrected (replace previous functions with this block) ----------
+// ---------- AI module corrected (replace previous functions with this block) ----------
+function connectWS__for__transaction(callback){
 
-   function AI() {
-     // MODULE-SCOPE variables (shared by inner functions)
-     let model = null;
-     let wsAI = window.wsAI || null; // conserve wsAI si défini ailleurs
-     let smoothEMA = null;
-     let previousMomentum = 0;
-     const emaBuffer = window.emaBuffer || []; // si tu avais déjà une variable globale
-     const windowDataset = window.windowDataset || [];
-     let isTraining = false;
-     let lastPredTime = 0;
-     let type = "";
-     let wsAutomation_close_ai = null;
-     // Assure-toi que ces constantes existent globalement : SMOOTH_PERIOD, WINDOW_SIZE, FEATURES, LSTM_UNITS, DENSE_UNITS, LEARNING_RATE, BATCH_SIZE, MIN_WINDOWS_TO_TRAIN, MAX_BUFFER, RE_TRAIN_EVERY_MS, TOKEN, WS_URL, currentSymbol, currentInterval, currentChartType, stakeInput, multiplierInput, buyNumber, sellNumber, Openpositionlines, AIContracts, AIProposal, etc.
-
-  /*******************************************************************************************
-   *  CONNECT WEBSOCKET
-   *******************************************************************************************/
-    function AI_connectWebSocket() {
-      try {
-        if (!wsAI || wsAI.readyState > 1) {
-          wsAI = new WebSocket(WS_URL);
-        }
-
-        wsAI.onopen = () => {
-          try {
-            wsAI.send(JSON.stringify({ authorize: TOKEN }));
-          } catch (e) { console.warn('wsAI send authorize failed', e); }
-        };
-
-        wsAI.onmessage = (msg) => {
-          try {
-            const data = JSON.parse(msg.data);
-            AI_handleMessage(data);
-          } catch (e) {
-            console.error('WS message parse error', e);
-          }
-        };
-
-        wsAI.onclose = () => {
-          // reconnect after short delay
-          setTimeout(() => AI_connectWebSocket(), 500);
-        };
-
-        wsAI.onerror = (err) => {
-          console.error("WebSocket error:", err);
-          try { wsAI.close(); } catch(e) {}
-            wsAI = null;
-            setTimeout(() => AI_connectWebSocket(), 500);
-        };
-      } catch (e) {
-        console.error('AI_connectWebSocket error', e);
-      }
-    }
-
-  /*******************************************************************************************
-   *  ANALYSIS / EMA LISSÉE
-   *******************************************************************************************/
-    function initSmoothedEMA(initialPrice) {
-       smoothEMA = initialPrice;
-    }
-
-    function updateSmoothedEMA(price) {
-      if (smoothEMA === null) initSmoothedEMA(price);
-      smoothEMA = smoothEMA + (price - smoothEMA) / SMOOTH_PERIOD;
-      return smoothEMA;
-    }
-
-  /*******************************************************************************************
-   *  COMPUTE HARMONIC
-   *******************************************************************************************/
-    function computeHarmonicFromEMA(emaNow, emaPrev, Beta = 0.05, Omega0 = 0.001, dt = 1) {
-       const momentum = (emaNow - emaPrev) / dt;
-       const acceleration = (momentum - previousMomentum) / dt;
-       previousMomentum = momentum;
-       const deviation = 0; // emaNow - emaNow is always 0 for smoothed EMA
-       const osc = acceleration + 2 * Beta * momentum + (Omega0 * Omega0) * deviation;
-       return { osc, momentum, acceleration, deviation };
-    }
-
-  /*******************************************************************************************
-   *  BUILD WINDOWS / PUSH EMA
-   *******************************************************************************************/
-    function pushEMA(ema) {
-       emaBuffer.push(ema);
-       if (emaBuffer.length > MAX_BUFFER) emaBuffer.shift();
-   
-       if (emaBuffer.length >= WINDOW_SIZE + 1) {
-          const startIdx = emaBuffer.length - 1 - WINDOW_SIZE;
-          const inputWindow = emaBuffer.slice(startIdx, startIdx + WINDOW_SIZE);
-          const emaPrev = emaBuffer[emaBuffer.length - 2];
-          const emaNow = emaBuffer[emaBuffer.length - 1];
-          const { osc } = computeHarmonicFromEMA(emaNow, emaPrev);
-          windowDataset.push({ x: inputWindow.slice(), y: osc });
-          if (windowDataset.length > 2000) windowDataset.shift();
-
-          // light logging every 50 windows to avoid spam
-          if (windowDataset.length % 50 === 0) {
-            console.log('pushEMA: windowDataset length =', windowDataset.length, 'emaBuffer =', emaBuffer.length);
-          }
-       }
-    }
-
-  /*******************************************************************************************
-   *  BUILD LSTM MODEL
-   *******************************************************************************************/
-    async function buildLSTMModel(windowSize = WINDOW_SIZE, features = FEATURES) {
-       try {
-          await tf.ready();
-
-          // Dispose previous safely
-          if (model && typeof model.dispose === 'function') {
-            try { model.dispose(); } catch (e) { console.warn('dispose error', e); }
-            model = null;
-          }
-
-          const m = tf.sequential();
-          m.add(tf.layers.lstm({
-             units: LSTM_UNITS,
-             inputShape: [windowSize, features],
-             recurrentInitializer: 'glorotUniform',
-             kernelInitializer: 'glorotUniform',
-             recurrentActivation: 'sigmoid'
-          }));
-          m.add(tf.layers.dense({ units: DENSE_UNITS, activation: 'relu' }));
-          m.add(tf.layers.dense({ units: 1, activation: 'linear' }));
-
-          const opt = tf.train.adam(LEARNING_RATE);
-          m.compile({ optimizer: opt, loss: 'meanSquaredError' });
-
-          console.log('LSTM model built:');
-          m.summary();
-
-          model = m;
-          return model;
-      } catch (e) {
-          console.error('buildLSTMModel error', e);
-          throw e;
-      }
-    }
-
-  /*******************************************************************************************
-   *  SAMPLE BATCH
-   *******************************************************************************************/
-    function sampleTrainingBatch(batchSize = BATCH_SIZE) {
-      try {
-         if (windowDataset.length < MIN_WINDOWS_TO_TRAIN) return null;
-         const n = Math.min(batchSize, windowDataset.length);
-         const xs = [];
-         const ys = [];
-         for (let i = 0; i < n; i++) {
-            const idx = Math.floor(Math.random() * windowDataset.length);
-            xs.push(windowDataset[idx].x.map(v => [v]));
-            ys.push([windowDataset[idx].y]);
-         }
-         const Xt = tf.tensor3d(xs, [n, WINDOW_SIZE, FEATURES]);
-         const yt = tf.tensor2d(ys, [n, 1]);
-         return { Xt, yt };
-      } catch (e) {
-         console.error('sampleTrainingBatch error', e);
-         return null;
-      }
-    }
-
-  /*******************************************************************************************
-   *  ONLINE TRAIN STEP (safe)
-   *******************************************************************************************/
-   async function onlineTrainStep() {
-     if (!model) {
-       // console.warn('onlineTrainStep: no model yet');
-       return;
-     }
-     if (isTraining) {
-        // already running
-        return;
-     }
-     const batch = sampleTrainingBatch();
-     if (!batch) return;
-     isTraining = true;
-     try {
-       console.log('onlineTrainStep: start training on', batch.Xt.shape[0], 'samples');
-       await model.fit(batch.Xt, batch.yt, {
-         epochs: 2,
-         batchSize: Math.min(8, batch.Xt.shape[0]),
-         shuffle: true,
-         verbose: 0
-       });
-       console.log('onlineTrainStep: training done');
-     } catch (err) {
-       console.error('Train error', err);
-     } finally {
-       try { batch.Xt.dispose(); batch.yt.dispose(); } catch (e) { console.warn('dispose error', e); }
-        isTraining = false;
-     }
+ if (wsTransaction === null)
+  {
+    wsTransaction = new WebSocket(WS_URL);
+    wsTransaction.onopen=()=>{ wsTransaction.send(JSON.stringify({ authorize: TOKEN })); };
+  }
+  
+  if (wsTransaction && (wsTransaction.readyState === WebSocket.OPEN || wsTransaction.readyState === WebSocket.CONNECTING))
+   {
+     wsTransaction.onopen=()=>{ wsTransaction.send(JSON.stringify({ authorize: TOKEN })); };
    }
 
-  /*******************************************************************************************
-   *  PREDICTION
-   *******************************************************************************************/
-   function predictOscillatorFromBuffer() {
-     try {
-       if (!model) return null;
-       if (emaBuffer.length < WINDOW_SIZE) return null;
-       const seq = emaBuffer.slice(-WINDOW_SIZE).map(v => [v]);
-       return tf.tidy(() => {
-         const input = tf.tensor3d([seq], [1, WINDOW_SIZE, FEATURES]);
-         const out = model.predict(input);
-         const val = out.dataSync()[0];
-         return val;
-       });
-     } catch (e) {
-       console.error('predictOscillatorFromBuffer error', e);
-       return null;
+  if (wsTransaction && (wsTransaction.readyState === WebSocket.CLOSED || wsTransaction.readyState === WebSocket.CLOSING))
+   {
+    wsTransaction = new WebSocket(WS_URL);
+    wsTransaction.onopen=()=>{ wsTransaction.send(JSON.stringify({ authorize: TOKEN })); };
+   }
+ 
+   wsTransaction.onmessage = (msg) => {
+     const data = JSON.parse(msg.data);
+
+     if(data.authorize){
+        authorized = true;
+        if(callback) callback();
      }
-    }
 
-  /*******************************************************************************************
-   *  PROCESS TICK (safe)
-   *******************************************************************************************/
-    async function processTick(rawPrice) {
-      try {
-         const ema = updateSmoothedEMA(rawPrice);
-         pushEMA(ema);
+     if(data.error){
+         showError(data.error.message || "Erreur inconnue");
+     }
 
-         const now = Date.now();
-         if (now - lastPredTime >= RE_TRAIN_EVERY_MS) {
-            lastPredTime = now;
-            // fire and forget (training handles isTraining)
-            onlineTrainStep().catch(e => console.error('onlineTrainStep failed:', e));
-         }
+     // EMAIL OK
+     if(data.verify_email){
+        alert("Email envoyé ! Vérifiez votre boîte mail.");
+     }
 
-         const pred = predictOscillatorFromBuffer();
-         return { ema, prediction: pred };
-      } catch (err) {
-         console.error('processTick error', err);
-         return { ema: null, prediction: null };
-      }
-    }
+     // URL Cashier reçue
+     if(data.cashier){
+         let url = data.cashier.deposit || data.cashier.withdrawal;
+         if(url) openWebview(url);
+     }
+   };
+   
+   wsTransaction.onclose = () => {
+      setTimeout(() => {
+        connectWS__for__transaction(callback); 
+      },500);
+   };
 
-  /*******************************************************************************************
-   *  INIT LSTM HARMONIC
-   *******************************************************************************************/
-  async function initLSTMHarmonic() {
-    try {
-      await buildLSTMModel();
-      console.log('model exists?', !!model);
-      console.log('layers count:', model ? model.layers.length : 'no model');
+   wsTransaction.onerror = (err) => {
+     showError("Erreur WebSocket : " + err.message);
+     wsTransaction.close();
+     wsTransaction = null;
+     setTimeout(() => {
+        connectWS__for__transaction(callback); 
+      },500);
+   };
+ }
 
-      // start WS only after model built
-      if (!wsAI || wsAI.readyState > 1) {
-        AI_connectWebSocket();
-      }
-    } catch (e) {
-      console.error('initLSTMHarmonic error', e);
-    }
-  }
+ // ---------- Vérification Email ----------
+ function sendVerifyEmail(){
+  const email = document.getElementById("email").value.trim();
+  if(!email) return showError("Email requis");
 
-  /*******************************************************************************************
-   *  CONTRACT DECISION
-   *******************************************************************************************/
-  function Contractfunction(prediction) {
-    if (prediction !== null) {
-      console.log("Prediction :" + prediction);
-      const upThreshold = 0.00001, downThreshold = -0.00001;
-      if (prediction > upThreshold) { 
-        closeAllContracts("SELL"); 
-        AI_handleSignal("BUY");
-      } else if (prediction < downThreshold) {
-        closeAllContracts("BUY");
-        AI_handleSignal("SELL");   
-      }
-    } 
-  }
 
-  // ------------------------------------------------------------
-   // CLOSE ALL CONTRACTS
-   // ------------------------------------------------------------
-    function closeAllContracts(direction) {
+   connectWS__for__transaction(() => {
+     wsTransaction.send(JSON.stringify({
+       verify_email: email,
+       type: "payment_withdraw" // Obligatoire selon API Deriv
+     })); 
+   });
+ }
 
-      if (wsAutomation_close_ai === null)
-      {
-       wsAutomation_close_ai  = new WebSocket(WS_URL);
-       wsAutomation_close_ai.onopen=()=>{ wsAutomation_close_ai.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-  
-      if (wsAutomation_close_ai && (wsAutomation_close_ai.readyState === WebSocket.OPEN || wsAutomation_close_ai.readyState === WebSocket.CONNECTING))
-      {
-       wsAutomation_close_ai.onopen=()=>{ wsAutomation_close_ai.send(JSON.stringify({ authorize: TOKEN })); };
-      }
 
-      if (wsAutomation_close_ai && (wsAutomation_close_ai.readyState === WebSocket.CLOSED || wsAutomation_close_ai.readyState === WebSocket.CLOSING))
-      {
-       wsAutomation_close_ai = new WebSocket(WS_URL);
-       wsAutomation_close_ai.onopen=()=>{ wsAutomation_close_ai.send(JSON.stringify({ authorize: TOKEN })); };
-      }
+ // ---------- Génération URL Cashier ----------
+ function generateCashierUrl(){
+   const cashier = document.getElementById("cashierType").value;
+   const provider = document.getElementById("provider").value;
+   const code = document.getElementById("code").value.trim();
+   const currency = document.getElementById("currency").value.trim();
 
-      wsAutomation_close_ai.onclose = () => { setTimeout(closeAllContracts,500); };   
-      wsAutomation_close_ai.onmessage = (e) => {
-        const data = JSON.parse(e.data);
+   if(!code) return showError("Code requis");
 
-        // Autorisé → demander la liste des contrats
-        if (data.authorize) {
-            wsAutomation_close_ai.send(JSON.stringify({ portfolio: 1 }));
-        }
-
-        // Liste des contrats ouverts reçue
-        if (data.portfolio) {
-            const list = data.portfolio.contracts || [];
-
-            if (list === undefined || list === null || list.length === 0) {
-               return;
-            }
-
-            type = direction === "BUY" ? "MULTUP" : "MULTDOWN";
-            list
-                .filter(c => c.contract_type === type && c.contract_type === currentSymbol)
-                .forEach(d => wsAutomation_close_ai.send(JSON.stringify({ sell: d.contract_id, price: 0 })));
-
-        }
-
-        // Confirmation d’un contrat fermé 
-        if (data.sell) {
-            console.log("Fermé :", data.sell.contract_id);
-        }
-      };
-    }
-
-  /*******************************************************************************************
-   *  MESSAGE HANDLER (uses closure model & wsAI)
-   *******************************************************************************************/
-  function AI_handleMessage(data) {  
-    try {
-      switch (data.msg_type) {
-        case "authorize":
-          try {
-            wsAI.send(JSON.stringify(Payloadforsubscription(currentSymbol, currentInterval, currentChartType)));
-            wsAI.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
-            wsAI.send(JSON.stringify({ portfolio: 1 }));
-          } catch (e) { console.warn('authorize send failed', e); }
-          break;
-
-        case "portfolio":
-          AIContracts = data.portfolio?.contracts || [];
-          break;
-
-        case "proposal_open_contract":
-          if (data.proposal_open_contract) AIProposal = data.proposal_open_contract;
-          break;
-
-        case "tick":
-          (async () => {
-            try {
-              const price = parseFloat(data.tick.quote);
-              const { ema, prediction } = await processTick(price);
-              Contractfunction(prediction);
-            } catch (e) {
-              console.error('tick handler error', e);
-            }
-          })();
-          break;
-
-        case "candles":
-          const cd = data.candles || [];
-          candles__ = cd.map(c => ({
-            time: Number(c.epoch),
-            open: Number(c.open),
-            high: Number(c.high),
-            low: Number(c.low),
-            close: Number(c.close),
-          }));
-          break;
-
-        case "ohlc":
-          (async () => {
-            try {
-              const o = data.ohlc;
-              const openTime = Number(o.open_time);
-              const bar = {
-                time: openTime,
-                open: Number(o.open),
-                high: Number(o.high),
-                low: Number(o.low),
-                close: Number(o.close),
-              };
-              if (!bar || !candles__) return;
-              const last = candles__[candles__.length - 1];
-              if (!last || last.time !== openTime) candles__.push(bar);
-              else candles__[candles__.length - 1] = bar;
-
-              const { ema: ema_, prediction: prediction_ } = await processTick(bar.close);
-              Contractfunction(prediction_);
-            } catch (e) {
-              console.error('ohlc handler error', e);
-            }
-          })();
-          break;
-
-        case "ping":
-          try { wsAI.send(JSON.stringify({ ping: 1 })); } catch (e) { }
-          break;
-      }
-    } catch (e) {
-      console.error('AI_handleMessage error', e);
-    }
-  }
-
-  /*******************************************************************************************
-   *  SIGNAL / ORDER (intact)
-   *******************************************************************************************/
-  function AI_handleSignal(direction) {
-    const oppositeType = direction === "BUY" ? "MULTDOWN" : "MULTUP";
-    const mainType = direction === "BUY" ? "MULTUP" : "MULTDOWN";
-
-    // close opposite contracts
-    AIContracts
-      .filter(c => c.symbol === currentSymbol && c.contract_type === oppositeType)
-      .forEach(c => {
-        try { wsAI.send(JSON.stringify({ sell: c.contract_id, price: 0 })); } catch (e) { }
-      });
-
-    // if a contract active exists, skip
-    if (AIProposal?.contract_id) return;
-
-    const stake = parseFloat(stakeInput.value) || 1;
-    const multiplier = parseInt(multiplierInput.value) || 40;
-    const repeat = direction === "BUY"
-      ? (parseInt(buyNumber.value) || 1)
-      : (parseInt(sellNumber.value) || 1);
-
-    if ((typeof multiplier !== "number" && multiplier === "") || (typeof stake !== "number" && stake === "") || (typeof repeat !== "number" && repeat === "")) {
-      return;
-    }
-
-    for (let i = 0; i < repeat; i++) {
-      try {
-        wsAI.send(JSON.stringify({
-          buy: 1,
-          price: stake.toFixed(2),
-          parameters: {
-            contract_type: mainType,
-            symbol: currentSymbol,
-            currency: CURRENCY.toString(),
-            basis: "stake",
-            amount: stake.toFixed(2),
-            multiplier: multiplier,
-          }
-        }));
-      } catch (e) { console.warn('buy send failed', e); }
-    }
-
-    Openpositionlines(currentSeries);
-  }
-
-  // expose public API minimal
-    return {
-      initLSTMHarmonic,
-      processTick,
-      predictOscillatorFromBuffer,
-      AI_connectWebSocket,
-      AI_handleSignal,
-      debugState: function () {
-        try {
-          console.log('--- DEBUG STATE ---');
-          console.log('emaBuffer.length =', emaBuffer.length);
-          console.log('windowDataset.length =', windowDataset.length);
-          console.log('isTraining =', !!isTraining);
-          console.log('model exists =', !!model);
-          if (model) console.log('model.layers =', model.layers.length);
-          if (typeof tf !== 'undefined') console.log('tf.memory():', tf.memory());
-          console.log('lastPredTime =', lastPredTime);
-          console.log('RE_TRAIN_EVERY_MS =', RE_TRAIN_EVERY_MS);
-          console.log('--------------------');
-        } catch (e) { console.error('debugState error', e); }
-      }
+   connectWS__for__transaction(() => {
+    const payload = {
+      cashier: cashier,
+      provider: provider,
+      verification_code: code
     };
-  } // end AI()
 
+    if(currency) payload.currency = currency;
 
-  function stop() {
-    if (wsAI && wsAI.readyState === WebSocket.OPEN) {
-      wsAI.send(JSON.stringify({ forget_all: ["candles", "ticks"] }));
-      wsAI.close();
-      wsAI = null;
-     }
+     wsTransaction.send(JSON.stringify(payload));
+   });
   }
-  
+
+
   function startAutomation() {
 
     // ------------------------------------------------------------
@@ -3555,6 +3166,24 @@ window.addEventListener("error", function (e) {
       connectDeriv_table();
     }
   }, 300);
+
+  // ---------- Popup WebView ----------
+  function openWebview(url){
+   document.getElementById("cashierFrame").src = url;
+   document.getElementById("webviewPopup").style.display = "flex";
+  }
+
+
+  function closeWebview(){
+    document.getElementById("webviewPopup").style.display = "none";
+    document.getElementById("cashierFrame").src = "";
+  }
+
+
+  // ---------- Error Display ----------
+  function showError(msg){
+    document.getElementById("errorBox").textContent = msg;
+  } 
 
   // Ouvrir popup
  btnOpen.addEventListener("click", () => {
