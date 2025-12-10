@@ -2910,7 +2910,7 @@ function extractValue(event, key) {
   };
   
   // 🔗 Générer lien Cashier  
-  btnGenerate.onclick = async () => {
+  btnGenerate.onclick = async () => {  
         try {
             let code = codeInput.value.trim();
             if (!code) return alert("Code requis.");
