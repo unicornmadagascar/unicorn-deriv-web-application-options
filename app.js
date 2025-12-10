@@ -2895,12 +2895,6 @@ function extractValue(event, key) {
       },2000);
     }   
   });
-  
-  // Init WS + Authorization
-  DerivWS_for_transaction.connect()
-        .then(() => DerivWS_for_transaction.authorize("TON_TOKEN_DERIV_ICI"))
-        .then(() => console.log("Deriv connecté"))
-        .catch(err => alert("Erreur WS : " + err));
 
   // 📩 Envoyer email
   btnSendEmail.onclick = async () => {
