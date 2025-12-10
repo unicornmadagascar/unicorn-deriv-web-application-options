@@ -2904,7 +2904,7 @@ function extractValue(event, key) {
 
             await DerivCashier_for_translation.requestEmail(email);
             alert("Email envoyé !");
-        } catch (e) {
+        } catch (e) {    
             alert("Erreur : " + e);
         }
   };
