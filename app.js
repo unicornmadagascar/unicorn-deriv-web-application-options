@@ -2147,10 +2147,10 @@ function GetProfitgraphical() {
 
    // AreaSeries unique
    areahistoricalSeries = charthistorical.addAreaSeries({
-     lineColor: "rgba(189, 6, 221, 1)",
+     lineColor: "whitesmoke",
      lineWidth: 2,
-     topColor: "rgba(189, 6, 221, 0.35)",
-     bottomColor: "rgba(189, 6, 221, 0.0)",
+     topColor: "whitesmoke",
+     bottomColor: "whitesmoke",
    });
 
    // Données aléatoires au démarrage
