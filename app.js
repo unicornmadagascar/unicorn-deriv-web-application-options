@@ -3189,6 +3189,12 @@ window.addEventListener("error", function (e) {
     }
   }, 300);
 
+  window.onload = () => {
+       if (!currentSymbol) return;
+       if (currentChartType !== "candlestick") return;
+       connectInit(currentSymbol, currentInterval, currentChartType);
+  };
+
   // Ouvrir popup
  btnOpen.addEventListener("click", () => {
     overlay__.classList.add("show");
@@ -3234,11 +3240,5 @@ openPopupBtn.onclick = () => {
 closePopupBtn.onclick = () => {
     popupOverlay.classList.remove("active");
 };
-
- window.onload = () => {
-       if (!currentSymbol) return;
-       if (currentChartType !== "candlestick") return;
-       connectInit(currentSymbol, currentInterval, currentChartType);
-  };
   
 });
