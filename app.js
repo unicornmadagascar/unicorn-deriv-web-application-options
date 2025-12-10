@@ -2288,7 +2288,7 @@ function updateCalendarTable(events) {
         const currency = e.currency || "-";
         const indicator = e.event_name || "-";
 
-        let impactColor = "gray";
+        let impactColor = "gray";  
         if (impactValue >= 4) impactColor = "#ff4444";
         else if (impactValue >= 2) impactColor = "#ffaa00";
         else if (impactValue > 0) impactColor = "#22cc22";
