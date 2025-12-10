@@ -2915,7 +2915,7 @@ function extractValue(event, key) {
         }
   };
   
-  // 🔗 Générer lien Cashier
+  // 🔗 Générer lien Cashier  
   btnGenerate.onclick = async () => {
         try {
             let code = codeInput.value.trim();
