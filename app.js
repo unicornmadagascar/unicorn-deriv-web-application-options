@@ -55,6 +55,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnCancel = document.getElementById("aiPopupCancel");
   const btnValidate = document.getElementById("aiPopupValidate");
 
+  // Elements UI
+  const emailInput = document.getElementById("emailInput");
+  const codeInput = document.getElementById("codeInput");
+  const currencySelect = document.getElementById("currencySelect");
+  const providerSelect = document.getElementById("providerSelect");
+  const actionSelect = document.getElementById("actionSelect");
+  const btnSendEmail = document.getElementById("btnSendEmail");
+  const btnGenerate = document.getElementById("btnGenerate");
+
+  const webviewModal = document.getElementById("webviewModal");
+  const webviewFrame = document.getElementById("webviewFrame");
+  const closeWebview = document.getElementById("closeWebview");
+  const popupOverlay = document.getElementById("cashierOverlay");
+  const openPopupBtn = document.getElementById("IAtoggleAutomation");
+  const closePopupBtn = document.getElementById("closeCashierPopup");
+
   let totalPL = 0; // cumul des profits et pertes
   let BCautomationRunning = false;
   let IAautomationRunning = false;
@@ -65,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsContracts__close = null;
   let wsContracts_winning = null;   
   let wsAutomation_close = null;
-  let wsTransaction = null;
   let connection_ws = null;   
   let connection_ws_htx = null;
   let wsAutomation = null;
@@ -740,103 +755,101 @@ document.addEventListener("DOMContentLoaded", () => {
     wsOpenLines.onclose = () => console.log("❌ WS closed for open lines");
   }
 
+  // ---------- AI module corrected (replace previous functions with this block) ---------
+  /* ===========================================================
+   📡 Module: Deriv WebSocket Core
+  =========================================================== */
 
-// ---------- AI module corrected (replace previous functions with this block) ----------
-function connectWS__for__transaction(callback){
+  const DerivWS_for_transaction = (() => {
 
- if (wsTransaction === null)
-  {
-    wsTransaction = new WebSocket(WS_URL);
-    wsTransaction.onopen=()=>{ wsTransaction.send(JSON.stringify({ authorize: TOKEN })); };
-  }
-  
-  if (wsTransaction && (wsTransaction.readyState === WebSocket.OPEN || wsTransaction.readyState === WebSocket.CONNECTING))
-   {
-     wsTransaction.onopen=()=>{ wsTransaction.send(JSON.stringify({ authorize: TOKEN })); };
-   }
+    let websocket = null;
+    let connected = false;
+    let token = TOKEN;
 
-  if (wsTransaction && (wsTransaction.readyState === WebSocket.CLOSED || wsTransaction.readyState === WebSocket.CLOSING))
-   {
-    wsTransaction = new WebSocket(WS_URL);
-    wsTransaction.onopen=()=>{ wsTransaction.send(JSON.stringify({ authorize: TOKEN })); };
-   }
- 
-   wsTransaction.onmessage = (msg) => {
-     const data = JSON.parse(msg.data);
+    function connect() {
+        return new Promise((resolve, reject) => {
+            websocket = new WebSocket(WS_URL);
 
-     if(data.authorize){
-        authorized = true;
-        if(callback) callback();
-     }
+            websocket.onopen = () => {
+                connected = true;
+                resolve();
+            };
+            websocket.onerror = (err) => reject(err);
+            websocket.onclose = () => { connected = false; };
+        });
+    }
 
-     if(data.error){
-         showError(data.error.message || "Erreur inconnue");
-     }
+    function authorize(auth_token) {
+        token = auth_token;
+        return send({ authorize: token });
+    }
 
-     // EMAIL OK
-     if(data.verify_email){
-        alert("Email envoyé ! Vérifiez votre boîte mail.");
-     }
+    function send(payload) {
+        return new Promise((resolve, reject) => {
+            if (!connected) {
+                reject("WebSocket not connected");
+                return;
+            }
+    
+            websocket.send(JSON.stringify(payload));
 
-     // URL Cashier reçue
-     if(data.cashier){
-         let url = data.cashier.deposit || data.cashier.withdrawal;
-         if(url) openWebview(url);
-     }
-   };
-   
-   wsTransaction.onclose = () => {
-      setTimeout(() => {
-        connectWS__for__transaction(callback); 
-      },500);
-   };
+            websocket.onmessage = (msg) => {
+                const data = JSON.parse(msg.data);
 
-   wsTransaction.onerror = (err) => {
-     showError("Erreur WebSocket : " + err.message);
-     wsTransaction.close();
-     wsTransaction = null;
-     setTimeout(() => {
-        connectWS__for__transaction(callback); 
-      },500);
-   };
- }
+                if (data.error) reject(data.error.message);
+                else resolve(data);
+            };
+        });
+    }
 
- // ---------- Vérification Email ----------
- function sendVerifyEmail(){
-  const email = document.getElementById("email").value.trim();
-  if(!email) return showError("Email requis");
-
-
-   connectWS__for__transaction(() => {
-     wsTransaction.send(JSON.stringify({
-       verify_email: email,
-       type: "payment_withdraw" // Obligatoire selon API Deriv
-     })); 
-   });
- }
-
-
- // ---------- Génération URL Cashier ----------
- function generateCashierUrl(){
-   const cashier = document.getElementById("cashierType").value;
-   const provider = document.getElementById("provider").value;
-   const code = document.getElementById("code").value.trim();
-   const currency = document.getElementById("currency").value.trim();
-
-   if(!code) return showError("Code requis");
-
-   connectWS__for__transaction(() => {
-    const payload = {
-      cashier: cashier,
-      provider: provider,
-      verification_code: code
+    return {
+        connect,
+        authorize,
+        send
     };
 
-    if(currency) payload.currency = currency;
+  })();
 
-     wsTransaction.send(JSON.stringify(payload));
-   });
-  }
+  /* ===========================================================
+   💳 Module: Deriv Cashier
+   =========================================================== */
+
+  const DerivCashier_for_translation = (() => {
+  
+    // ————————————————
+    // 📩 Envoyer email
+    // ————————————————
+    function requestEmail(email) {
+        return DerivWS_for_transaction.send({
+            verify_email: email,
+            type: "payment_withdraw"
+        });
+    }
+
+    // ————————————————
+    // 💸 Générer lien Cashier
+    // ————————————————
+    function generateLink({ action, provider, verificationCode, currency }) {
+
+        let payload = {
+            cashier: action,           // "deposit" ou "withdrawal"
+            provider: provider,        // "cashier", "crypto", "doughflow"
+            verification_code: verificationCode
+        };
+
+        if (provider === "cashier" && currency) {
+            payload.currency = currency;
+        }
+
+        return DerivWS_for_transaction.send(payload);
+    }
+
+    return {
+        requestEmail,
+        generateLink
+    };
+
+  })();
 
 
   function startAutomation() {
@@ -2871,7 +2884,6 @@ function extractValue(event, key) {
       const bc = startAutomation();  
       bc.initTCNModel(); // call once   
       // optionally: ai.BC_connectWebSocket(); // already called inside init if needed
-      IAtoggleAutomationBtn.disabled = false;
     } else {
       BCtoggleAutomationBtn.textContent = "Launch Automation";
       BCtoggleAutomationBtn.style.background = "white";  
@@ -2881,34 +2893,56 @@ function extractValue(event, key) {
       setTimeout(() => {
          bc_stop.BC_Disconnect();
       },2000);
-      IAtoggleAutomationBtn.disabled = false;
     }   
   });
+  
+  // Init WS + Authorization
+  DerivWS_for_transaction.connect()
+        .then(() => DerivWS_for_transaction.authorize("TON_TOKEN_DERIV_ICI"))
+        .then(() => console.log("Deriv connecté"))
+        .catch(err => alert("Erreur WS : " + err));
 
-   // === Automation Toggle ===
-  const IAtoggleAutomationBtn = document.getElementById("IAtoggleAutomation");   
-  IAtoggleAutomationBtn.addEventListener("click", () => {
-    IAautomationRunning = !IAautomationRunning;
-    if (IAautomationRunning) {   
-      IAtoggleAutomationBtn.textContent = "Stop IA Automation";
-      IAtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
-      IAtoggleAutomationBtn.style.color = "white";
-      IAautomationRunning = true;
-      // ---------- Create and start AI instance ----------
-      const ai = AI();
-      ai.initLSTMHarmonic(); // call once
-      // optionally: ai.AI_connectWebSocket(); // already called inside init if needed
-      BCtoggleAutomationBtn.disabled = true;
-    } else {
-      IAtoggleAutomationBtn.textContent = "Launch IA Automation";
-      IAtoggleAutomationBtn.style.background = "white";  
-      IAtoggleAutomationBtn.style.color = "gray";        
-      IAautomationRunning = false;  
-      setTimeout(stop,2000);
-      BCtoggleAutomationBtn.disabled = false;
-    }
-  });
+  // 📩 Envoyer email
+  btnSendEmail.onclick = async () => {
+        try {
+            let email = emailInput.value.trim();
+            if (!email) return alert("Email vide.");
 
+            await DerivCashier_for_translation.requestEmail(email);
+            alert("Email envoyé !");
+        } catch (e) {
+            alert("Erreur : " + e);
+        }
+  };
+  
+  // 🔗 Générer lien Cashier
+  btnGenerate.onclick = async () => {
+        try {
+            let code = codeInput.value.trim();
+            if (!code) return alert("Code requis.");
+
+            let result = await DerivCashier_for_translation.generateLink({
+                action: actionSelect.value,
+                provider: providerSelect.value,
+                verificationCode: code,
+                currency: currencySelect.value
+            });
+
+            const url = result.cashier;
+            webviewFrame.src = url;
+            webviewModal.classList.add("active");
+
+        } catch (e) {
+            alert("Erreur : " + e);
+        }
+  };
+
+  // ❌ fermer WebView
+  closeWebview.onclick = () => {
+        webviewModal.classList.remove("active");
+        webviewFrame.src = "";
+  };
+  
   // --- TOGGLE PANEL ---
   controlPanelToggle.addEventListener("click", () => {
     if (!controlFormPanel) return;
@@ -3167,24 +3201,6 @@ window.addEventListener("error", function (e) {
     }
   }, 300);
 
-  // ---------- Popup WebView ----------
-  function openWebview(url){
-   document.getElementById("cashierFrame").src = url;
-   document.getElementById("webviewPopup").style.display = "flex";
-  }
-
-
-  function closeWebview(){
-    document.getElementById("webviewPopup").style.display = "none";
-    document.getElementById("cashierFrame").src = "";
-  }
-
-
-  // ---------- Error Display ----------
-  function showError(msg){
-    document.getElementById("errorBox").textContent = msg;
-  } 
-
   // Ouvrir popup
  btnOpen.addEventListener("click", () => {
     overlay__.classList.add("show");
@@ -3222,5 +3238,13 @@ document.addEventListener("keydown", (e) => {
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
 // ================================
 overlayCtx = createOverlayCanvas(chartInner, chart, () => drawEventLines(chart, overlayCtx, currentSeries));
+
+openPopupBtn.onclick = () => {
+    popupOverlay.classList.add("active");
+};
+
+closePopupBtn.onclick = () => {
+    popupOverlay.classList.remove("active");
+};
   
 });
