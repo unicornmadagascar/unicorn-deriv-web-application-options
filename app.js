@@ -2148,7 +2148,7 @@ function GetProfitgraphical() {
    // AreaSeries unique
    areahistoricalSeries = charthistorical.addAreaSeries({
      lineColor: "gray",
-     lineWidth: 2,
+     lineWidth: 2,  
      topColor: "gray",
      bottomColor: "gray",
    });
