@@ -3193,7 +3193,7 @@ window.addEventListener("error", function (e) {
        if (!currentSymbol) return;
        if (currentChartType !== "candlestick") return;
        connectInit(currentSymbol, currentInterval, currentChartType);
-  };
+  };  
 
   // Ouvrir popup
  btnOpen.addEventListener("click", () => {
