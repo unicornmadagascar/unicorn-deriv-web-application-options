@@ -2988,6 +2988,12 @@ window.addEventListener("error", function (e) {
   initTable();
   initHistoricalTable();      
   inihistoricalchart();   
+
+  window.onload = () => {
+       if (!currentSymbol) return;
+       if (currentChartType !== "candlestick") return;
+       connectInit(currentSymbol, currentInterval, currentChartType);
+  };  
    
   // Gestion du "Select All"  
   const selectAll = document.getElementById("selectAll");
@@ -3180,12 +3186,6 @@ window.addEventListener("error", function (e) {
     // Fermer le popup
     document.getElementById("settingsPopup").style.display = "none";
   };
-
-  window.onload = () => {
-       if (!currentSymbol) return;
-       if (currentChartType !== "candlestick") return;
-       connectInit(currentSymbol, currentInterval, currentChartType);
-  };  
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {   
