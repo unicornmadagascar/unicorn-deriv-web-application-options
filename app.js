@@ -2152,7 +2152,7 @@ function GetProfitgraphical() {
      topColor: "gray",
      bottomColor: "gray",
    });
-
+  
    // Données aléatoires au démarrage
    setRandomSeries();
  }
