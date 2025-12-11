@@ -1,6 +1,3 @@
-import { DerivWS_for_transaction } from "./modules/websocket.js";
-import { requestEmail, generateLink } from "./modules/cashier.js";
-
 document.addEventListener("DOMContentLoaded", () => {
   const APP_ID = 109310;
   //const TOKEN = "n04kyiO7gVSyQuA";
