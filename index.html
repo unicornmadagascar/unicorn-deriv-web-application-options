@@ -963,70 +963,82 @@ hr {
 .cashier-overlay,
 .webview-popup {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     display: none;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(12px);
     z-index: 9999;
-    backdrop-filter: blur(10px);
-    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .cashier-overlay.active,
 .webview-popup.active {
     display: flex;
-    opacity: 1;
 }
 
 /* =====================================================
    CASHIER PANEL
 ===================================================== */
 .cashier-panel {
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 16px;
-    padding: 30px;
-    width: 360px;
+    width: 380px;
     max-width: 90%;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 28px 26px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.12);
     position: relative;
-    animation: slideIn 0.4s ease;
-    color: #1e1e2f;
+    animation: slideIn 0.35s ease-out;
+    display: flex;
+    flex-direction: column;
 }
 
 .cashier-panel h2 {
     text-align: center;
-    margin-bottom: 20px;
-    font-size: 1.5rem;
+    margin-bottom: 18px;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #1a1a1a;
 }
 
+/* Labels */
 .cashier-panel label {
-    display: block;
-    margin-top: 15px;
-    font-size: 0.9rem;
+    margin-top: 14px;
+    font-size: 0.88rem;
+    font-weight: 600;
     color: #333;
 }
 
+/* Inputs + Selects */
 .cashier-panel input,
 .cashier-panel select {
     width: 100%;
-    padding: 8px 12px;
-    margin-top: 5px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    background: #fff;
-    color: #1e1e2f;
-    outline: none;
-    transition: 0.2s;
+    padding: 10px 12px;
+    margin-top: 6px;
+    border-radius: 10px;
+    border: 1px solid #d0d0d0;
+    background: #fafafa;
+    font-size: 0.95rem;
+    transition: border 0.2s, box-shadow 0.2s;
 }
 
 .cashier-panel input:focus,
 .cashier-panel select:focus {
     border-color: #2563eb;
-    box-shadow: 0 0 6px rgba(37, 99, 235, 0.5);
+    box-shadow: 0 0 6px rgba(37, 99, 235, 0.35);
+    background: #fff;
+}
+
+/* Error box */
+#errorBox {
+    margin-top: 12px;
+    padding: 10px;
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    color: #b91c1c;
+    font-size: 0.85rem;
+    display: none;
 }
 
 /* =====================================================
@@ -1034,89 +1046,111 @@ hr {
 ===================================================== */
 .cashier-panel button {
     width: 100%;
-    margin-top: 20px;
-    padding: 10px;
+    padding: 12px;
+    margin-top: 16px;
     border: none;
     border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
-    transition: 0.3s;
+    font-size: 1rem;
+    transition: background 0.25s, transform 0.1s;
 }
 
+.cashier-panel button:active {
+    transform: scale(0.97);
+}
+
+/* Primary buttons */
 #sendEmailBtn {
     background: #2563eb;
-    color: #fff;
+    color: white;
 }
-#sendEmailBtn:hover { background: #1e40af; }
+#sendEmailBtn:hover {
+    background: #1e40af;
+}
 
 #validateCodeBtn {
     background: #10b981;
-    color: #fff;
+    color: white;
 }
-#validateCodeBtn:hover { background: #059669; }
+#validateCodeBtn:hover {
+    background: #059669;
+}
 
+/* Close */
 #closeCashierBtn {
     background: #ef4444;
-    color: #fff;
+    color: white;
 }
-#closeCashierBtn:hover { background: #b91c1c; }
+#closeCashierBtn:hover {
+    background: #b91c1c;
+}
 
 /* =====================================================
    WEBVIEW POPUP
 ===================================================== */
 .webview-box {
-    width: 80%;
-    max-width: 800px;
-    height: 80%;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 16px;
+    width: 85%;
+    max-width: 900px;
+    height: 85%;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.12);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-    animation: slideIn 0.4s ease;
-    color: #1e1e2f;
+    animation: slideIn 0.35s ease-out;
 }
 
 .webview-header {
-    padding: 12px 20px;
-    font-weight: 600;
-    text-align: center;
-    border-bottom: 1px solid #ccc;
+    padding: 14px 20px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    border-bottom: 1px solid #e5e5e5;
 }
 
 .webview-box iframe {
     flex: 1;
     border: none;
-    width: 100%;
     background: #f5f5f5;
 }
 
+/* Close webview button */
 .webview-box .close-btn {
-    padding: 12px 20px;
+    padding: 14px;
     background: #ef4444;
-    color: #fff;
     border: none;
+    color: white;
     cursor: pointer;
-    transition: 0.3s;
+    font-weight: 600;
+    transition: 0.25s;
 }
-.webview-box .close-btn:hover { background: #b91c1c; }
+.webview-box .close-btn:hover {
+    background: #b91c1c;
+}
 
 /* =====================================================
    ANIMATIONS
 ===================================================== */
 @keyframes slideIn {
-    0% { transform: translateY(-50px); opacity: 0; }
+    0% { transform: translateY(-40px); opacity: 0; }
     100% { transform: translateY(0); opacity: 1; }
 }
 
 /* =====================================================
-   RESPONSIVE
+   RESPONSIVE (Mobile)
 ===================================================== */
 @media (max-width: 600px) {
-    .cashier-panel { width: 90%; padding: 20px; }
-    .webview-box { width: 95%; height: 90%; }
+    .cashier-panel {
+        width: 92%;
+        padding: 20px;
+    }
+    .webview-box {
+        width: 96%;
+        height: 92%;
+    }
 }
+
 
   </style>
 </head>
