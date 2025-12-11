@@ -3085,71 +3085,14 @@ btnValidate.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {  
     if (e.key === "Escape") overlay__.classList.remove("show");  
 });
-    
+
 // -------------------------------------------------------------
 // 1. Quand on ouvre la fenêtre, on initialise le WS + authorize
 // -------------------------------------------------------------
 openCashierBtn.addEventListener("click", async () => {
     cashierModal.classList.add("active");
-
-    if (!wsReady) {
-        try {
-            console.log("Connexion WebSocket...");
-            await DerivWS_for_transaction.connect();
-
-            console.log("Autorisation...");
-            const auth = await DerivWS_for_transaction.authorize(TOKEN);
-
-            if (auth.error) {
-                alert("Erreur token : " + auth.error.message);
-                return;
-            }
-
-            console.log("✔ Autorisé comme : " + auth.authorize.loginid);
-
-            wsReady = true;
-
-        } catch (err) {
-            alert("Erreur WS : " + err);
-        }
-    }
 });
-
-// -------------------------------------------------------------
-// 2. Envoi email
-// -------------------------------------------------------------
-sendEmailBtn.addEventListener("click", async () => {
-    const email = emailInput.value.trim();
-    if (!email) return alert("Entrez votre email");
-
-    const result = await requestEmail(email);
-
-    if (result.error) {
-        alert("Erreur : " + result.error.message);
-        return;
-    }
-
-    alert("✔ Email envoyé !");
-});
-
-// -------------------------------------------------------------
-// 3. Génération du lien Cashier
-// -------------------------------------------------------------
-validateCodeBtn.addEventListener("click", async () => {
-    const code = codeInput.value.trim();
-    if (!code) return alert("Entrez le code reçu par email");
-
-    const result = await generateLink(code);
-
-    if (result.error) {
-        alert("Erreur : " + result.error.message);
-        return;
-    }
-
-    cashFrame.src = result.cashier;
-    alert("✔ Cashier prêt !");
-  });
-
+    
 // ================================
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
 // ================================
