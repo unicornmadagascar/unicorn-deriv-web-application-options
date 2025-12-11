@@ -3088,7 +3088,7 @@ btnValidate.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {  
     if (e.key === "Escape") overlay__.classList.remove("show");  
 });
-  
+    
 // -------------------------------------------------------------
 // 1. Quand on ouvre la fenêtre, on initialise le WS + authorize
 // -------------------------------------------------------------
