@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const validateCodeBtn = document.getElementById("validateCodeBtn");
   const cashFrame = document.getElementById("cashierFrame");
 
-let wsReady = false;
+  let wsReady = false;
 
   let totalPL = 0; // cumul des profits et pertes
   let BCautomationRunning = false;
@@ -3088,7 +3088,7 @@ btnValidate.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {  
     if (e.key === "Escape") overlay__.classList.remove("show");  
 });
-
+  
 // -------------------------------------------------------------
 // 1. Quand on ouvre la fenêtre, on initialise le WS + authorize
 // -------------------------------------------------------------
