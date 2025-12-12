@@ -3095,7 +3095,7 @@ openCashierBtn.addEventListener("click", async () => {
 });
 
 closePopupBtn.onclick = () => {
-    cashierModal.classList.remove("active");     
+    cashierModal.classList.remove("active");       
 };
     
 // ================================
