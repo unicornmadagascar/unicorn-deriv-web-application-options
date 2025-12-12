@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Éléments UI
   const openCashierBtn = document.getElementById("openCashierBtn");
   const closePopupBtn = document.getElementById("closeCashierBtn");
-  const cashierModal = document.getElementById("cashierModal");
+  const cashierModal = document.getElementById("cashierModal");  
   const emailInput = document.getElementById("emailInput");
   const codeInput = document.getElementById("codeInput");
   const sendEmailBtn = document.getElementById("sendEmailBtn");
