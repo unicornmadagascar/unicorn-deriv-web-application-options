@@ -3094,7 +3094,7 @@ openCashierBtn.addEventListener("click", async () => {
 });
 
 closePopupBtn.onclick = () => {
-    popupOverlay.classList.remove("active");  
+    popupOverlay.classList.remove("active");    
 };
     
 // ================================
