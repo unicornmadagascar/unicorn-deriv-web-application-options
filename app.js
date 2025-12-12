@@ -1559,7 +1559,7 @@ closeAll.onclick=()=>{
         <td>${trade.entry_spot}</td>
         <td>${trade.tp}</td>
         <td>${trade.sl}</td>
-        <td>${trade.profit}</td>
+        <td style="color:${trade.profit.toFixed(2) >= 0 ? 'blue' : 'red'};">${trade.profit}</td>
         <td>
         <button class="deleteRowBtn"
           style="background:#ef4444; border:none; color:white; border-radius:4px; padding:2px 6px; cursor:pointer;">
