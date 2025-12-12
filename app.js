@@ -3092,6 +3092,10 @@ document.addEventListener("keydown", (e) => {
 openCashierBtn.addEventListener("click", async () => {
     cashierModal.classList.add("active");
 });
+
+closePopupBtn.onclick = () => {
+    popupOverlay.classList.remove("active");  
+};
     
 // ================================
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
