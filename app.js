@@ -1910,10 +1910,10 @@ closeAll.onclick=()=>{
            const span = circle.querySelector("span");
            const color =
            circle.classList.contains("red")   
-              ? "#ef4444"
+              ? "#434040ff"
               : circle.classList.contains("blue")
-              ? "#3b82f6"
-              : "#10b981";
+              ? "#434040ff"  
+              : "#434040ff";
 
            const interval = setInterval(() => {
             if (currentDeg >= targetDeg) {
