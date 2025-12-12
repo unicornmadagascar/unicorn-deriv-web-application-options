@@ -2852,7 +2852,15 @@ window.addEventListener("error", function (e) {
        if (!currentSymbol) return;
        if (currentChartType !== "candlestick") return;
        connectInit(currentSymbol, currentInterval, currentChartType);
-  };  
+  }; 
+  
+  // Simulation : mise à jour toutes les 2 secondes
+  setInterval(() => {   
+    if (connectBtn.textContent !== "Connect") {   
+      // Subscribing Tables
+      connectDeriv_table();
+    }
+  }, 300);
    
   // Gestion du "Select All"  
   const selectAll = document.getElementById("selectAll");
@@ -3045,14 +3053,6 @@ window.addEventListener("error", function (e) {
     // Fermer le popup
     document.getElementById("settingsPopup").style.display = "none";
   };
-
-  // Simulation : mise à jour toutes les 2 secondes
-  setInterval(() => {   
-    if (connectBtn.textContent !== "Connect") {   
-      // Subscribing Tables
-      connectDeriv_table();
-    }
-  }, 300);
 
   // Ouvrir popup  
  btnOpen.addEventListener("click", () => {
