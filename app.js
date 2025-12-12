@@ -1560,7 +1560,7 @@ closeAll.onclick=()=>{
         <td>${trade.tp}</td>
         <td>${trade.sl}</td>
         <td style="color:${trade.profit.toFixed(2) >= 0 ? 'blue' : 'red'};">
-            ${trade.profit.toFixed(2)}
+            ${trade.profit.toFixed(2)}  
         </td> 
         <td>
         <button class="deleteRowBtn"
