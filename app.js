@@ -1571,7 +1571,7 @@ closeAll.onclick=()=>{
     } else {
       // 🔄 Mise à jour en temps réel du profit
       tr.cells[10].textContent = trade.profit; 
-    }
+    }  
   }
 
    // --- 🧱 Connexion WebSocket
