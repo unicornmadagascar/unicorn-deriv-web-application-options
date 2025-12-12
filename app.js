@@ -1548,7 +1548,7 @@ closeAll.onclick=()=>{
       // 🔹 Création d’une nouvelle ligne
       tr = document.createElement("tr");
       tr.dataset.contract = c.contract_id;
-      tr.innerHTML = `
+      tr.innerHTML = `  
         <td><input type="checkbox" class="rowSelect"></td>
         <td>${trade.time}</td>
         <td>${trade.contract_id}</td>
