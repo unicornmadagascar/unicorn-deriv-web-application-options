@@ -71,6 +71,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let BCautomationRunning = false;
   let IAautomationRunning = false;
   let ws=null;   
+  let wsTranscation = null;
+  let authToken = null;
   let connection = null;
   let wsContracts_reverse = null; 
   let ws_calendar = null;
@@ -172,8 +174,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const emaBuffer = [];            // oldest ... newest
   const windowDataset = [];        // stores windows (arrays) for training
   let model = null;
-  let isTraining = false;
-  let lastPredTime = 0;
   // previousMomentum is kept across ticks for derivative calc
   let previousMomentum = 0;
   let smoothEMA = null;
@@ -752,6 +752,89 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
+  /* ============================
+   INIT WEBSOCKET
+============================ */
+  function connectDeriv__() {
+    wsTranscation = new WebSocket(WS_URL);
+
+    wsTranscation.onopen = () => {
+        console.log("✅ Connecté à Deriv");
+        authorize__(TOKEN.trim());
+    };
+
+    wsTranscation.onmessage = (msg) => {
+        const data = JSON.parse(msg.data);
+        handleDerivMessage__(data);
+    };
+
+    wsTranscation.onerror = (err) => {
+        showError("Erreur connexion Deriv");
+        console.error(err);
+    };
+  }
+
+/* ============================
+   HANDLE MESSAGES
+============================ */
+  function handleDerivMessage__(data) {
+    if (data.error) {
+        showError(data.error.message);
+        return;
+    }
+
+    // Autorisation OK
+    if (data.authorize) {
+        console.log("🔐 Autorisé:", data.authorize.loginid);
+        return;
+    }
+
+    // Email envoyé
+    if (data.verify_email) {
+        alert("📧 Code envoyé à votre email Deriv");
+        return;
+    }
+
+    // URL Cashier générée
+    if (data.cashier) {
+        openWebview(data.cashier);
+        return;
+    }
+  }
+
+/* ============================
+   AUTHORIZE
+============================ */
+  function authorize__(token) {
+    authToken = token;
+    wsTranscation.send(JSON.stringify({
+        authorize: token
+    }));
+  }
+
+  /* ============================
+   OPEN WEBVIEW
+============================ */
+  function openWebview(url) {
+    document.getElementById("webviewFrame").src = url;
+    document.getElementById("webviewModal").style.display = "flex";
+  }
+
+/* ============================
+   UI HELPERS
+============================ */
+  function showError(msg) {
+     document.getElementById("errorBox").innerText = msg;
+  }
+
+  function DisconnectDeriv__() {   
+    if (wsTranscation  && (wsTranscation.readyState === WebSocket.OPEN || wsTranscation.readyState === WebSocket.CONNECTING)) {  
+       // Envoyer unsubscribe avant de fermer
+       try { setTimeout(() => { wsTranscation.close(); wsTranscation = null; },500); } catch (e) {}  
+    }   
+  }
+
+
   function startAutomation() {
 
     // ------------------------------------------------------------
@@ -1182,16 +1265,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // RETURN PUBLIC API
     // ------------------------------------------------------------
     return { initTCNModel, BC_Disconnect };
-  }
-
-
-  function stopAutomation() {   
-    if (wsAutomation  && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING)) {  
-       // Envoyer unsubscribe avant de fermer
-       try { setTimeout(wsAutomation.send(JSON.stringify({ forget_all: ["candles","ticks"] })),500); } catch (e) {}
-       wsAutomation.close();
-       wsAutomation = null;      
-    }   
   }
 
   buyBtn.onclick=()=>executeTrade("BUY");
@@ -3095,7 +3168,60 @@ openCashierBtn.addEventListener("click", async () => {
 });
 
 closePopupBtn.onclick = () => {
+    DisconnectDeriv__();
     cashierModal.classList.remove("active");       
+};
+
+/* ============================
+   SEND VERIFICATION EMAIL
+============================ */
+document.getElementById("btnSendEmail").onclick = () => {
+    const email = document.getElementById("emailInput").value.trim();
+
+    if (!email) {
+        showError("Email requis");
+        return;
+    }
+
+    wsTranscation.send(JSON.stringify({
+        verify_email: email,
+        type: "cashier"
+    }));
+};
+
+/* ============================
+   GENERATE CASHIER URL
+============================ */
+document.getElementById("validateCodeBtn").onclick = () => {
+    const action   = document.getElementById("actionSelect").value;
+    const provider = document.getElementById("providerSelect").value;
+    const currency = document.getElementById("currencySelect").value.trim();
+    const code     = document.getElementById("codeInput").value.trim();
+
+    connectDeriv__();
+
+    if (!code) {
+        showError("Code email requis");
+        return;
+    }
+
+    const payload = {
+        cashier: action,           // deposit | withdrawal
+        verification_code: code,
+        provider: provider
+    };
+
+    if (currency) {
+        payload.currency = currency;
+    }
+
+    wsTranscation.send(JSON.stringify(payload));
+};
+
+document.getElementById("closeWebview").onclick = () => {
+    DisconnectDeriv__();
+    document.getElementById("webviewModal").style.display = "none";
+    document.getElementById("webviewFrame").src = "";
 };
     
 // ================================
