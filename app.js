@@ -3165,6 +3165,7 @@ document.addEventListener("keydown", (e) => {
 // -------------------------------------------------------------
 openCashierBtn.addEventListener("click", async () => {
     cashierModal.classList.add("active");
+    connectDeriv__();
 });
 
 closePopupBtn.onclick = () => {
@@ -3198,14 +3199,12 @@ document.getElementById("validateCodeBtn").onclick = () => {
     const currency = document.getElementById("currencySelect").value.trim();
     const code     = document.getElementById("codeInput").value.trim();
 
-    connectDeriv__();
-
     if (!code) {
         showError("Code email requis");
         return;
     }
 
-    const payload = {
+    const payload = {  
         cashier: action,           // deposit | withdrawal
         verification_code: code,  
         provider: provider
