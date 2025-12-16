@@ -3207,7 +3207,7 @@ document.getElementById("validateCodeBtn").onclick = () => {
 
     const payload = {
         cashier: action,           // deposit | withdrawal
-        verification_code: code,
+        verification_code: code,  
         provider: provider
     };
 
