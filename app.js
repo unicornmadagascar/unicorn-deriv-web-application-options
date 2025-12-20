@@ -68,8 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const cashFrame = document.getElementById("cashierFrame");
 
   let wsReady = false;
-  const wsControl = null;
-  const wsSignal = null;
+  let wsControl = null;
+  let wsSignal = null;
   let totalPL = 0; // cumul des profits et pertes
   let BCautomationRunning = false;
   let IAautomationRunning = false;
