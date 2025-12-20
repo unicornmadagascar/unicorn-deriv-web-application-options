@@ -3176,7 +3176,7 @@ closePopupBtn.onclick = () => {
 /* ============================
    SEND VERIFICATION EMAIL
 ============================ */
-document.getElementById("sendEmailBtn").onclick = () => {
+document.getElementById("sendEmailBtn").onclick = () => {  
     const email = document.getElementById("emailInput").value.trim();
 
     if (!email) {
