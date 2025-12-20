@@ -2569,9 +2569,9 @@ window.addEventListener("error", function (e) {
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {   
     if (connectBtn.textContent !== "Connect") {   
-      // Subscribing Tables
+      // Subscribing Tables  S
       connectDeriv_table();
-    }
+    }  
   }, 300);
 
   // Signal : mise à jour toutes les 2 secondes
