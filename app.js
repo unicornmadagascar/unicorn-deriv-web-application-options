@@ -3172,7 +3172,7 @@ closePopupBtn.onclick = () => {
     DisconnectDeriv__();   
     cashierModal.classList.remove("active");       
 };
-
+  
 /* ============================
    SEND VERIFICATION EMAIL
 ============================ */
@@ -3184,9 +3184,9 @@ document.getElementById("sendEmailBtn").onclick = () => {
         return;
     }
 
-    wsTranscation.send(JSON.stringify({
+    wsTranscation.send(JSON.stringify({  
         verify_email: email,
-        type: "cashier"
+        type: "account_openning"
     }));
 };
 
