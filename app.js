@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // 🔧 Nom de la clé utilisée dans localStorage
   const STORAGE_KEY = "deriv_accounts";
   const WS_URL = `wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`;
+  const WS_CONTROL = 'ws://localhost:8000/control';
+  const WS_SIGNAL = 'ws://localhost:8000/signal';
 
   // UI
   const connectBtn = document.getElementById("connectBtn");
@@ -66,7 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const cashFrame = document.getElementById("cashierFrame");
 
   let wsReady = false;
-
+  const wsControl = null;
+  const wsSignal = null;
   let totalPL = 0; // cumul des profits et pertes
   let BCautomationRunning = false;
   let IAautomationRunning = false;
@@ -834,438 +837,76 @@ document.addEventListener("DOMContentLoaded", () => {
     }   
   }
 
+  
+  // ------------------------------------------------------------
+  // START ML CONTROL
+  // ------------------------------------------------------------
+  async function startMLControl() {
 
-  function startAutomation() {
-
-    // ------------------------------------------------------------
-    // VARIABLES GLOBALES INTERNES
-    // ------------------------------------------------------------
-    let wsAutomation = null;
-    let model = null;
-    let prices__ = [];
-    let candles__ = [];
-    let bcContracts = [];
-    let lastProb = null;
-
-    // Vos variables externes doivent exister :
-    // currentSymbol, currentInterval, currentChartType, stakeInput,
-    // multiplierInput, buyNumber, sellNumber, CURRENCY
-
-
-    // ------------------------------------------------------------
-    // WEBSOCKET
-    // ------------------------------------------------------------
-
-    function BC_ConnectWebsocket() {
-      try {
-
-        if (!wsAutomation || wsAutomation.readyState === WebSocket.CLOSED) {
-          wsAutomation = new WebSocket(WS_URL);
-
-          wsAutomation.onopen = () => {
-            wsAutomation.send(JSON.stringify({ authorize: TOKEN }));
-          };
-        }
-
-        wsAutomation.onclose = () => {
-          wsAutomation = null;
-          setTimeout(BC_ConnectWebsocket, 300);
-        };
-
-        wsAutomation.onerror = () => {
-          try { wsAutomation.close(); } catch(e){}
-          wsAutomation = null;
-          setTimeout(BC_ConnectWebsocket, 300);
-        };
-
-        wsAutomation.onmessage = (msg) => {
-          BC_handleMessage(JSON.parse(msg.data));
-        };
-
-      } catch (err) {
-        console.error("WS Error:", err);
-        setTimeout(BC_ConnectWebsocket, 300);
-      }
-    }
+    if (!wsControl || wsControl.readyState > 1) { wsControl = new WebSocket(WS_CONTROL); wsControl.onopen = () => console.log("ws connected."); }
     
-   // ------------------------------------------------------------
-   // CLOSE ALL CONTRACTS
-   // ------------------------------------------------------------
-    function closeAllContracts() {
+    await wsControl.send(JSON.stringify({
+      cmd: "START",
+      symbol: currentSymbol,
+      token: TOKEN.trim(),
+      stake: parseFloat(stakeInput.value) || 1,
+      multiplier: parseInt(multiplierInput.value) || 40,
+      currency: CURRENCY,
+      style: styleType(currentChartType),
+      granularity: convertTF(currentInterval), 
+      repeat: Number(buyNumber.value) || 1
+    }));
 
-      if (wsAutomation_close === null)
-      {
-       wsAutomation_close  = new WebSocket(WS_URL);
-       wsAutomation_close.onopen=()=>{ wsAutomation_close.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-  
-      if (wsAutomation_close  && (wsAutomation_close.readyState === WebSocket.OPEN || wsAutomation_close.readyState === WebSocket.CONNECTING))
-      {
-       wsAutomation_close.onopen=()=>{ wsAutomation_close.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-
-      if (wsAutomation_close && (wsAutomation_close.readyState === WebSocket.CLOSED || wsAutomation_close.readyState === WebSocket.CLOSING))
-      {
-       wsAutomation_close = new WebSocket(WS_URL);
-       wsAutomation_close.onopen=()=>{ wsAutomation_close.send(JSON.stringify({ authorize: TOKEN })); };
-      }
-
-      wsAutomation_close.onclose = () => { setTimeout(closeAllContracts,500); };   
-      wsAutomation_close.onmessage = (e) => {
-        const data = JSON.parse(e.data);
-
-        // Autorisé → demander la liste des contrats
-        if (data.authorize) {
-            wsAutomation_close.send(JSON.stringify({ portfolio: 1 }));
-        }
-
-        // Liste des contrats ouverts reçue
-        if (data.portfolio) {
-            const list = data.portfolio.contracts;
-
-            if (list === undefined || list === null || list.length === 0) {
-               return;
-            }
-
-            // Fermer chaque contrat (prix marché)
-            for (let c of list) {
-                wsAutomation_close.send(JSON.stringify({
-                    sell: c.contract_id,
-                    price: 0
-                }));
-            }
-        }
-
-        // Confirmation d’un contrat fermé 
-        if (data.sell) {
-            console.log("Fermé :", data.sell.contract_id);
-        }
-      };
-    }
-
-   // ------------------------------------------------------------
-   // MESSAGE HANDLER
-   // ------------------------------------------------------------
-   function BC_handleMessage(data) {
-      try {
-        switch(data.msg_type) {
-
-          case "authorize":
-            wsAutomation.send(JSON.stringify(Payloadforsubscription(
-              currentSymbol, 
-              currentInterval,
-              currentChartType
-            )));
-            wsAutomation.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
-            wsAutomation.send(JSON.stringify({ portfolio: 1 }));
-            break;
-
-
-          case "portfolio":
-            bcContracts = data.portfolio?.contracts || [];
-            break;
-
-
-          case "proposal_open_contract":
-            proposal__ = data.proposal_open_contract;
-            break;
-
-
-          case "tick":
-            const price = parseFloat(data.tick.quote);
-            if (!isNaN(price)) onNewTick(price);
-            break;
-
-
-          case "candles":
-            candles__ = (data.candles || []).map(c => ({
-              time: Number(c.epoch),
-              open: Number(c.open),
-              high: Number(c.high),
-              low: Number(c.low),
-              close: Number(c.close)
-            }));
-            break;
-
-
-          case "ohlc":
-            const o = data.ohlc;
-            const bar = {
-              time: Number(o.open_time),
-              open: Number(o.open),
-              high: Number(o.high),
-              low: Number(o.low),
-              close: Number(o.close)
-            };
-
-            if (!candles__.length || candles__[candles__.length-1].time !== bar.time)
-            candles__.push(bar);
-            else
-              candles__[candles__.length-1] = bar;
-            
-            if (!isNaN(bar.close)) onNewTick(bar.close);
-            break;
-
-
-          case "ping":
-            wsAutomation.send(JSON.stringify({ ping: 1 }));
-            break;
-        }
- 
-      } catch (err) {   
-        console.error("handleMessage error:", err);
-      }
-    }
-
-
-    // ------------------------------------------------------------
-    // SIGNAL + TRADE MANAGEMENT
-    // ------------------------------------------------------------
-    function BC_handleSignal(direction) {
-      const oppositeType = direction === "BUY" ? "MULTDOWN" : "MULTUP";
-      const mainType = direction === "BUY" ? "MULTUP" : "MULTDOWN";
-
-      // fermer les trades opposés
-      bcContracts
-        .filter(c => c.symbol === currentSymbol && c.contract_type === oppositeType)
-        .forEach(c => {
-          try {
-            wsAutomation.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-          } catch(e){}
-        });
-
-      // si un trade actif → rien
-      if (proposal__?.contract_id) return;
-
-      const stake = Number(stakeInput.value) || 1;   
-      const multiplier = Number(multiplierInput.value) || 40;
-      const repeat = direction === "BUY"
-          ? Number(buyNumber.value) || 1
-          : Number(sellNumber.value) || 1;  
-
-      for (let i = 0; i < repeat; i++) {   
-        try {
-          wsAutomation.send(JSON.stringify({
-            buy: 1,
-            price: stake.toFixed(2),
-            parameters: {
-              contract_type: mainType,
-              symbol: currentSymbol,
-              currency: CURRENCY,
-              basis: "stake",
-              amount: stake.toFixed(2),
-              multiplier: multiplier
-            }
-          }));
-        } catch(e){
-          console.warn("Trade send failed:", e);
-        }
-      }
-
-      Openpositionlines(currentSeries);
-    }
-
-   // ------------------------------------------------------------
-   // IA MODEL TCN – POIDS FIXES
-   // ------------------------------------------------------------
-   async function createTCNModel() {
-         await tf.ready();
-
-         if (model && model.dispose) {
-            try { model.dispose(); } catch (e) {}
-         }
-
-         const m = tf.sequential();
-
-         // -----------------------------
-         // 1) Conv1D
-         // -----------------------------
-         m.add(tf.layers.conv1d({
-            filters: 8,
-            kernelSize: 3,
-            activation: "relu",
-            inputShape: [20, 1]
-         }));
-
-         // -----------------------------
-         // 2) Flatten
-         // -----------------------------
-         m.add(tf.layers.flatten());
-
-         // -----------------------------
-         // 3) Dense
-         // -----------------------------
-         m.add(tf.layers.dense({
-           units: 1,
-           activation: "sigmoid"
-         }));
-
-         // Compile
-         m.compile({
-           optimizer: tf.train.adam(0.001),
-           loss: "binaryCrossentropy"
-         });
-
-         // ------------------------------------------------------------
-         // 🎯 REMPLACEMENT DES POIDS ALÉATOIRES PAR DES POIDS FIXES
-         // ------------------------------------------------------------
-         m.layers.forEach(layer => {
-            const w = layer.getWeights();     // liste des tenseurs
-            if (w.length > 0) {
-               const newWeights = w.map(t => tf.fill(t.shape, 0.01));  
-               layer.setWeights(newWeights);
-            }
-         });
-
-         console.log("✔️ Modèle TFJS créé avec poids fixes (0.01)");
-  
-         model = m;
-         return model;
-     }  
-  
-    // ------------------------------------------------------------
-    // PREPARE INPUT (20 derniers prix)
-    // ------------------------------------------------------------
-    function prepareInput(prices) {
-
-      if (!Array.isArray(prices) || prices.length < 20) return null;
-
-      let seq = prices.slice(-20).map(v => Number(v));  
-
-      // Validation
-      if (seq.some(v => !isFinite(v))) {
-          console.error("Invalid sequence:", seq);
-          return null;
-      }
-
-      const mean = seq.reduce((a,b)=>a+b,0) / seq.length;
-      const variance = seq.reduce((s,x)=>s+(x-mean)**2,0) / seq.length;
-      const std = Math.sqrt(variance) || 1;
-
-      const normalized = seq.map(v => (v - mean) / std);
-
-      if (normalized.some(v => !isFinite(v))) {
-          console.error("Normalization error:", normalized);
-          return null;
-      }
-
-      try {
-          // reshape → [20][1]
-          const arr = normalized.map(v => [v]);
-   
-          // final reshape → [1,20,1]
-          return tf.tensor3d([arr], [1, 20, 1]);
-
-      } catch (err) {
-          console.error("tensor3d creation failed:", err, "input:", normalized);
-          return null;
-      }
-    }
-
-
-    // ------------------------------------------------------------
-    // PREDICTION
-    // ------------------------------------------------------------
-    async function predictWeakSignal(model, prices) {
-      if (!model) return null;
-
-      const input = prepareInput(prices);
-      if (!input) return null;
-
-      try {
-          const out = await model.predict(input).data();
-          input.dispose();
-          return out[0];
-      } catch (err) {
-          console.error("predictWeakSignal error:", err);
-          input.dispose();
-          return null;
-      }
-    }
-
-    // ------------------------------------------------------------
-    // DÉCISION BUY/SELL
-    // ------------------------------------------------------------
-    async function decisionWeakTrend(model, prices, tolerance = 0.0001) {
-      const prob = await predictWeakSignal(model, prices);
-      if (prob === null) return { action: "WAIT", prob: 0 };
-
-      const amplitude_gap = h - l;
-      const amplitude_seq =  Math.abs(h - prob);
-      const binary = amplitude_seq < (amplitude_gap + tolerance) ? 0 : 1;
-    
-      const symbol_test = currentSymbol.slice(0,3);  
-      if (!["BOO","CRA"].includes(symbol_test)) return;  
-
-      if (symbol_test === "BOO") {
-         if (binary === 1) action = "BUY";
-         else action = "SELL";  
-      }
-      else if (symbol_test === "CRA"){    
-         if (binary==1) action = "SELL";
-         else action = "BUY";    
-      }  
-  
-      return { action, prob };  
-    }       
-
-   
-    // ------------------------------------------------------------
-    // TICK HANDLER
-    // ------------------------------------------------------------
-    async function onNewTick(price) {
-      prices__.push(price);
-      if (prices__.length > 500) prices__.shift();
-
-      const symbol_test = currentSymbol.slice(0,3);
-      if (!["BOO","CRA"].includes(symbol_test)) return;
-
-      const signal = await decisionWeakTrend(model, prices__);   
-
-      console.log("Decision:", signal);
-      
-      if (symbol_test === "BOO") {
-         if (signal.action === "BUY") { setTimeout(()=> {BC_handleSignal("BUY");},10000); alert("Spike detected!"); }
-         else if (signal.action === "SELL") closeAllContracts();    
-      } else if (symbol_test === "CRA") {  
-         if (signal.action === "SELL") { setTimeout(()=> {BC_handleSignal("SELL");},10000); alert("Spike detected!"); }
-         else if (signal.action === "BUY") closeAllContracts();    
-      } 
-    }   
-
-    function BC_Disconnect()
-    {
-      if (wsAutomation  && (wsAutomation.readyState === WebSocket.OPEN || wsAutomation.readyState === WebSocket.CONNECTING)) {  
-        // Envoyer unsubscribe avant de fermer
-        try { 
-           setTimeout(async () => {
-              await wsAutomation.send(JSON.stringify({ forget_all: ["candles","ticks"] })); 
-              wsAutomation.close();
-              wsAutomation = null;  
-           }, 1000);  
-        } catch (e) {}
-      }   
-    }  
-
-   
-    // ------------------------------------------------------------
-    // INIT
-    // ------------------------------------------------------------
-    async function initTCNModel() {
-      model = await createTCNModel();
-      console.log("✔️ Model created | Layers:", model.layers.length);
-
-      if (!wsAutomation || wsAutomation.readyState > 1) {
-        BC_ConnectWebsocket();
-      }
-    }   
-
-
-    // ------------------------------------------------------------
-    // RETURN PUBLIC API
-    // ------------------------------------------------------------
-    return { initTCNModel, BC_Disconnect };
+    wsControl.onclose = () => setTimeout(startMLControl,300);
+    wsControl.onerror = (e) => { wsControl.close(); wsControl=null; setTimeout(startMLControl,300); };
   }
+
+  // ------------------------------------------------------------
+  // STOP ML CONTROL
+  // ------------------------------------------------------------
+  async function stopMLControl() {
+    await wsControl.send(JSON.stringify({ cmd: "STOP"}));
+    wsControl.onclose = () => setTimeout(stopMLControl,300);
+    wsControl.onerror = (e) => { wsControl.close(); wsControl=null; setTimeout(stopMLControl,300); };
+  }
+
+  // ------------------------------------------------------------
+  // START ML SIGNAL
+  // ------------------------------------------------------------
+  function startMLSignal() {
+
+    if (!wsSignal || wsSignal.readyState > 1) { wsSignal = new WebSocket(WS_SIGNAL); wsSignal.onopen = () => console.log("ws signal connected."); }
+    
+    wsSignal.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+      console.log(
+          `📈 SIGNAL: ${data.signal} | ` +
+          `Prob: ${data.prob.toFixed(4)} | `
+      );
+    }
+
+    wsSignal.onclose = () => setTimeout(startMLSignal,300);
+    wsSignal.onerror = (e) => { wsSignal.close(); wsSignal=null; setTimeout(startMLSignal,300); };
+  }
+  
+  // ------------------------------------------------------------
+  // STOP ML SIGNAL
+  // ------------------------------------------------------------
+  function stopMLSignal() {
+
+    if (!wsSignal || wsSignal.readyState > 1) { wsSignal = new WebSocket(WS_SIGNAL); wsSignal.onopen = () => console.log("ws signal connected."); }
+    
+    wsSignal.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+      console.log(
+          `📈 SIGNAL: ${data.signal} | ` +
+          `Prob: ${data.prob.toFixed(4)} | `
+      );
+    }
+
+    wsSignal.onclose = () => setTimeout(stopMLSignal,300);
+    wsSignal.onerror = (e) => { wsSignal.close(); wsSignal=null; setTimeout(stopMLSignal,300); };
+  } 
 
   buyBtn.onclick=()=>executeTrade("BUY");
   sellBtn.onclick=()=>executeTrade("SELL");
@@ -2854,17 +2495,15 @@ function extractValue(event, key) {
       BCtoggleAutomationBtn.style.color = "white";
       BCautomationRunning = true; 
       // ---------- Create and start AI instance ----------
-      const bc = startAutomation();  
-      bc.initTCNModel(); // call once   
+      startMLControl(); // call once   
       // optionally: ai.BC_connectWebSocket(); // already called inside init if needed
     } else {
       BCtoggleAutomationBtn.textContent = "Launch Automation";
       BCtoggleAutomationBtn.style.background = "white";  
       BCtoggleAutomationBtn.style.color = "gray"; 
       BCautomationRunning = false;    
-      const bc_stop = startAutomation();
       setTimeout(() => {
-         bc_stop.BC_Disconnect();
+         stopMLControl();
       },2000);
     }   
   });
@@ -2933,6 +2572,12 @@ window.addEventListener("error", function (e) {
       // Subscribing Tables
       connectDeriv_table();
     }
+  }, 300);
+
+  // Signal : mise à jour toutes les 2 secondes
+  setInterval(() => {   
+    if (BCautomationRunning === true) { startMLSignal(); }
+    else { stopMLSignal(); }
   }, 300);
    
   // Gestion du "Select All"  
