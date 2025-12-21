@@ -901,7 +901,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = JSON.parse(msg.data);
       console.log(
           `📈 SIGNAL: ${data.signal} | ` +
-          `Prob: ${data.prob.toFixed(4)} | `
+          `Prob: ${data.prob.toFixed(4)} | `  
       );
     }
 
