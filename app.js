@@ -881,52 +881,65 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ------------------------------------------------------------
-  // START ML SIGNAL   
+  // START ML SIGNAL
   // ------------------------------------------------------------
-  function startMLSignal() {  
+  function startMLSignal() {
 
-    if (wsSignal == null) 
-     { 
-      wsSignal = new WebSocket(WS_SIGNAL); 
-      wsSignal.onopen = () => console.log("ws connected."); 
-     }
+    if (wsSignal && wsSignal.readyState === WebSocket.OPEN) return;
 
-    if (wsSignal && (wsSignal.readyState === WebSocket.CLOSED || wsSignal.readyState === WebSocket.CLOSING))
-     {
-      wsSignal = new WebSocket(WS_SIGNAL); 
-      wsSignal.onopen = () => console.log("ws connected."); 
-     }
-         
+    wsSignal = new WebSocket(WS_SIGNAL);
+
+    wsSignal.onopen = () => {
+      console.log("🧠 WS Signal connected");
+    };
+
     wsSignal.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
       console.log(
-          `📈 SIGNAL: ${data.signal} | ` +   
-          `Prob: ${data.prob.toFixed(4)} | `  
+        `📈 SIGNAL: ${data.signal} | Prob: ${data.prob.toFixed(4)}`
       );
-    }
+    };
 
-    wsSignal.onclose = () => setTimeout(startMLSignal,300);
-    wsSignal.onerror = (e) => { wsSignal.close(); wsSignal=null; setTimeout(startMLSignal,300); };
+    wsSignal.onerror = (e) => {
+      console.error("WS Signal error", e);
+    };
+
+    wsSignal.onclose = () => {
+      console.log("🔌 WS Signal closed");
+    };
   }
+
   
   // ------------------------------------------------------------
-  // STOP ML SIGNAL
+  // STOP ML SIGNAL (CORRECT)
   // ------------------------------------------------------------
   function stopMLSignal() {
 
-    if (!wsSignal || wsSignal.readyState > 1) { wsSignal = new WebSocket(WS_SIGNAL); wsSignal.onopen = () => console.log("ws signal connected."); }
-    
-    wsSignal.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-      console.log(
-          `📈 SIGNAL: ${data.signal} | ` +
-          `Prob: ${data.prob.toFixed(4)} | `
-      );
+    if (!wsSignal) return;
+
+    try {
+      // Supprimer les handlers
+      wsSignal.onmessage = null;
+      wsSignal.onopen = null;
+      wsSignal.onerror = null;
+      wsSignal.onclose = null;
+
+      // Fermer proprement
+      if (
+        wsSignal.readyState === WebSocket.OPEN ||
+        wsSignal.readyState === WebSocket.CONNECTING
+      ) {
+        wsSignal.close(1000, "STOP ML SIGNAL");
+      }
+
+    } catch (e) {
+      console.warn("WS Signal stop error:", e);
     }
 
-    wsSignal.onclose = () => setTimeout(stopMLSignal,300);
-    wsSignal.onerror = (e) => { wsSignal.close(); wsSignal=null; setTimeout(stopMLSignal,300); };
-  } 
+    wsSignal = null;
+    console.log("🛑 ML Signal STOPPED");
+  }
+
 
   buyBtn.onclick=()=>executeTrade("BUY");  
   sellBtn.onclick=()=>executeTrade("SELL");
@@ -2593,16 +2606,10 @@ window.addEventListener("error", function (e) {
       connectDeriv_table();
     }  
   }, 300);
-
-  // Signal : mise à jour toutes les 2 secondes
-  setInterval(() => {   
-    if (BCautomationRunning === true) { startMLSignal(); }
-    else { stopMLSignal(); }
-  }, 300);
    
   // Gestion du "Select All"  
   const selectAll = document.getElementById("selectAll");
-  selectAll.addEventListener("change", () => {
+  selectAll.addEventListener("change", () => {   
     document.querySelectorAll(".rowSelect").forEach(cb => {
       cb.checked = selectAll.checked;
     });
