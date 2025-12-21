@@ -864,7 +864,7 @@ document.addEventListener("DOMContentLoaded", () => {
       currency: CURRENCY,
       style: styleType(currentChartType),
       granularity: convertTF(currentInterval), 
-      repeat: Number(buyNumber.value) || 1
+      repeat: Number(buyNumber.value) || 1  
     }));
 
     wsControl.onclose = () => setTimeout(startMLControl,300);
