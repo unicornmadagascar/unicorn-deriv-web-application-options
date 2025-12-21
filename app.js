@@ -884,7 +884,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wsSignal = new WebSocket(WS_SIGNAL); 
       wsSignal.onopen = () => console.log("ws connected."); 
      }
-       
+         
     wsSignal.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
       console.log(
