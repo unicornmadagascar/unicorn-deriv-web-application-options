@@ -2567,7 +2567,7 @@ function extractValue(event, key) {
       BCtoggleAutomationBtn.style.color = "gray"; 
       BCautomationRunning = false;    
       stopMLControl();
-      stopMLSignal();
+      stopMLSignal();  
     }   
   });
   
