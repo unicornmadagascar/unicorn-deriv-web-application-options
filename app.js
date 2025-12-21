@@ -2619,7 +2619,7 @@ window.addEventListener("error", function (e) {
   document.getElementById("deleteSelected").addEventListener("click", () => {
     document.querySelectorAll(".rowSelect:checked").forEach(cb => {   
       cb.closest("tr").remove();
-    });
+    });  
     selectAll.checked = false;
   });
 
