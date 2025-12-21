@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let areahistoricalSeries = null;
   let chartData = [];   
   let lastPrices = {};
-  let recentChanges = [];
+  let recentChanges = [];  
   let signal;
   let signal__;
   let Dispersion;
@@ -2504,7 +2504,7 @@ function extractValue(event, key) {
       BCautomationRunning = false;    
       setTimeout(() => {
          stopMLControl();
-      },2000);
+      },2000);  
     }   
   });
   
