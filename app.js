@@ -70,6 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsReady = false;
   let wsControl = null;
   let wsSignal = null;
+  let controlReady = false;
   let totalPL = 0; // cumul des profits et pertes
   let BCautomationRunning = false;
   let IAautomationRunning = false;
@@ -836,26 +837,48 @@ document.addEventListener("DOMContentLoaded", () => {
        try { setTimeout(() => { wsTranscation.close(); wsTranscation = null; },500); } catch (e) {}  
     }   
   }
+  
+  // ------------------------------------------------------------
+  // INIT ML CONTROL
+  // ------------------------------------------------------------
+  function initMLControl() {
+    if (wsControl) return;
 
+    wsControl = new WebSocket(WS_CONTROL);
+
+    wsControl.onopen = () => {
+      controlReady = true;
+      console.log("🧠 WS CONTROL connected");
+    };
+
+    wsControl.onerror = (e) => {
+      console.error("WS CONTROL error:", e);
+    };
+
+    wsControl.onclose = () => {
+      console.warn("WS CONTROL closed");
+      controlReady = false;
+      wsControl = null;
+    };
+  }
+  
   
   // ------------------------------------------------------------
   // START ML CONTROL
   // ------------------------------------------------------------
-  async function startMLControl() {
+  function startMLControl() {
 
-    if (wsControl == null) 
-     { 
-      wsControl = new WebSocket(WS_CONTROL); 
-      wsControl.onopen = () => console.log("ws connected."); 
-     }
+    if (!wsControl || !controlReady) {
+      console.warn("WS CONTROL not ready");
+      return;
+    }
 
-     if (wsControl && (wsControl.readyState === WebSocket.CLOSED || wsControl.readyState === WebSocket.CLOSING))
-     {
-      wsControl = new WebSocket(WS_CONTROL);   
-      wsControl.onopen = () => console.log("ws connected."); 
-     }
-    
-    await wsControl.send(JSON.stringify({
+    if (BCautomationRunning) {
+      console.warn("Automation already running");
+      return;
+    }
+
+    wsControl.send(JSON.stringify({
       cmd: "START",
       symbol: currentSymbol,
       token: TOKEN.trim(),
@@ -863,21 +886,28 @@ document.addEventListener("DOMContentLoaded", () => {
       multiplier: parseInt(multiplierInput.value) || 40,
       currency: CURRENCY,
       style: styleType(currentChartType),
-      granularity: convertTF(currentInterval), 
-      repeat: Number(buyNumber.value) || 1  
+      granularity: convertTF(currentInterval),
+      repeat: Number(buyNumber.value) || 1
     }));
-
-    wsControl.onclose = () => setTimeout(startMLControl,300);
-    wsControl.onerror = (e) => { wsControl.close(); wsControl=null; setTimeout(startMLControl,300); };
+   
+    console.log("▶️ START sent to Python");
   }
 
   // ------------------------------------------------------------
   // STOP ML CONTROL  
   // ------------------------------------------------------------
-  async function stopMLControl() {
-    await wsControl.send(JSON.stringify({ cmd: "STOP"}));
-    wsControl.onclose = () => setTimeout(stopMLControl,300);
-    wsControl.onerror = (e) => { wsControl.close(); wsControl=null; setTimeout(stopMLControl,300); };
+  function stopMLControl() {
+
+    if (!wsControl || !controlReady) {  
+      console.warn("WS CONTROL not ready");
+      return;
+    }
+
+    wsControl.send(JSON.stringify({
+      cmd: "STOP"
+    }));
+
+    console.log("🛑 STOP sent to Python");
   }
 
   // ------------------------------------------------------------
@@ -2528,16 +2558,16 @@ function extractValue(event, key) {
       BCtoggleAutomationBtn.style.color = "white";
       BCautomationRunning = true; 
       // ---------- Create and start AI instance ----------
-      startMLControl(); // call once   
+      startMLControl(); // call once
+      startMLSignal();
       // optionally: ai.BC_connectWebSocket(); // already called inside init if needed
     } else {
       BCtoggleAutomationBtn.textContent = "Launch Automation";
       BCtoggleAutomationBtn.style.background = "white";  
       BCtoggleAutomationBtn.style.color = "gray"; 
       BCautomationRunning = false;    
-      setTimeout(() => {
-         stopMLControl();
-      },2000);  
+      stopMLControl();
+      stopMLSignal();
     }   
   });
   
@@ -2591,7 +2621,8 @@ window.addEventListener("error", function (e) {
   initChart(currentChartType);
   initTable();
   initHistoricalTable();      
-  inihistoricalchart();   
+  inihistoricalchart();  
+  initMLControl(); 
 
   window.onload = () => {
        if (!currentSymbol) return;
