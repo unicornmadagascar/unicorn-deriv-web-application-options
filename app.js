@@ -843,7 +843,22 @@ document.addEventListener("DOMContentLoaded", () => {
   // ------------------------------------------------------------
   async function startMLControl() {
 
-    if (!wsControl || wsControl.readyState > 1) { wsControl = new WebSocket(WS_CONTROL); wsControl.onopen = () => console.log("ws connected."); }
+    if (wsControl == null) 
+     { 
+      wsControl = new WebSocket(WS_CONTROL); 
+      wsControl.onopen = () => console.log("ws connected."); 
+     }
+
+    if (wsControl && (wsControl.readyState === WebSocket.OPEN || wsControl.readyState === WebSocket.CONNECTING)) 
+     { 
+      wsControl.onopen = () => console.log("ws connected."); 
+     }
+
+    if (wsControl && (wsControl.readyState === WebSocket.CLOSED || wsControl.readyState === WebSocket.CLOSING))
+     {
+      wsControl = new WebSocket(WS_CONTROL); 
+      wsControl.onopen = () => console.log("ws connected."); 
+     }
     
     await wsControl.send(JSON.stringify({
       cmd: "START",
@@ -875,7 +890,22 @@ document.addEventListener("DOMContentLoaded", () => {
   // ------------------------------------------------------------
   function startMLSignal() {
 
-    if (!wsSignal || wsSignal.readyState > 1) { wsSignal = new WebSocket(WS_SIGNAL); wsSignal.onopen = () => console.log("ws signal connected."); }
+    if (wsSignal == null) 
+     { 
+      wsSignal = new WebSocket(WS_SIGNAL); 
+      wsSignal.onopen = () => console.log("ws connected."); 
+     }
+
+    if (wsSignal && (wsSignal.readyState === WebSocket.OPEN || wsSignal.readyState === WebSocket.CONNECTING)) 
+     { 
+      wsSignal.onopen = () => console.log("ws connected."); 
+     }
+
+    if (wsSignal && (wsSignal.readyState === WebSocket.CLOSED || wsSignal.readyState === WebSocket.CLOSING))
+     {
+      wsSignal = new WebSocket(WS_SIGNAL); 
+      wsSignal.onopen = () => console.log("ws connected."); 
+     }
     
     wsSignal.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
@@ -908,7 +938,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wsSignal.onerror = (e) => { wsSignal.close(); wsSignal=null; setTimeout(stopMLSignal,300); };
   } 
 
-  buyBtn.onclick=()=>executeTrade("BUY");
+  buyBtn.onclick=()=>executeTrade("BUY");  
   sellBtn.onclick=()=>executeTrade("SELL");
   reverseBtn.onclick=()=>{
     console.log("Reversing positions...");
