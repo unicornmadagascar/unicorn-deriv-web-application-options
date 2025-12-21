@@ -849,11 +849,6 @@ document.addEventListener("DOMContentLoaded", () => {
       wsControl.onopen = () => console.log("ws connected."); 
      }
 
-    if (wsControl && (wsControl.readyState === WebSocket.OPEN || wsControl.readyState === WebSocket.CONNECTING)) 
-     { 
-      wsControl.onopen = () => console.log("ws connected."); 
-     }
-
     if (wsControl && (wsControl.readyState === WebSocket.CLOSED || wsControl.readyState === WebSocket.CLOSING))
      {
       wsControl = new WebSocket(WS_CONTROL); 
@@ -893,11 +888,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wsSignal == null) 
      { 
       wsSignal = new WebSocket(WS_SIGNAL); 
-      wsSignal.onopen = () => console.log("ws connected."); 
-     }
-
-    if (wsSignal && (wsSignal.readyState === WebSocket.OPEN || wsSignal.readyState === WebSocket.CONNECTING)) 
-     { 
       wsSignal.onopen = () => console.log("ws connected."); 
      }
 
