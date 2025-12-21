@@ -866,7 +866,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ------------------------------------------------------------
-  // STOP ML CONTROL
+  // STOP ML CONTROL  
   // ------------------------------------------------------------
   async function stopMLControl() {
     await wsControl.send(JSON.stringify({ cmd: "STOP"}));
