@@ -842,18 +842,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // START ML CONTROL
   // ------------------------------------------------------------
   async function startMLControl() {
-
-    if (wsControl == null) 
-     { 
-      wsControl = new WebSocket(WS_CONTROL); 
-      wsControl.onopen = () => console.log("ws connected."); 
-     }
-
-    if (wsControl && (wsControl.readyState === WebSocket.CLOSED || wsControl.readyState === WebSocket.CLOSING))
-     {
-      wsControl = new WebSocket(WS_CONTROL); 
-      wsControl.onopen = () => console.log("ws connected."); 
-     }
     
     await wsControl.send(JSON.stringify({
       cmd: "START",
