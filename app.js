@@ -875,9 +875,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ------------------------------------------------------------
-  // START ML SIGNAL
+  // START ML SIGNAL   
   // ------------------------------------------------------------
-  function startMLSignal() {
+  function startMLSignal() {  
 
     if (wsSignal == null) 
      { 
