@@ -900,7 +900,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wsSignal.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
       console.log(
-          `📈 SIGNAL: ${data.signal} | ` +
+          `📈 SIGNAL: ${data.signal} | ` +   
           `Prob: ${data.prob.toFixed(4)} | `  
       );
     }
