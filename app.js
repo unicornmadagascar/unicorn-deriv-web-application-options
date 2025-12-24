@@ -2494,10 +2494,8 @@ function extractValue(event, key) {
   }
   });
 
-
   // === Automation Toggle ===
   startbtn.onclick = () => {
-    const token = document.getElementById("tokenInput").value.trim();
 
     startSignalPipeline((data) => {
         console.log(
@@ -2509,13 +2507,12 @@ function extractValue(event, key) {
     });
 
     startControlPipeline();
-  };
+  };  
 
   stopbtn.onclick = () => {
      stopControlPipeline();
      shutdownAllPipelines();
   };
-
   
   // --- TOGGLE PANEL ---
   controlPanelToggle.addEventListener("click", () => {
