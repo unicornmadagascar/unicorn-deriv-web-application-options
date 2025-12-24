@@ -870,7 +870,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!wsControl) { wsControl = new WebSocket(WS_CONTROL); wsControl.onopen = () => console.log("WS Connected!"); }
 
-    if (wsControl && wsControl.readyState === WebSocket.OPEN) { return; }
+    if (wsControl && wsControl.readyState === WebSocket.CONNECTING) { return; }
 
     wsControl.send(JSON.stringify({
       cmd: "START",
