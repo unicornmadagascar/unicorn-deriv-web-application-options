@@ -2497,14 +2497,14 @@ function extractValue(event, key) {
   // === Automation Toggle ===
   startbtn.onclick = () => {
 
-    startSignalPipeline((data) => {
+    startSignalPipeline((data) => {   
         console.log(
             `[${new Date(data.ts*1000).toLocaleTimeString()}]`,
             data.signal,
             data.price,
-            data.prob
-        );
-    });  
+            data.prob 
+        );  
+    });    
 
     startControlPipeline();
   };  
