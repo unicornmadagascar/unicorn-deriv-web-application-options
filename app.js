@@ -2563,7 +2563,7 @@ function extractValue(event, key) {
       // optionally: ai.BC_connectWebSocket(); // already called inside init if needed
     } else {
       BCtoggleAutomationBtn.textContent = "Launch Automation";
-      BCtoggleAutomationBtn.style.background = "white";  
+      BCtoggleAutomationBtn.style.background = "white";    
       BCtoggleAutomationBtn.style.color = "gray"; 
       BCautomationRunning = false;      
       stopMLControl();
