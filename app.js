@@ -876,7 +876,7 @@ document.addEventListener("DOMContentLoaded", () => {
       cmd: "START",
       symbol: currentSymbol,
       token: TOKEN.trim(),
-      stake: parseFloat(stakeInput.value) || 1,
+      stake: parseFloat(stakeInput.value) || 1,  
       multiplier: parseInt(multiplierInput.value) || 40,
       currency: CURRENCY,
       style: styleType(currentChartType),
