@@ -2565,7 +2565,7 @@ function extractValue(event, key) {
       BCtoggleAutomationBtn.textContent = "Launch Automation";
       BCtoggleAutomationBtn.style.background = "white";  
       BCtoggleAutomationBtn.style.color = "gray"; 
-      BCautomationRunning = false;    
+      BCautomationRunning = false;      
       stopMLControl();
       stopMLSignal();  
     }   
