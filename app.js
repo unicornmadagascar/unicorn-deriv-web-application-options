@@ -868,15 +868,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // ------------------------------------------------------------
   function startMLControl() {
 
-    if (!wsControl || !controlReady) {
+    /* if (!wsControl || !controlReady) {
       console.warn("WS CONTROL not ready");
       return;
-    }
+    } */
 
     if (BCautomationRunning) {
       console.warn("Automation already running");
       return;
     }
+
+    wsControl = new WebSocket(WS_CONTROL);
 
     wsControl.send(JSON.stringify({
       cmd: "START",
@@ -898,10 +900,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // ------------------------------------------------------------
   function stopMLControl() {
 
-    if (!wsControl || !controlReady) {  
+    /* if (!wsControl || !controlReady) {  
       console.warn("WS CONTROL not ready");
       return;
-    }
+    } */
+
+    wsControl = new WebSocket(WS_CONTROL);
 
     wsControl.send(JSON.stringify({
       cmd: "STOP"
