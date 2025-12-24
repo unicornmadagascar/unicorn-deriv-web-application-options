@@ -875,7 +875,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wsControl.send(JSON.stringify({
       cmd: "START",
       symbol: currentSymbol, 
-      token: TOKEN.trim(),
+      token: TOKEN.trim(),   
       stake: parseFloat(stakeInput.value) || 1,  
       multiplier: parseInt(multiplierInput.value) || 40,
       currency: CURRENCY,
