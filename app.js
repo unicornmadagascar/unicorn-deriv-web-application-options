@@ -868,15 +868,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ------------------------------------------------------------
   function startMLControl() {
 
-    /* if (!wsControl || !controlReady) {
-      console.warn("WS CONTROL not ready");
-      return;
-    } */
-
-    if (BCautomationRunning) {
-      console.warn("Automation already running");
-      return;
-    }
+    if (wsControl && wsControl.readyState === WebSocket.OPEN) return;
 
     wsControl = new WebSocket(WS_CONTROL);
 
@@ -900,17 +892,27 @@ document.addEventListener("DOMContentLoaded", () => {
   // ------------------------------------------------------------
   function stopMLControl() {
 
-    /* if (!wsControl || !controlReady) {  
-      console.warn("WS CONTROL not ready");
-      return;
-    } */
+    if (!wsControl) return;
 
-    wsControl = new WebSocket(WS_CONTROL);
+    try {
+      // Fermer proprement
+      if (
+        wsControl.readyState === WebSocket.OPEN ||
+        wsControl.readyState === WebSocket.CONNECTING
+      ) {
+        // Stop command to Python backend
+        wsControl.send(JSON.stringify({
+           cmd: "STOP"
+       }));
 
-    wsControl.send(JSON.stringify({
-      cmd: "STOP"
-    }));
+        wsControl.close(1000, "STOP ML CONTROL");
+      }
 
+    } catch (e) {
+      console.warn("WS Signal stop error:", e);
+    }
+
+    wsControl = null;
     console.log("🛑 STOP sent to Python");
   }
 
