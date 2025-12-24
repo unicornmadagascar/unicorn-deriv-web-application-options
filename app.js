@@ -844,7 +844,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("✅ Connecté à /signal");
     };
 
-    wsSignal.onmessage = (event) => {
+    wsSignal.onmessage = (event) => {   
         const data = JSON.parse(event.data);
         onMessageCallback(data); // callback UI
     };
