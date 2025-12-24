@@ -112,8 +112,8 @@
       box-shadow: 0 6px 14px rgba(0,0,0,0.12);
     }
 
-    #toggleAutomation { background-color: white; color: #4d4747; }
-    #ROCtoggleAutomation { background-color: white; color: #4d4747; }
+    #STOP { background-color: white; color: #4d4747; }
+    #START { background-color: white; color: #4d4747; }
     #openCashierBtn { background-color: white; color: #4d4747; }
     #openPopup { background-color: white; color: #4d4747; } 
     #buyBtn { background-color: white; color: #4d4747; }
@@ -864,99 +864,6 @@ hr {
     margin-bottom: 12px;  
   }
 
-  /* ===== Overlay ===== */
-  #aiPopupOverlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease;
-    z-index: 9999;
-}
-
-#aiPopupOverlay.show {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-/* ===== Fenêtre popup ===== */
-#aiPopupWindow {
-    background: #ffffff;
-    padding: 20px;
-    width: 300px;
-    border-radius: 12px;
-    box-shadow: 0px 14px 30px rgba(0, 0, 0, 0.25);
-    transform: translateY(-15px);
-    transition: transform 0.25s ease;
-    box-sizing: border-box; /* empêche tout dépassement */
-}
-
-#aiPopupOverlay.show #aiPopupWindow {
-    transform: translateY(0);
-}
-
-/* ===== Inputs ===== */
-.ai-popup-input {
-    width: 100%;
-    padding: 10px;
-    font-size: 15px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    margin-top: 12px;
-    box-sizing: border-box; /* empêche tout débordement */
-}
-
-.ai-popup-input:focus {
-    border-color: #007bff;
-    outline: none;
-}
-
-/* ===== Titre ===== */
-.ai-popup-title {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: #222;
-}
-
-/* ===== Buttons ===== */
-.ai-popup-btns {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 18px;
-}
-
-.ai-popup-btn {
-    padding: 10px 15px;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
-    border: none;
-    transition: background 0.2s;
-}
-
-.ai-popup-primary {
-    background: #007bff;
-    color: white;
-}
-
-.ai-popup-primary:hover {
-    background: #0065d6;
-}
-
-.ai-popup-secondary {
-    background: #e0e0e0;
-    color: #333;
-}
-
-.ai-popup-secondary:hover {
-    background: #d5d5d5;
-}
-
 /* =====================================================   
    POPUP OVERLAY GLASS
 ===================================================== */
@@ -1186,8 +1093,8 @@ hr {
     <div>
       <!-- Left buttons -->
       <div style="display:flex; gap:12px; flex-wrap:wrap;">  
-        <button class="open-btn" id="ROCtoggleAutomation">Parameters</button>   
-        <button id="toggleAutomation">Launch Automation</button> 
+        <button class="open-btn" id="START">Start Automation</button>   
+        <button id="STOP">Stop Automation</button> 
         <button id="openCashierBtn">Cashier</button> 
         <button id="buyBtn">BUY</button>
         <button id="sellBtn">SELL</button>
@@ -1272,22 +1179,6 @@ hr {
       <div id="chartInner"></div>
     </div>  
   </div>
-
-  <!-- Overlay -->
-  <div id="aiPopupOverlay">
-    <div id="aiPopupWindow">
-        <div class="ai-popup-title">Probability Settings</div>
-
-        <input type="number" step="0.001" id="aiPopupHighInput" class="ai-popup-input" placeholder="High probability (0 - 1)">
-        <input type="number" step="0.001" id="aiPopupLowInput" class="ai-popup-input" placeholder="Lower tolerance (0 - 1)">
-
-        <div class="ai-popup-btns">
-            <button id="aiPopupCancel" class="ai-popup-btn ai-popup-secondary">Cancel</button>
-            <button id="aiPopupValidate" class="ai-popup-btn ai-popup-primary">Validate</button>
-        </div>
-    </div>
-  </div>
-
 
   <!-- === Popup de sélection === -->
   <div id="chartTypeModal" class="modal">

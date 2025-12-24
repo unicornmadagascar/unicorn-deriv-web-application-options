@@ -51,11 +51,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const historicalchartcontainer = document.getElementById("HistoricalgraphicalContract");
   const reverseBtn = document.getElementById("reverseBtn");
 
-  const overlay__ = document.getElementById("aiPopupOverlay");
-  const popup__ = document.getElementById("aiPopupWindow");
-  const btnOpen = document.getElementById("ROCtoggleAutomation");
-  const btnCancel = document.getElementById("aiPopupCancel");
-  const btnValidate = document.getElementById("aiPopupValidate");
+  const startbtn = document.getElementById("START");
+  const stopbtn = document.getElementById("STOP");
 
   // Éléments UI
   const openCashierBtn = document.getElementById("openCashierBtn");
@@ -70,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsReady = false;
   let wsControl = null;
   let wsSignal = null;
-  let controlReady = false;
+  let engineStarted = false;
   let totalPL = 0; // cumul des profits et pertes
   let BCautomationRunning = false;
   let IAautomationRunning = false;
@@ -837,145 +834,89 @@ document.addEventListener("DOMContentLoaded", () => {
        try { setTimeout(() => { wsTranscation.close(); wsTranscation = null; },500); } catch (e) {}  
     }   
   }
-  
-  // ------------------------------------------------------------
-  // INIT ML CONTROL
-  // ------------------------------------------------------------
-  function initMLControl() {
-    if (wsControl) return;
 
-    wsControl = new WebSocket(WS_CONTROL);
-
-    wsControl.onopen = () => {
-      controlReady = true;
-      console.log("🧠 WS CONTROL connected");
-    };
-
-    wsControl.onerror = (e) => {
-      console.error("WS CONTROL error:", e);
-    };
-
-    wsControl.onclose = () => {
-      console.warn("WS CONTROL closed");
-      controlReady = false;
-      wsControl = null;
-    };
-  }
-  
-  
-  // ------------------------------------------------------------
-  // START ML CONTROL
-  // ------------------------------------------------------------
-  function startMLControl() {
-
-    if (!wsControl) { wsControl = new WebSocket(WS_CONTROL); wsControl.onopen = () => console.log("WS Connected!"); }
-
-    if (wsControl && wsControl.readyState === WebSocket.CONNECTING) { return; }
-
-    wsControl.send(JSON.stringify({
-      cmd: "START",
-      symbol: currentSymbol, 
-      token: TOKEN.trim(),   
-      stake: parseFloat(stakeInput.value) || 1,  
-      multiplier: parseInt(multiplierInput.value) || 40,
-      currency: CURRENCY,
-      style: styleType(currentChartType),
-      granularity: convertTF(currentInterval),
-      repeat: Number(buyNumber.value) || 1
-    }));
-   
-    console.log("▶️ START sent to Python");
-  }
-
-  // ------------------------------------------------------------
-  // STOP ML CONTROL  
-  // ------------------------------------------------------------
-  function stopMLControl() {
-
-    if (!wsControl) return;
-
-    try {
-      // Fermer proprement
-      if (
-        wsControl.readyState === WebSocket.OPEN ||
-        wsControl.readyState === WebSocket.CONNECTING
-      ) {
-        // Stop command to Python backend
-        wsControl.send(JSON.stringify({
-           cmd: "STOP"
-       }));
-
-        wsControl.close(1000, "STOP ML CONTROL");
-      }
-  
-    } catch (e) {
-      console.warn("WS Signal stop error:", e);
-    }
-
-    wsControl = null;
-    console.log("🛑 STOP sent to Python");
-  }
-
-  // ------------------------------------------------------------
-  // START ML SIGNAL 
-  // ------------------------------------------------------------
-  function startMLSignal() {
-
+  function startSignalPipeline(onMessageCallback) {
     if (wsSignal && wsSignal.readyState === WebSocket.OPEN) return;
 
     wsSignal = new WebSocket(WS_SIGNAL);
 
     wsSignal.onopen = () => {
-      console.log("🧠 WS Signal connected");
+        console.log("✅ Connecté à /signal");
     };
 
-    wsSignal.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-      console.log(
-        `📈 SIGNAL: ${data.signal} | Prob: ${data.prob.toFixed(4)}`
-      );
-    };
-
-    wsSignal.onerror = (e) => {
-      console.error("WS Signal error", e);
+    wsSignal.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        onMessageCallback(data); // callback UI
     };
 
     wsSignal.onclose = () => {
-      console.log("🔌 WS Signal closed");
+        console.log("❌ /signal fermé");
+    };
+
+    wsSignal.onerror = (err) => {
+        console.error("Signal WS error:", err);
     };
   }
 
-  
-  // ------------------------------------------------------------
-  // STOP ML SIGNAL (CORRECT)
-  // ------------------------------------------------------------
-  function stopMLSignal() {
+  function startControlPipeline() {
+    if (engineStarted) return;
 
-    if (!wsSignal) return;
+    wsControl = new WebSocket(WS_CONTROL);
 
-    try {
-      // Supprimer les handlers
-      wsSignal.onmessage = null;
-      wsSignal.onopen = null;
-      wsSignal.onerror = null;
-      wsSignal.onclose = null;
+    wsControl.onopen = () => {
+        console.log("✅ Connecté à /control");
 
-      // Fermer proprement
-      if (
-        wsSignal.readyState === WebSocket.OPEN ||
-        wsSignal.readyState === WebSocket.CONNECTING
-      ) {
-        wsSignal.close(1000, "STOP ML SIGNAL");
-      }
+        wsControl.send(JSON.stringify({
+            cmd: "START",
+            symbol: currentSymbol,
+            token: TOKEN.trim(),
+            stake: parseFloat(stakeInput.value) || 1,
+            multiplier: parseInt(multiplierInput.value) || 40,
+            currency: CURRENCY || "USD",
+            style: styleType(currentChartType),
+            granularity: convertTF(currentInterval),
+            repeat: Number(buyNumber.value) || 1
+        }));
+    };
 
-    } catch (e) {
-      console.warn("WS Signal stop error:", e);
-    }
+    wsControl.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        console.log("ENGINE:", msg.status);
+        if (msg.status === "STARTED") engineStarted = true;
+    };
 
-    wsSignal = null;
-    console.log("🛑 ML Signal STOPPED");
+    wsControl.onclose = () => {
+        console.log("❌ /control fermé");
+        engineStarted = false;
+    };
+
+    wsControl.onerror = (err) => {
+        console.error("Control WS error:", err);
+    };
   }
 
+  function stopControlPipeline() {
+    if (!wsControl || wsControl.readyState !== WebSocket.OPEN) return;
+
+    wsControl.send(JSON.stringify({ cmd: "STOP" }));
+    engineStarted = false;
+  }
+
+  function shutdownAllPipelines() {
+    console.log("🛑 Fermeture complète des pipelines");
+
+    if (wsControl) {
+        wsControl.close();
+        wsControl = null;
+    }
+
+    if (wsSignal) {
+        wsSignal.close();
+        wsSignal = null;
+    }
+
+    engineStarted = false;
+  }
 
   buyBtn.onclick=()=>executeTrade("BUY");  
   sellBtn.onclick=()=>executeTrade("SELL");
@@ -2555,27 +2496,26 @@ function extractValue(event, key) {
 
 
   // === Automation Toggle ===
-  const BCtoggleAutomationBtn = document.getElementById("toggleAutomation");
-  BCtoggleAutomationBtn.addEventListener("click", () => {
-    BCautomationRunning = !BCautomationRunning;
-    if (BCautomationRunning) {
-      BCtoggleAutomationBtn.textContent = "Stop Automation";
-      BCtoggleAutomationBtn.style.background = "linear-gradient(90deg,#f44336,#e57373)";
-      BCtoggleAutomationBtn.style.color = "white";
-      BCautomationRunning = true; 
-      // ---------- Create and start AI instance ----------
-      startMLControl(); // call once
-      startMLSignal();
-      // optionally: ai.BC_connectWebSocket(); // already called inside init if needed
-    } else {
-      BCtoggleAutomationBtn.textContent = "Launch Automation";
-      BCtoggleAutomationBtn.style.background = "white";    
-      BCtoggleAutomationBtn.style.color = "gray"; 
-      BCautomationRunning = false;      
-      stopMLControl();
-      stopMLSignal();  
-    }   
-  });
+  startbtn.onclick = () => {
+    const token = document.getElementById("tokenInput").value.trim();
+
+    startSignalPipeline((data) => {
+        console.log(
+            `[${new Date(data.ts*1000).toLocaleTimeString()}]`,
+            data.signal,
+            data.price,
+            data.prob
+        );
+    });
+
+    startControlPipeline();
+  };
+
+  stopbtn.onclick = () => {
+     stopControlPipeline();
+     shutdownAllPipelines();
+  };
+
   
   // --- TOGGLE PANEL ---
   controlPanelToggle.addEventListener("click", () => {
@@ -2628,7 +2568,6 @@ window.addEventListener("error", function (e) {
   initTable();
   initHistoricalTable();      
   inihistoricalchart();  
-  initMLControl(); 
 
   window.onload = () => {
        if (!currentSymbol) return;
@@ -2835,39 +2774,6 @@ window.addEventListener("error", function (e) {
     // Fermer le popup
     document.getElementById("settingsPopup").style.display = "none";
   };
-
-  // Ouvrir popup  
- btnOpen.addEventListener("click", () => {
-    overlay__.classList.add("show");
-});
-
-// Fermeture uniquement si on clique sur le fond
-overlay__.addEventListener("click", () => {
-    h = isNaN(parseFloat(aiPopupHighInput.value)) ? 0.55 : parseFloat(aiPopupHighInput.value);
-    l = isNaN(parseFloat(aiPopupLowInput.value))  ? 0.40 : parseFloat(aiPopupLowInput.value);
-    overlay__.classList.remove("show");
-});
-
-// Empêche la fermeture quand on clique dans la popup
-popup__.addEventListener("click", (e) => {
-    e.stopPropagation();
-});
-
-btnCancel.addEventListener("click", () => {
-    overlay__.classList.remove("show");
-});
-
-btnValidate.addEventListener("click", (e) => {
-    h = isNaN(parseFloat(aiPopupHighInput.value)) ? 0.55 : parseFloat(aiPopupHighInput.value);
-    l = isNaN(parseFloat(aiPopupLowInput.value))  ? 0.40 : parseFloat(aiPopupLowInput.value);
-    e.stopPropagation();
-    overlay__.classList.remove("show");
-});
-
-// Fermer avec Échap
-document.addEventListener("keydown", (e) => {  
-    if (e.key === "Escape") overlay__.classList.remove("show");  
-});
 
 // -------------------------------------------------------------
 // 1. Quand on ouvre la fenêtre, on initialise le WS + authorize
