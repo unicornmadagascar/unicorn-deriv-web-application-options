@@ -907,7 +907,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         wsControl.close(1000, "STOP ML CONTROL");
       }
-
+  
     } catch (e) {
       console.warn("WS Signal stop error:", e);
     }
