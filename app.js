@@ -868,7 +868,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ------------------------------------------------------------
   function startMLControl() {
 
-    if (wsControl && (wsControl.readyState === WebSocket.OPEN || wsControl.readyState === WebSocket.CONNECTING)) return;
+    if (wsControl && (wsControl.readyState === WebSocket.OPEN || wsControl.readyState === WebSocket.CONNECTING)) { wsControl.close(); return; }
 
     wsControl = new WebSocket(WS_CONTROL);
 
