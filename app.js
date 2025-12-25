@@ -850,7 +850,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     wsSignal.onclose = () => {
-        console.log("❌ /signal fermé");
+        console.log("❌ /signal fermé");  
     };
 
     wsSignal.onerror = (err) => {
