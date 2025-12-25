@@ -855,7 +855,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     wsSignal.onerror = (err) => {
         console.error("Signal WS error:", err);
-    };
+    };  
   }
 
   function startControlPipeline() {
