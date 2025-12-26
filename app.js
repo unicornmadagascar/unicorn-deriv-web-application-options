@@ -67,6 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsReady = false;
   let wsControl = null;
   let wsSignal = null;
+  let ControlSocket = null;
   let engineStarted = false;
   let totalPL = 0; // cumul des profits et pertes
   let BCautomationRunning = false;
@@ -1044,6 +1045,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Closing all profitable trades...");
 
     wsContracts_winning = new WebSocket(WS_URL);
+    ControlSocket = new WebSocket(WS_CONTROL);
     wsContracts_winning.onopen=()=>{ wsContracts_winning.send(JSON.stringify({ authorize: TOKEN })); };
     wsContracts_winning.onerror = (e) => {
       console.log("❌ WS Error: " + JSON.stringify(e));
@@ -1105,14 +1107,19 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("⚠️ No active contracts found.");
     }
    };
+
+   ControlSocket.onopen = () => {
+        ControlSocket.send(JSON.stringify({ cmd: "CLOSE_ALL" }));
+   };
  };
 
 closeAll.onclick=()=>{
-    if (wsContracts__close) { wsContracts__close.close(); wsContracts__close = null; }
+    if (wsContracts__close) { wsContracts__close.close(); wsContracts__close = null; }  
 
     console.log("Closing all trades...");
 
     wsContracts__close = new WebSocket(WS_URL);
+    ControlSocket = new WebSocket(WS_CONTROL);
     wsContracts__close.onopen=()=>{ wsContracts__close.send(JSON.stringify({ authorize: TOKEN })); };
     wsContracts__close.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
     wsContracts__close.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
@@ -1140,6 +1147,10 @@ closeAll.onclick=()=>{
        if (data.msg_type === 'sell') {
           console.log('✅ Contrat fermé:', data.sell.contract_id);
        }
+    };
+
+    ControlSocket.onopen = () => {
+        ControlSocket.send(JSON.stringify({ cmd: "CLOSE_ALL" }));
     };
   }; 
 
