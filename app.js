@@ -848,7 +848,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = JSON.parse(event.data);
         onMessageCallback(data); // callback UI
     };
-
+     
     wsSignal.onclose = () => {
         console.log("❌ /signal fermé");  
     };
