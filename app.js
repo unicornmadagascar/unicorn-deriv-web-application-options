@@ -1127,7 +1127,7 @@ closeAll.onclick=()=>{
        const data = JSON.parse(msg.data);
 
        // 2️⃣ Quand autorisé, on demande le portefeuille
-       if (data.msg_type === 'authorize') {
+       if (data.msg_type === 'authorize') {   
            wsContracts__close.send(JSON.stringify({ portfolio: 1 }));
        }
 
