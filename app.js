@@ -1137,7 +1137,7 @@ closeAll.onclick=()=>{
           console.log('Contrats ouverts:', contracts);
 
           // 4️⃣ Fermer chaque contrat
-          contracts.forEach(c => {
+          contracts.forEach(c => {   
             wsContracts__close.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
             console.log(`⛔ Fermeture du contrat ${c.contract_id} demandée`);
           });
