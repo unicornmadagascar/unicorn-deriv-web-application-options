@@ -1124,7 +1124,7 @@ closeAll.onclick=()=>{
     wsContracts__close.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); };
     wsContracts__close.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); };
     wsContracts__close.onmessage = (msg) => {
-       const data = JSON.parse(msg.data);
+       const data = JSON.parse(msg.data);  
 
        // 2️⃣ Quand autorisé, on demande le portefeuille
        if (data.msg_type === 'authorize') {   
