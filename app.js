@@ -1150,7 +1150,7 @@ closeAll.onclick=()=>{
     };
 
     ControlSocket.onopen = () => {
-        ControlSocket.send(JSON.stringify({ cmd: "CLOSE_ALL" }));
+        ControlSocket.send(JSON.stringify({ cmd: "CLOSE_ALL" }));  
     };
   }; 
 
