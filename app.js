@@ -2539,7 +2539,7 @@ function extractValue(event, key) {
             `[${new Date(data.ts*1000).toLocaleTimeString()}]`,  
             data.signal,
             data.price,
-            data.prob 
+            data.prob   
         );  
     });    
 
