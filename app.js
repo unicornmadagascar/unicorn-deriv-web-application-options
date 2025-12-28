@@ -2541,7 +2541,7 @@ function extractValue(event, key) {
             data.price,
             data.prob   
         );  
-    });    
+    });      
 
     startControlPipeline();
   };  
