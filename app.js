@@ -51,6 +51,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const historicalchartcontainer = document.getElementById("HistoricalgraphicalContract");
   const reverseBtn = document.getElementById("reverseBtn");
 
+  const overlayML = document.getElementById("overlayML");
+  const countdownEl = document.getElementById("countdown");
+
   const startbtn = document.getElementById("START");
   const stopbtn = document.getElementById("STOP");
 
@@ -751,6 +754,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
     wsOpenLines.onerror = (e) => console.log("⚠️ WS error:", e);
     wsOpenLines.onclose = () => console.log("❌ WS closed for open lines");
+  }
+
+
+  function startMLCountdown() {
+    console.log("🤖 ML STARTED");
+    
+    let count = 5;
+    countdownEl.textContent = count;
+    overlayML.style.display = "flex";
+
+    const interval = setInterval(() => {
+      count--;
+      countdownEl.textContent = count;
+
+      if (count === 0) {
+        clearInterval(interval);
+        countdownEl.textContent = "GO 🚀";
+
+        setTimeout(() => {
+          overlayML.style.display = "none";
+        }, 700);
+      }
+    }, 1000);
   }
 
 
@@ -2507,10 +2533,10 @@ function extractValue(event, key) {
 
   // === Automation Toggle ===
   startbtn.onclick = () => {
-
+    setTimout(startMLCountdown,10000);
     startSignalPipeline((data) => {   
         console.log(
-            `[${new Date(data.ts*1000).toLocaleTimeString()}]`,
+            `[${new Date(data.ts*1000).toLocaleTimeString()}]`,  
             data.signal,
             data.price,
             data.prob 
