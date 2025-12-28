@@ -2533,8 +2533,8 @@ function extractValue(event, key) {
 
   // === Automation Toggle ===
   startbtn.onclick = () => {
-    setTimout(startMLCountdown,10000);
-    startSignalPipeline((data) => {   
+    setTimeout(startMLCountdown,7000);
+    startSignalPipeline((data) => {     
         console.log(
             `[${new Date(data.ts*1000).toLocaleTimeString()}]`,  
             data.signal,
