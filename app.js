@@ -818,57 +818,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ⏱️ Activer timeout uniquement pour les spikes
     if (isSpike) {
-        playSpikeSound(); // Ou playSpikeSoundSimple() selon votre préférence
+        playBeepSound(); // Sound
         timeoutUntil = now + SIGNAL_TIMEOUT;
     } else {
         timeoutUntil = 0;
-    }
-  }
-
-  // ======================= INIT AUDIO =======================
-  function initAudio() {
-    if (typeof AudioContext !== 'undefined') {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        console.log('🔊 Audio initialisé');
-    } else {
-        console.warn('⚠️ AudioContext non supporté, pas de son pour les spikes');
-        isAudioEnabled = false;
-    }
+    }  
   }
 
   // ======================= PLAY SPIKE SOUND =======================
-  function playSpikeSound() {
-    if (!isAudioEnabled || !audioContext) return;
-    
+  function playBeepSound() {
     try {
-        // Créer un oscillateur pour le son
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        // Configurer le son (aigu pour les spikes)
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(800, audioContext.currentTime); // Fréquence aiguë
-        oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.3);
-        
-        // Configurer le volume (enveloppe ADSR)
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.05); // Attack
-        gainNode.gain.exponentialRampToValueAtTime(0.1, audioContext.currentTime + 0.2); // Decay
-        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5); // Release
-        
-        // Connecter les nodes
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        // Démarrer et arrêter le son
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.5);
-        
-        console.log('🔔 Son de spike joué');
-        
-    } catch (error) {
-        console.warn('⚠️ Impossible de jouer le son:', error);
-        isAudioEnabled = false;
+        if (window.AudioContext) {
+            const ctx = new AudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.frequency.value = 800;
+            gain.gain.value = 0.1;
+            
+            osc.start();
+            osc.stop(ctx.currentTime + 0.1);
+        }
+    } catch (e) {
+        // Rien à faire si l'audio échoue
     }
   }
 
@@ -2718,8 +2693,7 @@ window.addEventListener("error", function (e) {
   initChart(currentChartType);
   initTable();
   initHistoricalTable();      
-  inihistoricalchart();  
-  initAudio();
+  inihistoricalchart();   
 
   window.onload = () => {
        if (!currentSymbol) return;
