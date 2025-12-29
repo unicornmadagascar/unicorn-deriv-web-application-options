@@ -792,7 +792,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const signal = data.signal;
     const symbol = data.symbol;
     const price = parseFloat(data.price);
-    const prob = data.prob || data.probability || "N/A"; // Récupérer la probabilité
+    const prob = data.prob;               // Récupérer la probabilité
     const now = Date.now();
 
     if (!signal || !price || isNaN(price)) return;
@@ -830,8 +830,6 @@ document.addEventListener("DOMContentLoaded", () => {
     activeLine = createSignalLine(currentSeries, price, signal);
     activeSignal = signal;
 
-    console.log(`📊 ${baseSymbol} ${signal} @ ${price.toFixed(2)} ${isSpike ? '⚡ SPIKE' : ''} (${prob}%)`);
-
     // 📌 TOUJOURS ajouter un marker historique pour les spikes
     if (isSpike) {
         createHistoricalMarker(currentSeries, price, signal, baseSymbol, prob, now / 1000);
@@ -841,7 +839,6 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // ⏱️ Activer timeout pour la ligne active
         timeoutUntil = now + SIGNAL_TIMEOUT;
-        console.log(`⏱️ Timeout activé ${SIGNAL_TIMEOUT / 1000}s`);
     } else {
         timeoutUntil = 0;
     }
@@ -860,7 +857,7 @@ document.addEventListener("DOMContentLoaded", () => {
             color: color,
             shape: shape,
             size: 2,
-            text: `SPIKE ${symbol}\n${prob}%`,
+            text: `SPIKE ${currentSymbol}\n${prob}%`,
         };
         
         // Ajouter à la série
@@ -876,7 +873,7 @@ document.addEventListener("DOMContentLoaded", () => {
             timestamp: timestamp || Date.now()
         });
         
-        console.log(`📌 Marker historique ajouté: ${symbol} ${type} @ ${price} (${prob}%)`);
+        console.log(`📌 Marker historique ajouté: ${currentSymbol} ${type} @ ${price} (${prob}%)`);
         
         return marker;
     } catch (error) {
