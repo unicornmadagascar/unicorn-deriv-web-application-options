@@ -821,7 +821,7 @@ document.addEventListener("DOMContentLoaded", () => {
         createHistoricalMarker(currentSeries, price, signal, baseSymbol, prob, now / 1000);
          
         // 🔊 Jouer le son
-        playBeepSound();
+        playBeepSound();  
         
         // ⏱️ Activer timeout pour la ligne active
         timeoutUntil = now + SIGNAL_TIMEOUT;
