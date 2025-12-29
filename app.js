@@ -801,7 +801,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ✅ Créer la nouvelle ligne horizontale
     activeSignal = signal;
-    activeLine = createSignalLine(currentSeries, price, signal);
+    activeLine = createSignalLine(price, signal);
     console.log(`📊 ${symbol} ${signal} at ${price}`);
 
     // ⏱️ Timeout conditionnel pour certains symbol/signals
@@ -823,10 +823,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ======================= CREATION LIGNE HORIZONTALE =======================
-  function createSignalLine(series, price, type) {
+  function createSignalLine(price, type) {
     const color = type === "BUY" ? "#2196F3" : "#9C27B0";
 
-    const line = series.createPriceLine({
+    const line = currentSeries.createPriceLine({
         price: price,
         color: color,
         lineWidth: 2,
