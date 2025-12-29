@@ -157,6 +157,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let activeLine = null;       // PriceLine
   let timeoutUntil = 0;        // timestamp (ms)
   const SIGNAL_TIMEOUT = 20000; // 20s
+  let audioContext = null;     // Pour le son
+  let isAudioEnabled = true;   // Option pour désactiver le son
   //------
   let currentChartType = "candlestick"; // par défaut
   let currentInterval = "1 minute";  // par défaut
@@ -816,9 +818,57 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ⏱️ Activer timeout uniquement pour les spikes
     if (isSpike) {
+        playSpikeSound(); // Ou playSpikeSoundSimple() selon votre préférence
         timeoutUntil = now + SIGNAL_TIMEOUT;
     } else {
         timeoutUntil = 0;
+    }
+  }
+
+  // ======================= INIT AUDIO =======================
+  function initAudio() {
+    if (typeof AudioContext !== 'undefined') {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        console.log('🔊 Audio initialisé');
+    } else {
+        console.warn('⚠️ AudioContext non supporté, pas de son pour les spikes');
+        isAudioEnabled = false;
+    }
+  }
+
+  // ======================= PLAY SPIKE SOUND =======================
+  function playSpikeSound() {
+    if (!isAudioEnabled || !audioContext) return;
+    
+    try {
+        // Créer un oscillateur pour le son
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        // Configurer le son (aigu pour les spikes)
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime); // Fréquence aiguë
+        oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.3);
+        
+        // Configurer le volume (enveloppe ADSR)
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.05); // Attack
+        gainNode.gain.exponentialRampToValueAtTime(0.1, audioContext.currentTime + 0.2); // Decay
+        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5); // Release
+        
+        // Connecter les nodes
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Démarrer et arrêter le son
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.5);
+        
+        console.log('🔔 Son de spike joué');
+        
+    } catch (error) {
+        console.warn('⚠️ Impossible de jouer le son:', error);
+        isAudioEnabled = false;
     }
   }
 
@@ -2669,6 +2719,7 @@ window.addEventListener("error", function (e) {
   initTable();
   initHistoricalTable();      
   inihistoricalchart();  
+  initAudio();
 
   window.onload = () => {
        if (!currentSymbol) return;
