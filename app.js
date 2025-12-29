@@ -153,14 +153,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let sl_contract = 0;
   
   let activeLine = null;
-  let activeSignal = null;
-  let lineTimeout = null;
-  let lineStartTime = 0;
-
-  // 🆕 Historique
-  const spikeHistory = [];     // { line, ts }
-  const MAX_HISTORY__ = 50;     // limite sécurité
-
+  let activeSignal = null; // "BUY" | "SELL"
+  let activeTimeout = null;
+  const SIGNAL_TIMEOUT = 20; // secondes
   //------
   let currentChartType = "candlestick"; // par défaut
   let currentInterval = "1 minute";  // par défaut
@@ -788,138 +783,81 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function handleMLSignal(data) {
-    if (data.type !== "ML_SIGNAL") return;
+    const { signal, symbol, price, time } = data;
+    const tickTime = time; // epoch Deriv
 
-    const { signal, price, time, prob } = data;
-    const now = time * 1000;
+    // 🚫 Même signal → ignorer
+    if (signal === activeSignal) return;
 
-    // 1️⃣ même signal actif → ignorer
-    if (activeLine && activeSignal === signal) {
-        return;
-    }
+    const timeoutRequired = needsTimeout(symbol, signal);
 
-    // 2️⃣ timeout non écoulé → ignorer
-    if (activeLine && (now - lineStartTime) < 20000) {
-        return;
-    }
+    // ⛔ Timeout actif → on ignore les signaux inverses
+    if (activeTimeout) return;
 
-    // 3️⃣ déplacer la ligne active vers l’historique
+    // 🔄 Signal inverse
     if (activeLine) {
-        spikeHistory.push({
-            line: activeLine,
-            ts: lineStartTime
-        });
-        trimHistory();
-
-        activeLine = null;
-        activeSignal = null;
-
-        if (lineTimeout) {
-            clearTimeout(lineTimeout);
-            lineTimeout = null;
-        }
+        removeActiveLine(chart);
     }
 
-    // 4️⃣ style selon prob
-    const { color, lineWidth } = getLineStyle(signal, prob ?? 0.5);
-
-    const line = chart.addLineSeries({
-        color,
-        lineWidth
-    });
-  
-    line.setData([
-        { time: time - 1, value: price },
-        { time: time + 1, value: price }
-    ]);
-
-    line.setMarkers([
-        {
-            time,
-            position: "aboveBar",
-            color,
-            shape: "text",
-            text: `Spike ${signal} detected @ ${price}`
-        }
-    ]);
-
-    activeLine = line;
+    // ✅ OUVERTURE NOUVELLE LIGNE
     activeSignal = signal;
-    lineStartTime = now;
+    activeLine = createSignalLine(chart, price, tickTime, signal);
 
-    // 🔊 alerte sonore
-    playSpikeSound(signal);
+    console.log(`📊 ${symbol} ${signal} at ${price}`);
 
-    // 5️⃣ suppression automatique DE LA LIGNE ACTIVE (PAS L’HISTORIQUE)
-    lineTimeout = setTimeout(() => {
-        if (!activeLine) return;
-
-        spikeHistory.push({
-            line: activeLine,
-            ts: lineStartTime
-        });
-        trimHistory();
-
-        activeLine = null;
-        activeSignal = null;
-        lineTimeout = null;
-    }, 20000);
-  }
-
-  function playSpikeSound(signal) {
-    try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = "sine";
-        osc.frequency.value = signal === "BUY" ? 880 : 440; // BUY plus aigu
-
-        gain.gain.value = 0.08;
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start();
-        osc.stop(ctx.currentTime + 0.15);
-    } catch (e) {
-        // navigateur bloqué → ignorer
+    // ⏱️ Timeout seulement si requis
+    if (timeoutRequired) {
+        activeTimeout = setTimeout(() => {
+            console.log(`⏱️ ${symbol} ${signal} timeout expired`);
+            removeActiveLine(chart);
+        }, SIGNAL_TIMEOUT * 1000);
     }
   }
 
-  function getLineStyle(signal, prob) {
-    // Clamp sécurité
-    prob = Math.max(0, Math.min(1, prob));
+  function removeActiveLine(chart) {
+    if (!activeLine) return;
 
-    // Épaisseur (1 → 4)
-    const lineWidth = 1 + Math.round(prob * 3);
+    chart.removeSeries(activeLine);
+    activeLine = null;
+    activeSignal = null;
 
-    // Couleurs de base
-    const buyColor = "#2979FF";   // bleu
-    const sellColor = "#8E24AA";  // violet
-
-    // Opacité selon prob
-    const alpha = 0.3 + prob * 0.7; // 0.3 → 1.0
-
-    const color = signal === "BUY"
-        ? `rgba(41,121,255,${alpha.toFixed(2)})`
-        : `rgba(142,36,170,${alpha.toFixed(2)})`;
-
-    return { color, lineWidth };
-  }
-
-  function trimHistory() {
-    while (spikeHistory.length > MAX_HISTORY__) {
-        const old = spikeHistory.shift();
-        try {
-            chart.removeSeries(old.line);
-        } catch (_) {}
+    if (activeTimeout) {
+        clearTimeout(activeTimeout);
+        activeTimeout = null;
     }
   }
+
+  function needsTimeout(symbol, signal) {
+    if (symbol === "CRA" && signal === "SELL") return true;
+    if (symbol === "BOO" && signal === "BUY") return true;
+    return false;
+  }
+
+  function signalColor(signal) {
+    return signal === "BUY" ? "#2196F3" : "#9C27B0";
+  }
+
+  function createSignalLine(chart, price, time, signal) {
+    const series = chart.addLineSeries({
+        color: signalColor(signal),
+        lineWidth: 2,
+        priceLineVisible: false,
+        lastValueVisible: false,
+    });
+
+    series.setData([{ time, value: price }]);
+    return series;
+  }
+
+  function needsTimeout(symbol, signal) {
+    if (symbol === "CRA" && signal === "SELL") return true;
+    if (symbol === "BOO" && signal === "BUY") return true;
+    return false;
+  }  
 
   /* ============================
    INIT WEBSOCKET
-============================ */
+  ============================ */
   function connectDeriv__() {
     wsTranscation = new WebSocket(WS_URL);
 
