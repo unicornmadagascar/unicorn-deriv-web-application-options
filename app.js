@@ -787,39 +787,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const signal = data.signal;              // "BUY" ou "SELL"
     const symbol = data.symbol.slice(0, 3);  // "CRA" ou "BOO"
     const price = data.price;
-    const tickTime = data.time * 1000;       // ms
+    const now = Date.now();
 
-    if (!tickTime) return;
+    if (!price) return;
 
-    // 🚫 Même signal → on ignore si timeout pas expiré
-    if (signal === activeSignal && !activeTimeout) return;
+    // 🔹 Même signal et timeout pas écoulé → ignorer
+    if (signal === activeSignal && now - lastSignalTime < SIGNAL_TIMEOUT) {
+        return;
+    }
 
-    // 🔄 Si signal inverse et timeout expiré → fermer ligne précédente
-    if (signal !== activeSignal && activeLine) {
+    // 🔹 Si signal inverse ou timeout écoulé → supprimer ligne existante
+    if (activeLine && (signal !== activeSignal || now - lastSignalTime >= SIGNAL_TIMEOUT)) {
         removeActiveLine();
     }
 
-    // ✅ Créer la nouvelle ligne horizontale
-    activeSignal = signal;
-    activeLine = createSignalLine(price, signal);
-    console.log(`📊 ${symbol} ${signal} at ${price}`);
-
-    // ⏱️ Timeout conditionnel pour certains symbol/signals
-    if (needsTimeout(symbol, signal)) {
-        if (activeTimeout) clearTimeout(activeTimeout); // reset timeout si existant
-        activeTimeout = setTimeout(() => {
-            console.log(`⏱️ ${symbol} ${signal} timeout expired`);
-            removeActiveLine();
-        }, SIGNAL_TIMEOUT * 1000);
+    // 🔹 Créer nouvelle ligne si pas déjà active
+    if (!activeLine) {
+        activeLine = createSignalLine(price, signal);
+        activeSignal = signal;
+        lastSignalTime = now;
+        console.log(`📊 ${symbol} ${signal} @ ${price}`);
     }
-  }
-
-  // ======================= FONCTION TIMEOUT =======================
-  function needsTimeout(symbol, signal) {
-    // Timeout seulement pour SELL sur CRA et BUY sur BOO
-    if (symbol === "CRA" && signal === "SELL") return true;
-    if (symbol === "BOO" && signal === "BUY") return true;
-    return false;
   }
 
   // ======================= CREATION LIGNE HORIZONTALE =======================
@@ -830,7 +818,7 @@ document.addEventListener("DOMContentLoaded", () => {
         price: price,
         color: color,
         lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Dashed,  
+        lineStyle: LightweightCharts.LineStyle.Dashed,
         axisLabelVisible: true,
         title: `${type} @ ${price.toFixed(2)}`
     });
@@ -839,19 +827,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
  // ======================= SUPPRESSION LIGNE =======================
- function removeActiveLine() {  
+ function removeActiveLine() {
     if (!activeLine) return;
 
     currentSeries.removePriceLine(activeLine);
     activeLine = null;
     activeSignal = null;
-
-    if (activeTimeout) {
-        clearTimeout(activeTimeout);
-        activeTimeout = null;
-    }
   }
-
 
   /* ============================
    INIT WEBSOCKET
