@@ -783,67 +783,78 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1000);
   }
 
-  // ======================= FONCTION PRINCIPALE =======================
-  function handleMLSignal(data) {
-    const signal = data.signal;                  // "BUY" | "SELL"
-    const symbol = data.symbol.slice(0, 3);      // "CRA" | "BOO"
-    const price  = data.price;
-    const now    = Date.now();
+// ======================= MAIN HANDLER =======================
+function handleMLSignal(data) {
+    // Validation des données
+    if (!data || typeof data !== 'object') return;
+    
+    const signal = data.signal;
+    const symbol = data.symbol;
+    const price = parseFloat(data.price);
+    const now = Date.now();
 
-    if (!signal || !price) return;
+    if (!signal || !price || isNaN(price)) return;
 
+    const baseSymbol = symbol ? symbol.slice(0, 3) : '';
+    
     const isSpike =
-        (symbol === "CRA" && signal === "SELL") ||
-        (symbol === "BOO" && signal === "BUY");
+        (baseSymbol === "CRA" && signal === "SELL") ||
+        (baseSymbol === "BOO" && signal === "BUY");
 
-    // ⛔ Timeout actif → bloquer TOUT
-    if (now < timeoutUntil) {
-        return;
-    }
+    // ⛔ Bloquer si timeout actif
+    if (now < timeoutUntil) return;
 
-    // 🚫 Même signal déjà affiché → rien
-    if (signal === activeSignal) {
-        return;
-    }
+    // 🚫 Ignorer si même signal actif
+    if (signal === activeSignal) return;
 
-    // 🔄 Reverse autorisé (timeout expiré)
+    // 🔄 Supprimer ligne précédente
     removeActiveLine();
 
     // ✅ Créer nouvelle ligne
-    activeLine = createSignalLine(price, signal);
+    activeLine = createSignalLine(currentSeries, price, signal);
     activeSignal = signal;
 
-    console.log(`📊 ${symbol} ${signal} @ ${price}`);
-
-    // ⏱️ Timeout UNIQUEMENT pour spike
+    // ⏱️ Activer timeout uniquement pour les spikes
     if (isSpike) {
         timeoutUntil = now + SIGNAL_TIMEOUT;
-        console.log(`⏱️ Timeout actif ${SIGNAL_TIMEOUT / 1000}s`);
     } else {
-        timeoutUntil = 0;  
+        timeoutUntil = 0;
     }
-  }
+}
 
-  // ======================= CREATION LIGNE HORIZONTALE =======================
-  function createSignalLine(price, type) {
-    return currentSeries.createPriceLine({
-        price: price,
-        color: type === "BUY" ? "#2196F3" : "#E91E63",
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: `${type} @ ${price.toFixed(2)}`
-    });
-  }
+// ======================= CREATE PRICE LINE =======================
+function createSignalLine(series, price, type) {
+    if (!series || typeof series.createPriceLine !== 'function') return null;
+    if (type !== "BUY" && type !== "SELL") return null;
+    
+    try {
+        return series.createPriceLine({
+            price: price,
+            color: type === "BUY" ? "#2196F3" : "#E91E63",
+            lineWidth: 2,
+            lineStyle: LightweightCharts.LineStyle.Dashed,
+            axisLabelVisible: true,
+            title: `${type} @ ${price.toFixed(2)}`
+        });
+    } catch (error) {
+        console.error('Erreur création ligne:', error);
+        return null;
+    }
+}
 
- // ======================= SUPPRESSION LIGNE =======================
- function removeActiveLine() {
+// ======================= REMOVE LINE =======================
+function removeActiveLine() {
     if (!activeLine) return;
 
-    currentSeries.removePriceLine(activeLine);
+    try {
+        currentSeries.removePriceLine(activeLine);
+    } catch (error) {
+        // Ignorer silencieusement l'erreur
+    }
+    
     activeLine = null;
     activeSignal = null;
-  }
+}
 
   /* ============================
    INIT WEBSOCKET
