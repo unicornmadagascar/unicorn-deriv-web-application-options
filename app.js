@@ -841,7 +841,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const series = chart.addLineSeries({
         color: signalColor(signal),
         lineWidth: 2,
-        priceLineVisible: false,
+        priceLineVisible: false,   
         lastValueVisible: false,
     });
 
