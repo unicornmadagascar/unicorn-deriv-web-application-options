@@ -157,8 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let activeLine = null;       // PriceLine
   let timeoutUntil = 0;        // timestamp (ms)
   const SIGNAL_TIMEOUT = 20000; // 20s
-  let audioContext = null;     // Pour le son
-  let isAudioEnabled = true;   // Option pour désactiver le son
+  const historicalMarkers = []; // Stocke tous les markers historiques
   //------
   let currentChartType = "candlestick"; // par défaut
   let currentInterval = "1 minute";  // par défaut
@@ -793,6 +792,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const signal = data.signal;
     const symbol = data.symbol;
     const price = parseFloat(data.price);
+    const prob = data.prob || data.probability || "N/A"; // Récupérer la probabilité
     const now = Date.now();
 
     if (!signal || !price || isNaN(price)) return;
@@ -803,26 +803,86 @@ document.addEventListener("DOMContentLoaded", () => {
         (baseSymbol === "CRA" && signal === "SELL") ||
         (baseSymbol === "BOO" && signal === "BUY");
 
-    // ⛔ Bloquer si timeout actif
-    if (now < timeoutUntil) return;
+    // ⛔ Bloquer si timeout actif (uniquement pour la ligne active)
+    if (now < timeoutUntil && isSpike) {
+        console.log(`⏳ Timeout spike actif...`);
+        // Mais on peut quand même ajouter un marker historique
+        if (isSpike) {
+            createHistoricalMarker(currentSeries, price, signal, baseSymbol, prob, now / 1000);
+        }
+        return;
+    }
 
-    // 🚫 Ignorer si même signal actif
-    if (signal === activeSignal) return;
+    // 🚫 Ignorer si même signal actif (uniquement pour la ligne active)
+    if (signal === activeSignal && isSpike) {
+        console.log(`⚠️ Signal ${signal} déjà actif`);
+        // Mais on peut quand même ajouter un marker historique
+        if (isSpike) {
+            createHistoricalMarker(currentSeries, price, signal, baseSymbol, prob, now / 1000);
+        }
+        return;
+    }
 
-    // 🔄 Supprimer ligne précédente
+    // 🔄 Supprimer UNIQUEMENT la ligne active (pas les markers)
     removeActiveLine();
 
-    // ✅ Créer nouvelle ligne
+    // ✅ Créer nouvelle ligne active
     activeLine = createSignalLine(currentSeries, price, signal);
     activeSignal = signal;
 
-    // ⏱️ Activer timeout uniquement pour les spikes
+    console.log(`📊 ${baseSymbol} ${signal} @ ${price.toFixed(2)} ${isSpike ? '⚡ SPIKE' : ''} (${prob}%)`);
+
+    // 📌 TOUJOURS ajouter un marker historique pour les spikes
     if (isSpike) {
-        playBeepSound(); // Sound
+        createHistoricalMarker(currentSeries, price, signal, baseSymbol, prob, now / 1000);
+        
+        // 🔊 Jouer le son
+        playBeepSound();
+        
+        // ⏱️ Activer timeout pour la ligne active
         timeoutUntil = now + SIGNAL_TIMEOUT;
+        console.log(`⏱️ Timeout activé ${SIGNAL_TIMEOUT / 1000}s`);
     } else {
         timeoutUntil = 0;
-    }  
+    }
+  }
+
+  // ======================= CREATE HISTORICAL MARKER =======================
+  function createHistoricalMarker(series, price, type, symbol, prob, timestamp) {
+    try {
+        const color = type === "BUY" ? "#2196F3" : "#E91E63";
+        const shape = type === "BUY" ? "arrowUp" : "arrowDown";
+        
+        // Créer un marker (point sur le graphique)
+        const marker = {
+            time: timestamp || Date.now() / 1000, // en secondes pour Lightweight Charts
+            position: 'inBar',
+            color: color,
+            shape: shape,
+            size: 2,
+            text: `SPIKE ${symbol}\n${prob}%`,
+        };
+        
+        // Ajouter à la série
+        series.setMarkers(series.markers().concat([marker]));
+        
+        // Stocker la référence
+        historicalMarkers.push({
+            marker: marker,
+            price: price,
+            type: type,
+            symbol: symbol,
+            prob: prob,
+            timestamp: timestamp || Date.now()
+        });
+        
+        console.log(`📌 Marker historique ajouté: ${symbol} ${type} @ ${price} (${prob}%)`);
+        
+        return marker;
+    } catch (error) {
+        console.error('Erreur création marker:', error);
+        return null;
+    }
   }
 
   // ======================= PLAY SPIKE SOUND =======================
