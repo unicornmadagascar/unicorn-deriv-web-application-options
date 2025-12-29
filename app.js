@@ -2664,7 +2664,7 @@ function extractValue(event, key) {
     setTimeout(startMLCountdown,7000);
     startSignalPipeline((data) => {     
         console.log(
-            `[${new Date(data.ts*1000).toLocaleTimeString()}]`,  
+            `[${new Date(data.time*1000).toLocaleTimeString()}]`,  
             data.signal,
             data.price,
             data.prob   
