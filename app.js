@@ -782,64 +782,67 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1000);
   }
 
+  // ======================= FONCTION PRINCIPALE =======================
   function handleMLSignal(data) {
-    const signal = data.signal;
-    const symbol = data.symbol.slice(0, 3); // CRA / BOO
+    const signal = data.signal;              // "BUY" ou "SELL"
+    const symbol = data.symbol.slice(0, 3);  // "CRA" ou "BOO"
     const price = data.price;
-    const tickTime = data.time; // epoch Deriv (secondes)
+    const tickTime = data.time * 1000;       // ms
 
     if (!tickTime) return;
 
-    // 🚫 même signal → rien
-    if (signal === activeSignal) return;
+    // 🚫 Même signal → on ignore si timeout pas expiré
+    if (signal === activeSignal && !activeTimeout) return;
 
-    const timeoutRequired = needsTimeout(symbol, signal);
-
-    // ⛔ verrou timeout → ignorer tout
-    if (activeTimeout) return;
-
-    // 🔄 suppression ligne précédente
-    if (activeLine) {
-        removeActiveLine(chart);
+    // 🔄 Si signal inverse et timeout expiré → fermer ligne précédente
+    if (signal !== activeSignal && activeLine) {
+        removeActiveLine();
     }
 
-    // ✅ création nouvelle ligne
+    // ✅ Créer la nouvelle ligne horizontale
     activeSignal = signal;
-    activeLine = createSignalLine(chart, price, tickTime, signal);
-
+    activeLine = createSignalLine(currentSeries, price, signal);
     console.log(`📊 ${symbol} ${signal} at ${price}`);
 
-    // ⏱️ timeout conditionnel
-    if (timeoutRequired) {
+    // ⏱️ Timeout conditionnel pour certains symbol/signals
+    if (needsTimeout(symbol, signal)) {
+        if (activeTimeout) clearTimeout(activeTimeout); // reset timeout si existant
         activeTimeout = setTimeout(() => {
             console.log(`⏱️ ${symbol} ${signal} timeout expired`);
-            removeActiveLine(chart);
+            removeActiveLine();
         }, SIGNAL_TIMEOUT * 1000);
     }
   }
 
+  // ======================= FONCTION TIMEOUT =======================
   function needsTimeout(symbol, signal) {
+    // Timeout seulement pour SELL sur CRA et BUY sur BOO
     if (symbol === "CRA" && signal === "SELL") return true;
     if (symbol === "BOO" && signal === "BUY") return true;
     return false;
   }
 
-  function createSignalLine(chart, price, time, signal) {
-    const series = chart.addLineSeries({
-        color: signal === "BUY" ? "#2196F3" : "#9C27B0",
+  // ======================= CREATION LIGNE HORIZONTALE =======================
+  function createSignalLine(series, price, type) {
+    const color = type === "BUY" ? "#2196F3" : "#9C27B0";
+
+    const line = series.createPriceLine({
+        price: price,
+        color: color,
         lineWidth: 2,
-        priceLineVisible: false,
-        lastValueVisible: false,
+        lineStyle: LightweightCharts.LineStyle.Dashed,  
+        axisLabelVisible: true,
+        title: `${type} @ ${price.toFixed(2)}`
     });
 
-    series.setData([{ time, value: price }]);
-    return series;
+    return line;
   }
 
-  function removeActiveLine(chart) {
+ // ======================= SUPPRESSION LIGNE =======================
+ function removeActiveLine() {
     if (!activeLine) return;
 
-    chart.removeSeries(activeLine);
+    currentSeries.removePriceLine(activeLine);
     activeLine = null;
     activeSignal = null;
 
@@ -848,6 +851,7 @@ document.addEventListener("DOMContentLoaded", () => {
         activeTimeout = null;
     }
   }
+
 
   /* ============================
    INIT WEBSOCKET
