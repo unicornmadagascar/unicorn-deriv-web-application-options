@@ -152,10 +152,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let tp_contract = 0;
   let sl_contract = 0;
   
-  let activeLine = null;
-  let activeSignal = null; // "BUY" | "SELL"
-  let activeTimeout = null;
-  const SIGNAL_TIMEOUT = 20; // secondes
+  // ======================= GLOBAL STATE =======================
+  let activeSignal = null;     // "BUY" ou "SELL"
+  let activeLine = null;       // PriceLine
+  let timeoutUntil = 0;        // timestamp (ms)
+  const SIGNAL_TIMEOUT = 20000; // 20s
   //------
   let currentChartType = "candlestick"; // par défaut
   let currentInterval = "1 minute";  // par défaut
@@ -784,46 +785,55 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ======================= FONCTION PRINCIPALE =======================
   function handleMLSignal(data) {
-    const signal = data.signal;              // "BUY" ou "SELL"
-    const symbol = data.symbol.slice(0, 3);  // "CRA" ou "BOO"
-    const price = data.price;
-    const now = Date.now();
+    const signal = data.signal;                  // "BUY" | "SELL"
+    const symbol = data.symbol.slice(0, 3);      // "CRA" | "BOO"
+    const price  = data.price;
+    const now    = Date.now();
 
-    if (!price) return;
+    if (!signal || !price) return;
 
-    // 🔹 Même signal et timeout pas écoulé → ignorer
-    if (signal === activeSignal && now - lastSignalTime < SIGNAL_TIMEOUT) {
+    const isSpike =
+        (symbol === "CRA" && signal === "SELL") ||
+        (symbol === "BOO" && signal === "BUY");
+
+    // ⛔ Timeout actif → bloquer TOUT
+    if (now < timeoutUntil) {
         return;
     }
 
-    // 🔹 Si signal inverse ou timeout écoulé → supprimer ligne existante
-    if (activeLine && (signal !== activeSignal || now - lastSignalTime >= SIGNAL_TIMEOUT)) {
-        removeActiveLine();
+    // 🚫 Même signal déjà affiché → rien
+    if (signal === activeSignal) {
+        return;
     }
 
-    // 🔹 Créer nouvelle ligne si pas déjà active
-    if (!activeLine) {
-        activeLine = createSignalLine(price, signal);
-        activeSignal = signal;
-        lastSignalTime = now;
-        console.log(`📊 ${symbol} ${signal} @ ${price}`);
+    // 🔄 Reverse autorisé (timeout expiré)
+    removeActiveLine();
+
+    // ✅ Créer nouvelle ligne
+    activeLine = createSignalLine(price, signal);
+    activeSignal = signal;
+
+    console.log(`📊 ${symbol} ${signal} @ ${price}`);
+
+    // ⏱️ Timeout UNIQUEMENT pour spike
+    if (isSpike) {
+        timeoutUntil = now + SIGNAL_TIMEOUT;
+        console.log(`⏱️ Timeout actif ${SIGNAL_TIMEOUT / 1000}s`);
+    } else {
+        timeoutUntil = 0;  
     }
   }
 
   // ======================= CREATION LIGNE HORIZONTALE =======================
   function createSignalLine(price, type) {
-    const color = type === "BUY" ? "#2196F3" : "#9C27B0";
-
-    const line = currentSeries.createPriceLine({
+    return currentSeries.createPriceLine({
         price: price,
-        color: color,
+        color: type === "BUY" ? "#2196F3" : "#E91E63",
         lineWidth: 2,
         lineStyle: LightweightCharts.LineStyle.Dashed,
         axisLabelVisible: true,
         title: `${type} @ ${price.toFixed(2)}`
     });
-
-    return line;
   }
 
  // ======================= SUPPRESSION LIGNE =======================
