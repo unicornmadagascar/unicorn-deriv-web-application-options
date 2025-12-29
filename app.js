@@ -839,7 +839,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
  // ======================= SUPPRESSION LIGNE =======================
- function removeActiveLine() {
+ function removeActiveLine() {  
     if (!activeLine) return;
 
     currentSeries.removePriceLine(activeLine);
