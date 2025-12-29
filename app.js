@@ -826,7 +826,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // ⏱️ Activer timeout pour la ligne active
         timeoutUntil = now + SIGNAL_TIMEOUT;
     } else {
-        timeoutUntil = 0;
+        timeoutUntil = 0;   
     }
   }
 
