@@ -827,7 +827,7 @@ document.addEventListener("DOMContentLoaded", () => {
         color,
         lineWidth
     });
-
+  
     line.setData([
         { time: time - 1, value: price },
         { time: time + 1, value: price }
