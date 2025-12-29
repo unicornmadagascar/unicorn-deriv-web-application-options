@@ -804,24 +804,10 @@ document.addEventListener("DOMContentLoaded", () => {
         (baseSymbol === "BOO" && signal === "BUY");
 
     // ⛔ Bloquer si timeout actif (uniquement pour la ligne active)
-    if (now < timeoutUntil && isSpike) {
-        console.log(`⏳ Timeout spike actif...`);
-        // Mais on peut quand même ajouter un marker historique
-        if (isSpike) {
-            createHistoricalMarker(currentSeries, price, signal, baseSymbol, prob, now / 1000);
-        }
-        return;
-    }
+    if (now < timeoutUntil) return;
 
     // 🚫 Ignorer si même signal actif (uniquement pour la ligne active)
-    if (signal === activeSignal && isSpike) {
-        console.log(`⚠️ Signal ${signal} déjà actif`);
-        // Mais on peut quand même ajouter un marker historique
-        if (isSpike) {
-            createHistoricalMarker(currentSeries, price, signal, baseSymbol, prob, now / 1000);
-        }
-        return;
-    }
+    if (signal === activeSignal) return;
 
     // 🔄 Supprimer UNIQUEMENT la ligne active (pas les markers)
     removeActiveLine();
@@ -833,7 +819,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 📌 TOUJOURS ajouter un marker historique pour les spikes
     if (isSpike) {
         createHistoricalMarker(currentSeries, price, signal, baseSymbol, prob, now / 1000);
-        
+         
         // 🔊 Jouer le son
         playBeepSound();
         
