@@ -783,8 +783,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1000);
   }
 
-// ======================= MAIN HANDLER =======================
-function handleMLSignal(data) {
+  // ======================= MAIN HANDLER =======================
+  function handleMLSignal(data) {
     // Validation des données
     if (!data || typeof data !== 'object') return;
     
@@ -820,10 +820,10 @@ function handleMLSignal(data) {
     } else {
         timeoutUntil = 0;
     }
-}
+  }
 
-// ======================= CREATE PRICE LINE =======================
-function createSignalLine(series, price, type) {
+  // ======================= CREATE PRICE LINE =======================
+  function createSignalLine(series, price, type) {
     if (!series || typeof series.createPriceLine !== 'function') return null;
     if (type !== "BUY" && type !== "SELL") return null;
     
@@ -840,10 +840,10 @@ function createSignalLine(series, price, type) {
         console.error('Erreur création ligne:', error);
         return null;
     }
-}
+  }
 
-// ======================= REMOVE LINE =======================
-function removeActiveLine() {
+  // ======================= REMOVE LINE =======================
+  function removeActiveLine() {
     if (!activeLine) return;
 
     try {
@@ -854,8 +854,8 @@ function removeActiveLine() {
     
     activeLine = null;
     activeSignal = null;
-}
-
+  }
+  
   /* ============================
    INIT WEBSOCKET
   ============================ */
