@@ -1303,7 +1303,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Portfolio received
       if (data.msg_type === "portfolio" && data.portfolio?.contracts?.length > 0) {
          const contracts = data.portfolio.contracts || [];  
-         console.log("📊 Found " + contracts.length + " active contracts.");
+         console.log("📊 Found " + contracts.length + " active contracts.");  
 
          contracts.forEach((contract,i) => {
          setTimeout(() => {     
