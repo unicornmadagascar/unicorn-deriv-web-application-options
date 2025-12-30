@@ -873,7 +873,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
         if (window.AudioContext) {
             const ctx = new AudioContext();
-            const osc = ctx.createOscillator();
+            const osc = ctx.createOscillator();   
             const gain = ctx.createGain();
             
             osc.connect(gain);
