@@ -168,7 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let authorized = false;  
   /* =============================
    Configuration (tweakable)  
-  ============================= */
+  ============================= */  
   const SMOOTH_PERIOD = 250;       // EMA smoothed period
   const WINDOW_SIZE = 30;          // nb de timesteps passés observés par LSTM (16..32 good)
   const FEATURES = 1;              // ici on n'utilise que l'EMA par timestep (peut étendre)
