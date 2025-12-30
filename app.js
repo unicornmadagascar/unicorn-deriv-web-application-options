@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const takeProfitInput = document.getElementById("tpInput");   
   const stopLossInput = document.getElementById("slInput");
   const closewinning = document.getElementById("closeWinning");
+  const closelosing = document.getElementById("closeLosing");
   const closeAll = document.getElementById("closeAll");
   const buyNumber = document.getElementById("buyNumberInput");
   const sellNumber = document.getElementById("sellNumberInput");
@@ -73,8 +74,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let ControlSocket = null;
   let engineStarted = false;
   let totalPL = 0; // cumul des profits et pertes
-  let BCautomationRunning = false;
-  let IAautomationRunning = false;
   let ws=null;   
   let wsTranscation = null;
   let authToken = null;
@@ -82,7 +81,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsContracts_reverse = null; 
   let ws_calendar = null;
   let wsContracts__close = null;
-  let wsContracts_winning = null;   
+  let wsContracts_winning = null; 
+  let wsContracts_losing = null;  
   let wsAutomation_close = null;
   let connection_ws = null;   
   let connection_ws_htx = null;
@@ -104,8 +104,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let chartData = [];   
   let lastPrices = {};
   let recentChanges = [];  
-  let signal;
-  let signal__;
   let Dispersion;
   let isConnect = false;
   let it = 0;
@@ -127,9 +125,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const contractsData = {}; // stockage des contrats {id: {profits: [], infos: {…}}}
   let contractSymbol;  
   let contracts = [];
-  let bcContracts = [];
-  let AIProposal = null;
-  let AIContracts = null;
   let wsAI = null;
   let contracttype__ = "";
   let contractid__;
@@ -1280,7 +1275,81 @@ document.addEventListener("DOMContentLoaded", () => {
    };
 
    ControlSocket.onopen = () => {
-        ControlSocket.send(JSON.stringify({ cmd: "CLOSE_ALL_WIN" }));
+        ControlSocket.send(JSON.stringify({ cmd: "CLOSE_ALL_WINNING" }));
+   };
+ };
+
+ closelosing.onclick=()=>{
+    if (wsContracts_losing) { wsContracts_losing.close(); wsContracts_losing = null; }
+
+    console.log("Closing all profitable trades...");
+
+    wsContracts_losing = new WebSocket(WS_URL);
+    ControlSocket = new WebSocket(WS_CONTROL);
+    wsContracts_losing.onopen=()=>{ wsContracts_losing.send(JSON.stringify({ authorize: TOKEN })); };
+    wsContracts_losing.onerror = (e) => {
+      console.log("❌ WS Error: " + JSON.stringify(e));
+    };
+
+    wsContracts_losing.onmessage = (msg) => {
+       const data = JSON.parse(msg.data);
+
+      // Authorization successful
+      if (data.msg_type === "authorize") {
+         console.log("✅ Authorized successfully. Fetching portfolio...");
+         wsContracts_losing.send(JSON.stringify({ portfolio: 1 }));
+      }
+
+      // Portfolio received
+      if (data.msg_type === "portfolio" && data.portfolio?.contracts?.length > 0) {
+         const contracts = data.portfolio.contracts || [];
+         console.log("📊 Found " + contracts.length + " active contracts.");
+
+         contracts.forEach((contract,i) => {
+         setTimeout(() => {     
+            wsContracts_losing.send(
+              JSON.stringify({
+                 proposal_open_contract: 1,
+                 contract_id: contract.contract_id,
+              })
+            );
+          }, i * 200); // Délai de 500ms entre chaque demande
+      });
+    }
+
+    // Proposal open contract (detail for each active trade)
+    if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
+      const poc = data.proposal_open_contract;
+      const profit = parseFloat(poc.profit);
+
+      if (profit < 0) {
+        console.log(
+          `💰 Closing profitable trade ${poc.contract_id} with profit ${profit.toFixed(2)}`
+        );
+
+        wsContracts_losing.send(
+          JSON.stringify({
+            sell: poc.contract_id,
+            price: 0, // 0 = sell at market price
+          })
+        );
+      }
+    }
+
+    // Sell confirmation
+    if (data.msg_type === "sell") {
+      const profit = parseFloat(data.sell.profit);
+      console.log(`✅ Trade ${data.sell.contract_id} closed with profit: ${profit.toFixed(2)}`);
+    }
+
+    // No open contracts
+    if (data.msg_type === "portfolio" && (!data.portfolio || !data.portfolio.contracts.length)) {
+      console.log("⚠️ No active contracts found.");
+    }
+   };
+
+   ControlSocket.onopen = () => {
+        ControlSocket.send(JSON.stringify({ cmd: "CLOSE_ALL_LOSING" }));
    };
  };
 
