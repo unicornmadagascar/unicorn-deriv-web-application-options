@@ -1103,10 +1103,16 @@ hr {
 
 /* ================= TRADE HISTORY STYLES ================= */
 
+/* ================= TRADE HISTORY CONTAINER ================= */
+
 #tradeHistoryContainer__ {
   font-family: Arial, sans-serif;
-  padding: 15px;
-  background: #f4f4f4;
+  padding: 16px;
+  background: #ffffff;              /* fond blanc */
+  border-radius: 12px;              /* coins arrondis */
+  border: 1px solid #e0e0e0;         /* bordure douce */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06); /* ombre légère */
+  margin-bottom: 20px;
 }
 
 .tradeHistoryTitle__ {
@@ -1121,12 +1127,15 @@ hr {
 .tradeHistoryTableWrapper__ {
   overflow-x: auto;
   background: white;
+  border-radius: 10px;
 }
 
 #tradeHistoryTable__ {
   border-collapse: collapse;
   width: 100%;
-}
+  border-radius: 10px;
+  overflow: hidden;
+}  
 
 #tradeHistoryTable__ th,
 #tradeHistoryTable__ td {
