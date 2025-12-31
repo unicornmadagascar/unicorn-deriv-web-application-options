@@ -963,8 +963,8 @@ document.addEventListener("DOMContentLoaded", () => {
     probTd.textContent = trade.prob;
     const p = Math.min(Math.max(trade.prob, 0), 1);
     probTd.classList.add("tradeHistory__-prob");
-    probTd.style.backgroundColor = `rgba(0, 0, 255, ${p})`;
-    probTd.style.color = (p >= 0.5080 && p < 0.5091) ? "#fff" : "#000";
+    probTd.style.backgroundColor = (p >= 0.5080 && p <= 0.5091) ? "#0000e8ff" : "#ad059fff";
+    probTd.style.color = "#ffffffff";
     tr.appendChild(probTd);
   
     /* ========= AJOUT EN HAUT ========= */
