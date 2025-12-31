@@ -948,8 +948,8 @@ document.addEventListener("DOMContentLoaded", () => {
     signalTd.textContent = trade.signal;
     signalTd.classList.add(
       trade.signal === "BUY"
-        ? "tradeHistory-signal-buy"
-        : "tradeHistory-signal-sell"
+        ? "tradeHistory__-signal-buy"
+        : "tradeHistory__-signal-sell"
     );
     tr.appendChild(signalTd);
 
@@ -962,11 +962,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const probTd = document.createElement("td");
     probTd.textContent = trade.prob;
     const p = Math.min(Math.max(trade.prob, 0), 1);
-    probTd.classList.add("tradeHistory-prob");
+    probTd.classList.add("tradeHistory__-prob");
     probTd.style.backgroundColor = `rgba(0, 0, 255, ${p})`;
-    probTd.style.color = p > 0.5 ? "#fff" : "#000";
+    probTd.style.color = (p >= 0.5080 && p < 0.5091) ? "#fff" : "#000";
     tr.appendChild(probTd);
-
+  
     /* ========= AJOUT EN HAUT ========= */
     tradeHistoryBody.prepend(tr);
 
