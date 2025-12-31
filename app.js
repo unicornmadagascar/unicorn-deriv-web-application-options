@@ -953,7 +953,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
     tr.appendChild(signalTd);
 
-    /* ========= PRICE ========= */
+    /* ========= PRICE ========= */  
     const priceTd = document.createElement("td");
     priceTd.textContent = trade.price;
     tr.appendChild(priceTd);
