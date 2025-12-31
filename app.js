@@ -974,7 +974,7 @@ document.addEventListener("DOMContentLoaded", () => {
       probTd.style.color = "#1c1b1bff";  
      }
     tr.appendChild(probTd);
-  
+     
     /* ========= AJOUT EN HAUT ========= */
     tradeHistoryBody.prepend(tr);
 
