@@ -980,7 +980,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* ========= LIMITE À 10 LIGNES ========= */
     while (tradeHistoryBody.rows.length > 10) {
-      tradeHistoryBody.deleteRow(tradeHistoryBody.rows.length - 1);
+      tradeHistoryBody.deleteRow(tradeHistoryBody.rows.length - 1);  
     }
   }
 
