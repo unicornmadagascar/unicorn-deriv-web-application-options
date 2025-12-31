@@ -920,44 +920,55 @@ document.addEventListener("DOMContentLoaded", () => {
     activeLine = null;
     activeSignal = null;
   }
+  
   /* ============================
    WS SIGNAL ON HISTORY TABLE
   ============================ */
   function addTradeHistoryColumn(trade) {
-    const fields = ['tick_time','symbol','signal','price','prob'];
+
+    // 🔒 Sécurité : on ignore tout sauf les vrais signaux ML
+    if (trade.type !== "ML_SIGNAL") return;
+
+    // Ordre exact des champs attendus
+    const fields = ["time", "symbol", "signal", "price", "prob"];
 
     fields.forEach(field => {
       const td = document.createElement("td");
+
+      // Valeur
       td.textContent = trade[field];
 
-      // Signal style
-      if(field === "signal") {
-         td.classList.add(
-           trade[field].toUpperCase() === "BUY"
-             ? "tradeHistory__-signal-buy"
-             : "tradeHistory__-signal-sell"
-         );
+      /* ================= SIGNAL STYLE ================= */
+      if (field === "signal") {
+        td.classList.add(
+          trade.signal === "BUY"
+            ? "tradeHistory-signal-buy"
+            : "tradeHistory-signal-sell"
+        );
       }
 
-      // Probability style
-      if(field === "prob") {
-        const p = Math.min(Math.max(trade[field], 0), 1);
-        td.classList.add("tradeHistory__-prob");
+      /* ================= PROB STYLE ================= */
+      if (field === "prob") {
+        const p = Math.min(Math.max(trade.prob, 0), 1);
+        td.classList.add("tradeHistory-prob");
         td.style.backgroundColor = `rgba(0, 0, 255, ${p})`;
         td.style.color = p > 0.5 ? "#fff" : "#000";
       }
 
-       tradeHistoryDataRow.appendChild(td);
-     });
+      tradeHistoryDataRow.appendChild(td);
+    });
 
-     // Keep last 10 trades (5 cols per trade)
-     while(tradeHistoryDataRow.cells.length > 50) {
-        tradeHistoryDataRow.removeChild(tradeHistoryDataRow.firstChild);
-     }
+    /* ============ LIMITE À 10 TRADES (10 × 5 COLONNES) ============ */
+    const MAX_TRADES = 10;
+    const COLS_PER_TRADE = fields.length;
 
-     // Auto scroll right
-     tradeHistoryDataRow.parentElement.scrollLeft =
-        tradeHistoryDataRow.parentElement.scrollWidth;
+    while (tradeHistoryDataRow.cells.length > MAX_TRADES * COLS_PER_TRADE) {
+      tradeHistoryDataRow.removeChild(tradeHistoryDataRow.firstChild);
+    }
+
+    /* ================= AUTO SCROLL ================= */
+    tradeHistoryDataRow.parentElement.scrollLeft =
+      tradeHistoryDataRow.parentElement.scrollWidth;
   }
   
   /* ============================
