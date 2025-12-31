@@ -1056,7 +1056,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = JSON.parse(event.data);
         onMessageCallback(data); // callback UI
         handleMLSignal(data);
-        addTradeHistoryColumn(data);
+        addTradeHistoryColumn(data);   
     };
      
     wsSignal.onclose = () => {
