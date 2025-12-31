@@ -966,7 +966,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (p >= 0.5080 && p <= 0.5091)
      {
        probTd.style.backgroundColor = (p >= 0.5080 && p <= 0.5091) ? "#4141d8ff" : "#ad059fff";
-       robTd.style.color = "#ffffffff";
+       probTd.style.color = "#ffffffff";
      }
     else
      {
@@ -976,7 +976,7 @@ document.addEventListener("DOMContentLoaded", () => {
     tr.appendChild(probTd);
      
     /* ========= AJOUT EN HAUT ========= */
-    tradeHistoryBody.prepend(tr);
+    tradeHistoryBody.prepend(tr);  
 
     /* ========= LIMITE À 10 LIGNES ========= */
     while (tradeHistoryBody.rows.length > 10) {
