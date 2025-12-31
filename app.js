@@ -57,6 +57,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const startbtn = document.getElementById("START");
   const stopbtn = document.getElementById("STOP");
+  const tradeHistoryStatus = document.getElementById("tradeHistoryStatus__");
+  const tradeHistoryDataRow = document.getElementById("tradeHistoryDataRow__");
 
   // Éléments UI
   const openCashierBtn = document.getElementById("openCashierBtn");
@@ -918,6 +920,45 @@ document.addEventListener("DOMContentLoaded", () => {
     activeLine = null;
     activeSignal = null;
   }
+  /* ============================
+   WS SIGNAL ON HISTORY TABLE
+  ============================ */
+  function addTradeHistoryColumn(trade) {
+    const fields = ['tick_time','symbol','signal','price','prob'];
+
+    fields.forEach(field => {
+      const td = document.createElement("td");
+      td.textContent = trade[field];
+
+      // Signal style
+      if(field === "signal") {
+         td.classList.add(
+           trade[field].toUpperCase() === "BUY"
+             ? "tradeHistory__-signal-buy"
+             : "tradeHistory__-signal-sell"
+         );
+      }
+
+      // Probability style
+      if(field === "prob") {
+        const p = Math.min(Math.max(trade[field], 0), 1);
+        td.classList.add("tradeHistory__-prob");
+        td.style.backgroundColor = `rgba(0, 0, 255, ${p})`;
+        td.style.color = p > 0.5 ? "#fff" : "#000";
+      }
+
+       tradeHistoryDataRow.appendChild(td);
+     });
+
+     // Keep last 10 trades (5 cols per trade)
+     while(tradeHistoryDataRow.cells.length > 50) {
+        tradeHistoryDataRow.removeChild(tradeHistoryDataRow.firstChild);
+     }
+
+     // Auto scroll right
+     tradeHistoryDataRow.parentElement.scrollLeft =
+        tradeHistoryDataRow.parentElement.scrollWidth;
+  }
   
   /* ============================
    INIT WEBSOCKET
@@ -1008,20 +1049,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     wsSignal.onopen = () => {
         console.log("✅ Connecté à /signal");
+        tradeHistoryStatus.innerText = "✅ Connected to Trade History WS";
     };
 
     wsSignal.onmessage = (event) => {   
         const data = JSON.parse(event.data);
         onMessageCallback(data); // callback UI
         handleMLSignal(data);
+        addTradeHistoryColumn(data);
     };
      
     wsSignal.onclose = () => {
-        console.log("❌ /signal fermé");  
+        console.log("❌ /signal fermé");
+        tradeHistoryStatus.innerText = "❌ Trade History WS disconnected";  
     };
 
     wsSignal.onerror = (err) => {
         console.error("Signal WS error:", err);
+        tradeHistoryStatus.innerText = "⚠️ Trade History WS error";
     };  
   }
 
@@ -1646,11 +1691,6 @@ closeAll.onclick=()=>{
       combo.appendChild(option);
     });
   }
-  
-  // 🔹 Nettoyer l’URL après extraction
-  function cleanURL() {
-    window.history.replaceState({}, document.title, window.location.pathname);   
-  }
 
   // 🔹 Initialisation principale
   function initDerivAccountManager() {
@@ -1659,7 +1699,6 @@ closeAll.onclick=()=>{
     if (newAccounts.length > 0) {
        console.log("✅ Comptes détectés :", newAccounts);
        mergeAccounts(newAccounts);
-       //cleanURL();
     }
 
     populateAccountCombo();
