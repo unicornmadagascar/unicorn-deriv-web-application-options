@@ -948,7 +948,7 @@ document.addEventListener("DOMContentLoaded", () => {
     signalTd.textContent = trade.signal;
     signalTd.classList.add(
       trade.signal === "BUY"
-        ? "tradeHistory__-signal-buy"
+        ? "tradeHistory__-signal-buy"   
         : "tradeHistory__-signal-sell"
     );
     tr.appendChild(signalTd);
