@@ -971,7 +971,7 @@ document.addEventListener("DOMContentLoaded", () => {
     else
      {
       probTd.style.backgroundColor = "#89027eff";
-      probTd.style.color = "#ffffffff";  
+      probTd.style.color = "#ffffffff";   
      }
     tr.appendChild(probTd);
      
