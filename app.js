@@ -963,7 +963,7 @@ document.addEventListener("DOMContentLoaded", () => {
     probTd.textContent = trade.prob;
     const p = Math.min(Math.max(trade.prob, 0), 1);
     probTd.classList.add("tradeHistory__-prob");
-    if (p >= 0.5080 && p <= 0.5091)
+    if (p >= 0.5080 && p < 0.5092)
      {
        probTd.style.backgroundColor = "#ffffffff";  
        probTd.style.color = "#414040ff";  
