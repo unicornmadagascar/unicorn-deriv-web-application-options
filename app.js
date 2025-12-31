@@ -966,7 +966,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (p >= 0.5080 && p <= 0.5091)
      {
        probTd.style.backgroundColor = "#ffffffff";  
-       probTd.style.color = "#2e2d2dff";  
+       probTd.style.color = "#414040ff";  
      }
     else
      {
