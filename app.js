@@ -1061,7 +1061,7 @@ document.addEventListener("DOMContentLoaded", () => {
      
     wsSignal.onclose = () => {
         console.log("❌ /signal fermé");
-        tradeHistoryStatus.innerText = "❌ Trade History WS disconnected";  
+        tradeHistoryStatus.innerText = "❌ Trade History WS disconnected";    
     };
 
     wsSignal.onerror = (err) => {
