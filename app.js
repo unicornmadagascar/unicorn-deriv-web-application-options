@@ -965,13 +965,13 @@ document.addEventListener("DOMContentLoaded", () => {
     probTd.classList.add("tradeHistory__-prob");
     if (p >= 0.5080 && p <= 0.5091)
      {
-       probTd.style.backgroundColor = (p >= 0.5080 && p <= 0.5091) ? "#4141d8ff" : "#ad059fff";
-       probTd.style.color = "#ffffffff";
+       probTd.style.backgroundColor = "#ffffffff";  
+       probTd.style.color = "#2e2d2dff";  
      }
     else
      {
-      probTd.style.backgroundColor = "#ffffffff";
-      probTd.style.color = "#1c1b1bff";  
+      probTd.style.backgroundColor = "#89027eff";
+      probTd.style.color = "#ffffffff";  
      }
     tr.appendChild(probTd);
      
