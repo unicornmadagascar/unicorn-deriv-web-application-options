@@ -959,7 +959,7 @@ document.addEventListener("DOMContentLoaded", () => {
     tr.appendChild(priceTd);
 
     /* ========= PROB ========= */
-    const probTd = document.createElement("td");
+    const probTd = document.createElement("td");  
     probTd.textContent = trade.prob;
     const p = Math.min(Math.max(trade.prob, 0), 1);
     probTd.classList.add("tradeHistory__-prob");
