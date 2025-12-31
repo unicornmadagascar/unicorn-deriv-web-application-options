@@ -1114,6 +1114,8 @@ hr {
   box-shadow: 0 4px 10px rgba(0,0,0,0.06); /* ombre légère */
   margin-bottom: 20px;
   height: 300px;
+  display: flex;
+  flex-direction: column;
 }
 
 .tradeHistoryTitle__ {
@@ -1129,6 +1131,9 @@ hr {
   overflow-x: auto;
   background: white;
   border-radius: 10px;
+  flex: 1;                /* prend toute la hauteur disponible */
+  overflow-x: auto;
+  overflow-y: auto;       /* scroll vertical si besoin */
 }
 
 #tradeHistoryTable__ {
@@ -1150,6 +1155,13 @@ hr {
   background-color: whitesmoke;
   color: gray;
 }
+
+#tradeHistoryTable__ thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
 
 /* Signal colors */
 .tradeHistory__-signal-buy {
