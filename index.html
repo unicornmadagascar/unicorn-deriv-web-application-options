@@ -1142,23 +1142,23 @@ hr {
 }
 
 /* Signal colors */
-.tradeHistory-signal-buy {
+.tradeHistory__-signal-buy {
   color: green;
   font-weight: bold;
 }
 
-.tradeHistory-signal-sell {
+.tradeHistory__-signal-sell {
   color: red;
   font-weight: bold;
 }
 
 /* Probability gradient */
-.tradeHistory-prob {
+.tradeHistory__-prob {
   font-weight: bold;
 }
 
 /* Alternate shading */
-#tradeHistoryTable td:nth-child(even) {
+#tradeHistoryTable__ td:nth-child(even) {
   background-color: #f9f9f9;
 }
    
@@ -1273,19 +1273,17 @@ hr {
     </div>  
   </div>
 
-  <h2>Trade History (Horizontal, Coloré)</h2>
-<div id="status">Connecting to WebSocket...</div>
 
 <!-- ================= TRADE HISTORY CONTAINER ================= -->
-<div id="tradeHistoryContainer">
+<div id="tradeHistoryContainer__">
 
-  <h2 class="tradeHistoryTitle">Trade History (Horizontal)</h2>
-  <div id="tradeHistoryStatus">Connecting to WebSocket...</div>
+  <h2 class="tradeHistoryTitle__">Trade History</h2>
+  <div id="tradeHistoryStatus__">Connecting to WebSocket...</div>
 
-  <div class="tradeHistoryTableWrapper">
-    <table id="tradeHistoryTable">
+  <div class="tradeHistoryTableWrapper__">
+    <table id="tradeHistoryTable__">
       <thead>
-        <tr id="tradeHistoryHeaderRow">
+        <tr id="tradeHistoryHeaderRow__">
           <th class="th-tick-time">tick_time</th>
           <th class="th-symbol">symbol</th>
           <th class="th-signal">signal</th>
@@ -1295,7 +1293,7 @@ hr {
       </thead>
 
       <tbody>
-        <tr id="tradeHistoryDataRow"></tr>
+        <tr id="tradeHistoryDataRow__"></tr>
       </tbody>
     </table>
   </div>
