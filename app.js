@@ -939,7 +939,7 @@ document.addEventListener("DOMContentLoaded", () => {
       td.textContent = trade[field];
   
       /* ================= SIGNAL STYLE ================= */
-      if (field === "signal") {
+      if (field === "signal") {  
         td.classList.add(
           trade.signal === "BUY"
             ? "tradeHistory__-signal-buy"
