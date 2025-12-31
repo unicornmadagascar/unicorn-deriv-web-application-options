@@ -1100,6 +1100,67 @@ hr {
     50%  { transform: scale(1.2); opacity: 0.7; }
     100% { transform: scale(1); opacity: 1; }
   }
+
+/* ================= TRADE HISTORY STYLES ================= */
+
+#tradeHistoryContainer {
+  font-family: Arial, sans-serif;
+  padding: 15px;
+  background: #f4f4f4;
+}
+
+.tradeHistoryTitle {
+  margin-bottom: 10px;
+}
+
+#tradeHistoryStatus {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.tradeHistoryTableWrapper {
+  overflow-x: auto;
+  background: white;
+}
+
+#tradeHistoryTable {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#tradeHistoryTable th,
+#tradeHistoryTable td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  min-width: 90px;
+  text-align: center;
+}
+
+#tradeHistoryTable th {
+  background-color: #222;
+  color: white;
+}
+
+/* Signal colors */
+.tradeHistory-signal-buy {
+  color: green;
+  font-weight: bold;
+}
+
+.tradeHistory-signal-sell {
+  color: red;
+  font-weight: bold;
+}
+
+/* Probability gradient */
+.tradeHistory-prob {
+  font-weight: bold;
+}
+
+/* Alternate shading */
+#tradeHistoryTable td:nth-child(even) {
+  background-color: #f9f9f9;
+}
    
   </style>
 </head>
@@ -1211,6 +1272,36 @@ hr {
       <div id="chartInner"></div>
     </div>  
   </div>
+
+  <h2>Trade History (Horizontal, Coloré)</h2>
+<div id="status">Connecting to WebSocket...</div>
+
+<!-- ================= TRADE HISTORY CONTAINER ================= -->
+<div id="tradeHistoryContainer">
+
+  <h2 class="tradeHistoryTitle">Trade History (Horizontal)</h2>
+  <div id="tradeHistoryStatus">Connecting to WebSocket...</div>
+
+  <div class="tradeHistoryTableWrapper">
+    <table id="tradeHistoryTable">
+      <thead>
+        <tr id="tradeHistoryHeaderRow">
+          <th class="th-tick-time">tick_time</th>
+          <th class="th-symbol">symbol</th>
+          <th class="th-signal">signal</th>
+          <th class="th-price">price</th>
+          <th class="th-prob">prob</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr id="tradeHistoryDataRow"></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
 
   <!-- === Popup de sélection === -->
   <div id="chartTypeModal" class="modal">
