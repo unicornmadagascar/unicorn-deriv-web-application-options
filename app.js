@@ -59,6 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const stopbtn = document.getElementById("STOP");
   const tradeHistoryStatus = document.getElementById("tradeHistoryStatus__");
   const tradeHistoryDataRow = document.getElementById("tradeHistoryDataRow__");
+  const tradeHistoryBody = document.getElementById("tradeHistoryBody__");
 
   // Éléments UI
   const openCashierBtn = document.getElementById("openCashierBtn");
@@ -926,49 +927,59 @@ document.addEventListener("DOMContentLoaded", () => {
   ============================ */
   function addTradeHistoryColumn(trade) {
 
-    // 🔒 Sécurité : on ignore tout sauf les vrais signaux ML
+    // Sécurité
     if (trade.type !== "ML_SIGNAL") return;
 
-    // Ordre exact des champs attendus
-    const fields = ["time", "symbol", "signal", "price", "prob"];
+    // Création d'une NOUVELLE LIGNE
+   const tr = document.createElement("tr");
 
-    fields.forEach(field => {
-      const td = document.createElement("td");
+    /* ========= TIME ========= */
+    const timeTd = document.createElement("td");
+    timeTd.textContent = formatUnixTime(trade.time);
+    tr.appendChild(timeTd);
 
-      // Valeur
-      td.textContent = trade[field];
+    /* ========= SYMBOL ========= */
+    const symbolTd = document.createElement("td");
+    symbolTd.textContent = trade.symbol;
+    tr.appendChild(symbolTd);
   
-      /* ================= SIGNAL STYLE ================= */
-      if (field === "signal") {  
-        td.classList.add(
-          trade.signal === "BUY"
-            ? "tradeHistory__-signal-buy"
-            : "tradeHistory__-signal-sell"
-        );
-      }
+    /* ========= SIGNAL ========= */
+    const signalTd = document.createElement("td");
+    signalTd.textContent = trade.signal;
+    signalTd.classList.add(
+      trade.signal === "BUY"
+        ? "tradeHistory-signal-buy"
+        : "tradeHistory-signal-sell"
+    );
+    tr.appendChild(signalTd);
 
-      /* ================= PROB STYLE ================= */
-      if (field === "prob") {
-        const p = Math.min(Math.max(trade.prob, 0), 1);
-        td.classList.add("tradeHistory__-prob");
-        td.style.backgroundColor = `rgba(0, 0, 255, ${p})`;
-        td.style.color = p > 0.5 ? "#fff" : "#000";
-      }
+    /* ========= PRICE ========= */
+    const priceTd = document.createElement("td");
+    priceTd.textContent = trade.price;
+    tr.appendChild(priceTd);
 
-      tradeHistoryDataRow.appendChild(td);
-    });
+    /* ========= PROB ========= */
+    const probTd = document.createElement("td");
+    probTd.textContent = trade.prob;
+    const p = Math.min(Math.max(trade.prob, 0), 1);
+    probTd.classList.add("tradeHistory-prob");
+    probTd.style.backgroundColor = `rgba(0, 0, 255, ${p})`;
+    probTd.style.color = p > 0.5 ? "#fff" : "#000";
+    tr.appendChild(probTd);
 
-    /* ============ LIMITE À 10 TRADES (10 × 5 COLONNES) ============ */
-    const MAX_TRADES = 10;
-    const COLS_PER_TRADE = fields.length;
+    /* ========= AJOUT EN HAUT ========= */
+    tradeHistoryBody.prepend(tr);
 
-    while (tradeHistoryDataRow.cells.length > MAX_TRADES * COLS_PER_TRADE) {
-      tradeHistoryDataRow.removeChild(tradeHistoryDataRow.firstChild);
+    /* ========= LIMITE À 10 LIGNES ========= */
+    while (tradeHistoryBody.rows.length > 10) {
+      tradeHistoryBody.deleteRow(tradeHistoryBody.rows.length - 1);
     }
+  }
 
-    /* ================= AUTO SCROLL ================= */
-    tradeHistoryDataRow.parentElement.scrollLeft =
-      tradeHistoryDataRow.parentElement.scrollWidth;
+  /* ======== CONVERSION TIMESTAMP ======== */
+  function formatUnixTime(ts) {
+    const date = new Date(ts * 1000); // UNIX → ms
+    return date.toLocaleTimeString(); // ou toLocaleString()
   }
   
   /* ============================
