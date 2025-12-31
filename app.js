@@ -920,7 +920,7 @@ document.addEventListener("DOMContentLoaded", () => {
     activeLine = null;
     activeSignal = null;
   }
-  
+
   /* ============================
    WS SIGNAL ON HISTORY TABLE
   ============================ */
@@ -937,20 +937,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Valeur
       td.textContent = trade[field];
-
+  
       /* ================= SIGNAL STYLE ================= */
       if (field === "signal") {
         td.classList.add(
           trade.signal === "BUY"
-            ? "tradeHistory-signal-buy"
-            : "tradeHistory-signal-sell"
+            ? "tradeHistory__-signal-buy"
+            : "tradeHistory__-signal-sell"
         );
       }
 
       /* ================= PROB STYLE ================= */
       if (field === "prob") {
         const p = Math.min(Math.max(trade.prob, 0), 1);
-        td.classList.add("tradeHistory-prob");
+        td.classList.add("tradeHistory__-prob");
         td.style.backgroundColor = `rgba(0, 0, 255, ${p})`;
         td.style.color = p > 0.5 ? "#fff" : "#000";
       }
