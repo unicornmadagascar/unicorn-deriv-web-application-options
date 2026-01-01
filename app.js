@@ -1515,6 +1515,7 @@ closeAll.onclick=()=>{
   }
 
   function onTick(price) {
+    if (!autorunningml5 || !ruptureModel) return;
     buffer.push(price);
     if (buffer.length > SEQ) buffer.shift();
 
@@ -1522,53 +1523,72 @@ closeAll.onclick=()=>{
     detectRupture(features);
   }
 
-  function startML5Signal()
-   {
-     if (wsml5 === null)
-     {
-      wsml5 = new WebSocket(WS_URL);
-      wsml5.onopen=()=>{ wsml5.send(JSON.stringify({ authorize: TOKEN })); };
-     }
-  
-     if (wsml5 && (wsml5.readyState === WebSocket.OPEN || wsml5.readyState === WebSocket.CONNECTING))
-     {
-      wsml5.onopen=()=>{ wsml5.send(JSON.stringify({ authorize: TOKEN })); };
-     }
+  async function startML5Signal() {
 
-     if (wsml5 && (wsml5.readyState === WebSocket.CLOSED || wsml5.readyState === WebSocket.CLOSING))
-     {
-      wsml5 = new WebSocket(WS_URL);
-      wsml5.onopen=()=>{ wsml5.send(JSON.stringify({ authorize: TOKEN })); };
-     }
+    if (!autorunningml5) return;
 
-     wsml5.onmessage = (msg) =>{
-       const data = JSON.parse(msg.data);
+    if (wsml5 && wsml5.readyState === WebSocket.OPEN) {
+      return; // déjà connecté
+    }
 
-       if (data.msg_type === "authorize" && data.authorize) {
-          console.log("Token authorized");
-       }
+    console.log("📡 Connexion WebSocket ML5...");
 
-       if (data.msg_type === "tick" && data.tick)
-       {
+    wsml5 = new WebSocket(WS_URL);
+
+    wsml5.onopen = () => {
+      console.log("✅ WS connecté");
+      wsml5.send(JSON.stringify({ authorize: TOKEN }));
+    };
+
+    wsml5.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+
+      if (data.msg_type === "authorize") {
+       console.log("🔐 Token authorized");
+        return;
+      }
+
+      if (data.msg_type === "tick" && data.tick) {
         const price = parseFloat(data.tick.quote);
-        onTick(price);
-       }
+        if (!isNaN(price)) {
+          onTick(price);   // 👈 ICI le ML tourne
+        }
+        return;
+      }
 
-       if (data.ping && data.msg_type === "ping")
-       {
+      if (data.msg_type === "ping") {
         wsml5.send(JSON.stringify({ ping: 1 }));
-       }
-     };
+      }
+    };
 
-     wsml5.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); setTimeout(startML5Signal,300); };
-     wsml5.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); wsml5.close(); wsml5 = null; setTimeout(startML5Signal,300); };
-   }
+    wsml5.onclose = () => {
+      console.log("❌ WS fermé");
+
+      wsml5 = null;
+
+      // Reconnexion seulement si ML actif
+      if (autorunningml5) {
+        setTimeout(startML5Signal, 1000);
+      }
+    };
+
+    wsml5.onerror = (e) => {
+      console.log("⚠️ WS error", e);
+      wsml5.close();
+    };
+  }
+
 
    function stopML5Signal()
    {
     if (wsml5  && wsml5.readyState === WebSocket.OPEN) {  
        // Envoyer unsubscribe avant de fermer
+       autorunningml5 = false;
        wsml5.send(JSON.stringify({ forget_all: "ticks" }));
+       wsml5.onopen = null;
+       wsml5.onmessage = null;
+       wsml5.onclose = null;
+       wsml5.onerror = null;
        wsml5.close();
        wsml5 = null;   
     }   
@@ -3262,29 +3282,34 @@ document.getElementById("closeWebview").onclick = () => {
 };
 
 // === Automation Toggle ===
-  startml5.addEventListener("click", () => {
-    autorunningml5 = !autorunningml5;
-    if (autorunningml5) {
-      startml5.textContent = "Stop ML";   
-      startml5.style.background = "linear-gradient(90deg,#f44336,#e57373)";  
-      startml5.style.color = "white";
-      createRuptureModel();
-      autorunningml5 = true;
-    } else {  
-      startml5.textContent = "Start ML";
-      startml5.style.background = "white";   
-      startml5.style.color = "gray";
-      autorunningml5 = false;
-      stopML5Signal();
-    }
-  });
+  startml5.addEventListener("click", async () => {
 
-setInterval(() => {  
-    if (autorunningml5 === true)        
-    {   
-     startML5Signal();    
-    }
-  },500);   
+  autorunningml5 = !autorunningml5;
+
+  if (autorunningml5) {
+
+    startml5.textContent = "Stop ML";
+    startml5.style.background = "linear-gradient(90deg,#f44336,#e57373)";
+    startml5.style.color = "white";
+
+    console.log("⏳ Initialisation ML...");
+    await createRuptureModel();   // 🔥 LIGNE CLÉ
+    console.log("🚀 ML prêt");
+
+    startML5Signal(); // 🚀 UNE SEULE FOIS
+
+    autorunningml5 = true;
+
+  } else {
+
+    startml5.textContent = "Start ML";
+    startml5.style.background = "white";
+    startml5.style.color = "gray";
+
+    autorunningml5 = false;
+    stopML5Signal();
+  }
+});  
     
 // ================================
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
