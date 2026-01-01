@@ -1505,7 +1505,7 @@ closeAll.onclick=()=>{
     if (!features) return false;
 
     const x = tf.tensor(features).reshape([1, 21]);
-    const prob = (await ruptureModel.predict(x).data())[0];
+    const prob = (await ruptureModel.predict(x).data())[0];  
     console.log("PROB:", prob.toFixed(4));
     if (prob > RUPTURE_THRESHOLD) {
       console.log("🚨 RUPTURE DÉTECTÉE", prob.toFixed(4));
