@@ -1553,7 +1553,7 @@ closeAll.onclick=()=>{
        wsml5.send(JSON.stringify({
            ticks: currentSymbol,        
            subscribe: 1
-       }));
+       }));  
        return;
       }  
 
