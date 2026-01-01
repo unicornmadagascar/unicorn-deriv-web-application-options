@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const cashFrame = document.getElementById("cashierFrame");
 
   let wsReady = false;
-  let wsControl = null;
+  let wsControl = null;  
   let wsSignal = null;
   let ControlSocket = null;
   let engineStarted = false;
