@@ -1549,6 +1549,12 @@ closeAll.onclick=()=>{
 
       if (data.msg_type === "authorize") {
        console.log("🔐 Token authorized");
+       // 🔥 LIGNE MANQUANTE (OBLIGATOIRE)
+       wsml5.send(JSON.stringify({
+           ticks: currentSymbol,        
+           subscribe: 1
+       }));
+       return;
       }
 
       if (data.msg_type === "tick" && data.tick) {
