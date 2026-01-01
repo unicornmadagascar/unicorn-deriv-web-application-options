@@ -3265,6 +3265,7 @@ document.getElementById("closeWebview").onclick = () => {
       startml5.textContent = "Stop Automation";   
       startml5.style.background = "linear-gradient(90deg,#f44336,#e57373)";
       startml5.style.color = "white";
+      initML5Model();
       autorunningml5 = true;
     } else {
       startml5.textContent = "Launch Automation";
