@@ -215,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { symbol: "frxGBPUSD", name: "GBPUSD" },   
     { symbol: "frxUSDJPY", name: "USDJPY" },
     { symbol: "R_50", name: "VIX 50" },
-    { symbol: "R_75", name: "VIX 75" }    
+    { symbol: "R_75", name: "VIX 75" }      
   ];      
   const fmt = n => Number(n).toFixed(2);
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
