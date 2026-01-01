@@ -3291,14 +3291,12 @@ document.getElementById("closeWebview").onclick = () => {
     startml5.textContent = "Stop ML";
     startml5.style.background = "linear-gradient(90deg,#f44336,#e57373)";
     startml5.style.color = "white";
-
+    autorunningml5 = true;
     console.log("⏳ Initialisation ML...");
     await createRuptureModel();   // 🔥 LIGNE CLÉ
     console.log("🚀 ML prêt");
 
-    startML5Signal(); // 🚀 UNE SEULE FOIS
-
-    autorunningml5 = true;
+    await startML5Signal(); // 🚀 UNE SEULE FOIS
 
   } else {
 
