@@ -1537,7 +1537,7 @@ closeAll.onclick=()=>{
 
     wsml5.onopen = () => {
       console.log("✅ WS connecté");
-      wsml5.send(JSON.stringify({ authorize: TOKEN }));
+      wsml5.send(JSON.stringify({ authorize: TOKEN }));  
     };
 
     wsml5.onmessage = (msg) => {
