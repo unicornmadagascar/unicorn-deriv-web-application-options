@@ -1449,7 +1449,7 @@ closeAll.onclick=()=>{
   }; 
 
   async function createRuptureModel() {
-    await tf.wsReady()
+    await tf.ready()
 
     if (ruptureModel && ruptureModel.dispose) {
        try { ruptureModel.dispose(); } catch (e) {}
@@ -1465,7 +1465,7 @@ closeAll.onclick=()=>{
     }));
 
     m.add(tf.layers.dense({
-      units: 1,
+      units: 1,  
       activation: "sigmoid",
       trainable: false
     }));
