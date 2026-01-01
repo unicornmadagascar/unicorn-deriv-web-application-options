@@ -1566,7 +1566,7 @@ closeAll.onclick=()=>{
     wsml5.onclose = () => {
       console.log("❌ WS fermé");
 
-      wsml5 = null;
+      wsml5 = null;  
 
       // Reconnexion seulement si ML actif
       if (autorunningml5) {
