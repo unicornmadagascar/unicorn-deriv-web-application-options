@@ -1558,7 +1558,7 @@ closeAll.onclick=()=>{
         if (!isNaN(price)) {
           onTick(price);   // 👈 ICI le ML tourne
         }
-      }
+      }  
 
       if (data.msg_type === "ping") {
         wsml5.send(JSON.stringify({ ping: 1 }));
