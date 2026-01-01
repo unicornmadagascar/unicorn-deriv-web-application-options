@@ -1551,7 +1551,6 @@ closeAll.onclick=()=>{
 
       if (data.msg_type === "authorize") {
        console.log("🔐 Token authorized");
-        return;
       }
 
       if (data.msg_type === "tick" && data.tick) {
@@ -1559,7 +1558,6 @@ closeAll.onclick=()=>{
         if (!isNaN(price)) {
           onTick(price);   // 👈 ICI le ML tourne
         }
-        return;
       }
 
       if (data.msg_type === "ping") {
