@@ -3271,8 +3271,8 @@ document.getElementById("closeWebview").onclick = () => {
       startml5.textContent = "Start ML";
       startml5.style.background = "white";   
       startml5.style.color = "gray";
+      autorunningml5 = false;
       stopML5Signal();
-      autorunningml5 = false; 
     }
   });
 
