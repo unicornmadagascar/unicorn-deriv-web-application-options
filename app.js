@@ -3262,15 +3262,16 @@ document.getElementById("closeWebview").onclick = () => {
   startml5.addEventListener("click", () => {
     autorunningml5 = !autorunningml5;
     if (autorunningml5) {
-      startml5.textContent = "Stop Automation";   
+      startml5.textContent = "Stop ML";   
       startml5.style.background = "linear-gradient(90deg,#f44336,#e57373)";  
       startml5.style.color = "white";
       initML5Model();
       autorunningml5 = true;
     } else {
-      startml5.textContent = "Launch Automation";
+      startml5.textContent = "Start ML";
       startml5.style.background = "white";   
       startml5.style.color = "gray";
+      stopML5Signal();
       autorunningml5 = false; 
     }
   });
@@ -3279,10 +3280,6 @@ setInterval(() => {
     if (autorunningml5 === true)        
     {   
      startML5Signal();    
-    }
-    else if (autorunningml5=== false)
-    {
-     stopML5Signal();    
     }
   },500);   
     
