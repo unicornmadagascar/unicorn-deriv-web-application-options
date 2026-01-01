@@ -187,11 +187,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // ================================
   // VARIABLES GLOBALES NN ML5
   // ================================ 
-  let knn;
-  const SEQ_LENGTH = 20;
-  let tickWindow = [];
-  const RUPTURE_CONFIDENCE = 0.85;
+  const SEQ = 20;
+  let buffer = [];
+  const RUPTURE_THRESHOLD = 0.85;
   let autorunningml5 = false;
+  let ruptureModel = null;
   let wsml5 = null;
 
   const SYMBOLS = [  
@@ -1448,74 +1448,77 @@ closeAll.onclick=()=>{
     };
   }; 
 
-  function initML5Model() {
-     knn = ml5.knnClassifier();
-     console.log("✔️ ml5 KNNClassifier initialisé");
-  }
+  async function createRuptureModel() {
+    await tf.wsReady()
 
-  function sequenceToFeatures(window) {
-    if (window.length < SEQ_LENGTH) return null;
-
-    let diffs = [];
-    for (let i = 1; i < window.length; i++) {
-      diffs.push(window[i] - window[i - 1]);
+    if (ruptureModel && ruptureModel.dispose) {
+       try { ruptureModel.dispose(); } catch (e) {}
     }
 
-    const mean =
-      diffs.reduce((a, b) => a + b, 0) / diffs.length;
+    const m = tf.sequential();
 
-    const variance =
-      diffs.reduce((a, b) => a + (b - mean) ** 2, 0) / diffs.length;
+    m.add(tf.layers.dense({
+      inputShape: [21],
+      units: 16,
+      activation: "relu",
+      trainable: false
+    }));
 
-    const std = Math.sqrt(variance);
+    m.add(tf.layers.dense({
+      units: 1,
+      activation: "sigmoid",
+      trainable: false
+    }));
+
+    m.layers.forEach(layer => {
+      const w = layer.getWeights();
+      if (w.length > 0) {
+        layer.setWeights(w.map(t => tf.fill(t.shape, 0.01)));
+      }
+    });
+
+    ruptureModel = m;
+ 
+    console.log("✔️ Rupture model prêt (TF.js)");
+
+    return ruptureModel;
+  }
+
+  function extractFeatures(prices) {
+    if (prices.length < SEQ) return null;
+
+    const diffs = [];
+    for (let i = 1; i < prices.length; i++) {
+      diffs.push(prices[i] - prices[i - 1]);
+    }
+
+    const mean = diffs.reduce((a,b)=>a+b,0)/diffs.length;
+    const std = Math.sqrt(
+      diffs.reduce((a,b)=>a+(b-mean)**2,0)/diffs.length
+    );
     const maxAbs = Math.max(...diffs.map(v => Math.abs(v)));
 
-    // 19 diffs + std + maxAbs = 21 features
     return [...diffs, std, maxAbs];
   }
 
-  function trainNormalSequence(features) {
-     const tensor = tf.tensor(features);
-     knn.addExample(tensor, "NORMAL");
-  }
-
   async function detectRupture(features) {
-    if (!features || knn.getNumLabels() === 0) return;
+    if (!features) return false;
 
-    const tensor = tf.tensor(features);
+    const x = tf.tensor(features).reshape([1, 21]);
+    const prob = (await ruptureModel.predict(x).data())[0];
 
-    const result = await knn.classify(tensor, 3);
-
-    if (
-      result.label !== "NORMAL" ||
-      result.confidences.NORMAL < RUPTURE_CONFIDENCE
-    ) {
-      console.log(
-        "🚨 RUPTURE DE SÉQUENCE", 
-        result.confidences.NORMAL?.toFixed(3)
-      );   
+    if (prob > RUPTURE_THRESHOLD) {
+      console.log("🚨 RUPTURE DÉTECTÉE", prob.toFixed(4));
       return true;
     }
-
     return false;
   }
 
-  function onNewTick(price) {
-    tickWindow.push(price);
+  function onTick(price) {
+    buffer.push(price);
+    if (buffer.length > SEQ) buffer.shift();
 
-    if (tickWindow.length > SEQ_LENGTH) {
-      tickWindow.shift();
-    }
-
-    const features = sequenceToFeatures(tickWindow);
-
-    // Phase apprentissage (si marché calme)
-    if (knn.getNumExamples() < 300) {
-      trainNormalSequence(features);
-      return;
-    }
-
-    // Phase détection
+    const features = extractFeatures(buffer);
     detectRupture(features);
   }
 
@@ -1548,7 +1551,7 @@ closeAll.onclick=()=>{
        if (data.msg_type === "tick" && data.tick)
        {
         const price = parseFloat(data.tick.quote);
-        onNewTick(price);
+        onTick(price);
        }
 
        if (data.ping && data.msg_type === "ping")
@@ -3265,7 +3268,7 @@ document.getElementById("closeWebview").onclick = () => {
       startml5.textContent = "Stop ML";   
       startml5.style.background = "linear-gradient(90deg,#f44336,#e57373)";  
       startml5.style.color = "white";
-      initML5Model();
+      createRuptureModel();
       autorunningml5 = true;
     } else {
       startml5.textContent = "Start ML";
