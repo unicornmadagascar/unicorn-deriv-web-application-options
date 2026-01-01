@@ -1449,7 +1449,7 @@ closeAll.onclick=()=>{
   }; 
 
   function initML5Model() {
-     knn = ml5.KNNClassifier();
+     knn = ml5.knnClassifier();
      console.log("✔️ ml5 KNNClassifier initialisé");
   }
 
