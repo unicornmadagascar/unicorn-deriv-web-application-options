@@ -201,14 +201,14 @@ document.addEventListener("DOMContentLoaded", () => {
   let overlayCtx = null;
 
   const SYMBOLS = [  
-    { symbol: "BOOM1000", name: "Boom 1000" },    
-    { symbol: "CRASH1000", name: "Crash 1000" },    
+    { symbol: "BOOM300N", name: "Boom 300" },    
+    { symbol: "CRASH300N", name: "Crash 300" },    
     { symbol: "BOOM500", name: "Boom 500" },
     { symbol: "CRASH500", name: "Crash 500" },     
-    { symbol: "BOOM900", name: "Boom 900" },      
-    { symbol: "CRASH900", name: "Crash 900" },
     { symbol: "BOOM600", name: "Boom 600" },     
-    { symbol: "CRASH600", name: "Crash 600" },       
+    { symbol: "CRASH600", name: "Crash 600" }, 
+    { symbol: "frxAUDUSD", name: "AUDUSD" },      
+    { symbol: "frxNZDUSD", name: "NZDUSD" },      
     { symbol: "cryBTCUSD", name: "BTCUSD" },   
     { symbol: "frxXAUUSD", name: "XAUUSD" },     
     { symbol: "frxEURUSD", name: "EURUSD" },
