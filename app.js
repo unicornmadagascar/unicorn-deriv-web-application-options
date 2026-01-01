@@ -1541,7 +1541,7 @@ closeAll.onclick=()=>{
 
     wsml5 = new WebSocket(WS_URL);
 
-    wsml5.onopen = () => {
+    wsml5.onopen = () => {  
       console.log("✅ WS connecté");
       wsml5.send(JSON.stringify({ authorize: TOKEN }));  
     };
