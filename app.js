@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const tradeHistoryDataRow = document.getElementById("tradeHistoryDataRow__");
   const tradeHistoryBody = document.getElementById("tradeHistoryBody__");
 
-  const startml5 = document.getElementById("MT5BTN");
+  const startml5 = document.getElementById("ML5BTN");
 
   // Éléments UI
   const openCashierBtn = document.getElementById("openCashierBtn");
