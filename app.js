@@ -1493,7 +1493,7 @@ closeAll.onclick=()=>{
       console.log(
         "🚨 RUPTURE DE SÉQUENCE", 
         result.confidences.NORMAL?.toFixed(3)
-      );
+      );   
       return true;
     }
 
