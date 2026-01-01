@@ -1515,7 +1515,7 @@ closeAll.onclick=()=>{
     }
 
     x.dispose();
-    y.dispose();
+    y.dispose();   
   }
 
   function onTick(price) {
