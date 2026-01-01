@@ -1491,7 +1491,7 @@ closeAll.onclick=()=>{
       result.confidences.NORMAL < RUPTURE_CONFIDENCE
     ) {
       console.log(
-        "🚨 RUPTURE DE SÉQUENCE",
+        "🚨 RUPTURE DE SÉQUENCE", 
         result.confidences.NORMAL?.toFixed(3)
       );
       return true;
