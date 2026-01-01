@@ -6,6 +6,7 @@
   <title>🦄 World Unicorn — Deriv Live Ticks</title>
 
  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>  
+ <script src="https://cdn.jsdelivr.net/npm/ml5@latest/dist/ml5.min.js"></script>
  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
  <script defer src="app.js"></script>
@@ -114,6 +115,7 @@
 
     #STOP { background-color: white; color: #4d4747; }
     #START { background-color: white; color: #4d4747; }
+    #ML5BTN { background-color: white; color: #4d4747; }
     #openCashierBtn { background-color: white; color: #4d4747; }
     #openPopup { background-color: white; color: #4d4747; } 
     #buyBtn { background-color: white; color: #4d4747; }
@@ -1204,6 +1206,7 @@ hr {
       <div style="display:flex; gap:12px; flex-wrap:wrap;">  
         <button class="open-btn" id="START">Start Automation</button>   
         <button id="STOP">Stop Automation</button> 
+        <button id="ML5BTN">Start ML</button> 
         <button id="openCashierBtn">Cashier</button> 
         <button id="buyBtn">BUY</button>
         <button id="sellBtn">SELL</button>

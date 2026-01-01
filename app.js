@@ -61,6 +61,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const tradeHistoryDataRow = document.getElementById("tradeHistoryDataRow__");
   const tradeHistoryBody = document.getElementById("tradeHistoryBody__");
 
+  const startml5 = document.getElementById("MT5BTN");
+
   // Éléments UI
   const openCashierBtn = document.getElementById("openCashierBtn");
   const closePopupBtn = document.getElementById("closeCashierBtn");
@@ -164,24 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentSymbol = "cryBTCUSD"; // symbole par défaut
   let pendingSubscribe = null; 
   let authorized = false;  
-  /* =============================
-   Configuration (tweakable)  
-  ============================= */  
-  const SMOOTH_PERIOD = 250;       // EMA smoothed period
-  const WINDOW_SIZE = 30;          // nb de timesteps passés observés par LSTM (16..32 good)
-  const FEATURES = 1;              // ici on n'utilise que l'EMA par timestep (peut étendre)
-  const LSTM_UNITS = 32;           // unités LSTM (perf / précision tradeoff)
-  const DENSE_UNITS = 16;
-  const LEARNING_RATE = 0.001;
-  const BATCH_SIZE = 8;
-  const RE_TRAIN_EVERY_MS = 12_000; // ré-entraîner toutes les X ms si on a des nouvelles fenêtres
-  const MIN_WINDOWS_TO_TRAIN = 8;   // garder petit pour training online
-  const PREDICT_INTERVAL_MS = 500;  // fréquence prédiction (ou déclenchée sur tick)
-  const MAX_BUFFER = 1000;          // taille max buffer EMA
 
-  const emaBuffer = [];            // oldest ... newest
-  const windowDataset = [];        // stores windows (arrays) for training
-  let model = null;
   // previousMomentum is kept across ticks for derivative calc
   let previousMomentum = 0;
   let smoothEMA = null;
@@ -194,11 +179,20 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Tableau de markers déjà ajoutés sur le chart ---
   const calendarMarkers = {}; // stocke les markers par rowId
   // ================================
-  // VARIABLES GLOBALES
+  // VARIABLES GLOBALES 
   // ================================
   let economicMarkers = {};
   let economicEventLines = [];
   let overlayCtx = null;
+  // ================================
+  // VARIABLES GLOBALES NN ML5
+  // ================================ 
+  let knn;
+  const SEQ_LENGTH = 20;
+  let tickWindow = [];
+  const RUPTURE_CONFIDENCE = 0.85;
+  let autorunningml5 = false;
+  let wsml5 = null;
 
   const SYMBOLS = [  
     { symbol: "BOOM300N", name: "Boom 300" },    
@@ -1453,6 +1447,130 @@ closeAll.onclick=()=>{
        }
     };
   }; 
+
+  function initML5Model() {
+     knn = ml5.KNNClassifier();
+     console.log("✔️ ml5 KNNClassifier initialisé");
+  }
+
+  function sequenceToFeatures(window) {
+    if (window.length < SEQ_LENGTH) return null;
+
+    let diffs = [];
+    for (let i = 1; i < window.length; i++) {
+      diffs.push(window[i] - window[i - 1]);
+    }
+
+    const mean =
+      diffs.reduce((a, b) => a + b, 0) / diffs.length;
+
+    const variance =
+      diffs.reduce((a, b) => a + (b - mean) ** 2, 0) / diffs.length;
+
+    const std = Math.sqrt(variance);
+    const maxAbs = Math.max(...diffs.map(v => Math.abs(v)));
+
+    // 19 diffs + std + maxAbs = 21 features
+    return [...diffs, std, maxAbs];
+  }
+
+  function trainNormalSequence(features) {
+     const tensor = tf.tensor(features);
+     knn.addExample(tensor, "NORMAL");
+  }
+
+  async function detectRupture(features) {
+    if (!features || knn.getNumLabels() === 0) return;
+
+    const tensor = tf.tensor(features);
+
+    const result = await knn.classify(tensor, 3);
+
+    if (
+      result.label !== "NORMAL" ||
+      result.confidences.NORMAL < RUPTURE_CONFIDENCE
+    ) {
+      console.log(
+        "🚨 RUPTURE DE SÉQUENCE",
+        result.confidences.NORMAL?.toFixed(3)
+      );
+      return true;
+    }
+
+    return false;
+  }
+
+  function onNewTick(price) {
+    tickWindow.push(price);
+
+    if (tickWindow.length > SEQ_LENGTH) {
+      tickWindow.shift();
+    }
+
+    const features = sequenceToFeatures(tickWindow);
+
+    // Phase apprentissage (si marché calme)
+    if (knn.getNumExamples() < 300) {
+      trainNormalSequence(features);
+      return;
+    }
+
+    // Phase détection
+    detectRupture(features);
+  }
+
+  function startML5Signal()
+   {
+     if (wsml5 === null)
+     {
+      wsml5 = new WebSocket(WS_URL);
+      wsml5.onopen=()=>{ wsml5.send(JSON.stringify({ authorize: TOKEN })); };
+     }
+  
+     if (wsml5 && (wsml5.readyState === WebSocket.OPEN || wsml5.readyState === WebSocket.CONNECTING))
+     {
+      wsml5.onopen=()=>{ wsml5.send(JSON.stringify({ authorize: TOKEN })); };
+     }
+
+     if (wsml5 && (wsml5.readyState === WebSocket.CLOSED || wsml5.readyState === WebSocket.CLOSING))
+     {
+      wsml5 = new WebSocket(WS_URL);
+      wsml5.onopen=()=>{ wsml5.send(JSON.stringify({ authorize: TOKEN })); };
+     }
+
+     wsml5.onmessage = (msg) =>{
+       const data = JSON.parse(msg.data);
+
+       if (data.msg_type === "authorize" && data.authorize) {
+          console.log("Token authorized");
+       }
+
+       if (data.msg_type === "tick" && data.tick)
+       {
+        const price = parseFloat(data.tick.quote);
+        onNewTick(price);
+       }
+
+       if (data.ping && data.msg_type === "ping")
+       {
+        wsml5.send(JSON.stringify({ ping: 1 }));
+       }
+     };
+
+     wsml5.onclose=()=>{ console.log("Disconnected"); console.log("WS closed"); setTimeout(startML5Signal,300); };
+     wsml5.onerror=e=>{ console.log("WS error "+JSON.stringify(e)); wsml5.close(); wsml5 = null; setTimeout(startML5Signal,300); };
+   }
+
+   function stopML5Signal()
+   {
+    if (wsml5  && wsml5.readyState === WebSocket.OPEN) {  
+       // Envoyer unsubscribe avant de fermer
+       wsml5.send(JSON.stringify({ forget_all: "ticks" }));
+       wsml5.close();
+       wsml5 = null;   
+    }   
+   }
+
 
   // Table
   function initTable()
@@ -3139,6 +3257,33 @@ document.getElementById("closeWebview").onclick = () => {
     document.getElementById("webviewModal").style.display = "none";
     document.getElementById("webviewFrame").src = "";
 };
+
+// === Automation Toggle ===
+  startml5.addEventListener("click", () => {
+    autorunningml5 = !autorunningml5;
+    if (autorunningml5) {
+      startml5.textContent = "Stop Automation";   
+      startml5.style.background = "linear-gradient(90deg,#f44336,#e57373)";
+      startml5.style.color = "white";
+      autorunningml5 = true;
+    } else {
+      startml5.textContent = "Launch Automation";
+      startml5.style.background = "white";   
+      startml5.style.color = "gray";
+      autorunningml5 = false; 
+    }
+  });
+
+setInterval(() => {  
+    if (autorunningml5 === true)        
+    {   
+     startML5Signal();    
+    }
+    else if (autorunningml5=== false)
+    {
+     stopML5Signal();    
+    }
+  },500);   
     
 // ================================
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
