@@ -1448,161 +1448,6 @@ closeAll.onclick=()=>{
     };
   }; 
 
-  async function createRuptureModel() {
-    await tf.ready()
-
-    if (ruptureModel && ruptureModel.dispose) {
-       try { ruptureModel.dispose(); } catch (e) {}
-    }
-
-    const m = tf.sequential();
-
-    m.add(tf.layers.dense({
-      inputShape: [21],
-      units: 16,
-      activation: "relu",
-      trainable: false
-    }));  
-
-    m.add(tf.layers.dense({
-      units: 1,  
-      activation: "sigmoid",
-      trainable: false
-    }));
-
-    m.layers.forEach(layer => {
-      const w = layer.getWeights();
-      if (w.length > 0) {
-        layer.setWeights(w.map(t => tf.fill(t.shape, 0.01)));
-      }
-    });
-
-    ruptureModel = m;
- 
-    console.log("✔️ Rupture model prêt (TF.js)");
-
-    return ruptureModel;
-  }
-
-  function extractFeatures(prices) {
-    if (prices.length < SEQ) return null;
-
-    const diffs = [];
-    for (let i = 1; i < prices.length; i++) {
-      diffs.push(prices[i] - prices[i - 1]);
-    }
-
-    const mean = diffs.reduce((a,b)=>a+b,0)/diffs.length;
-    const std = Math.sqrt(
-      diffs.reduce((a,b)=>a+(b-mean)**2,0)/diffs.length
-    );
-    const maxAbs = Math.max(...diffs.map(v => Math.abs(v)));
-
-    return [...diffs, std, maxAbs];
-  }
-
-  async function detectRupture(features) {
-    if (!features) return false;
-
-    const x = tf.tensor(features).reshape([1, 21]);
-    const y = ruptureModel.predict(x);
-    const prob = (await y.data())[0]; 
-
-    console.log("PROB:", prob.toFixed(4));
-    if (prob > RUPTURE_THRESHOLD) {
-      console.log("🚨 RUPTURE DÉTECTÉE", prob.toFixed(4));
-      return true;
-    }
-
-    x.dispose();
-    y.dispose();   
-  }
-
-  function onTick(price) {
-    if (!autorunningml5 || !ruptureModel) return;
-    buffer.push(price);
-    if (buffer.length > SEQ) buffer.shift();
-
-    const features = extractFeatures(buffer);
-    detectRupture(features);
-  }
-
-  async function startML5Signal() {
-
-    if (!autorunningml5) return;
-
-    if (wsml5 && wsml5.readyState === WebSocket.OPEN) {
-      return; // déjà connecté
-    }
-
-    console.log("📡 Connexion WebSocket ML5...");
-
-    wsml5 = new WebSocket(WS_URL);
-
-    wsml5.onopen = () => {  
-      console.log("✅ WS connecté");
-      wsml5.send(JSON.stringify({ authorize: TOKEN }));  
-    };
-
-    wsml5.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-
-      if (data.msg_type === "authorize") {
-       console.log("🔐 Token authorized");
-       // 🔥 LIGNE MANQUANTE (OBLIGATOIRE)  
-       wsml5.send(JSON.stringify({
-           ticks: currentSymbol,        
-           subscribe: 1
-       }));  
-       return;
-      }  
-
-      if (data.msg_type === "tick" && data.tick) {
-        const price = parseFloat(data.tick.quote);
-        if (!isNaN(price)) {
-          onTick(price);   // 👈 ICI le ML tourne
-        }
-      }  
-
-      if (data.msg_type === "ping") {
-        wsml5.send(JSON.stringify({ ping: 1 }));
-      }
-    };
-
-    wsml5.onclose = () => {
-      console.log("❌ WS fermé");
-
-      wsml5 = null;  
-
-      // Reconnexion seulement si ML actif
-      if (autorunningml5) {
-        setTimeout(startML5Signal, 1000);
-      }
-    };
-
-    wsml5.onerror = (e) => {
-      console.log("⚠️ WS error", e);
-      wsml5.close();
-    };
-  }
-
-
-   function stopML5Signal()
-   {
-    if (wsml5  && wsml5.readyState === WebSocket.OPEN) {  
-       // Envoyer unsubscribe avant de fermer
-       autorunningml5 = false;
-       wsml5.send(JSON.stringify({ forget_all: "ticks" }));
-       wsml5.onopen = null;
-       wsml5.onmessage = null;
-       wsml5.onclose = null;
-       wsml5.onerror = null;
-       wsml5.close();
-       wsml5 = null;   
-    }   
-   }
-
-
   // Table
   function initTable()
   {
@@ -3300,20 +3145,12 @@ document.getElementById("closeWebview").onclick = () => {
     startml5.style.background = "linear-gradient(90deg,#f44336,#e57373)";
     startml5.style.color = "white";
     autorunningml5 = true;
-    console.log("⏳ Initialisation ML...");
-    await createRuptureModel();   // 🔥 LIGNE CLÉ
-    console.log("🚀 ML prêt");
-
-    await startML5Signal(); // 🚀 UNE SEULE FOIS
-
   } else {
 
     startml5.textContent = "Start ML";
     startml5.style.background = "white";
     startml5.style.color = "gray";
-
     autorunningml5 = false;
-    stopML5Signal();
   }
 });  
     
