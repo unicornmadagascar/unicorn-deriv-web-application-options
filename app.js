@@ -1199,7 +1199,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const oppositeType = (contracttype__ === "MULTUP") ? "MULTDOWN" : "MULTUP";
 
       // User inputs
-      const stake = parseFloat(stakeInput.value) || 1;
+      const stake = parseFloat(stakeInput.value) || 1;   
       const multiplier = parseInt(multiplierInput.value) || 40;
       const qty = (contracttype__ === "MULTUP")
           ? (parseInt(sellNumber.value) || 1)
