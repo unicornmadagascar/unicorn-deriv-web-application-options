@@ -1489,7 +1489,7 @@ closeAll.onclick=()=>{
       }
 
       if(d.msg_type==="ohlc"){
-        const o=d.ohlc;
+        const o=d.ohlc;  
         const bar={
           time:Number(o.open_time),
           open:+o.open,
