@@ -1511,10 +1511,10 @@ closeAll.onclick=()=>{
         const last = candles__[candles__.length-1];
         if(!last || last.time!==bar.time){
           candles__.push(bar);
-          candleSeries.update(bar);
+          currentSeries.update(bar);
         } else {
           candles__[candles__.length-1]=bar;
-          candleSeries.update(bar);
+          currentSeries.update(bar);
         }
 
         drawAll();
