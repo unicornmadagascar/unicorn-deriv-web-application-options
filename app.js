@@ -1467,7 +1467,7 @@ closeAll.onclick=()=>{
   const distLine = (x,y,a,b) => Math.abs((b.y-a.y)*(x-a.x)-(b.x-a.x)*(y-a.y))/Math.hypot(b.x-a.x,b.y-a.y);
 
   function startDerivTicks() {  
-    if(derivWS_trendline && derivWS_trendline.readyState === WebSocket.OPEN)
+    if(derivWS_trendline && derivWS_trendline.readyState === WebSocket.OPEN)  
       derivWS_trendline.close();
 
     derivWS_trendline = new WebSocket(WS_URL);
