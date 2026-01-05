@@ -80,10 +80,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const menu__ = document.getElementById('menu');
   // ================== TRENDLINES ==================
   let trendlines = [];
-  let active = null;
   let mode = null;  
   let start = null;
-  let lastTick = null;
   let derivWS_trendline = null; 
 
   let wsReady = false;
