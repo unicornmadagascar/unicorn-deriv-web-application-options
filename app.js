@@ -1552,7 +1552,7 @@ closeAll.onclick=()=>{
       const a=tp2xy(l.t1,l.p1), b=tp2xy(l.t2,l.p2);
       if(!a.x||!b.x) return;
       ctx.strokeStyle=l===active?'#f59e0b':'#38bdf8';
-      ctx.lineWidth=2;
+      ctx.lineWidth=2;  
       ctx.beginPath();
       ctx.moveTo(a.x,a.y);
       ctx.lineTo(b.x,b.y);
