@@ -2966,6 +2966,9 @@ window.addEventListener("error", function (e) {
   initTable();
   initHistoricalTable();      
   inihistoricalchart();   
+  resizeOverlay();
+
+  window.addEventListener("resize", resizeOverlay);
 
   window.onload = () => {
        if (!currentSymbol) return;
@@ -3262,14 +3265,14 @@ document.getElementById("ML5BTN").onclick = ()=>{
   if(candles__.length < 2) return;
 
   const last = candles__[candles__.length - 1];
-  const range = chart.timeScale().getVisibleRange();
-  if(!range) return;
+  const prev = candles__[candles__.length - 2];
 
+  // 👉 on utilise DES TIMESTAMPS RÉELS
   trendlines.push({
-    t1: range.from + 5,
-    p1: last.close - 1,
-    t2: range.to - 5,
-    p2: last.close + 1
+    t1: prev.time,
+    p1: prev.close,
+    t2: last.time,
+    p2: last.close
   });
 
   drawAll();
@@ -3331,17 +3334,7 @@ deleteLine.onclick = ()=>{
   drawAll();
 };
 
-window.onclick = ()=> menu__.style.display = "none";
-
-resizeOverlay();
-ctx.strokeStyle = "red";
-ctx.lineWidth = 3;
-ctx.beginPath();
-ctx.moveTo(10,10);
-ctx.lineTo(200,200);
-ctx.stroke();
-
-window.addEventListener("resize", resizeOverlay);  
+window.onclick = ()=> menu__.style.display = "none";  
 
 // ================================
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
