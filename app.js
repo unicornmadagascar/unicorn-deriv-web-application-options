@@ -1505,7 +1505,7 @@ closeAll.onclick=()=>{
           open: Number(o.open),
           high: Number(o.high),
           low: Number(o.low),
-          close: Number(o.close)
+          close: Number(o.close) 
         };
 
         const last = candles__[candles__.length-1];
