@@ -1552,7 +1552,7 @@ closeAll.onclick=()=>{
 
   // Table
   function initTable()
-  {
+  {  
    // Construction du tableau HTML
    autoHistoryList.innerHTML = `
     <table class="trade-table" id="autoTradeTable">
