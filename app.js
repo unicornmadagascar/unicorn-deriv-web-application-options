@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ================== TRENDLINES ==================
   let trendlines = [];
   let mode = null;  
-  let start = null;
+  let dragStart = null;
   let derivWS_trendline = null; 
 
   let wsReady = false;
@@ -1470,51 +1470,43 @@ closeAll.onclick=()=>{
     };
 
     derivWS_trendline.onmessage = msg=>{   
-      const data = JSON.parse(msg.data);  
+      const d = JSON.parse(msg.data);  
 
-      if(data.authorize && data.msg_type==="authorize"){
+      if(d.authorize && d.msg_type==="authorize"){
         derivWS_trendline.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
       }
 
-      if(data.msg_type==="candles" && Array.isArray(data.candles)){  
-        candles__ = data.candles.map(c=>({
+      if(d.msg_type==="candles"){
+        candles__ = d.candles.map(c=>({
            time:Number(c.epoch),
-           open:Number(c.open),
-           high:Number(c.high),
-           low:Number(c.low),
-           close:Number(c.close)
+           open:+c.open,
+           high:+c.high,
+           low:+c.low,
+           close:+c.close
         }));
-        currentSeries.setData(candles__);
+        candleSeries.setData(candles__);
         chart.timeScale().fitContent();
       }
 
-      if (data.msg_type === "ohlc" && data.ohlc) {
-         const o = data.ohlc;
-         const bar = {
-            time: Number(o.open_time), // ⚠️ NUMBER ONLY
-            open: Number(o.open),
-            high: Number(o.high),
-            low: Number(o.low),
-            close: Number(o.close)
-         };
-
-         const last = candles__[candles__.length - 1];
-
-         if (!last) {
-            candles__.push(bar);
-            currentSeries.update(bar);  
-         }
-         else if (bar.time > last.time) {  
-            candles__.push(bar);  
-            currentSeries.update(bar);  
-         }   
-         else if (bar.time === last.time) {
-            candles__[candles__.length - 1] = bar;  
-            currentSeries.update(bar);
-         }     
-         // else → bar plus ancien → IGNORER    
-
-         drawAll(); // redraw trendlines
+      if(d.msg_type==="ohlc"){
+        const o=d.ohlc;
+        const bar={
+          time:Number(o.open_time),
+          open:+o.open,
+          high:+o.high,
+          low:+o.low,
+          close:+o.close
+        };
+        const last=candles__[candles__.length-1];
+        if(!last||bar.time>last.time){
+          candles__.push(bar);
+          candleSeries.update(bar);
+        }
+        else if(bar.time===last.time){
+          candles__[candles__.length-1]=bar;
+          candleSeries.update(bar);
+        }
+        drawAll();
       }
 
       if(data.ping && data.msg_type==="ping") derivWS_trendline.send(JSON.stringify({ ping:1 }));
@@ -1525,39 +1517,33 @@ closeAll.onclick=()=>{
   }
 
   /* ================== UTILS ================== */
-  const tp2xy = (t,p)=>{
-    const x = chart.timeScale().timeToCoordinate(t);
-    const y = currentSeries.priceToCoordinate(p);
-    return {x,y};
-  };
-  const xy2tp = (x,y)=>{
-    const t = chart.timeScale().coordinateToTime(x);
-    const p = currentSeries.coordinateToPrice(y);
-    return {t,p};
-  };
-  const distLine = (x,y,a,b) => Math.abs((b.y-a.y)*(x-a.x)-(b.x-a.x)*(y-a.y))/Math.hypot(b.x-a.x,b.y-a.y);
+  const tp2xy = (t,p)=>({
+     x: chart.timeScale().timeToCoordinate(t),
+     y: candleSeries.priceToCoordinate(p)
+  });
 
   /* ================== CANVAS OVERLAY ================== */
   function resizeOverlay(){
-    const rect = overlay__.getBoundingClientRect();
-    overlay__.width = rect.width * window.devicePixelRatio;
-    overlay__.height = rect.height * window.devicePixelRatio;
+    const r = overlay__.getBoundingClientRect();
+    overlay__.width = r.width * devicePixelRatio;
+    overlay__.height = r.height * devicePixelRatio;
     ctx.setTransform(1,0,0,1,0,0);
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    ctx.scale(devicePixelRatio, devicePixelRatio);
   }
 
   /* ================== DESSIN ================== */
   function drawAll(){
-    ctx.clearRect(0,0,overlay__.width,overlay__.height);
+    ctx.clearRect(0,0,overlay.width,overlay.height);
     trendlines.forEach(l=>{
-      const a=tp2xy(l.t1,l.p1), b=tp2xy(l.t2,l.p2);
-      if(a.x==null || b.x==null || a.y==null || b.y==null) return;
-      ctx.strokeStyle = (l===activeLine)?'#f59e0b':'#38bdf8';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(a.x,a.y);
-      ctx.lineTo(b.x,b.y);
-      ctx.stroke();
+       const a = tp2xy(l.t1,l.p1);
+       const b = tp2xy(l.t2,l.p2);
+       if(a.x==null||a.y==null||b.x==null||b.y==null) return;
+       ctx.strokeStyle = l===activeLine ? "#f59e0b" : "#38bdf8";
+       ctx.lineWidth = 2;
+       ctx.beginPath();
+       ctx.moveTo(a.x,a.y);
+       ctx.lineTo(b.x,b.y);
+       ctx.stroke();
     });
   }
 
@@ -3270,65 +3256,61 @@ document.getElementById("closeWebview").onclick = () => {
 });  
 
 /* ================== AJOUT TRENDLINE ================== */
-document.getElementById('ML5BTN').onclick = ()=>{
-  if(candles__.length === 0) return;
+document.getElementById("ML5BTN").onclick = ()=>{
+  if(candles__.length<2) return;
+
   const last = candles__[candles__.length-1];
-  const visibleRange = chart.timeScale().getVisibleRange();
-  if(!visibleRange) return;
-  const t1 = Math.max(last.time - 30, visibleRange.from);
-  const t2 = Math.min(last.time + 30, visibleRange.to);
-  trendlines.push({ t1:t1, p1:last.close-1, t2:t2, p2:last.close+1 });
+  const range = chart.timeScale().getVisibleRange();
+  if(!range) return;
+
+  trendlines.push({
+    t1: range.from + 10,
+    p1: last.close - 1,
+    t2: range.to - 10,
+    p2: last.close + 1
+  });
   drawAll();
 };
 
-/* ================== DRAG / ROTATE ================== */
 overlay__.onmousedown = e=>{
-  const x=e.offsetX, y=e.offsetY;
-  activeLine = null;
+  const x=e.offsetX,y=e.offsetY;
+  activeLine=null;
   trendlines.forEach(l=>{
-    const a=tp2xy(l.t1,l.p1), b=tp2xy(l.t2,l.p2);
-    if(distLine(x,y,a,b)<6){
-      activeLine = l;
-      start = {x,y};
-      mode = e.shiftKey ? 'rotate' : 'move';
-    }
+    const a=tp2xy(l.t1,l.p1),b=tp2xy(l.t2,l.p2);
+    if(!a.x||!b.x) return;
+    const d=Math.abs((b.y-a.y)*(x-a.x)-(b.x-a.x)*(y-a.y))/Math.hypot(b.x-a.x,b.y-a.y);
+    if(d<6){ activeLine=l; dragStart={x,y}; }
   });
 };
 
 overlay__.onmousemove = e=>{
   if(!activeLine) return;
-  const dx = e.offsetX - start.x;
-  const dy = e.offsetY - start.y;
-
-  if(mode==='move'){
-    const p1=xy2tp(tp2xy(activeLine.t1,activeLine.p1).x+dx,tp2xy(activeLine.t1,activeLine.p1).y+dy);
-    const p2=xy2tp(tp2xy(activeLine.t2,activeLine.p2).x+dx,tp2xy(activeLine.t2,activeLine.p2).y+dy);
-    activeLine.t1=p1.t; activeLine.p1=p1.p;
-    activeLine.t2=p2.t; activeLine.p2=p2.p;
-  }
-  start = {x:e.offsetX,y:e.offsetY};
+  const dx=e.offsetX-dragStart.x;
+  const dy=e.offsetY-dragStart.y;
+  activeLine.t1+=dx; activeLine.t2+=dx;
+  activeLine.p1-=dy*0.01; activeLine.p2-=dy*0.01;
+  dragStart={x:e.offsetX,y:e.offsetY};
   drawAll();
 };
-window.onmouseup = ()=>{ activeLine=null; mode=null; };
 
-/* ================== MENU CLIC DROIT ================== */
-overlay__.oncontextmenu = e=>{
+window.onmouseup=()=>activeLine=null;
+
+overlay__.oncontextmenu=e=>{
   e.preventDefault();
   if(!activeLine) return;
-  menu__.style.left = e.clientX+'px';
-  menu__.style.top = e.clientY+'px';
-  menu__.style.display='block';
+  menu__.style.left=e.clientX+"px";
+  menu__.style.top=e.clientY+"px";
+  menu__.style.display="block";
 };
-document.getElementById('deleteLine').onclick = ()=>{
-  trendlines = trendlines.filter(l=>l!==activeLine);
+
+deleteLine.onclick=()=>{
+  trendlines=trendlines.filter(l=>l!==activeLine);
   activeLine=null;
-  menu__.style.display='none';
+  menu__.style.display="none";
   drawAll();
 };
-window.onclick = ()=>{ menu__.style.display='none'; };
 
-window.addEventListener('resize', resizeOverlay);
-
+window.onclick=()=>menu__.style.display="none";
 
 // ================================
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)

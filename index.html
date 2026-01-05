@@ -64,7 +64,7 @@
     #symbolList { display:flex; gap:10px; overflow-x:auto; }
     .symbol-item { padding:6px 12px; border-radius:20px; background:#eee; cursor:pointer; font-weight:600; transition:0.18s; }
     .symbol-item:hover { background:#007bff; color:#fff; }
-    #container { position:relative; flex:0; flex-direction: column; display:flex; }
+    #container__ { position:relative; flex:0; flex-direction: column; display:flex; }
     /* chart area */
     #chartArea { flex:1; display:flex; flex-direction:column; }
     #chartInner { flex:0; min-height:750px; background:#fff; margin:12px; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.06); overflow:hidden; }
@@ -1187,26 +1187,30 @@ hr {
 }
 
   /* Menu contextual*/
-  #overlay__ {
-    position: absolute;
-    top:0; left:0;
-    width: 100%;
-    height: 100%;
-    pointer-events: auto;
-  }
-  #menu {
-    position: absolute;
-    background: #1e293b;
-    border: 1px solid #334155;
-    display: none;
-    z-index: 100;
-  }
-  #menu div {
-    padding: 8px 12px;
-    cursor: pointer;
-  }
+#overlay__ {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  z-index: 10;
+}
 
-  #menu div:hover { background: #334155; }
+#menu {
+  position: absolute;
+  z-index: 20;
+  display: none;
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: white;
+}
+
+#menu div {
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+#menu div:hover {
+  background: #1e293b;
+}
    
   </style>
 </head>
@@ -1314,7 +1318,7 @@ hr {
   <div id="ticker-container" class="tradingview-widget-container"></div>
   <!-- TradingView Widget END -->
 
-  <div id="container">
+  <div id="container__">
     <div id="chartArea">
       <div id="chartInner"></div>
     </div>  
