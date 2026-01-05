@@ -1486,7 +1486,7 @@ closeAll.onclick=()=>{
         }));
         currentSeries.setData(candles__);
         chart.timeScale().fitContent();  
-      }
+      } 
   
       if(d.msg_type==="ohlc"){
         const o=d.ohlc;  
