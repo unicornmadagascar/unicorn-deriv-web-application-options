@@ -3272,7 +3272,7 @@ document.getElementById("ML5BTN").onclick = ()=>{
     t1: candles__[0].time,
     p1: candles__[0].close,
     t2: candles__[candles__.length-1].time,
-    p2: candles__[candles__.length-1].close
+    p2: candles__[candles__.length-1].close 
   });
 
   drawAll();  
