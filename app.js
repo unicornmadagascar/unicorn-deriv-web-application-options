@@ -1504,12 +1504,12 @@ closeAll.onclick=()=>{
             candles__.push(bar);
             currentSeries.update(bar);
          }
-         else if (bar.time > last.time) {
-            candles__.push(bar);
-            currentSeries.update(bar);
+         else if (bar.time > last.time) {  
+            candles__.push(bar);  
+            currentSeries.update(bar);  
          }
          else if (bar.time === last.time) {
-            candles__[candles__.length - 1] = bar;
+            candles__[candles__.length - 1] = bar;  
             currentSeries.update(bar);
          }     
          // else → bar plus ancien → IGNORER    
