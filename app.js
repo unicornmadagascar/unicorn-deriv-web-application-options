@@ -1513,7 +1513,7 @@ closeAll.onclick=()=>{
 
        if (data.ping && data.msg_type === "ping")
         {
-          derivWS_trendline.send(JSON.stringify({ ping: 1 }));
+          derivWS_trendline.send(JSON.stringify({ ping: 1 }));  
         }
 
     };
