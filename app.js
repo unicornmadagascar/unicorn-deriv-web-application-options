@@ -1484,8 +1484,8 @@ closeAll.onclick=()=>{
            low:+c.low,
            close:+c.close
         }));
-        candleSeries.setData(candles__);
-        chart.timeScale().fitContent();
+        currentSeries.setData(candles__);
+        chart.timeScale().fitContent();  
       }
 
       if(d.msg_type==="ohlc"){
@@ -1500,16 +1500,16 @@ closeAll.onclick=()=>{
         const last=candles__[candles__.length-1];
         if(!last||bar.time>last.time){
           candles__.push(bar);
-          candleSeries.update(bar);
+          currentSeries.update(bar);
         }
         else if(bar.time===last.time){
           candles__[candles__.length-1]=bar;
-          candleSeries.update(bar);
+          currentSeries.update(bar);
         }
         drawAll();
       }
 
-      if(data.ping && data.msg_type==="ping") derivWS_trendline.send(JSON.stringify({ ping:1 }));
+      if(d.ping && d.msg_type==="ping") derivWS_trendline.send(JSON.stringify({ ping:1 }));
     };
 
     derivWS_trendline.onclose = ()=>{ console.log("ℹ️ Deriv WS fermé"); };
@@ -1533,7 +1533,7 @@ closeAll.onclick=()=>{
 
   /* ================== DESSIN ================== */
   function drawAll(){
-    ctx.clearRect(0,0,overlay.width,overlay.height);
+    ctx.clearRect(0,0,overlay__.width,overlay__.height);
     trendlines.forEach(l=>{
        const a = tp2xy(l.t1,l.p1);
        const b = tp2xy(l.t2,l.p2);
