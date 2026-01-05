@@ -3262,7 +3262,7 @@ document.getElementById('ML5BTN').onclick = ()=>{
 };
 
 /* ================== DRAG / ROTATE ================== */
-overlay.onmousedown = e=>{
+overlay__.onmousedown = e=>{
   const x=e.offsetX, y=e.offsetY;
   activeLine = null;
   trendlines.forEach(l=>{
@@ -3275,7 +3275,7 @@ overlay.onmousedown = e=>{
   });
 };
 
-overlay.onmousemove = e=>{
+overlay__.onmousemove = e=>{
   if(!activeLine) return;
   const dx = e.offsetX - start.x;
   const dy = e.offsetY - start.y;
@@ -3292,7 +3292,7 @@ overlay.onmousemove = e=>{
 window.onmouseup = ()=>{ activeLine=null; mode=null; };
 
 /* ================== MENU CLIC DROIT ================== */
-overlay.oncontextmenu = e=>{
+overlay__.oncontextmenu = e=>{
   e.preventDefault();
   if(!activeLine) return;
   menu.style.left = e.clientX+'px';
