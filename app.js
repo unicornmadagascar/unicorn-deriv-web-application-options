@@ -2963,7 +2963,7 @@ window.addEventListener("error", function (e) {
   initDerivAccountManager();
   displaySymbols(currentInterval,currentChartType);   
   initChart(currentChartType);
-  initTable();
+  initTable();  
   initHistoricalTable();      
   inihistoricalchart();   
   resizeOverlay();
