@@ -1462,16 +1462,10 @@ closeAll.onclick=()=>{
   }; 
 
   /* ================== UTILS ================== */
-  const tp2xy = (t,p)=>({ x: chart.timeScale().timeToCoordinate(t), y: currentSeries.priceToCoordinate(p) });  
-  const xy2tp = (x,y)=>({ t: chart.timeScale().coordinateToTime(x), p: currentSeries.coordinateToPrice(y) });
-  const distLine = (x,y,a,b) => Math.abs((b.y-a.y)*(x-a.x)-(b.x-a.x)*(y-a.y))/Math.hypot(b.x-a.x,b.y-a.y);
-
-  function startDerivTicks() {  
-    if(derivWS_trendline && derivWS_trendline.readyState === WebSocket.OPEN)  
-      derivWS_trendline.close();
+  function startDerivTicks(){
+    if(derivWS_trendline && derivWS_trendline.readyState===WebSocket.OPEN) derivWS_trendline.close();
 
     derivWS_trendline = new WebSocket(WS_URL);
-
     derivWS_trendline.onopen = ()=>{
       console.log("Deriv WS Connected");
       derivWS_trendline.send(JSON.stringify({ authorize: TOKEN }));
@@ -1481,33 +1475,30 @@ closeAll.onclick=()=>{
       const data = JSON.parse(msg.data);
 
       if(data.authorize && data.msg_type==="authorize"){
-        derivWS_trendline.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
+        derivWS_trendline.send(JSON.stringify(Payloadforsubscription(currentSymbol)));
       }
 
-      // Candles OHLC
       if(data.msg_type==="candles" && Array.isArray(data.candles)){
         candles__ = data.candles.map(c=>({
-          time:Number(c.epoch),
-          open:Number(c.open),
-          high:Number(c.high),
-          low:Number(c.low),
-          close:Number(c.close)
+           time:Number(c.epoch),
+           open:Number(c.open),
+           high:Number(c.high),
+           low:Number(c.low),
+           close:Number(c.close)
         }));
-        chart.timeScale().fitContent();
         currentSeries.setData(candles__);
+        chart.timeScale().fitContent();
       }
 
-      // OHLC tick en temps réel
-      if(data.msg_type==="ohlc" && data.ohlc){  
+      if(data.msg_type==="ohlc" && data.ohlc){
         const o = data.ohlc;
         const bar = {
-          time: Number(o.open_time),
-          open: Number(o.open),
-          high: Number(o.high),
-          low: Number(o.low),
-          close: Number(o.close) 
+          time:Number(o.open_time),
+          open:Number(o.open),
+          high:Number(o.high),
+          low:Number(o.low),
+          close:Number(o.close)
         };
-
         const last = candles__[candles__.length-1];
         if(!last || last.time!==bar.time){
           candles__.push(bar);
@@ -1516,31 +1507,50 @@ closeAll.onclick=()=>{
           candles__[candles__.length-1]=bar;
           currentSeries.update(bar);
         }
-
         drawAll();
       }
 
-      // Ping
-      if(data.ping && data.msg_type==="ping")
-        derivWS_trendline.send(JSON.stringify({ ping:1 }));
+      if(data.ping && data.msg_type==="ping") derivWS_trendline.send(JSON.stringify({ ping:1 }));
     };
 
     derivWS_trendline.onclose = ()=>{ console.log("ℹ️ Deriv WS fermé"); };
     derivWS_trendline.onerror = err=>{ console.error("❌ Deriv WS erreur", err); };
   }
 
-  // ================== DRAW ==================
-  function drawAll() {
+  /* ================== UTILS ================== */
+  const tp2xy = (t,p)=>{
+    const x = chart.timeScale().timeToCoordinate(t);
+    const y = currentSeries.priceToCoordinate(p);
+    return {x,y};
+  };
+  const xy2tp = (x,y)=>{
+    const t = chart.timeScale().coordinateToTime(x);
+    const p = currentSeries.coordinateToPrice(y);
+    return {t,p};
+  };
+  const distLine = (x,y,a,b) => Math.abs((b.y-a.y)*(x-a.x)-(b.x-a.x)*(y-a.y))/Math.hypot(b.x-a.x,b.y-a.y);
+
+  /* ================== CANVAS OVERLAY ================== */
+  function resizeOverlay(){
+    const rect = overlay__.getBoundingClientRect();
+    overlay__.width = rect.width * window.devicePixelRatio;
+    overlay__.height = rect.height * window.devicePixelRatio;
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  }
+
+  /* ================== DESSIN ================== */
+  function drawAll(){
     ctx.clearRect(0,0,overlay__.width,overlay__.height);
     trendlines.forEach(l=>{
       const a=tp2xy(l.t1,l.p1), b=tp2xy(l.t2,l.p2);
-      if(!a.x||!b.x) return;
+      if(a.x==null || b.x==null || a.y==null || b.y==null) return;
       ctx.strokeStyle = (l===activeLine)?'#f59e0b':'#38bdf8';
-      ctx.lineWidth=2;
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(a.x,a.y);
       ctx.lineTo(b.x,b.y);
-      ctx.stroke();  
+      ctx.stroke();
     });
   }
 
@@ -3242,6 +3252,7 @@ document.getElementById("closeWebview").onclick = () => {
     startml5.style.color = "white";
     autorunningml5 = true;
     startDerivTicks();
+    resizeOverlay();
   } else {  
 
     startml5.textContent = "Start ML";
@@ -3255,9 +3266,11 @@ document.getElementById("closeWebview").onclick = () => {
 document.getElementById('ML5BTN').onclick = ()=>{
   if(candles__.length === 0) return;
   const last = candles__[candles__.length-1];
-  const t = last.time;
-  const p = last.close;
-  trendlines.push({ t1:t-30, p1:p-1, t2:t+30, p2:p+1 });
+  const visibleRange = chart.timeScale().getVisibleRange();
+  if(!visibleRange) return;
+  const t1 = Math.max(last.time - 30, visibleRange.from);
+  const t2 = Math.min(last.time + 30, visibleRange.to);
+  trendlines.push({ t1:t1, p1:last.close-1, t2:t2, p2:last.close+1 });
   drawAll();
 };
 
@@ -3295,20 +3308,21 @@ window.onmouseup = ()=>{ activeLine=null; mode=null; };
 overlay__.oncontextmenu = e=>{
   e.preventDefault();
   if(!activeLine) return;
-  menu.style.left = e.clientX+'px';
-  menu.style.top = e.clientY+'px';
-  menu.style.display='block';
+  menu__.style.left = e.clientX+'px';
+  menu__.style.top = e.clientY+'px';
+  menu__.style.display='block';
 };
-
 document.getElementById('deleteLine').onclick = ()=>{
   trendlines = trendlines.filter(l=>l!==activeLine);
   activeLine=null;
-  menu.style.display='none';
+  menu__.style.display='none';
   drawAll();
 };
+window.onclick = ()=>{ menu__.style.display='none'; };
 
-window.onclick = ()=>{ menu.style.display='none'; };
-    
+window.addEventListener('resize', resizeOverlay);
+
+
 // ================================
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
 // ================================  
