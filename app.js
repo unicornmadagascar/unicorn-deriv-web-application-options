@@ -1469,7 +1469,7 @@ closeAll.onclick=()=>{
       derivWS_trendline.send(JSON.stringify({ authorize: TOKEN }));
     };
 
-    derivWS_trendline.onmessage = msg=>{
+    derivWS_trendline.onmessage = msg=>{   
       const data = JSON.parse(msg.data);  
 
       if(data.authorize && data.msg_type==="authorize"){
