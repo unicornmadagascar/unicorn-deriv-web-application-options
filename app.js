@@ -3341,7 +3341,7 @@ ctx.moveTo(10,10);
 ctx.lineTo(200,200);
 ctx.stroke();
 
-window.addEventListener("resize", resizeOverlay);
+window.addEventListener("resize", resizeOverlay);  
 
 // ================================
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
