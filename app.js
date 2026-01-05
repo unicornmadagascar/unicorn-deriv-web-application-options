@@ -2967,7 +2967,7 @@ window.addEventListener("error", function (e) {
   initHistoricalTable();      
   inihistoricalchart();     
   resizeOverlay();
-
+  
   window.addEventListener("resize", resizeOverlay);
 
   window.onload = () => {
