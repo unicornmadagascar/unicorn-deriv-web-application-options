@@ -1477,7 +1477,7 @@ closeAll.onclick=()=>{
       }
 
       if(d.msg_type==="candles"){
-        candles__ = d.candles.map(c=>({
+        candles__ = d.candles.map(c=>({ 
            time:Number(c.epoch),
            open:+c.open,
            high:+c.high,
@@ -1487,7 +1487,7 @@ closeAll.onclick=()=>{
         currentSeries.setData(candles__);
         chart.timeScale().fitContent();  
       }
-
+  
       if(d.msg_type==="ohlc"){
         const o=d.ohlc;  
         const bar={
