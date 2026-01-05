@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ================== TRENDLINES ==================
   let trendlines = [];
   let active = null;
-  let mode = null;
+  let mode = null;  
   let start = null;
   let lastTick = null;
   let derivWS_trendline = null; 
@@ -1532,11 +1532,11 @@ closeAll.onclick=()=>{
   // ================== UTILS ==================
   const tp2xy = (t,p)=>({
     x: chart.timeScale().timeToCoordinate(t),
-    y: candleSeries.priceToCoordinate(p)
+    y: currentSeries.priceToCoordinate(p)
   });
   const xy2tp = (x,y)=>({
     t: chart.timeScale().coordinateToTime(x),
-    p: candleSeries.coordinateToPrice(y)
+    p: currentSeries.coordinateToPrice(y)
   });
 
   const dist = (x,y,x1,y1,x2,y2)=>{
