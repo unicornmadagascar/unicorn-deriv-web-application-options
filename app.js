@@ -72,11 +72,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const sendEmailBtn = document.getElementById("sendEmailBtn");
   const validateCodeBtn = document.getElementById("validateCodeBtn");
   const cashFrame = document.getElementById("cashierFrame");
-  const canvas = document.getElementById('overlay__');
 
-  const ctx = canvas.getContext('2d');
-  canvas.width = canvas.clientWidth;
-  canvas.height = canvas.clientHeight;
+  const overlay__ = document.getElementById('overlay__');
+  overlay__.width = overlay__.clientWidth;
+  overlay__.height = overlay__.clientHeight;
+  const ctx = overlay__.getContext('2d');
+  const menu__ = document.getElementById('menu');
   // ================== TRENDLINES ==================
   let trendlines = [];
   let active = null;
@@ -1460,97 +1461,82 @@ closeAll.onclick=()=>{
     };
   }; 
 
+  /* ================== UTILS ================== */
+  const tp2xy = (t,p)=>({ x: chart.timeScale().timeToCoordinate(t), y: candleSeries.priceToCoordinate(p) });
+  const xy2tp = (x,y)=>({ t: chart.timeScale().coordinateToTime(x), p: candleSeries.coordinateToPrice(y) });
+  const distLine = (x,y,a,b) => Math.abs((b.y-a.y)*(x-a.x)-(b.x-a.x)*(y-a.y))/Math.hypot(b.x-a.x,b.y-a.y);
+
   function startDerivTicks() {
-  // Si WS existant, on ferme proprement
-    if (derivWS_trendline && derivWS_trendline.readyState === WebSocket.OPEN) {
+    if(derivWS_trendline && derivWS_trendline.readyState === WebSocket.OPEN)
       derivWS_trendline.close();
-    }
 
     derivWS_trendline = new WebSocket(WS_URL);
 
-    derivWS_trendline.onopen = () => {   
+    derivWS_trendline.onopen = ()=>{
       console.log("Deriv WS Connected");
       derivWS_trendline.send(JSON.stringify({ authorize: TOKEN }));
     };
 
-    derivWS_trendline.onmessage = (msg) => {  
-       const data = JSON.parse(msg.data);
-       
-       if (data.authorize && data.msg_type === "authorize") {
-          derivWS_trendline.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
-       }
+    derivWS_trendline.onmessage = msg=>{
+      const data = JSON.parse(msg.data);
 
-       if (data.msg_type === "candles" && Array.isArray(data.candles)) {
-           candles__ = data.candles.map(c => ({
-             time: Number(c.epoch),    
-             open: Number(c.open),
-             high: Number(c.high),
-             low: Number(c.low),
-             close: Number(c.close),   
-          }));
-          chart.timeScale().fitContent();
-       }
+      if(data.authorize && data.msg_type==="authorize"){
+        derivWS_trendline.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
+      }
 
-       if (data.msg_type === "ohlc" && data.ohlc) {
-          const o = data.ohlc;
-          const bar = {
-              time: Number(o.open_time),
-              open: Number(o.open),
-              high: Number(o.high),
-              low: Number(o.low),
-              close: Number(o.close)
-          };
+      // Candles OHLC
+      if(data.msg_type==="candles" && Array.isArray(data.candles)){
+        candles__ = data.candles.map(c=>({
+          time:Number(c.epoch),
+          open:Number(c.open),
+          high:Number(c.high),
+          low:Number(c.low),
+          close:Number(c.close)
+        }));
+        chart.timeScale().fitContent();
+        candleSeries.setData(candles__);
+      }
 
-          const last = candles__[candles__.length - 1];
-          if (!last || last.time !== bar.time) {
-              candles__.push(bar);
-          } else {
-              candles__[candles__ .length - 1] = bar;
-          }
+      // OHLC tick en temps réel
+      if(data.msg_type==="ohlc" && data.ohlc){
+        const o = data.ohlc;
+        const bar = {
+          time: Number(o.open_time),
+          open: Number(o.open),
+          high: Number(o.high),
+          low: Number(o.low),
+          close: Number(o.close)
+        };
 
-          drawAll(); // redessiner toutes les trendlines
-       }
-
-       if (data.ping && data.msg_type === "ping")
-        {
-          derivWS_trendline.send(JSON.stringify({ ping: 1 }));  
+        const last = candles__[candles__.length-1];
+        if(!last || last.time!==bar.time){
+          candles__.push(bar);
+          candleSeries.update(bar);
+        } else {
+          candles__[candles__.length-1]=bar;
+          candleSeries.update(bar);
         }
 
+        drawAll();
+      }
+
+      // Ping
+      if(data.ping && data.msg_type==="ping")
+        derivWS_trendline.send(JSON.stringify({ ping:1 }));
     };
 
-    derivWS_trendline.onclose = () => {
-      console.log("ℹ️ Deriv WS fermé");
-    };
-  
-    derivWS_trendline.onerror = (err) => {
-      console.error("❌ Deriv WS erreur", err);
-    };
+    derivWS_trendline.onclose = ()=>{ console.log("ℹ️ Deriv WS fermé"); };
+    derivWS_trendline.onerror = err=>{ console.error("❌ Deriv WS erreur", err); };
   }
 
-  // ================== UTILS ==================
-  const tp2xy = (t,p)=>({
-    x: chart.timeScale().timeToCoordinate(t),
-    y: currentSeries.priceToCoordinate(p)
-  });
-  const xy2tp = (x,y)=>({
-    t: chart.timeScale().coordinateToTime(x),
-    p: currentSeries.coordinateToPrice(y)
-  });
-
-  const dist = (x,y,x1,y1,x2,y2)=>{
-    const A=x-x1,B=y-y1,C=x2-x1,D=y2-y1;
-    const dot=A*C+B*D, len=C*C+D*D;
-    return Math.abs(dot/len*C-x+x1)+Math.abs(dot/len*D-y+y1);
-  };
-
   // ================== DRAW ==================
-  function drawAll(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+  function drawAll() {
+    ctx.clearRect(0,0,overlay.width,overlay.height);
     trendlines.forEach(l=>{
       const a=tp2xy(l.t1,l.p1), b=tp2xy(l.t2,l.p2);
       if(!a.x||!b.x) return;
-      ctx.strokeStyle=l===active?'#f59e0b':'#38bdf8';
-      ctx.lineWidth=2;  
+      ctx.strokeStyle = (l===activeLine)?'#f59e0b':'#38bdf8';
+      ctx.lineWidth=2;
       ctx.beginPath();
       ctx.moveTo(a.x,a.y);
       ctx.lineTo(b.x,b.y);
@@ -3265,70 +3251,63 @@ document.getElementById("closeWebview").onclick = () => {
   }
 });  
 
-// ================== ADD LINE ==================
-document.getElementById('ML5BTN').onclick = () => {
-  if (!candles || candles.length === 0) return;
-  const lastBar = candles[candles.length - 1];
-  const t = lastBar.time;
-  const p = lastBar.close; // ou open/high/low selon ton choix
-
-  trendlines.push({
-    t1: t - 30,
-    p1: p - 1,
-    t2: t + 30,
-    p2: p + 1
-  });
-  
+/* ================== AJOUT TRENDLINE ================== */
+document.getElementById('ML5BTN').onclick = ()=>{
+  if(candles__.length === 0) return;
+  const last = candles__[candles__.length-1];
+  const t = last.time;
+  const p = last.close;
+  trendlines.push({ t1:t-30, p1:p-1, t2:t+30, p2:p+1 });
   drawAll();
 };
 
-// ================== MOUSE ==================
-canvas.onmousedown=e=>{
-  const x=e.offsetX,y=e.offsetY;
-  active=null;
+/* ================== DRAG / ROTATE ================== */
+overlay.onmousedown = e=>{
+  const x=e.offsetX, y=e.offsetY;
+  activeLine = null;
   trendlines.forEach(l=>{
     const a=tp2xy(l.t1,l.p1), b=tp2xy(l.t2,l.p2);
-    if(dist(x,y,a.x,a.y,b.x,b.y)<6){
-      active=l;
-      start={x,y};
-      mode=e.shiftKey?'rotate':'move';
+    if(distLine(x,y,a,b)<6){
+      activeLine = l;
+      start = {x,y};
+      mode = e.shiftKey ? 'rotate' : 'move';
     }
   });
 };
 
-canvas.onmousemove=e=>{
-  if(!active) return;
-  const dx=e.offsetX-start.x, dy=e.offsetY-start.y;
+overlay.onmousemove = e=>{
+  if(!activeLine) return;
+  const dx = e.offsetX - start.x;
+  const dy = e.offsetY - start.y;
+
   if(mode==='move'){
-    const p1=xy2tp(tp2xy(active.t1,active.p1).x+dx,tp2xy(active.t1,active.p1).y+dy);
-    const p2=xy2tp(tp2xy(active.t2,active.p2).x+dx,tp2xy(active.t2,active.p2).y+dy);
-    active.t1=p1.t; active.p1=p1.p;
-    active.t2=p2.t; active.p2=p2.p;
+    const p1=xy2tp(tp2xy(activeLine.t1,activeLine.p1).x+dx,tp2xy(activeLine.t1,activeLine.p1).y+dy);
+    const p2=xy2tp(tp2xy(activeLine.t2,activeLine.p2).x+dx,tp2xy(activeLine.t2,activeLine.p2).y+dy);
+    activeLine.t1=p1.t; activeLine.p1=p1.p;
+    activeLine.t2=p2.t; activeLine.p2=p2.p;
   }
-  start={x:e.offsetX,y:e.offsetY};
+  start = {x:e.offsetX,y:e.offsetY};
   drawAll();
 };
+window.onmouseup = ()=>{ activeLine=null; mode=null; };
 
-window.onmouseup=()=>{ active=null; mode=null; };
-
-// ================== CONTEXT MENU ==================
-const menu=document.getElementById('menu');
-canvas.oncontextmenu=e=>{
+/* ================== MENU CLIC DROIT ================== */
+overlay.oncontextmenu = e=>{
   e.preventDefault();
-  if(!active) return;
-  menu.style.left=e.clientX+'px';
-  menu.style.top=e.clientY+'px';
+  if(!activeLine) return;
+  menu.style.left = e.clientX+'px';
+  menu.style.top = e.clientY+'px';
   menu.style.display='block';
 };
 
-document.getElementById('deleteLine').onclick=()=>{
-  trendlines=trendlines.filter(l=>l!==active);
-  active=null;
+document.getElementById('deleteLine').onclick = ()=>{
+  trendlines = trendlines.filter(l=>l!==activeLine);
+  activeLine=null;
   menu.style.display='none';
   drawAll();
 };
 
-window.onclick=()=>menu.style.display='none';
+window.onclick = ()=>{ menu.style.display='none'; };
     
 // ================================
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
