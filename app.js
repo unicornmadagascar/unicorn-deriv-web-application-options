@@ -1531,7 +1531,7 @@ closeAll.onclick=()=>{
 
   // ================== DRAW ==================
   function drawAll() {
-    ctx.clearRect(0,0,overlay.width,overlay.height);
+    ctx.clearRect(0,0,overlay__.width,overlay__.height);
     trendlines.forEach(l=>{
       const a=tp2xy(l.t1,l.p1), b=tp2xy(l.t2,l.p2);
       if(!a.x||!b.x) return;
