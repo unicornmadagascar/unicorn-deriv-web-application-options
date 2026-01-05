@@ -1470,7 +1470,7 @@ closeAll.onclick=()=>{
     };
 
     derivWS_trendline.onmessage = msg=>{   
-      const d = JSON.parse(msg.data);  
+      const d = JSON.parse(msg.data);   
 
       if(d.authorize && d.msg_type==="authorize"){
         derivWS_trendline.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
@@ -3334,6 +3334,13 @@ deleteLine.onclick = ()=>{
 window.onclick = ()=> menu__.style.display = "none";
 
 resizeOverlay();
+ctx.strokeStyle = "red";
+ctx.lineWidth = 3;
+ctx.beginPath();
+ctx.moveTo(10,10);
+ctx.lineTo(200,200);
+ctx.stroke();
+
 window.addEventListener("resize", resizeOverlay);
 
 // ================================
