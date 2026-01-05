@@ -1519,7 +1519,7 @@ closeAll.onclick=()=>{
   /* ================== UTILS ================== */
   const tp2xy = (t,p)=>({
      x: chart.timeScale().timeToCoordinate(t),
-     y: candleSeries.priceToCoordinate(p)
+     y: currentSeries.priceToCoordinate(p)
   });
 
   /* ================== CANVAS OVERLAY ================== */
