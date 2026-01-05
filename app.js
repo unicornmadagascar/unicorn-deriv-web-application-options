@@ -1466,7 +1466,7 @@ closeAll.onclick=()=>{
   const xy2tp = (x,y)=>({ t: chart.timeScale().coordinateToTime(x), p: currentSeries.coordinateToPrice(y) });
   const distLine = (x,y,a,b) => Math.abs((b.y-a.y)*(x-a.x)-(b.x-a.x)*(y-a.y))/Math.hypot(b.x-a.x,b.y-a.y);
 
-  function startDerivTicks() {
+  function startDerivTicks() {  
     if(derivWS_trendline && derivWS_trendline.readyState === WebSocket.OPEN)
       derivWS_trendline.close();
 
