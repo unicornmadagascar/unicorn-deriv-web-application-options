@@ -3255,7 +3255,7 @@ document.getElementById("closeWebview").onclick = () => {
     startml5.style.color = "gray";
     autorunningml5 = false;
   }
-});  
+});    
 
 /* ================== AJOUT TRENDLINE ================== */
 document.getElementById("ML5BTN").onclick = ()=>{
