@@ -3341,7 +3341,7 @@ window.onclick = ()=> menu__.style.display = "none";
 
 // 3️⃣ 🔥 ICI EXACTEMENT
 chart.subscribeCrosshairMove(() => drawAll());
-chart.timeScale().subscribeVisibleTimeRangeChange(() => drawAll());
+chart.timeScale().subscribeVisibleTimeRangeChange(() => drawAll());  
 
 // ================================
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
