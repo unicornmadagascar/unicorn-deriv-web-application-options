@@ -3279,8 +3279,8 @@ document.getElementById('ML5BTN').onclick = () => {
     t2: t + 30,
     p2: p + 1
   });
-
-  drawAll();
+  
+  startDerivTicks();
 };
 
 // ================== MOUSE ==================
