@@ -1494,11 +1494,11 @@ closeAll.onclick=()=>{
           close:Number(c.close)
         }));
         chart.timeScale().fitContent();
-        candleSeries.setData(candles__);
+        currentSeries.setData(candles__);
       }
 
       // OHLC tick en temps réel
-      if(data.msg_type==="ohlc" && data.ohlc){
+      if(data.msg_type==="ohlc" && data.ohlc){  
         const o = data.ohlc;
         const bar = {
           time: Number(o.open_time),
