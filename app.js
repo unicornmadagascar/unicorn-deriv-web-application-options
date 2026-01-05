@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const cashFrame = document.getElementById("cashierFrame");
 
   const overlay__ = document.getElementById('overlay__');
-  overlay__.width = overlay__.clientWidth;
+  overlay__.width = overlay__.clientWidth;  
   overlay__.height = overlay__.clientHeight;
   const ctx = overlay__.getContext('2d');
   const menu__ = document.getElementById('menu');
