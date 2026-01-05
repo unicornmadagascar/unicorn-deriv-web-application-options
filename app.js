@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
   overlay__.width = overlay__.clientWidth;    
   overlay__.height = overlay__.clientHeight;
   const ctx = overlay__.getContext('2d');
-  const menu__ = document.getElementById('menu');
+  const menu__ = document.getElementById('menu');   
   // ================== TRENDLINES ==================
   let trendlines = [];
   let mode = null;  
