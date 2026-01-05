@@ -1476,7 +1476,7 @@ closeAll.onclick=()=>{
         derivWS_trendline.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
       }
 
-      if(data.msg_type==="candles" && Array.isArray(data.candles)){
+      if(data.msg_type==="candles" && Array.isArray(data.candles)){  
         candles__ = data.candles.map(c=>({
            time:Number(c.epoch),
            open:Number(c.open),
