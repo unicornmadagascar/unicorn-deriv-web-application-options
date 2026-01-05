@@ -1520,7 +1520,7 @@ closeAll.onclick=()=>{
   const tp2xy = (t,p)=>({
      x: chart.timeScale().timeToCoordinate(t),
      y: currentSeries.priceToCoordinate(p)  
-  });
+  });  
 
   /* ================== CANVAS OVERLAY ================== */
   function resizeOverlay(){  
