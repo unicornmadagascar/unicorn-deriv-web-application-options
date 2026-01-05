@@ -1504,10 +1504,8 @@ closeAll.onclick=()=>{
           const last = candles__[candles__.length - 1];
           if (!last || last.time !== bar.time) {
               candles__.push(bar);
-              currentSeries.update(bar);
           } else {
-            candles__[candles__ .length - 1] = bar;
-            currentSeries.update(bar);
+              candles__[candles__ .length - 1] = bar;
           }
 
           drawAll(); // redessiner toutes les trendlines
