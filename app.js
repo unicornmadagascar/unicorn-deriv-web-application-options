@@ -1488,24 +1488,33 @@ closeAll.onclick=()=>{
         chart.timeScale().fitContent();
       }
 
-      if(data.msg_type==="ohlc" && data.ohlc){
-        const o = data.ohlc;
-        const bar = {
-          time:Number(o.open_time),
-          open:Number(o.open),
-          high:Number(o.high),
-          low:Number(o.low),
-          close:Number(o.close)
-        };
-        const last = candles__[candles__.length-1];
-        if(!last || last.time!==bar.time){
-          candles__.push(bar);
-          currentSeries.update(bar);
-        } else {
-          candles__[candles__.length-1]=bar;
-          currentSeries.update(bar);
-        }
-        drawAll();
+      if (data.msg_type === "ohlc" && data.ohlc) {
+         const o = data.ohlc;
+         const bar = {
+            time: Number(o.open_time), // ⚠️ NUMBER ONLY
+            open: Number(o.open),
+            high: Number(o.high),
+            low: Number(o.low),
+            close: Number(o.close)
+         };
+
+         const last = candles__[candles__.length - 1];
+
+         if (!last) {
+            candles__.push(bar);
+            candleSeries.update(bar);
+         }
+         else if (bar.time > last.time) {
+            candles__.push(bar);
+            currentSeries.update(bar);
+         }
+         else if (bar.time === last.time) {
+            candles__[candles__.length - 1] = bar;
+            currentSeries.update(bar);
+         }
+         // else → bar plus ancien → IGNORER  
+
+         drawAll(); // redraw trendlines
       }
 
       if(data.ping && data.msg_type==="ping") derivWS_trendline.send(JSON.stringify({ ping:1 }));
