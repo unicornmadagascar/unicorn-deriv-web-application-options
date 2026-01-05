@@ -3311,7 +3311,7 @@ window.onclick = ()=>{ menu.style.display='none'; };
     
 // ================================
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
-// ================================
+// ================================  
 overlayCtx = createOverlayCanvas(chartInner, chart, () => drawEventLines(chart, overlayCtx, currentSeries));
   
 });
