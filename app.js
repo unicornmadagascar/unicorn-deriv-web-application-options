@@ -1481,8 +1481,8 @@ closeAll.onclick=()=>{
        }
 
        if (data.msg_type === "candles" && Array.isArray(data.candles)) {
-           candles__ = msg.candles.map(c => ({
-             time: Number(c.epoch),   
+           candles__ = data.candles.map(c => ({
+             time: Number(c.epoch),    
              open: Number(c.open),
              high: Number(c.high),
              low: Number(c.low),
