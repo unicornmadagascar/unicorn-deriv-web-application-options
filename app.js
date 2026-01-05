@@ -3257,6 +3257,7 @@ document.getElementById("closeWebview").onclick = () => {
     startml5.style.background = "linear-gradient(90deg,#f44336,#e57373)";
     startml5.style.color = "white";
     autorunningml5 = true;
+    startDerivTicks();
   } else {
 
     startml5.textContent = "Start ML";
@@ -3280,7 +3281,7 @@ document.getElementById('ML5BTN').onclick = () => {
     p2: p + 1
   });
   
-  startDerivTicks();
+  drawAll();
 };
 
 // ================== MOUSE ==================
