@@ -1523,7 +1523,7 @@ closeAll.onclick=()=>{
   });
 
   /* ================== CANVAS OVERLAY ================== */
-  function resizeOverlay(){
+  function resizeOverlay(){  
     const r = overlay__.getBoundingClientRect();
     overlay__.width = r.width * devicePixelRatio;
     overlay__.height = r.height * devicePixelRatio;
