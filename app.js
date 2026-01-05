@@ -1511,7 +1511,7 @@ closeAll.onclick=()=>{
          else if (bar.time === last.time) {
             candles__[candles__.length - 1] = bar;
             currentSeries.update(bar);
-         }
+         }   
          // else → bar plus ancien → IGNORER  
 
          drawAll(); // redraw trendlines
