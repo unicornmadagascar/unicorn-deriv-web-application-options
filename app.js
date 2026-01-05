@@ -1473,7 +1473,7 @@ closeAll.onclick=()=>{
       const data = JSON.parse(msg.data);
 
       if(data.authorize && data.msg_type==="authorize"){
-        derivWS_trendline.send(JSON.stringify(Payloadforsubscription(currentSymbol)));
+        derivWS_trendline.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
       }
 
       if(data.msg_type==="candles" && Array.isArray(data.candles)){
