@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const contractsData = {}; // stockage des contrats {id: {profits: [], infos: {…}}}
   let contractSymbol;  
   let contracts = [];
-  let wsAI = null;
+  let wsAI = null;  
   let contracttype__ = "";
   let contractid__;
   const MAX_HISTORY = 500; // max taille du buffer
