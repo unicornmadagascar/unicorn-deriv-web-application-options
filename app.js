@@ -1535,10 +1535,14 @@ closeAll.onclick=()=>{
 
   /* ================== DESSIN ================== */
   function drawAll(){
+    console.log("candles:", candles__.length);
+    console.log("trendlines:", trendlines);
     ctx.clearRect(0,0,overlay__.width,overlay__.height);
     trendlines.forEach(l=>{
       const a = tp2xy(l.t1,l.p1);
       const b = tp2xy(l.t2,l.p2);
+      console.log("coords", a, b);
+
       if(a.x==null || a.y==null || b.x==null || b.y==null) return;
 
       ctx.strokeStyle = l === activeLine ? "#f59e0b" : "#38bdf8";
@@ -3264,19 +3268,17 @@ document.getElementById("closeWebview").onclick = () => {
 document.getElementById("ML5BTN").onclick = ()=>{
   if(candles__.length < 2) return;
 
-  const last = candles__[candles__.length - 1];
-  const prev = candles__[candles__.length - 2];
+  const a = candles__[candles__.length-2];
+  const b = candles__[candles__.length-1];
 
-  // 👉 on utilise DES TIMESTAMPS RÉELS
   trendlines.push({
-    t1: candles__[0].time,
-    p1: candles__[0].close,  
-    t2: candles__[candles__.length-5].time,  
-    p2: candles__[candles__.length-5].close 
+    t1: a.time,
+    p1: a.close,
+    t2: b.time,
+    p2: b.close
   });
 
-  drawAll();  
-
+  drawAll();
 };
 
 overlay__.onmousedown = e=>{
@@ -3335,7 +3337,11 @@ deleteLine.onclick = ()=>{
   drawAll();
 };
 
-window.onclick = ()=> menu__.style.display = "none";  
+window.onclick = ()=> menu__.style.display = "none";
+
+// 3️⃣ 🔥 ICI EXACTEMENT
+chart.subscribeCrosshairMove(() => drawAll());
+chart.timeScale().subscribeVisibleTimeRangeChange(() => drawAll());
 
 // ================================
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
