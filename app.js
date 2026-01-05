@@ -1523,7 +1523,7 @@ closeAll.onclick=()=>{
     derivWS_trendline.onclose = () => {
       console.log("ℹ️ Deriv WS fermé");
     };
-
+  
     derivWS_trendline.onerror = (err) => {
       console.error("❌ Deriv WS erreur", err);
     };
