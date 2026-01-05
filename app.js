@@ -3270,9 +3270,9 @@ document.getElementById("ML5BTN").onclick = ()=>{
   // 👉 on utilise DES TIMESTAMPS RÉELS
   trendlines.push({
     t1: candles__[0].time,
-    p1: candles__[0].close,
-    t2: candles__[candles__.length-1].time,  
-    p2: candles__[candles__.length-1].close 
+    p1: candles__[0].close,  
+    t2: candles__[candles__.length-5].time,  
+    p2: candles__[candles__.length-5].close 
   });
 
   drawAll();  
