@@ -3257,7 +3257,7 @@ document.getElementById("closeWebview").onclick = () => {
   }
 });    
 
-/* ================== AJOUT TRENDLINE ================== */
+/* ================== AJOUT TRENDLINE ================== */   
 document.getElementById("ML5BTN").onclick = ()=>{
   if(candles__.length < 2) return;
 
