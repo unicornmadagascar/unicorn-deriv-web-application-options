@@ -3269,13 +3269,14 @@ document.getElementById("ML5BTN").onclick = ()=>{
 
   // 👉 on utilise DES TIMESTAMPS RÉELS
   trendlines.push({
-    t1: prev.time,
-    p1: prev.close,
-    t2: last.time,
-    p2: last.close
+    t1: candles__[0].time,
+    p1: candles__[0].close,
+    t2: candles__[candles__.length-1].time,
+    p2: candles__[candles__.length-1].close
   });
 
-  drawAll();
+  drawAll();  
+
 };
 
 overlay__.onmousedown = e=>{
