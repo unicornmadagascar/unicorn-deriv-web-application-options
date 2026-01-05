@@ -1462,8 +1462,8 @@ closeAll.onclick=()=>{
   }; 
 
   /* ================== UTILS ================== */
-  const tp2xy = (t,p)=>({ x: chart.timeScale().timeToCoordinate(t), y: candleSeries.priceToCoordinate(p) });
-  const xy2tp = (x,y)=>({ t: chart.timeScale().coordinateToTime(x), p: candleSeries.coordinateToPrice(y) });
+  const tp2xy = (t,p)=>({ x: chart.timeScale().timeToCoordinate(t), y: currentSeries.priceToCoordinate(p) });  
+  const xy2tp = (x,y)=>({ t: chart.timeScale().coordinateToTime(x), p: currentSeries.coordinateToPrice(y) });
   const distLine = (x,y,a,b) => Math.abs((b.y-a.y)*(x-a.x)-(b.x-a.x)*(y-a.y))/Math.hypot(b.x-a.x,b.y-a.y);
 
   function startDerivTicks() {
