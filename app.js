@@ -1481,7 +1481,7 @@ closeAll.onclick=()=>{
        }
 
        if (data.msg_type === "candles" && Array.isArray(data.candles)) {
-           candles = msg.candles.map(c => ({
+           candles__ = msg.candles.map(c => ({
              time: Number(c.epoch),   
              open: Number(c.open),
              high: Number(c.high),
@@ -1501,12 +1501,12 @@ closeAll.onclick=()=>{
               close: Number(o.close)
           };
 
-          const last = candles[candles.length - 1];
+          const last = candles__[candles__.length - 1];
           if (!last || last.time !== bar.time) {
-              candles.push(bar);
+              candles__.push(bar);
               currentSeries.update(bar);
           } else {
-            candles[candles.length - 1] = bar;
+            candles__[candles__ .length - 1] = bar;
             currentSeries.update(bar);
           }
 
