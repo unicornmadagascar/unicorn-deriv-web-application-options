@@ -1486,7 +1486,7 @@ closeAll.onclick=()=>{
              open: Number(c.open),
              high: Number(c.high),
              low: Number(c.low),
-             close: Number(c.close),
+             close: Number(c.close),   
           }));
           chart.timeScale().fitContent();
        }
