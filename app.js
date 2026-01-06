@@ -3170,7 +3170,7 @@ openBtngpt.onclick = () => {
 };
 
 function closePopup() {
-    overlaygemini.classList.add("hidden");
+    overlaygemini.classList.add("hidden");   
 }
 
 // Fermer si clic hors popup
