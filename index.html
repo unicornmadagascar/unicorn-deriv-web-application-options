@@ -1196,13 +1196,13 @@ hr {
     border-radius:4px;
 }
 
-.overlay {
+.overlay_ {
     position:fixed;
     top:0;
     left:0;
     width:100%;
     height:100%;
-    background:rgba(0,0,0,0.6);
+    background:rgb(255, 255, 255);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -1214,8 +1214,8 @@ hr {
 }
 
 .popup {
-    width:260px;
-    background:#fdfdfd;
+    width:280px;
+    background:#ffffff;
     border-radius:8px;
     box-shadow:0 10px 30px rgba(0,0,0,0.5);
 }
@@ -1236,7 +1236,7 @@ hr {
     gap:10px;
     padding:15px;
 }
-  
+
 .popup-body button {
     padding:10px;
     background:#2962FF;
@@ -1399,18 +1399,24 @@ hr {
 </div>
 
 <!-- OVERLAY -->
-<div id="indicatorOverlay" class="overlay hidden">
+<div id="indicatorOverlay" class="overlay_ hidden">
     <div class="popup">
         <div class="popup-header">
-            <span>Indicateurs</span>
+            <span>Indicateurs & Objets</span>
             <button class="close-btn" onclick="closePopup()">✖</button>
         </div>
 
         <div class="popup-body">
+            <!-- Indicateurs -->
             <button onclick="toggleMA(20,this)">MA 20</button>
             <button onclick="toggleMA(50,this)">MA 50</button>
             <button onclick="toggleMA(200,this)">MA 200</button>
             <button onclick="toggleZigZag(this)">ZigZag 14</button>
+
+            <!-- Objets graphiques -->
+            <button onclick="enableTrendline(this)">Trendline</button>
+            <button onclick="enableRectangle(this)">Rectangle</button>
+            <button onclick="enableTPSL(this)">TP / SL</button>
         </div>
     </div>
  </div>
