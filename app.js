@@ -79,7 +79,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let activePeriods = [];
   let priceData = [];
   let maws = null;
-
+  let ma20Series;
+  let ma50Series;
+  let ma200Series;
   // ================== x ==================
 
   let wsReady = false;
@@ -1456,67 +1458,6 @@ closeAll.onclick=()=>{
        }
     };
   }; 
-
-  function toggleMA(period, button) {
-    const index = activePeriods.indexOf(period);
-    const className = `active-${period}`;
-
-    if (index === -1) {
-        // AJOUTER à la sélection (Active le bouton et ajoute au tableau)
-        activePeriods.push(period);
-        button.classList.add('active'); 
-        button.style.backgroundColor = getMAColor(period); // Couleur selon la période
-        button.innerText = `MA ${period} : ON`;
-    } else {
-        // RETIRER de la sélection (Désactive le bouton et retire du tableau)
-        activePeriods.splice(index, 1);
-        button.classList.remove('active');
-        button.style.backgroundColor = ""; 
-        button.innerText = `MA ${period} : OFF`;
-    }
-
-    // On met à jour le graphique avec TOUT ce qui est dans le tableau
-    updateMAs(activePeriods);
-  }
-
-  function calculateEMA(data, period) {
-    const ema = [];
-    const k = 2 / (period + 1); // Facteur de lissage
-    
-    // On commence avec la première clôture comme base
-    let emaValue = data[0].close;
-
-    for (let i = 0; i < data.length; i++) {
-        const close = data[i].close;
-        // Formule EMA : (Close - EMA_précédent) * k + EMA_précédent
-        emaValue = (close - emaValue) * k + emaValue;
-
-        if (i >= period - 1) {
-            ema.push({ time: data[i].time, value: emaValue });
-        }
-    }
-    return ema;
-  }
-
-  // Fonction utilitaire pour les couleurs des boutons
-  function getMAColor(period) {
-    if (period === 20) return '#2962FF';
-    if (period === 50) return '#9c27b0';
-    if (period === 200) return '#ff9800';
-    return '#ccc';
-  }
-
-  function updateMAs(periods) {
-    // On vide TOUT d'abord (Important pour le multi-choix)
-    ma20Series.setData([]);
-    ma50Series.setData([]);
-    ma200Series.setData([]);
-
-    // On redessine chaque période présente dans la liste active
-    if (periods.includes(20))  ma20Series.setData(calculateEMA(priceData, 20));
-    if (periods.includes(50))  ma50Series.setData(calculateEMA(priceData, 50));
-    if (periods.includes(200)) ma200Series.setData(calculateEMA(priceData, 200));
-  }
 
   // Table
   function initTable()
@@ -2926,10 +2867,6 @@ window.addEventListener("error", function (e) {
     return false; // empêche l'affichage
   }
 }, true);
-
-  const ma20Series  = chart.addLineSeries({ color:'#2962FF', lineWidth:2 });
-  const ma50Series  = chart.addLineSeries({ color:'#9c27b0', lineWidth:2 });
-  const ma200Series = chart.addLineSeries({ color:'#ff9800', lineWidth:2 });
 
   // startup
   initDerivAccountManager();
