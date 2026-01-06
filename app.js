@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const cashFrame = document.getElementById("cashierFrame");
 
   const overlaygemini = document.getElementById("indicatorOverlay");
-  const openBtngpt = document.getElementById("openPopupBtn");  
+  const openBtngpt = document.getElementById("openPopupBtn__");  
   // ================== x ==================
 
   let wsReady = false;
@@ -3143,27 +3143,6 @@ document.getElementById("closeWebview").onclick = () => {
     document.getElementById("webviewFrame").src = "";
 };
 
-// === Automation Toggle ===
-  startml5.addEventListener("click", async () => {
-
-  autorunningml5 = !autorunningml5;
-
-  if (autorunningml5) {
-
-    startml5.textContent = "Stop ML";  
-    startml5.style.background = "linear-gradient(90deg,#f44336,#e57373)";
-    startml5.style.color = "white";
-    autorunningml5 = true;
-    startDerivTicks();
-  } else {  
-
-    startml5.textContent = "Start ML";
-    startml5.style.background = "white";
-    startml5.style.color = "gray";
-    autorunningml5 = false;
-  }
-});    
-
 /* ================== POP UP FOR INDICATOR ================== */   
 openBtngpt.onclick = () => {
     overlaygemini.classList.remove("hidden");
@@ -3172,7 +3151,7 @@ openBtngpt.onclick = () => {
 function closePopup() {
     overlaygemini.classList.add("hidden");   
 }
-
+  
 // Fermer si clic hors popup
 overlaygemini.addEventListener("click", (e) => {
     if (e.target === overlaygemini) closePopup();
