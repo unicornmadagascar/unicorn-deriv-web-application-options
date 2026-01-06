@@ -73,16 +73,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const validateCodeBtn = document.getElementById("validateCodeBtn");
   const cashFrame = document.getElementById("cashierFrame");
 
-  const overlay__ = document.getElementById('overlay__');
-  overlay__.width = overlay__.clientWidth;    
-  overlay__.height = overlay__.clientHeight;
-  const ctx = overlay__.getContext('2d');
-  const menu__ = document.getElementById('menu');   
-  // ================== TRENDLINES ==================
-  let trendlines = [];
-  let mode = null;  
-  let dragStart = null;
-  let derivWS_trendline = null; 
+  const overlaygemini = document.getElementById("indicatorOverlay");
+  const openBtngpt = document.getElementById("openPopupBtn");  
+  // ================== x ==================
 
   let wsReady = false;
   let wsControl = null;  
@@ -1459,100 +1452,7 @@ closeAll.onclick=()=>{
     };
   }; 
 
-  /* ================== UTILS ================== */
-  function startDerivTicks(){
-    if(derivWS_trendline && derivWS_trendline.readyState===WebSocket.OPEN) derivWS_trendline.close();
-
-    derivWS_trendline = new WebSocket(WS_URL);
-    derivWS_trendline.onopen = ()=>{
-      console.log("Deriv WS Connected");
-      derivWS_trendline.send(JSON.stringify({ authorize: TOKEN }));
-    };
-
-    derivWS_trendline.onmessage = msg=>{   
-      const d = JSON.parse(msg.data);   
-
-      if(d.authorize && d.msg_type==="authorize"){
-        derivWS_trendline.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
-      }
-
-      if(d.msg_type === "candles"){
-        candles__ = d.candles.map(c=>({
-          time: Number(c.epoch),
-          open:+c.open,
-          high:+c.high,
-          low:+c.low,
-          close:+c.close
-        }));
-        currentSeries.setData(candles__);
-        chart.timeScale().fitContent();
-      }
-
-      if(d.msg_type === "ohlc"){
-        const o = d.ohlc;
-        const bar = {
-          time:Number(o.open_time),
-          open:+o.open,
-          high:+o.high,
-          low:+o.low,
-          close:+o.close
-        };
-
-        const last = candles__[candles__.length-1];
-        if(!last || bar.time > last.time){
-          candles__.push(bar);
-          currentSeries.update(bar);
-        } else if(bar.time === last.time){
-          candles__[candles__.length-1] = bar;
-          currentSeries.update(bar);
-        }
-
-        drawAll();
-      }
-
-      if(d.ping && d.msg_type==="ping") derivWS_trendline.send(JSON.stringify({ ping:1 }));
-    };
-
-    derivWS_trendline.onclose = ()=>{ console.log("ℹ️ Deriv WS fermé"); };
-    derivWS_trendline.onerror = err=>{ console.error("❌ Deriv WS erreur", err); };
-  }
-
-  /* ================== UTILS ================== */
-  const tp2xy = (t,p)=>({
-     x: chart.timeScale().timeToCoordinate(t),
-     y: currentSeries.priceToCoordinate(p)
-  });
-
-
-  /* ================== CANVAS OVERLAY ================== */
-  function resizeOverlay(){
-    const r = overlay__.getBoundingClientRect();
-    overlay__.width = r.width * devicePixelRatio;
-    overlay__.height = r.height * devicePixelRatio;
-    ctx.setTransform(1,0,0,1,0,0);
-    ctx.scale(devicePixelRatio, devicePixelRatio);
-  }
-
-  /* ================== DESSIN ================== */
-  function drawAll(){
-    console.log("candles:", candles__.length);
-    console.log("trendlines:", trendlines);
-    ctx.clearRect(0,0,overlay__.width,overlay__.height);
-    trendlines.forEach(l=>{
-      const a = tp2xy(l.t1,l.p1);
-      const b = tp2xy(l.t2,l.p2);
-      console.log("coords", a, b);
-
-      if(a.x==null || a.y==null || b.x==null || b.y==null) return;
-
-      ctx.strokeStyle = l === activeLine ? "#f59e0b" : "#38bdf8";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(a.x,a.y);
-      ctx.lineTo(b.x,b.y);  
-      ctx.stroke();
-    });
-  }
+  
 
   // Table
   function initTable()
@@ -3264,84 +3164,19 @@ document.getElementById("closeWebview").onclick = () => {
   }
 });    
 
-/* ================== AJOUT TRENDLINE ================== */   
-document.getElementById("ML5BTN").onclick = ()=>{
-  if(candles__.length < 2) return;
-
-  const a = candles__[candles__.length-2];
-  const b = candles__[candles__.length-1];
-
-  trendlines.push({
-    t1: a.time,
-    p1: a.close,
-    t2: b.time,
-    p2: b.close
-  });
-
-  drawAll();
+/* ================== POP UP FOR INDICATOR ================== */   
+openBtngpt.onclick = () => {
+    overlaygemini.classList.remove("hidden");
 };
 
-overlay__.onmousedown = e=>{
-  const x=e.offsetX, y=e.offsetY;
-  activeLine = null;
+function closePopup() {
+    overlaygemini.classList.add("hidden");
+}
 
-  trendlines.forEach(l=>{
-    const a=tp2xy(l.t1,l.p1), b=tp2xy(l.t2,l.p2);
-    if(!a.x || !b.x) return;
-
-    const d = Math.abs((b.y-a.y)*(x-a.x)-(b.x-a.x)*(y-a.y))
-              / Math.hypot(b.x-a.x,b.y-a.y);
-
-    if(d < 6){
-      activeLine = l;
-      dragStart = { x, y };
-    }
-  });
-};
-
-overlay__.onmousemove = e=>{
-  if(!activeLine) return;
-
-  const dx = e.offsetX - dragStart.x;
-  const dy = e.offsetY - dragStart.y;
-
-  const x1 = chart.timeScale().timeToCoordinate(activeLine.t1);
-  const x2 = chart.timeScale().timeToCoordinate(activeLine.t2);
-  if(x1 == null || x2 == null) return;
-
-  activeLine.t1 = chart.timeScale().coordinateToTime(x1 + dx);
-  activeLine.t2 = chart.timeScale().coordinateToTime(x2 + dx);
-
-  activeLine.p1 -= dy * 0.02;
-  activeLine.p2 -= dy * 0.02;
-
-  dragStart = { x:e.offsetX, y:e.offsetY };
-  drawAll();
-};
-
-window.onmouseup = ()=> activeLine = null;
-
-overlay__.oncontextmenu = e=>{
-  e.preventDefault();
-  if(!activeLine) return;
-
-  menu__.style.left = e.clientX + "px";
-  menu__.style.top = e.clientY + "px";
-  menu__.style.display = "block";
-};
-
-deleteLine.onclick = ()=>{
-  trendlines = trendlines.filter(l=>l !== activeLine);
-  activeLine = null;
-  menu__.style.display = "none";
-  drawAll();
-};
-
-window.onclick = ()=> menu__.style.display = "none";
-
-// 3️⃣ 🔥 ICI EXACTEMENT
-chart.subscribeCrosshairMove(() => drawAll());
-chart.timeScale().subscribeVisibleTimeRangeChange(() => drawAll());  
+// Fermer si clic hors popup
+overlaygemini.addEventListener("click", (e) => {
+    if (e.target === overlaygemini) closePopup();
+});
 
 // ================================
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
