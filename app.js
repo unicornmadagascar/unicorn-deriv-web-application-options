@@ -2869,10 +2869,7 @@ window.addEventListener("error", function (e) {
   initChart(currentChartType);
   initTable();  
   initHistoricalTable();      
-  inihistoricalchart();     
-  resizeOverlay();
-  
-  window.addEventListener("resize", resizeOverlay);
+  inihistoricalchart();       
 
   window.onload = () => {
        if (!currentSymbol) return;
