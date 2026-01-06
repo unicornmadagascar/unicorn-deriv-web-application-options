@@ -2868,7 +2868,7 @@ window.addEventListener("error", function (e) {
   displaySymbols(currentInterval,currentChartType);   
   initChart(currentChartType);
   initTable();  
-  initHistoricalTable();      
+  initHistoricalTable();       
   inihistoricalchart();       
 
   window.onload = () => {
