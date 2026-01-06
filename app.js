@@ -73,14 +73,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const validateCodeBtn = document.getElementById("validateCodeBtn");
   const cashFrame = document.getElementById("cashierFrame");
 
-  const overlaygemini = document.getElementById("indicatorOverlay");
+  const overlaygemini = document.getElementById("indicatorOverlay");   
   const openBtngpt = document.getElementById("openPopupBtn__");  
   // ================== x ==================
 
   let wsReady = false;
   let wsControl = null;  
   let wsSignal = null;
-  let ControlSocket = null;
+  let ControlSocket = null;  
   let engineStarted = false;
   let totalPL = 0; // cumul des profits et pertes
   let ws=null;   
