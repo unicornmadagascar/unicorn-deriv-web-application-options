@@ -1562,21 +1562,26 @@
       font-weight: bold;
       border-radius: 7px;
       cursor: pointer;
-    }
-
-    .popup-body button {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-      transition: box-shadow 0.2s ease, transform 0.2s ease;
+      transition: all 0.2s ease;
+      /* Simplifie la transition */
     }
 
-    .popup-body button.active {
-      background: #f39c12;
+    /* Tes classes actives restent les mêmes */
+    .popup-body button.active-20 {
+      background: #2962FF;
+      color: white;
     }
 
-    /* Styles spécifiques pour l'état actif de chaque bouton */
-    .popup-body button.active-20 { background: #2962FF; color: white; border-color: #2962FF; }
-    .popup-body button.active-50 { background: #9c27b0; color: white; border-color: #9c27b0; }
-    .popup-body button.active-200 { background: #ff9800; color: white; border-color: #ff9800; }
+    .popup-body button.active-50 {
+      background: #9c27b0;
+      color: white;
+    }
+
+    .popup-body button.active-200 {
+      background: #ff9800;
+      color: white;
+    }
 
     .close-btn {
       background: none;
@@ -1585,7 +1590,6 @@
       font-size: 16px;
       cursor: pointer;
     }
-    
   </style>
 </head>
 
@@ -1700,7 +1704,6 @@
     <canvas id="overlay__"></canvas>
   </div>
 
-
   <!-- ================= TRADE HISTORY CONTAINER ================= -->
   <div id="tradeHistoryContainer__">
 
@@ -1736,7 +1739,7 @@
       </div>
 
       <div class="popup-body">
-        <!-- Indicateurs -->        
+        <!-- Indicateurs -->
         <button id="ma20" onclick="toggleMA(20, this)">MA 20 : OFF</button>
         <button id="ma50" onclick="toggleMA(50, this)">MA 50 : OFF</button>
         <button id="ma200" onclick="toggleMA(200, this)">MA 200 : OFF</button>
@@ -2091,7 +2094,7 @@
       ma50Series.setData(periods.includes(50) ? calculateEMA(priceData, 50) : []);
       ma200Series.setData(periods.includes(200) ? calculateEMA(priceData, 200) : []);
     }
-    
+
     function startDerivTicks() {
 
     }
