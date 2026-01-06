@@ -3150,9 +3150,9 @@ function closePopup() {
 }
   
 // Fermer si clic hors popup
-overlaygemini.addEventListener("click", (e) => {
+overlaygemini.addEventListener("click", (e) => {  
     if (e.target === overlaygemini) closePopup();
-});
+});  
 
 // ================================
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
