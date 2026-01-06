@@ -2869,7 +2869,7 @@ window.addEventListener("error", function (e) {
   initChart(currentChartType);
   initTable();  
   initHistoricalTable();       
-  inihistoricalchart();       
+  inihistoricalchart();         
 
   window.onload = () => {
        if (!currentSymbol) return;
