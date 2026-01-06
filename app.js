@@ -3141,18 +3141,16 @@ document.getElementById("closeWebview").onclick = () => {
 };
 
 /* ================== POP UP FOR INDICATOR ================== */   
-openBtngpt.onclick = () => {
-    overlaygemini.classList.remove("hidden");
-};
+openBtngpt.onclick = () => overlaygemini.classList.remove("hidden");
 
 function closePopup() {
-    overlaygemini.classList.add("hidden");   
+    overlaygemini.classList.add("hidden");
 }
-  
+
 // Fermer si clic hors popup
-overlaygemini.addEventListener("click", (e) => {  
+overlaygemini.addEventListener("click", (e) => {
     if (e.target === overlaygemini) closePopup();
-});  
+});
 
 // ================================
 // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
