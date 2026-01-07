@@ -76,7 +76,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const overlaygemini = document.getElementById("indicatorOverlay");
   const openBtngpt = document.getElementById("openPopupBtn__");
   // Tableau des périodes actuellement affichées
-
+  let maSeries = {};
+  let maws = null;
+  let priceData = [];
+  let activePeriods = [];
   // ================== x ==================
 
   let wsReady = false;
@@ -1453,7 +1456,14 @@ document.addEventListener("DOMContentLoaded", () => {
       button.classList.remove(className);
       button.innerText = `MA ${period} : OFF`;
     }
-    updateMAs();
+    
+    maSeries = {
+      20: chart.addLineSeries({ color: '#2962FF', lineWidth: 2, title: 'EMA 20' }),
+      50: chart.addLineSeries({ color: '#9c27b0', lineWidth: 2, title: 'EMA 50' }),
+      200: chart.addLineSeries({ color: '#ff9800', lineWidth: 2, title: 'EMA 200' })
+    };
+
+    startDerivConnection();
   };
 
   // --- CALCULS ET MISES À JOUR ---
@@ -1469,13 +1479,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return ema;
   }
 
-  // Déclarations globales des séries pour qu'elles soient accessibles partout
-  const maSeries = {
-    20: chart.addLineSeries({ color: '#2962FF', lineWidth: 2, title: 'EMA 20' }),
-    50: chart.addLineSeries({ color: '#9c27b0', lineWidth: 2, title: 'EMA 50' }),
-    200: chart.addLineSeries({ color: '#ff9800', lineWidth: 2, title: 'EMA 200' })
-  };
-
   function updateMAs() {
     // On boucle sur nos 3 périodes possibles
     [20, 50, 200].forEach(p => {
@@ -1485,9 +1488,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function startDerivConnection() {
-     /* ===============================
-        CONNEXION DERIV API (Live)
-     ================================ */
+    /* ===============================
+       CONNEXION DERIV API (Live)
+    ================================ */
     const maws = new WebSocket(WS_URL);
 
     maws.onopen = () => {
@@ -2921,7 +2924,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initTable();
   initHistoricalTable();
   inihistoricalchart();
-  startDerivConnection();
 
   window.onload = () => {
     if (!currentSymbol) return;
