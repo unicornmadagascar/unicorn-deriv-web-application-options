@@ -1510,7 +1510,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.innerText = "ZigZag 14 : ON";
 
       if (!isWsInitialized) {
-        startDerivConnection();
+        startDerivConnectionZZ();
         isWsInitialized = true;
       }
 
@@ -1741,9 +1741,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    ws.onclose = () => {
+    wszz.onclose = () => {
       console.log("Connexion fermée. Reconnexion...");
-      setTimeout(startDerivConnection, 5000);
+      setTimeout(startDerivConnectionZZ, 5000);
     };
   }
 
