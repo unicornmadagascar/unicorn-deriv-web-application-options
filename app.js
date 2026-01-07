@@ -221,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { symbol: "CRASH600", name: "Crash 600" },
     { symbol: "frxAUDUSD", name: "AUDUSD" },
     { symbol: "frxNZDUSD", name: "NZDUSD" },
-    { symbol: "cryBTCUSD", name: "BTCUSD" },  
+    { symbol: "cryBTCUSD", name: "BTCUSD" },
     { symbol: "frxXAUUSD", name: "XAUUSD" },
     { symbol: "frxEURUSD", name: "EURUSD" },
     { symbol: "frxGBPUSD", name: "GBPUSD" },
@@ -1756,36 +1756,42 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function resetZZChartVariable() {
-    
-    // WS Initialization
-    if (maws && (maws.readyState === WebSocket.OPEN || maws.readyState === WebSocket.CLOSED)) { maws.close(); maws = null; }
-    if (wszz && (wszz.readyState === WebSocket.OPEN || wszz.readyState === WebSocket.CLOSED)) { wszz.close(); wszz = null; }
+    // --- 1. FERMETURE SÉCURISÉE DES WEBSOCKETS ---
+    // On vérifie d'abord si l'objet existe avant d'accéder à ses propriétés
+    if (maws) {
+      try { maws.close(); } catch (e) { }
+      maws = null;
+    }
+    if (wszz) {
+      try { wszz.close(); } catch (e) { }
+      wszz = null;
+    }
 
-    // 3. On réinitialise l'état de la connexion si nécessaire
+    // --- 2. RÉINITIALISATION DES ÉTATS ---
     isWsInitialized = false;
 
-    // 1. Trouver le bouton (utilisez un ID pour être précis)
+    // --- 3. MISE À JOUR DE L'INTERFACE (UI) ---
     const btn = document.querySelector('button[onclick*="toggleZigZag"]');
-
     if (btn) {
-      // 2. Retirer la classe 'active'
       btn.classList.remove("active");
-  
-      // 3. Remettre le texte initial
       btn.innerText = "ZigZag 14 : OFF";
     }
 
-    // 4. S'assurer que la série est vidée sur le graphique
+    // --- 4. NETTOYAGE DES SÉRIES ET DES DONNÉES ---
     if (zigzagSeries) {
       zigzagSeries.setData([]);
       zigzagSeries.setMarkers([]);
-      zigzagSeries = null;
-      priceDataZZ = [];
-      zigzagCache = [];
-      zigzagMarkers = [];
+      zigzagSeries = null; // On libère la série pour la recréer sur le prochain chart
     }
-  }
 
+    // On vide les données systématiquement (même si zigzagSeries était déjà null)
+    priceDataZZ = [];
+    zigzagCache = [];
+    zigzagMarkers = [];
+
+    console.log("Système ZigZag réinitialisé avec succès.");
+  }
+  
   // Table
   function initTable() {
     // Construction du tableau HTML
