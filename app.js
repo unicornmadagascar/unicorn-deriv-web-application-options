@@ -81,6 +81,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let priceData = [];
   let activePeriods = [];
   let isConnected = false; // Pour savoir si le WebSocket est déjà lancé
+  let zzws = null;
+  let zigzagSeries = null;
+  let priceDataZZ = [];
+  let zigzagCache = [];
+  let zigzagMarkers = [];
+  let isWsConnected = false;
+  let isWsInitialized = false;
   // ================== x ==================
 
   let wsReady = false;
@@ -1453,11 +1460,21 @@ document.addEventListener("DOMContentLoaded", () => {
       200: chart.addLineSeries({ color: '#ff9800', lineWidth: 2, title: 'EMA 200' })
     };
   }
-  
+
+  function initZZSeries() {
+    // "chart" doit déjà exister globalement
+    zigzagSeries = chart.addLineSeries({
+      color: '#f39c12',
+      lineWidth: 2,
+      lineStyle: 0, // Solid
+      priceLineVisible: false,
+    });
+  }
+
   // --- LOGIQUE DES BOUTONS (Appelée depuis le HTML) ---  
   window.toggleMA = function (period, button) {
     // ÉTAPE 1 : Si c'est le TOUT PREMIER CLIC sur n'importe quel bouton MA
-    if (maSeries === null) {  
+    if (maSeries === null) {
       console.log("Premier clic : Initialisation des MA et de la connexion...");
       initMaSeries(); // Crée les lignes bleues, violettes, oranges
     }
@@ -1485,6 +1502,34 @@ document.addEventListener("DOMContentLoaded", () => {
     updateMAs();
   };
 
+  // --- COMMANDE BOUTON ---
+  window.toggleZigZag = function (btn) {
+    const active = btn.classList.toggle("active");
+
+    if (active) {
+      btn.innerText = "ZigZag 14 : ON";
+
+      // 1. Si c'est le premier clic, on lance la connexion Deriv
+      if (!isWsInitialized) {
+        startDerivConnectionZZ();
+        isWsInitialized = true;
+      }
+
+      // 2. On force un premier calcul pour ne pas attendre le prochain tick
+      refreshZigZag();
+
+      // 3. On affiche les données (si elles existent déjà en cache)
+      zigzagSeries.setData(zigzagCache);
+      zigzagSeries.setMarkers(zigzagMarkers);
+
+    } else {
+      btn.innerText = "ZigZag 14 : OFF";
+      // On vide le graphique mais on ne coupe pas la connexion (pour garder les prix à jour)
+      zigzagSeries.setData([]);
+      zigzagSeries.setMarkers([]);
+    }
+  }
+
   // --- CALCULS ET MISES À JOUR ---
   function calculateEMA(data, period) {
     if (data.length < period) return [];
@@ -1496,6 +1541,85 @@ document.addEventListener("DOMContentLoaded", () => {
       if (i >= period - 1) ema.push({ time: data[i].time, value: emaValue });
     }
     return ema;
+  }
+
+  // --- ALGORITHME ZIGZAG AVEC MISE À JOUR DES EXTRÊMES ---
+  function calculateZigZag(data, period) {
+    const points = [];
+    const markers = [];
+    let lastType = null;
+
+    for (let i = period; i < data.length - period; i++) {
+      let isHigh = true;
+      let isLow = true;
+
+      for (let j = 1; j <= period; j++) {
+        if (data[i].high < data[i - j].high || data[i].high < data[i + j].high) isHigh = false;
+        if (data[i].low > data[i - j].low || data[i].low > data[i + j].low) isLow = false;
+      }
+
+      if (isHigh) {
+        if (lastType === 'H') {
+          if (data[i].high > points[points.length - 1].value) {  
+            points[points.length - 1] = { time: data[i].time, value: data[i].high };
+            // Mise à jour du marqueur (round)
+            markers[markers.length - 1].time = data[i].time;
+          }
+        } else {
+          lastType = 'H';
+          points.push({ time: data[i].time, value: data[i].high });
+          markers.push({
+            time: data[i].time,
+            position: 'aboveBar',
+            color: '#f39c12', // Couleur orange pour les sommets
+            shape: 'circle',   // Forme de rond
+            size: 1,           // Taille du point
+            text: 'H'          // Optionnel : enlever le texte si vous voulez juste le point
+          });
+        }
+      }
+      else if (isLow) {
+        if (lastType === 'L') {
+          if (data[i].low < points[points.length - 1].value) {
+            points[points.length - 1] = { time: data[i].time, value: data[i].low };
+            // Mise à jour du marqueur (round)
+            markers[markers.length - 1].time = data[i].time;
+          }
+        } else {
+          lastType = 'L';
+          points.push({ time: data[i].time, value: data[i].low });
+          markers.push({
+            time: data[i].time,
+            position: 'belowBar',
+            color: '#26a69a', // Couleur verte pour les creux
+            shape: 'circle',
+            size: 1,
+            text: 'L'
+          });
+        }
+      }
+    }
+
+    if (points.length > 0) {
+      const lastBar = data[data.length - 1];
+      points.push({ time: lastBar.time, value: lastBar.close });
+    }
+
+    return { points, markers };
+  }
+
+  // Petite fonction utilitaire pour mettre à jour le cache et le dessin
+  function refreshZigZag() {
+    const results = calculateZigZag(priceData, 14);
+    zigzagCache = results.points;
+    zigzagMarkers = results.markers;
+
+    // Si le bouton est sur "ON", on affiche immédiatement
+    const btn = document.querySelector('.controls button');
+    if (btn && btn.classList.contains('active')) {
+      zigzagSeries.setData(zigzagCache);
+      zigzagSeries.setMarkers(zigzagMarkers);
+    }
   }
 
   function updateMAs() {
@@ -1524,7 +1648,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (data.msg_type === "authorize" && data.authorize) {
         console.log("WS Connected and Authorized");
-        maws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
+        maws.send(JSON.stringify(Payloadforsubscription(currentSymbol, currentInterval, currentChartType)));
       }
 
       // Historique au chargement
@@ -1561,6 +1685,65 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Mise à jour des lignes MA à chaque nouveau mouvement de prix
       updateMAs();
+    };
+  }
+
+  // --- CONNEXION DERIV ---
+  function startDerivConnectionZZ() {
+
+    const wszz = new WebSocket(WS_URL);
+
+    wszz.onopen = () => { wszz.send(JSON.stringify({ authorize: TOKEN }))};
+
+    wszz.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+
+      if (data.msg_type === "authorize" && data.authorize) {
+        console.log("WS Authorized and Connected");
+        // 1. Demander l'historique ET s'abonner (subscribe: 1)
+        wszz.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
+      }
+
+      // A. HISTORIQUE (reçu une seule fois au début)
+      if (data.candles) {
+        priceData = data.candles.map(c => ({
+          time: c.epoch,
+          open: Number(c.open),
+          high: Number(c.high),
+          low: Number(c.low),
+          close: Number(c.close)
+        }));
+        candleSeries.setData(priceData);
+        refreshZigZag(); // Calcul initial
+      }
+
+      // B. TEMPS RÉEL (reçu à chaque tick via 'ohlc')
+      if (data.ohlc) {
+        const o = data.ohlc;
+        const newCandle = {
+          time: o.open_time,
+          open: Number(o.open),
+          high: Number(o.open), // Au début d'un tick, high/low sont l'open
+          low: Number(o.low),
+          close: Number(o.close)
+        };
+
+        // Vérifier si on met à jour la bougie actuelle ou si on en crée une nouvelle
+        if (priceData.length > 0 && priceData[priceData.length - 1].time === newCandle.time) {
+          priceData[priceData.length - 1] = newCandle;
+        } else {
+          priceData.push(newCandle);
+        }
+
+        // Mettre à jour le graphique et recalculer le ZigZag
+        candleSeries.update(newCandle);
+        refreshZigZag();
+      }
+    };
+
+    ws.onclose = () => {
+      console.log("Connexion fermée. Reconnexion...");
+      setTimeout(startDerivConnection, 5000);
     };
   }
 
