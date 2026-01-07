@@ -1695,7 +1695,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wszz.onopen = () => { wszz.send(JSON.stringify({ authorize: TOKEN }))};
 
     wszz.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
+      const data = JSON.parse(msg.data);  
 
       if (data.msg_type === "authorize" && data.authorize) {
         console.log("WS Authorized and Connected");  
