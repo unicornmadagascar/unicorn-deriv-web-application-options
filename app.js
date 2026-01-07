@@ -1637,7 +1637,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Si le bouton est sur "ON", on affiche immédiatement
     const btn = document.querySelector('.popup-body button');
-    if (btn && btn.classList.contains('active')) {
+    if (btn && btn.classList.contains('active')) {  
       zigzagSeries.setData(zigzagCache);
       zigzagSeries.setMarkers(zigzagMarkers);
     }
