@@ -1454,7 +1454,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
   
-  // --- LOGIQUE DES BOUTONS (Appelée depuis le HTML) ---
+  // --- LOGIQUE DES BOUTONS (Appelée depuis le HTML) ---  
   window.toggleMA = function (period, button) {
     // ÉTAPE 1 : Si c'est le TOUT PREMIER CLIC sur n'importe quel bouton MA
     if (maSeries === null) {  
