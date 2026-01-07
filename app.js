@@ -1491,8 +1491,9 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ===============================
        CONNEXION DERIV API (Live)
     ================================ */
-    const maws = new WebSocket(WS_URL);
+    if (maws && maws.readyState === WebSocket.OPEN) maws.close();
 
+    const maws = new WebSocket(WS_URL);
     maws.onopen = () => {
       maws.send(JSON.stringify({ authorize: TOKEN }));
     };
@@ -1501,7 +1502,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = JSON.parse(msg.data);
 
       if (data.msg_type === "authorize" && data.authorize) {
-        console.log("WS Connected and Authorized");
+        console.log("WS Connected and Authorized");  
         maws.send(JSON.stringify({
           ticks_history: currentSymbol,
           count: 700,
