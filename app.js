@@ -1770,7 +1770,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 2. RÉINITIALISATION DES ÉTATS ---
     isWsInitialized = false;
 
-    // --- 3. MISE À JOUR DE L'INTERFACE (UI) ---
+    // --- 3. MISE À JOUR DE L'INTERFACE (UI) ---  
     const btn = document.querySelector('button[onclick*="toggleZigZag"]');
     if (btn) {
       btn.classList.remove("active");
