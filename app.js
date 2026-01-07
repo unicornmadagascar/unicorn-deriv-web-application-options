@@ -1525,7 +1525,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       btn.innerText = "ZigZag 14 : OFF";
       if (zigzagSeries) {
-        zigzagSeries.setData([]);
+        zigzagSeries.setData([]);   
         zigzagSeries.setMarkers([]);
       }
     }
