@@ -1496,7 +1496,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.toggleZigZag = function (btn) {
 
     // SÉCURITÉ : Si zigzagSeries n'existe pas encore, on l'initialise
-    if (!zigzagSeries) {
+    if (!zigzagSeries || zigzagSeries == null) {
       zigzagSeries = chart.addLineSeries({
         color: '#f39c12',
         lineWidth: 2,
