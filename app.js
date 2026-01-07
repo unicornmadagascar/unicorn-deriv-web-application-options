@@ -1779,7 +1779,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ws = null;
       } catch (e) { }  
     }
-
+  
     // --- 2. RÉINITIALISATION DES ÉTATS ---
     isWsInitialized = false;
 
