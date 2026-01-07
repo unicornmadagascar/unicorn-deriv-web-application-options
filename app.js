@@ -256,8 +256,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // appel de la fonction connect/subscribe selon le type de chart
         if (currentChartType === "candlestick") {
+          resetZZChartVariable(); 
           connect(s.symbol, currentInterval, currentChartType);
-          resetZZChartVariable();  
         } else {
           subscribeSymbol(s.symbol, currentChartType);
         }
@@ -390,7 +390,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ws.send(JSON.stringify(Payloadforsubscription(currentSymbol, currentInterval, currentChartType)));
     };
 
-    ws.onmessage = ({ data }) => {
+    ws.onmessage = ({ data }) => {  
       const msg = JSON.parse(data);
       if (msg.msg_type === "candles" && Array.isArray(msg.candles)) {
         candles = msg.candles.map(c => ({
@@ -681,7 +681,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         currentSeries.update(point);
       } catch (e) {
-        try { currentSeries.setData(chartData); } catch (err) { }
+        try { currentSeries.setData(chartData); } catch (err) { }  
       }
     }
 
@@ -1771,6 +1771,13 @@ document.addEventListener("DOMContentLoaded", () => {
           wszz = null;
       } catch (e) { }
     }
+    if (ws) {
+      try { 
+          ws.send(JSON.stringify({ forget_all: "candles" }));
+          ws.close(); 
+          ws = null;
+      } catch (e) { }
+    }
 
     // --- 2. RÉINITIALISATION DES ÉTATS ---
     isWsInitialized = false;
@@ -1780,6 +1787,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btn) {
       btn.classList.remove("active");
       btn.innerText = "ZigZag 14 : OFF";
+    }
+
+    if (currentSeries) {
+      currentSeries.setData([]);
+      currentSeries = null;
     }
 
     // --- 4. NETTOYAGE DES SÉRIES ET DES DONNÉES ---
