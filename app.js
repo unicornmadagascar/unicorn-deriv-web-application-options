@@ -1692,14 +1692,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function startDerivConnectionZZ() {
 
     const wszz = new WebSocket(WS_URL);
-
     wszz.onopen = () => { wszz.send(JSON.stringify({ authorize: TOKEN }))};
 
     wszz.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
 
       if (data.msg_type === "authorize" && data.authorize) {
-        console.log("WS Authorized and Connected");
+        console.log("WS Authorized and Connected");  
         // 1. Demander l'historique ET s'abonner (subscribe: 1)
         wszz.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
       }
