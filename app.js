@@ -1758,12 +1758,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 1. FERMETURE SÉCURISÉE DES WEBSOCKETS ---
     // On vérifie d'abord si l'objet existe avant d'accéder à ses propriétés
     if (maws) {
-      try { maws.close(); } catch (e) { }
-      maws = null;
+      try { 
+          maws.send(JSON.stringify({ forget_all: "candles"}));
+          maws.close(); 
+          maws = null;
+      } catch (e) { } 
     }
     if (wszz) {
-      try { wszz.close(); } catch (e) { }
-      wszz = null;
+      try { 
+          wszz.send(JSON.stringify({ forget_all: "candles"}));
+          wszz.close(); 
+          wszz = null;
+      } catch (e) { }
     }
 
     // --- 2. RÉINITIALISATION DES ÉTATS ---
