@@ -1756,8 +1756,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function resetZZChartVariable() {
-    currentSeries = null;
-
+    
     // WS Initialization
     maws.close();
     wszz.close();
