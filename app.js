@@ -1610,7 +1610,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Petite fonction utilitaire pour mettre à jour le cache et le dessin
   function refreshZigZag() {
-    const results = calculateZigZag(priceData, 14);
+    const results = calculateZigZag(priceDataZZ, 14);
     zigzagCache = results.points;
     zigzagMarkers = results.markers;
 
@@ -1706,14 +1706,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // A. HISTORIQUE (reçu une seule fois au début)
       if (data.candles) {
-        priceData = data.candles.map(c => ({
+        priceDataZZ = data.candles.map(c => ({
           time: c.epoch,
           open: Number(c.open),
           high: Number(c.high),
           low: Number(c.low),
           close: Number(c.close)
         }));
-        candleSeries.setData(priceData);
+        currentSeries.setData(priceDataZZ);
         refreshZigZag(); // Calcul initial
       }
 
@@ -1729,14 +1729,14 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         // Vérifier si on met à jour la bougie actuelle ou si on en crée une nouvelle
-        if (priceData.length > 0 && priceData[priceData.length - 1].time === newCandle.time) {
-          priceData[priceData.length - 1] = newCandle;
-        } else {
-          priceData.push(newCandle);
+        if (priceDataZZ.length > 0 && priceDataZZ[priceDataZZ.length - 1].time === newCandle.time) {
+          priceDataZZ[priceDataZZ.length - 1] = newCandle;
+        } else {  
+          priceDataZZ.push(newCandle);
         }
 
         // Mettre à jour le graphique et recalculer le ZigZag
-        candleSeries.update(newCandle);
+        currentSeries.update(newCandle);
         refreshZigZag();
       }
     };
