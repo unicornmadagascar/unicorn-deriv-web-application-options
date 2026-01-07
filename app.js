@@ -304,6 +304,17 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    zigzagSeries = chart.addLineSeries({
+      color: '#f39c12',
+      lineWidth: 2,
+      priceLineVisible: false,
+    });
+
+    // D. Réinitialiser les données
+    priceDataZZ = [];
+    zigzagCache = [];
+    zigzagMarkers = [];
+
     chartData = [];
     recentChanges = [];
     lastPrices = {};
@@ -1494,14 +1505,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- COMMANDE BOUTON ---
   window.toggleZigZag = function (btn) {
+    // 1. SÉCURITÉ CRITIQUE : Vérifier si le graphique global existe
+    if (!chart) {
+      console.error("Le graphique de base n'est pas initialisé.");
+      return;
+    }
 
-    // SÉCURITÉ : Si zigzagSeries n'existe pas encore, on l'initialise
-    if (!zigzagSeries || zigzagSeries == null) {
+    // 2. RÉ-INITIALISATION : Si on change de symbole, zigzagSeries devient invalide.
+    // On la recrée si elle est absente ou si le graphique a été réinitialisé.
+    if (!zigzagSeries) {
       zigzagSeries = chart.addLineSeries({
         color: '#f39c12',
         lineWidth: 2,
         priceLineVisible: false,
-      });  
+      });
     }
 
     const active = btn.classList.toggle("active");
@@ -1509,27 +1526,30 @@ document.addEventListener("DOMContentLoaded", () => {
     if (active) {
       btn.innerText = "ZigZag 14 : ON";
 
+      // Lancer la connexion si nécessaire
       if (!isWsInitialized) {
         startDerivConnectionZZ();
         isWsInitialized = true;
       }
 
+      // 3. Recalculer les points avec les données actuelles du nouveau symbole
       refreshZigZag();  
 
-      // Vérification supplémentaire avant setData
-      if (zigzagSeries && zigzagCache) {
-        zigzagSeries.setData(zigzagCache);  
+      // 4. Appliquer les données (Vérification de sécurité sur le cache)
+      if (zigzagCache && zigzagCache.length > 0) {
+        zigzagSeries.setData(zigzagCache);
         zigzagSeries.setMarkers(zigzagMarkers);
       }
 
     } else {
       btn.innerText = "ZigZag 14 : OFF";
+      // On vérifie toujours l'existence avant d'agir
       if (zigzagSeries) {
-        zigzagSeries.setData([]);   
+        zigzagSeries.setData([]);
         zigzagSeries.setMarkers([]);
       }
     }
-  }
+  };
 
   // --- CALCULS ET MISES À JOUR ---
   function calculateEMA(data, period) {
