@@ -2922,7 +2922,7 @@ document.addEventListener("DOMContentLoaded", () => {
   displaySymbols(currentInterval, currentChartType);
   initChart(currentChartType);
   initTable();
-  initHistoricalTable();
+  initHistoricalTable();  
   inihistoricalchart();
 
   window.onload = () => {
