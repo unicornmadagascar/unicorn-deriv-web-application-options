@@ -1640,7 +1640,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btn && btn.classList.contains('active')) {  
       zigzagSeries.setData(zigzagCache);
       zigzagSeries.setMarkers(zigzagMarkers);
-    }
+    }  
   }
 
   function updateMAs() {
