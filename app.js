@@ -1793,6 +1793,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentSeries) {
       currentSeries.setData([]);
       currentSeries = null;
+      initChart(currentChartType);  
     }
 
     // --- 4. NETTOYAGE DES SÉRIES ET DES DONNÉES ---  
