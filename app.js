@@ -1503,7 +1503,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateMAs();
   };
 
-  // --- COMMANDE BOUTON ---
+  // --- COMMANDE BOUTON ---   
   window.toggleZigZag = function (btn) {
     // 1. SÉCURITÉ CRITIQUE : Vérifier si le graphique global existe
     if (!chart) {
