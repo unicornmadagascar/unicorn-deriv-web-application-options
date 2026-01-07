@@ -1755,8 +1755,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function resetZZChartVariable() {
+
+    try { if (chart) chart.remove(); } catch (e) { }
+    chartInner.innerHTML = "";
+
     // --- 1. FERMETURE SÉCURISÉE DES WEBSOCKETS ---
-    // On vérifie d'abord si l'objet existe avant d'accéder à ses propriétés
+    // On vérifie d'abord si l'objet existe avant d'accéder à ses propriétés  
     if (maws) {
       try { 
           maws.send(JSON.stringify({ forget_all: "candles" }));
