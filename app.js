@@ -1501,7 +1501,7 @@ document.addEventListener("DOMContentLoaded", () => {
         color: '#f39c12',
         lineWidth: 2,
         priceLineVisible: false,
-      });
+      });  
     }
 
     const active = btn.classList.toggle("active");
