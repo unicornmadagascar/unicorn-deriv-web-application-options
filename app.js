@@ -1766,7 +1766,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (e) { } 
     }
     if (wszz) {
-      try { 
+      try {    
           wszz.send(JSON.stringify({ forget_all: "candles" }));
           wszz.close(); 
           wszz = null;
