@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let zigzagCache = [];
   let zigzagMarkers = [];
   let isWsConnected = false;  
-  let isWsInitialized = false;
+  let isWsInitialized = false;  
   // ================== x ==================
 
   let wsReady = false;
