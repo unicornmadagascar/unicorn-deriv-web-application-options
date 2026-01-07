@@ -1792,12 +1792,12 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.classList.remove("active");
       btn.innerText = "ZigZag 14 : OFF";
     }
-
+  
     if (currentSeries) {
       currentSeries.setData([]);
     }
 
-    // --- 4. NETTOYAGE DES SÉRIES ET DES DONNÉES ---
+    // --- 4. NETTOYAGE DES SÉRIES ET DES DONNÉES ---  
     if (zigzagSeries) {
       zigzagSeries.setData([]);
       zigzagSeries.setMarkers([]);
