@@ -1513,84 +1513,133 @@
       border-radius: 4px;
     }
 
+    /* Fond de l'overlay (assombrissement de l'arrière-plan) */
     .overlay_ {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(0, 0, 0, 0.4);
+      /* Noir transparent doux */
+      backdrop-filter: blur(4px);
+      /* Effet de flou derrière la popup */
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 999;
+      z-index: 1000;
     }
 
     .hidden {
       display: none;
     }
 
+    /* La Popup */
     .popup {
-      width: 280px;
       background: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      width: 90%;
+      max-width: 350px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      animation: fadeIn 0.3s ease-out;
     }
 
+    /* En-tête de la popup */
     .popup-header {
+      padding: 15px 20px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #eee;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 15px;
-      background: #ffffff;
-      border-bottom: 1px solid #2b2b43;
-      font-weight: bold;
-    }
-
-    .popup-body {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 15px;
-    }
-
-    .popup-body button {
-      padding: 10px;
-      background: white;
-      border: none;
-      color: rgb(65, 63, 63);
-      font-weight: bold;
-      border-radius: 7px;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-      transition: all 0.2s ease;
-      /* Simplifie la transition */
-    }
-
-    /* Tes classes actives restent les mêmes */
-    .popup-body button.active-20 {
-      background: #2962FF;
-      color: white;
-    }
-
-    .popup-body button.active-50 {
-      background: #9c27b0;
-      color: white;
-    }
-
-    .popup-body button.active-200 {
-      background: #ff9800;
-      color: white;
+      color: #333;
+      font-weight: 600;
     }
 
     .close-btn {
       background: none;
       border: none;
-      color: #aaa;
-      font-size: 16px;
+      font-size: 18px;
+      color: #999;
       cursor: pointer;
+      transition: color 0.2s;
     }
 
+    .close-btn:hover {
+      color: #ff4d4d;
+    }
+
+    /* Corps de la popup */
+    .popup-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Style des boutons (Fond blanc, ombre douce) */
+    .popup-body button {
+      width: 100%;
+      padding: 12px;
+      background: #ffffff;
+      border: 1px solid #f0f0f0;
+      border-radius: 10px;
+      color: #444;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      /* Ombre très légère */
+    }
+
+    /* Effet au survol */
+    .popup-body button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-color: #d1d4dc;
+    }
+
+    /* --- États Actifs (Gérés par vos classes existantes) --- */
+    .popup-body button.active-20 {
+      background: #2962FF !important;
+      color: white;
+      border-color: #2962FF;
+    }
+
+    .popup-body button.active-50 {
+      background: #9c27b0 !important;
+      color: white;
+      border-color: #9c27b0;
+    }
+
+    .popup-body button.active-200 {
+      background: #ff9800 !important;
+      color: white;
+      border-color: #ff9800;
+    }
+
+    /* Style pour les boutons d'objets (Trendline, etc.) */
+    .popup-body button:not([id]) {
+      background: #fdfdfd;
+      color: #555;
+      border-left: 4px solid #eee;
+      /* Petite barre décorative à gauche */
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
   </style>
 </head>
 
@@ -2040,126 +2089,6 @@
       },
       '<a href="https://www.tradingview.com/markets/currencies/" target="_blank">Forex Screener</a>'
     );
-
-    let activePeriods = [];
-    let priceData = [];
-    let maws = null;
-
-    function toggleMA(period, button) {
-      const index = activePeriods.indexOf(period);
-      const className = `active-${period}`;
-
-      if (index === -1) {
-        // AJOUTER à la sélection (Active le bouton et ajoute au tableau)
-        activePeriods.push(period);
-        button.classList.add('active');
-        button.style.backgroundColor = getMAColor(period); // Couleur selon la période
-        button.innerText = `MA ${period} : ON`;
-      } else {
-        // RETIRER de la sélection (Désactive le bouton et retire du tableau)
-        activePeriods.splice(index, 1);
-        button.classList.remove('active');
-        button.style.backgroundColor = "white";
-        button.innerText = `MA ${period} : OFF`;
-      }
-
-      // On met à jour le graphique avec TOUT ce qui est dans le tableau
-      updateMAs(activePeriods);
-    }
-
-    function calculateEMA(data, period) {
-      const ema = [];
-      const k = 2 / (period + 1); // Facteur de lissage
-
-      // On commence avec la première clôture comme base
-      let emaValue = data[0].close;
-
-      for (let i = 0; i < data.length; i++) {
-        const close = data[i].close;
-        // Formule EMA : (Close - EMA_précédent) * k + EMA_précédent
-        emaValue = (close - emaValue) * k + emaValue;
-
-        if (i >= period - 1) {
-          ema.push({ time: data[i].time, value: emaValue });
-        }
-      }
-      return ema;
-    }
-
-    // Fonction utilitaire pour les couleurs des boutons
-    function getMAColor(period) {
-      if (period === 20) return '#2962FF';
-      if (period === 50) return '#9c27b0';
-      if (period === 200) return '#ff9800';
-      return '#ccc';
-    }
-
-    let ma20Series = chart.addLineSeries({ color: '#2962FF', lineWidth: 2 });
-    let ma50Series = chart.addLineSeries({ color: '#9c27b0', lineWidth: 2 });
-    let ma200Series = chart.addLineSeries({ color: '#ff9800', lineWidth: 2 });
-
-    function updateMAs(periods) {
-      ma20Series.setData(periods.includes(20) ? calculateEMA(priceData, 20) : []);
-      ma50Series.setData(periods.includes(50) ? calculateEMA(priceData, 50) : []);
-      ma200Series.setData(periods.includes(200) ? calculateEMA(priceData, 200) : []);
-    }
-
-    function startDerivTicks() {
-       /* ===============================
-           CONNEXION DERIV API (Live)
-        ================================ */
-        const ws = new WebSocket("wss://ws.derivws.com/websockets/v3?app_id=109310");
-
-        maws.onopen = () => {
-            maws.send(JSON.stringify({ 
-                ticks_history: "R_100", 
-                count: 500, 
-                end: "latest", 
-                style: "candles", 
-                subscribe: 1 
-            }));
-        };
-
-        ws.onmessage = (msg) => {
-            const data = JSON.parse(msg.data);
-            
-            // Historique au chargement
-            if (data.candles) {
-                priceData = data.candles.map(c => ({ 
-                    time: c.epoch, 
-                    open: Number(c.open), 
-                    high: Number(c.high), 
-                    low: Number(c.low), 
-                    close: Number(c.close) 
-                }));
-                candleSeries.setData(priceData);
-                chart.timeScale().fitContent();
-            }
-            
-            // Nouveau tick (bougie en cours)
-            if (data.ohlc) {
-                const o = data.ohlc;
-                const newCandle = { 
-                    time: o.open_time, 
-                    open: Number(o.open), 
-                    high: Number(o.high), 
-                    low: Number(o.low), 
-                    close: Number(o.close) 
-                };
-                
-                if (priceData.length > 0 && priceData[priceData.length - 1].time === newCandle.time) {
-                    priceData[priceData.length - 1] = newCandle;
-                } else { 
-                    priceData.push(newCandle); 
-                }
-                candleSeries.update(newCandle);
-            }
-            
-            // Mise à jour des lignes MA à chaque nouveau mouvement de prix
-            updateMAs();
-        };
-    }
-
 
     // Toggle panel
     const controlPanelToggle = document.getElementById("controlPanelToggle");
