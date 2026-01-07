@@ -1758,10 +1758,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function resetZZChartVariable() {
     
     // WS Initialization
-    maws.close();
-    wszz.close();
-    maws = null;
-    wszz = null;
+    if (maws && (maws.readyState === WebSocket.OPEN || maws.readyState === WebSocket.CLOSED)) { maws.close(); maws = null; }
+    if (wszz && (wszz.readyState === WebSocket.OPEN || wszz.readyState === WebSocket.CLOSED)) { wszz.close(); wszz = null; }
 
     // 3. On réinitialise l'état de la connexion si nécessaire
     isWsInitialized = false;
