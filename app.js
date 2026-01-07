@@ -1492,7 +1492,7 @@ document.addEventListener("DOMContentLoaded", () => {
        CONNEXION DERIV API (Live)
     ================================ */
     if (maws && maws.readyState === WebSocket.OPEN) maws.close();
-
+  
     const maws = new WebSocket(WS_URL);
     maws.onopen = () => {
       maws.send(JSON.stringify({ authorize: TOKEN }));
@@ -1521,7 +1521,7 @@ document.addEventListener("DOMContentLoaded", () => {
           low: Number(c.low),
           close: Number(c.close)
         }));
-        candleSeries.setData(priceData);
+        currentSeries.setData(priceData);
         chart.timeScale().fitContent();
       }
 
@@ -1541,7 +1541,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           priceData.push(newCandle);
         }
-        candleSeries.update(newCandle);
+        currentSeries.update(newCandle);
       }
 
       // Mise à jour des lignes MA à chaque nouveau mouvement de prix
