@@ -1566,7 +1566,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data[i].low > data[i - j].low || data[i].low > data[i + j].low) isLow = false;
       }
 
-      if (isHigh) {
+      if (isHigh) {  
         if (lastType === 'H') {
           if (data[i].high > points[points.length - 1].value) {
             points[points.length - 1] = { time: data[i].time, value: data[i].high };
