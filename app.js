@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let priceDataZZ = [];
   let zigzagCache = [];
   let zigzagMarkers = [];
-  let isWsConnected = false;
+  let isWsConnected = false;  
   let isWsInitialized = false;
   // ================== x ==================
 
