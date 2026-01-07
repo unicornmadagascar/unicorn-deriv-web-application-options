@@ -1488,7 +1488,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function startDerivConnection() {
-    /* ===============================
+    /* ===============================  
        CONNEXION DERIV API (Live)
     ================================ */
     if (maws && maws.readyState === WebSocket.OPEN) maws.close();
