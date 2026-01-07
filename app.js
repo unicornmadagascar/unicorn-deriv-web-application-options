@@ -3188,6 +3188,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.onload = () => {
     if (!currentSymbol) return;
     if (currentChartType !== "candlestick") return;
+    resetZZChartVariable();
     connectInit(currentSymbol, currentInterval, currentChartType);
   };
 
