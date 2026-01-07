@@ -221,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { symbol: "CRASH600", name: "Crash 600" },
     { symbol: "frxAUDUSD", name: "AUDUSD" },
     { symbol: "frxNZDUSD", name: "NZDUSD" },
-    { symbol: "cryBTCUSD", name: "BTCUSD" },
+    { symbol: "cryBTCUSD", name: "BTCUSD" },  
     { symbol: "frxXAUUSD", name: "XAUUSD" },
     { symbol: "frxEURUSD", name: "EURUSD" },
     { symbol: "frxGBPUSD", name: "GBPUSD" },
@@ -264,6 +264,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       symbolList.appendChild(el);
     });
+
+    resetZZChartVariable();
   }
 
   // --- INIT CHART ---
@@ -304,16 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    zigzagSeries = chart.addLineSeries({
-      color: '#f39c12',
-      lineWidth: 2,
-      priceLineVisible: false,
-    });
-
-    // D. Réinitialiser les données
-    priceDataZZ = [];
-    zigzagCache = [];
-    zigzagMarkers = [];
+    resetZZChartVariable();
 
     chartData = [];
     recentChanges = [];
@@ -1528,7 +1521,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // 3. Recalculer les points avec les données actuelles du nouveau symbole
-      refreshZigZag();  
+      refreshZigZag();
 
       // 4. Appliquer les données (Vérification de sécurité sur le cache)
       if (zigzagCache && zigzagCache.length > 0) {
@@ -1632,10 +1625,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Si le bouton est sur "ON", on affiche immédiatement
     const btn = document.querySelector('.popup-body button');
-    if (btn && btn.classList.contains('active')) {  
+    if (btn && btn.classList.contains('active')) {
       zigzagSeries.setData(zigzagCache);
       zigzagSeries.setMarkers(zigzagMarkers);
-    }  
+    }
   }
 
   function updateMAs() {
@@ -1760,6 +1753,40 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Connexion fermée. Reconnexion...");
       setTimeout(startDerivConnectionZZ, 5000);
     };
+  }
+
+  function resetZZChartVariable() {
+    currentSeries = null;
+
+    // WS Initialization
+    maws.close();
+    wszz.close();
+    maws = null;
+    wszz = null;
+
+    // 3. On réinitialise l'état de la connexion si nécessaire
+    isWsInitialized = false;
+
+    // 1. Trouver le bouton (utilisez un ID pour être précis)
+    const btn = document.querySelector('button[onclick*="toggleZigZag"]');
+
+    if (btn) {
+      // 2. Retirer la classe 'active'
+      btn.classList.remove("active");
+
+      // 3. Remettre le texte initial
+      btn.innerText = "ZigZag 14 : OFF";
+    }
+
+    // 4. S'assurer que la série est vidée sur le graphique
+    if (zigzagSeries) {
+      zigzagSeries.setData([]);
+      zigzagSeries.setMarkers([]);
+      zigzagSeries = null;
+      priceDataZZ = [];
+      zigzagCache = [];
+      zigzagMarkers = [];
+    }
   }
 
   // Table
