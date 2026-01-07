@@ -1590,6 +1590,7 @@
       font-size: 16px;
       cursor: pointer;
     }
+
   </style>
 </head>
 
@@ -2040,6 +2041,10 @@
       '<a href="https://www.tradingview.com/markets/currencies/" target="_blank">Forex Screener</a>'
     );
 
+    let activePeriods = [];
+    let priceData = [];
+    let maws = null;
+
     function toggleMA(period, button) {
       const index = activePeriods.indexOf(period);
       const className = `active-${period}`;
@@ -2089,6 +2094,10 @@
       return '#ccc';
     }
 
+    let ma20Series = chart.addLineSeries({ color: '#2962FF', lineWidth: 2 });
+    let ma50Series = chart.addLineSeries({ color: '#9c27b0', lineWidth: 2 });
+    let ma200Series = chart.addLineSeries({ color: '#ff9800', lineWidth: 2 });
+
     function updateMAs(periods) {
       ma20Series.setData(periods.includes(20) ? calculateEMA(priceData, 20) : []);
       ma50Series.setData(periods.includes(50) ? calculateEMA(priceData, 50) : []);
@@ -2096,34 +2105,60 @@
     }
 
     function startDerivTicks() {
+       /* ===============================
+           CONNEXION DERIV API (Live)
+        ================================ */
+        const ws = new WebSocket("wss://ws.derivws.com/websockets/v3?app_id=109310");
 
+        maws.onopen = () => {
+            maws.send(JSON.stringify({ 
+                ticks_history: "R_100", 
+                count: 500, 
+                end: "latest", 
+                style: "candles", 
+                subscribe: 1 
+            }));
+        };
+
+        ws.onmessage = (msg) => {
+            const data = JSON.parse(msg.data);
+            
+            // Historique au chargement
+            if (data.candles) {
+                priceData = data.candles.map(c => ({ 
+                    time: c.epoch, 
+                    open: Number(c.open), 
+                    high: Number(c.high), 
+                    low: Number(c.low), 
+                    close: Number(c.close) 
+                }));
+                candleSeries.setData(priceData);
+                chart.timeScale().fitContent();
+            }
+            
+            // Nouveau tick (bougie en cours)
+            if (data.ohlc) {
+                const o = data.ohlc;
+                const newCandle = { 
+                    time: o.open_time, 
+                    open: Number(o.open), 
+                    high: Number(o.high), 
+                    low: Number(o.low), 
+                    close: Number(o.close) 
+                };
+                
+                if (priceData.length > 0 && priceData[priceData.length - 1].time === newCandle.time) {
+                    priceData[priceData.length - 1] = newCandle;
+                } else { 
+                    priceData.push(newCandle); 
+                }
+                candleSeries.update(newCandle);
+            }
+            
+            // Mise à jour des lignes MA à chaque nouveau mouvement de prix
+            updateMAs();
+        };
     }
-
-
-    let autorunningml5 = false;
-
-    document.getElementById("ma20").addEventListener("click", async () => {
-
-      autorunningml5 = !autorunningml5;
-
-      if (autorunningml5) {
-
-        startml5.textContent = "Stop ML";
-        startml5.style.background = "linear-gradient(90deg,#f44336,#e57373)";
-        startml5.style.color = "white";
-        autorunningml5 = true;
-        ma20Series = chart.addLineSeries({ color: '#2962FF', lineWidth: 2 });
-        ma50Series = chart.addLineSeries({ color: '#9c27b0', lineWidth: 2 });
-        ma200Series = chart.addLineSeries({ color: '#ff9800', lineWidth: 2 });
-        startDerivTicks();
-      } else {
-
-        startml5.textContent = "Start ML";
-        startml5.style.background = "white";
-        startml5.style.color = "gray";
-        autorunningml5 = false;
-      }
-    });
 
 
     // Toggle panel
