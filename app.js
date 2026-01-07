@@ -2923,7 +2923,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initChart(currentChartType);
   initTable();
   initHistoricalTable();  
-  inihistoricalchart();
+  inihistoricalchart();  
 
   window.onload = () => {
     if (!currentSymbol) return;
