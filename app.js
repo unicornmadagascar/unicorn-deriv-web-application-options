@@ -1461,16 +1461,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  function initZZSeries() {
-    // "chart" doit déjà exister globalement
-    zigzagSeries = chart.addLineSeries({
-      color: '#f39c12',
-      lineWidth: 2,
-      lineStyle: 0, // Solid
-      priceLineVisible: false,
-    });
-  }
-
   // --- LOGIQUE DES BOUTONS (Appelée depuis le HTML) ---  
   window.toggleMA = function (period, button) {
     // ÉTAPE 1 : Si c'est le TOUT PREMIER CLIC sur n'importe quel bouton MA
@@ -1504,29 +1494,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- COMMANDE BOUTON ---
   window.toggleZigZag = function (btn) {
+
+    // SÉCURITÉ : Si zigzagSeries n'existe pas encore, on l'initialise
+    if (!zigzagSeries) {
+      zigzagSeries = chart.addLineSeries({
+        color: '#f39c12',
+        lineWidth: 2,
+        priceLineVisible: false,
+      });
+    }
+
     const active = btn.classList.toggle("active");
 
     if (active) {
       btn.innerText = "ZigZag 14 : ON";
 
-      // 1. Si c'est le premier clic, on lance la connexion Deriv
       if (!isWsInitialized) {
-        startDerivConnectionZZ();
+        startDerivConnection();
         isWsInitialized = true;
       }
 
-      // 2. On force un premier calcul pour ne pas attendre le prochain tick
       refreshZigZag();
 
-      // 3. On affiche les données (si elles existent déjà en cache)
-      zigzagSeries.setData(zigzagCache);
-      zigzagSeries.setMarkers(zigzagMarkers);
+      // Vérification supplémentaire avant setData
+      if (zigzagSeries && zigzagCache) {
+        zigzagSeries.setData(zigzagCache);
+        zigzagSeries.setMarkers(zigzagMarkers);
+      }
 
     } else {
       btn.innerText = "ZigZag 14 : OFF";
-      // On vide le graphique mais on ne coupe pas la connexion (pour garder les prix à jour)
-      zigzagSeries.setData([]);
-      zigzagSeries.setMarkers([]);
+      if (zigzagSeries) {
+        zigzagSeries.setData([]);
+        zigzagSeries.setMarkers([]);
+      }
     }
   }
 
@@ -1560,10 +1561,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (isHigh) {
         if (lastType === 'H') {
-          if (data[i].high > points[points.length - 1].value) {  
+          if (data[i].high > points[points.length - 1].value) {
             points[points.length - 1] = { time: data[i].time, value: data[i].high };
             // Mise à jour du marqueur (round)
-            markers[markers.length - 1].time = data[i].time;  
+            markers[markers.length - 1].time = data[i].time;
           }
         } else {
           lastType = 'H';
@@ -1692,15 +1693,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function startDerivConnectionZZ() {
 
     const wszz = new WebSocket(WS_URL);
-    wszz.onopen = () => { wszz.send(JSON.stringify({ authorize: TOKEN }))};
+    wszz.onopen = () => { wszz.send(JSON.stringify({ authorize: TOKEN })) };
 
     wszz.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);  
+      const data = JSON.parse(msg.data);
 
       if (data.msg_type === "authorize" && data.authorize) {
-        console.log("WS Authorized and Connected");  
+        console.log("WS Authorized and Connected");
         // 1. Demander l'historique ET s'abonner (subscribe: 1)
-        wszz.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
+        wszz.send(JSON.stringify(Payloadforsubscription(currentSymbol, currentInterval, currentChartType)));
       }
 
       // A. HISTORIQUE (reçu une seule fois au début)
@@ -1730,7 +1731,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Vérifier si on met à jour la bougie actuelle ou si on en crée une nouvelle
         if (priceDataZZ.length > 0 && priceDataZZ[priceDataZZ.length - 1].time === newCandle.time) {
           priceDataZZ[priceDataZZ.length - 1] = newCandle;
-        } else {  
+        } else {
           priceDataZZ.push(newCandle);
         }
 
