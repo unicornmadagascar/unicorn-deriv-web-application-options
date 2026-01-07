@@ -260,12 +260,12 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           subscribeSymbol(s.symbol, currentChartType);
         }
+
+        resetZZChartVariable();
       });
 
       symbolList.appendChild(el);
     });
-
-    resetZZChartVariable();
   }
 
   // --- INIT CHART ---
