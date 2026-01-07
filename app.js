@@ -1505,15 +1505,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- COMMANDE BOUTON ---   
   window.toggleZigZag = function (btn) {
-    // 1. SÉCURITÉ CRITIQUE : Vérifier si le graphique global existe
-    if (!chart) {
-      console.error("Le graphique de base n'est pas initialisé.");
-      return;
-    }
 
     // 2. RÉ-INITIALISATION : Si on change de symbole, zigzagSeries devient invalide.
     // On la recrée si elle est absente ou si le graphique a été réinitialisé.
-    if (!zigzagSeries) {
+    if (!zigzagSeries || zigzagSeries == null) {
       zigzagSeries = chart.addLineSeries({
         color: '#f39c12',
         lineWidth: 2,
