@@ -3207,6 +3207,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === overlaygemini) closePopup();
   });
 
+  
+
   // ================================
   // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
   // ================================  

@@ -1520,8 +1520,8 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.4);  
-      /* Noir transparent doux */  
+      background: rgba(0, 0, 0, 0.4);
+      /* Noir transparent doux */
       backdrop-filter: blur(4px);
       /* Effet de flou derrière la popup */
       display: flex;
@@ -1531,7 +1531,7 @@
     }
 
     .hidden {
-      display: none;
+      display: none !important;
     }
 
     /* La Popup */
@@ -1639,7 +1639,6 @@
         transform: scale(1);
       }
     }
-
   </style>
 </head>
 
@@ -1647,7 +1646,7 @@
   <header>
     <div id="symbolList"></div>
     <div id="controls">
-      <button id="connectBtn">Connect</button>  
+      <button id="connectBtn">Connect</button>
     </div>
   </header>
 
@@ -2017,6 +2016,13 @@
   </div>
 
   <script>
+    
+    function closePopup() {
+      const overlay = document.getElementById('indicatorOverlay');
+      if (overlay) {
+        overlay.classList.add('hidden');
+      }
+    }
 
     // TRADINGVIEW WIDGET
     function createTradingViewEmbed(containerId, src, config, creditHtml) {
