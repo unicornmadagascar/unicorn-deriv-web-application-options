@@ -1563,7 +1563,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (data[i].high > points[points.length - 1].value) {  
             points[points.length - 1] = { time: data[i].time, value: data[i].high };
             // Mise à jour du marqueur (round)
-            markers[markers.length - 1].time = data[i].time;
+            markers[markers.length - 1].time = data[i].time;  
           }
         } else {
           lastType = 'H';
