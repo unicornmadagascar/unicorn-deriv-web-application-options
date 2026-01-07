@@ -1772,7 +1772,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btn) {
       // 2. Retirer la classe 'active'
       btn.classList.remove("active");
-
+  
       // 3. Remettre le texte initial
       btn.innerText = "ZigZag 14 : OFF";
     }
