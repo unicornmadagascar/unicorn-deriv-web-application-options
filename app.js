@@ -1776,7 +1776,7 @@ document.addEventListener("DOMContentLoaded", () => {
     isWsInitialized = false;
 
     // --- 3. MISE À JOUR DE L'INTERFACE (UI) ---  
-    const btn = document.querySelector('button[onclick*="toggleZigZag"]');
+    const btn = document.querySelector('button[onclick*="toggleZigZag"]');  
     if (btn) {
       btn.classList.remove("active");
       btn.innerText = "ZigZag 14 : OFF";
