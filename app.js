@@ -1518,7 +1518,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Vérification supplémentaire avant setData
       if (zigzagSeries && zigzagCache) {
-        zigzagSeries.setData(zigzagCache);
+        zigzagSeries.setData(zigzagCache);  
         zigzagSeries.setMarkers(zigzagMarkers);
       }
 
