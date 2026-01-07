@@ -488,7 +488,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!bars.length) return;
 
         // première fois : setData pour l'historique
-        if (cache.length === 0) {
+        if (cache.length === 0) {  
           cache = bars;
           currentSeries.setData(cache);
           chart.timeScale().fitContent();
