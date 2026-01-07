@@ -76,10 +76,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const overlaygemini = document.getElementById("indicatorOverlay");
   const openBtngpt = document.getElementById("openPopupBtn__");
   // Tableau des périodes actuellement affichées
-  let maSeries = {};
+  let maSeries = null;
   let maws = null;
   let priceData = [];
   let activePeriods = [];
+  let isConnected = false; // Pour savoir si le WebSocket est déjà lancé
   // ================== x ==================
 
   let wsReady = false;
@@ -185,6 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let probsNew = [];
   let ProbTick = [];
   let candles__ = [];
+  let candles = [];
   // --- Tableau de markers déjà ajoutés sur le chart ---
   const calendarMarkers = {}; // stocke les markers par rowId
   // ================================
@@ -1442,8 +1444,30 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   };
 
+  // --- INITIALISATION (À appeler une seule fois au chargement ou au 1er clic) ---
+  function initMaSeries() {
+    // "chart" doit déjà exister globalement
+    maSeries = {
+      20: chart.addLineSeries({ color: '#2962FF', lineWidth: 2, title: 'EMA 20' }),
+      50: chart.addLineSeries({ color: '#9c27b0', lineWidth: 2, title: 'EMA 50' }),
+      200: chart.addLineSeries({ color: '#ff9800', lineWidth: 2, title: 'EMA 200' })
+    };
+  }
+  
   // --- LOGIQUE DES BOUTONS (Appelée depuis le HTML) ---
   window.toggleMA = function (period, button) {
+    // ÉTAPE 1 : Si c'est le TOUT PREMIER CLIC sur n'importe quel bouton MA
+    if (maSeries === null) {  
+      console.log("Premier clic : Initialisation des MA et de la connexion...");
+      initMaSeries(); // Crée les lignes bleues, violettes, oranges
+    }
+
+    if (!isConnected) {
+      startDerivConnection(); // Lance le WebSocket si ce n'est pas déjà fait
+      isConnected = true;
+    }
+
+    // ÉTAPE 2 : Logique habituelle de toggle
     const index = activePeriods.indexOf(period);
     const className = `active-${period}`;
 
@@ -1456,14 +1480,9 @@ document.addEventListener("DOMContentLoaded", () => {
       button.classList.remove(className);
       button.innerText = `MA ${period} : OFF`;
     }
-    
-    maSeries = {
-      20: chart.addLineSeries({ color: '#2962FF', lineWidth: 2, title: 'EMA 20' }),
-      50: chart.addLineSeries({ color: '#9c27b0', lineWidth: 2, title: 'EMA 50' }),
-      200: chart.addLineSeries({ color: '#ff9800', lineWidth: 2, title: 'EMA 200' })
-    };
 
-    startDerivConnection();
+    // ÉTAPE 3 : Mise à jour immédiate
+    updateMAs();
   };
 
   // --- CALCULS ET MISES À JOUR ---
@@ -1480,10 +1499,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateMAs() {
-    // On boucle sur nos 3 périodes possibles
+    if (!maSeries) return;
+
     [20, 50, 200].forEach(p => {
+      // Si la période est active, on calcule, sinon on envoie un tableau vide []
       const data = activePeriods.includes(p) ? calculateEMA(priceData, p) : [];
-      maSeries[p].setData(data);
+      maSeries[p].setData(data); // C'est le [] qui fait disparaître la ligne
     });
   }
 
@@ -1492,7 +1513,7 @@ document.addEventListener("DOMContentLoaded", () => {
        CONNEXION DERIV API (Live)
     ================================ */
     //if (maws && maws.readyState === WebSocket.OPEN) maws.close();
-  
+
     const maws = new WebSocket(WS_URL);
     maws.onopen = () => {
       maws.send(JSON.stringify({ authorize: TOKEN }));
@@ -1502,14 +1523,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = JSON.parse(msg.data);
 
       if (data.msg_type === "authorize" && data.authorize) {
-        console.log("WS Connected and Authorized");  
-        maws.send(JSON.stringify({
-          ticks_history: currentSymbol,
-          count: 700,
-          end: "latest",
-          style: "candles",
-          subscribe: 1
-        }));
+        console.log("WS Connected and Authorized");
+        maws.send(JSON.stringify(Payloadforsubscription(currentSymbol,currentInterval,currentChartType)));
       }
 
       // Historique au chargement
@@ -2923,8 +2938,8 @@ document.addEventListener("DOMContentLoaded", () => {
   displaySymbols(currentInterval, currentChartType);
   initChart(currentChartType);
   initTable();
-  initHistoricalTable();  
-  inihistoricalchart();  
+  initHistoricalTable();
+  inihistoricalchart();
 
   window.onload = () => {
     if (!currentSymbol) return;
@@ -3207,7 +3222,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === overlaygemini) closePopup();
   });
 
-  
+
 
   // ================================
   // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
