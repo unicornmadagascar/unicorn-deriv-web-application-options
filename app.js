@@ -1514,7 +1514,7 @@ document.addEventListener("DOMContentLoaded", () => {
         isWsInitialized = true;
       }
 
-      refreshZigZag();
+      refreshZigZag();  
 
       // Vérification supplémentaire avant setData
       if (zigzagSeries && zigzagCache) {
