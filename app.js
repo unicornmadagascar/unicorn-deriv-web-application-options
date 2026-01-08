@@ -1788,7 +1788,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btn) {
       btn.classList.remove("active");
       btn.innerText = "ZigZag 14 : OFF";
-    }
+    }  
   
     if (currentSeries) {
       currentSeries.setData([]);
