@@ -319,6 +319,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // On prépare la série ZigZag (invisible tant qu'elle n'a pas de data)
+    zigzagSeries = chart.addLineSeries({
+      color: '#f39c12',
+      lineWidth: 2,
+      priceLineVisible: false,
+    });
+
     // --- NETTOYAGE CRUCIAL DES DONNÉES ---
     candles = [];       // Pour handleCandleData
     priceData = [];     // Pour handleTickData
@@ -373,8 +380,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // normalize une candle brute en { time, open, high, low, close } ou null
   function normalize(c) {
     if (!c) return null;
-    const t = c.epoch || c.epoch_time || c.time;
+    // Gère 'open_time' (live) ou 'epoch' (historique)
+    const t = c.open_time || c.epoch || c.epoch_time || c.time;
     if (!t) return null;
+
     const timestamp = Number(t);
     return {
       time: Math.floor(timestamp / (timestamp > 1e12 ? 1000 : 1)),
@@ -386,133 +395,108 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadSymbol(symbol, interval, chartType) {
-    // 1. Session unique
     currentSessionId++;
     const thisSessionId = currentSessionId;
 
     if (!symbol) return;
 
-    // 2. Nettoyage (Attendre la fin du reset)
-    await resetZZChartVariable();
+    // --- NETTOYAGE ---
+    if (ws) {
+      ws.onclose = null;
+      ws.close();
+      ws = null;
+    }
 
-    currentSymbol = symbol;
-    currentInterval = interval;
-    currentChartType = chartType;
+    cache = [];
+    priceDataZZ = [];
+    isWsInitialized = false;
 
-    // 3. Init UI
+    // --- INITIALISATION DU GRAPHIQUE ---
     initChart(chartType);
 
-    console.log(`Chargement : ${symbol} | Session : ${thisSessionId}`);
-
-    // 4. Connexion
     ws = new WebSocket(WS_URL);
 
     ws.onopen = () => {
       if (thisSessionId !== currentSessionId) return;
-      console.log("Connexion établie, envoi de l'autorisation...");
       ws.send(JSON.stringify({ authorize: TOKEN }));
     };
 
-    ws.onmessage = (msg) => {
-      // --- FILTRE SESSION ---
+    ws.onmessage = ({ data }) => {
       if (thisSessionId !== currentSessionId) {
         if (ws) ws.close();
         return;
       }
 
-      const data = JSON.parse(msg.data);
+      const msg = JSON.parse(data);
 
-      // --- A. GESTION DE L'AUTORISATION ---
-      // Note: On vérifie 'msg.msg_type' et non 'data.msg_type'
-      if (data.msg_type === "authorize") {
-        console.log("Autorisé avec succès. Souscription en cours...");
-
-        let payload;
-        if (chartType === "candlestick") {
-          payload = Payloadforsubscription(currentSymbol, currentInterval, currentChartType);
-        } else {
-          payload = {
-            ticks: symbol,
-            subscribe: 1
-          };
-        }
+      // 1. Autorisation -> Envoi du Payload
+      if (msg.msg_type === "authorize") {
+        const payload = (chartType === "candlestick") ? {
+          ticks_history: symbol,
+          subscribe: 1,
+          end: "latest",
+          count: 1000,
+          granularity: convertTF(interval),
+          style: "candles"
+        } : {
+          ticks: symbol,
+          subscribe: 1
+        };
         ws.send(JSON.stringify(payload));
-        return; // On attend le prochain message (les data)
+        return;
       }
 
-      // --- B. AIGUILLAGE VERS LES TRAITEMENTS ---
-      if (chartType === "candlestick") {
-        //handleCandleData(data);
-      } else {
-        //handleTickData(data);
+      // 2. Gestion des données Candlestick
+      if (msg.msg_type === "candles" || msg.msg_type === "ohlc") {
+        const rawData = msg.ohlc ? msg.ohlc : msg.candles;
+        const bars = Array.isArray(rawData)
+          ? rawData.map(normalize).filter(Boolean)
+          : [normalize(rawData)].filter(Boolean);
+
+        if (bars.length === 0) return;
+
+        if (cache.length === 0) {
+          // Historique initial
+          cache = bars;
+          currentSeries.setData(cache);
+          chart.timeScale().fitContent();
+          priceDataZZ = cache.map(b => ({ time: b.time, value: b.close }));
+          isWsInitialized = true;
+        } else {
+          // Mise à jour live
+          const bar = bars[bars.length - 1];
+          const last = cache[cache.length - 1];
+          if (last && last.time === bar.time) {
+            cache[cache.length - 1] = bar;
+          } else {
+            cache.push(bar);
+          }
+          currentSeries.update(bar);
+          updateZZData(bar.time, bar.close);
+        }
+        if (isZigZagActive) refreshZigZag();
       }
 
-      const testTime = Math.floor(Date.now() / 1000);
-
-      if (chartType === "candlestick") {
-        currentSeries.setData([{ time: testTime, open: 10, high: 15, low: 5, close: 12 }]);
-      } else {
-        currentSeries.setData([{ time: testTime, value: 10 }]);
+      // 3. Gestion des données Ticks (Area/Line)
+      if (msg.msg_type === "history" || msg.msg_type === "tick") {
+        handleTickData(msg); // Appelle votre logique Tick habituelle
       }
-      chart.timeScale().fitContent();  
 
-      // --- C. INDICATEURS & PING ---
-      if (isWsInitialized && typeof refreshZigZag === "function") {
-        refreshZigZag();
-      }  
-
-      if (data.msg_type === "ping") {
-        ws.send(JSON.stringify({ ping: 1 }));
-      }
+      if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
     };
 
     ws.onclose = () => {
-      if (thisSessionId === currentSessionId) console.log("Session terminée.");
-    };
-
-    ws.onerror = (err) => {
-      if (thisSessionId === currentSessionId) console.error("Erreur WS:", err);
+      if (thisSessionId === currentSessionId) {
+        setTimeout(() => loadSymbol(symbol, interval, chartType), 2000);
+      }
     };
   }
 
-  function handleCandleData(msg) {
-    if (!currentSeries) return;
-
-    if (msg.msg_type === "candles") {
-      candles = msg.candles.map(c => ({
-        time: Number(c.epoch),
-        open: Number(c.open),
-        high: Number(c.high),
-        low: Number(c.low),
-        close: Number(c.close),
-      }));
-      currentSeries.setData(candles);
-
-      // ALIMENTATION INITIALE DU ZIGZAG
-      priceDataZZ = candles.map(c => ({ time: c.time, value: c.close }));
-
-      chart.timeScale().fitContent();
-    }
-
-    if (msg.msg_type === "ohlc" && msg.ohlc) {
-      const o = msg.ohlc;
-      const bar = {
-        time: Number(o.open_time),
-        open: Number(o.open),
-        high: Number(o.high),
-        low: Number(o.low),
-        close: Number(o.close),
-      };
-
-      // ... logique de mise à jour de 'candles' ...
-
-      // MISE À JOUR DU ZIGZAG (On remplace ou ajoute le dernier point)
-      const lastZZ = { time: bar.time, value: bar.close };
-      if (priceDataZZ.length > 0 && priceDataZZ[priceDataZZ.length - 1].time === bar.time) {
-        priceDataZZ[priceDataZZ.length - 1] = lastZZ;
-      } else {
-        priceDataZZ.push(lastZZ);
-      }
+  function updateZZData(time, price) {
+    if (priceDataZZ.length > 0 && priceDataZZ[priceDataZZ.length - 1].time === time) {
+      priceDataZZ[priceDataZZ.length - 1].value = price;
+    } else {
+      priceDataZZ.push({ time, value: price });
     }
   }
 
@@ -1513,47 +1497,6 @@ document.addEventListener("DOMContentLoaded", () => {
     updateMAs();
   };
 
-  // --- COMMANDE BOUTON ---   
-  // Déclarez cette variable en haut de votre fichier
-  window.toggleZigZag = function (btn) {
-    if (!chart) return; // Sécurité si le graphique n'est pas encore créé
-
-    // 1. Basculer l'état global
-    isZigZagActive = btn.classList.toggle("active");
-
-    if (isZigZagActive) {
-      btn.innerText = "ZigZag 14 : ON";
-
-      // 2. Création de la série si inexistante
-      if (!zigzagSeries) {
-        zigzagSeries = chart.addLineSeries({
-          color: '#f39c12',
-          lineWidth: 2,
-          priceLineVisible: false,
-          crosshairMarkerVisible: false, // Évite les points parasites
-        });
-      }
-
-      // 3. Demander le rafraîchissement
-      // On n'appelle plus startDerivConnectionZZ() car loadSymbol s'en occupe
-      isWsInitialized = true;
-      refreshZigZag();
-
-    } else {
-      btn.innerText = "ZigZag 14 : OFF";
-      isWsInitialized = false;
-
-      // 4. Nettoyage visuel immédiat
-      if (zigzagSeries) {
-        zigzagSeries.setData([]);
-        zigzagSeries.setMarkers([]);
-        // Optionnel : supprimer la série pour libérer de la mémoire
-        chart.removeSeries(zigzagSeries);
-        zigzagSeries = null;
-      }
-    }
-  };
-
   // --- CALCULS ET MISES À JOUR ---
   function calculateEMA(data, period) {
     if (data.length < period) return [];
@@ -1633,34 +1576,32 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Petite fonction utilitaire pour mettre à jour le cache et le dessin
-  function refreshZigZag() {
-    // 1. SÉCURITÉ : On arrête tout si le système est en reset ou la série absente
-    if (!isZigZagActive || !isWsInitialized || !zigzagSeries || !priceDataZZ || priceDataZZ.length < 2) {
-      return;
-    }
+  window.toggleZigZag = function (btn) {
+    isZigZagActive = btn.classList.toggle("active");
 
-    // 2. CALCUL : On isole le calcul (Lourd) du rendu (Visuel)
+    if (isZigZagActive) {
+      btn.innerText = "ZigZag : ON";
+      refreshZigZag();
+    } else {
+      btn.innerText = "ZigZag : OFF";
+      if (zigzagSeries) {
+        zigzagSeries.setData([]);
+        zigzagSeries.setMarkers([]);
+      }
+    }
+  };
+
+  function refreshZigZag() {
+    if (!isZigZagActive || !isWsInitialized || !zigzagSeries || priceDataZZ.length < 2) return;
+
     const results = calculateZigZag(priceDataZZ, 7);
 
-    // Si pas de points calculés, on ne touche pas au graphique
-    if (!results || !results.points || results.points.length === 0) return;
-
-    // Mise à jour des caches globaux
-    zigzagCache = results.points;
-    zigzagMarkers = results.markers;
-
-    // 3. RENDU : On utilise une variable d'état plutôt que de lire le bouton (plus rapide)
-    // On suppose que isZigZagActive est mis à jour quand vous cliquez sur le bouton
-    if (isZigZagActive) {
-      // Utilisation de requestAnimationFrame pour synchroniser avec l'écran
-      requestAnimationFrame(() => {
-        // Vérification finale : est-on toujours sur la même session ?
-        if (zigzagSeries && isWsInitialized) {
-          zigzagSeries.setData(zigzagCache);
-          zigzagSeries.setMarkers(zigzagMarkers);
-        }
-      });
-    }
+    requestAnimationFrame(() => {
+      if (isZigZagActive && zigzagSeries && isWsInitialized) {
+        zigzagSeries.setData(results.points);
+        zigzagSeries.setMarkers(results.markers);
+      }
+    });
   }
 
   function updateMAs() {
@@ -3230,14 +3171,14 @@ document.addEventListener("DOMContentLoaded", () => {
   initDerivAccountManager();
   displaySymbols(currentInterval, currentChartType);
   initChart(currentChartType);
-  initTable();     
+  initTable();
   initHistoricalTable();
-  inihistoricalchart();   
+  inihistoricalchart();
 
   window.onload = () => {
     if (!currentSymbol) return;
-    if (currentChartType !== "candlestick") return;   
-    connectInit(currentSymbol, currentInterval, currentChartType);  
+    if (currentChartType !== "candlestick") return;
+    connectInit(currentSymbol, currentInterval, currentChartType);
   };
 
   // Simulation : mise à jour toutes les 2 secondes
