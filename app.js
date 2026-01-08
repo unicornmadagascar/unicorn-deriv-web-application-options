@@ -90,6 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let isWsInitialized = false;
   let currentSessionId = 0;
   let isZigZagActive = false;
+  let isMAActive = false; // Variable globale pour l'état
   // ================== x ==================
 
   let wsReady = false;
@@ -531,7 +532,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Rendu MA (si activé)
       if (window.isMAActive && typeof updateMAs === "function") {
-        updateMAs();
+        //updateMAs();  
       }
     });
   }
