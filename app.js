@@ -1796,7 +1796,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 4. NETTOYAGE DES SÉRIES ET DES DONNÉES ---  
     if (zigzagSeries) {
       zigzagSeries.setData([]);
-      zigzagSeries.setMarkers([]);
+      zigzagSeries.setMarkers([]);  
       zigzagSeries = null; // On libère la série pour la recréer sur le prochain chart
     }
 
