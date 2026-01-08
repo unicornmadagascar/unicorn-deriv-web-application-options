@@ -287,6 +287,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     container.innerHTML = "";
 
+    // Reset des références
+    currentSeries = null;
+    zigzagSeries = null;
+    maSeries = null;
+    priceLines4openlines = {};
+
     chart = LightweightCharts.createChart(container, {
       layout: {
         textColor: "#333",
@@ -412,13 +418,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- NETTOYAGE COMPLET ---
     if (ws) {
-      ws.onclose = null; // Désactive la reconnexion auto de l'ancienne session
+      ws.onclose = null;
       ws.close();
       ws = null;
     }
 
     cache = [];
-    priceDataZZ = []; // Contiendra les objets {time, open, high, low, close}
+    priceDataZZ = [];
     isWsInitialized = false;
 
     // --- INITIALISATION DU GRAPHIQUE ---
@@ -432,7 +438,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     ws.onmessage = ({ data }) => {
-      // Sécurité de session pour éviter le mélange de données
       if (thisSessionId !== currentSessionId) {
         if (ws) ws.close();
         return;
@@ -440,64 +445,76 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const msg = JSON.parse(data);
 
-      // 1. Autorisation -> Envoi du Payload
+      // 1. Autorisation -> Envoi des Payloads (Market + Contracts)
       if (msg.msg_type === "authorize") {
-        const payload = {
+        // Payload Marché (Candles ou Ticks)
+        const marketPayload = (chartType === "candlestick") ? {
           ticks_history: symbol,
           subscribe: 1,
           end: "latest",
           count: 1000,
           granularity: convertTF(interval),
-          style: chartType === "candlestick" ? "candles" : "ticks"
+          style: "candles"
+        } : {
+          ticks_history: symbol,
+          subscribe: 1,
+          end: "latest",
+          count: 300,
+          granularity: convertTF(interval),
+          style: "ticks"
         };
-        ws.send(JSON.stringify(payload));
+
+        ws.send(JSON.stringify(marketPayload));
+
+        // Payload Positions Ouvertes (Abonnement unique)
+        ws.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
         return;
       }
 
-      // 2. Gestion des données Candlestick (Historique + Live)
+      // 2. Gestion des données Candlestick
       if (msg.msg_type === "candles" || msg.msg_type === "ohlc") {
         const rawData = msg.ohlc ? msg.ohlc : msg.candles;
         const bars = Array.isArray(rawData)
           ? rawData.map(normalize).filter(Boolean)
           : [normalize(rawData)].filter(Boolean);
 
-        if (bars.length === 0) return;
-
-        if (cache.length === 0) {
-          // --- CHARGEMENT INITIAL ---
-          cache = bars;
-          currentSeries.setData(cache);
-
-          // IMPORTANT : On passe l'objet bar complet au ZigZag
-          priceDataZZ = [...cache];
-
-          chart.timeScale().fitContent();
-          isWsInitialized = true;
-        } else {
-          // --- MISE À JOUR EN TEMPS RÉEL ---
-          const lastBar = bars[bars.length - 1];
-          const lastCache = cache[cache.length - 1];
-
-          if (lastCache && lastCache.time === lastBar.time) {
-            cache[cache.length - 1] = lastBar;
+        if (bars.length > 0) {
+          if (cache.length === 0) {
+            cache = bars;
+            currentSeries.setData(cache);
+            priceDataZZ = [...cache];
+            chart.timeScale().fitContent();
+            isWsInitialized = true;
           } else {
-            cache.push(lastBar);
+            const lastBar = bars[bars.length - 1];
+            const lastCache = cache[cache.length - 1];
+
+            if (lastCache && lastCache.time === lastBar.time) {
+              cache[cache.length - 1] = lastBar;
+            } else {
+              cache.push(lastBar);
+              if (cache.length > 1000) cache.shift();
+            }
+            currentSeries.update(lastBar);
+            updateIndicatorData(lastBar.time, lastBar);
           }
-
-          currentSeries.update(lastBar);
-
-          // Synchronisation de la source de données indicateurs
-          updateIndicatorData(lastBar.time, lastBar);
+          renderIndicators();
         }
-
-        // --- DESSIN DES INDICATEURS (ZIGZAG, MA, ETC) ---
-        // On centralise tout ici pour éviter le clignotement
-        renderIndicators();
       }
 
       // 3. Gestion des données Ticks (Area/Line)
       if (msg.msg_type === "history" || msg.msg_type === "tick") {
         handleTickData(msg);
+        // Note: handleTickData doit appeler renderIndicators() en interne
+      }
+
+      // 4. Gestion des Positions Ouvertes (Lignes de prix + PnL)
+      if (msg.msg_type === "proposal_open_contract" && msg.proposal_open_contract) {
+        const contract = msg.proposal_open_contract;
+        // On ne dessine la ligne que si le contrat appartient au symbole actuel
+        if (contract.symbol === symbol) {
+          updateContractLines(contract);
+        }
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
@@ -508,6 +525,42 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => loadSymbol(symbol, interval, chartType), 2000);
       }
     };
+  }
+
+  function updateContractLines(contract) {
+    const id = contract.contract_id;
+
+    // Suppression si clos
+    if (contract.is_settled || contract.status === "sold" || contract.exit_tick) {
+      if (priceLines4openlines[id]) {
+        currentSeries.removePriceLine(priceLines4openlines[id]);
+        delete priceLines4openlines[id];
+      }
+      return;
+    }
+
+    const entryPrice = parseFloat(contract.entry_tick_display_value || contract.buy_price);
+    const currentPrice = parseFloat(contract.current_spot_display_value);
+    const pnl = parseFloat(contract.profit).toFixed(2);
+    const color = pnl >= 0 ? '#00ffa3' : '#ff3d60';
+
+    // Création ou Mise à jour de la ligne
+    if (!priceLines4openlines[id]) {
+      priceLines4openlines[id] = currentSeries.createPriceLine({
+        price: entryPrice,
+        color: color,
+        lineWidth: 2,
+        lineStyle: LightweightCharts.LineStyle.Dashed,
+        axisLabelVisible: true,
+        title: `${contract.contract_type} [${pnl}$]`,
+      });
+    } else {
+      // Mise à jour du titre avec le PnL en temps réel
+      priceLines4openlines[id].applyOptions({
+        title: `${contract.contract_type} [${pnl}$]`,
+        color: color
+      });
+    }
   }
 
   /**
@@ -526,23 +579,29 @@ document.addEventListener("DOMContentLoaded", () => {
   function handleTickData(msg) {
     if (!currentSeries) return;
 
-    // A. RÉCEPTION DE L'HISTORIQUE (Les 1000 premiers points)
+    // A. CHARGEMENT INITIAL (Affiche les 300 d'un coup)
     if (msg.msg_type === "history" && msg.history) {
       const h = msg.history;
+
+      // Conversion du format Deriv vers Lightweight Charts
       priceData = h.times.map((t, i) => ({
         time: Number(t),
         value: Number(h.prices[i])
       }));
 
+      // Affiche le bloc de 300 points immédiatement
       currentSeries.setData(priceData);
+
+      // Ajuste le zoom pour que les 300 points prennent tout l'espace
       chart.timeScale().fitContent();
 
-      // Synchronisation pour les indicateurs (MA/ZigZag)
+      // Prépare les données pour le ZigZag et les MA
       priceDataZZ = priceData.map(p => ({ time: p.time, close: p.value }));
       isWsInitialized = true;
+      return;
     }
 
-    // B. RÉCEPTION DU TICK EN DIRECT (Un par un)
+    // B. MISE À JOUR LIVE (Un par un)
     if (msg.msg_type === "tick" && msg.tick) {
       const t = msg.tick;
       const newTick = {
@@ -550,27 +609,22 @@ document.addEventListener("DOMContentLoaded", () => {
         value: Number(t.quote)
       };
 
-      // --- LOGIQUE DE LIMITATION À 1000 ---
-      if (priceData.length >= 1000) {
-        priceData.shift(); // Enlève le plus vieux tick (le premier)
-        // Note: Lightweight Charts gère très bien les updates, 
-        // mais si vous voulez supprimer visuellement le défilement 
-        // sur une série Area, setData est parfois nécessaire.
-        // Cependant, .update() suffit généralement pour la fluidité.
+      // GESTION DE LA FENÊTRE GLISSANTE (300 points max)
+      if (priceData.length >= 300) {
+        priceData.shift();   // Enlève le plus vieux
+        priceDataZZ.shift(); // Enlève aussi pour les indicateurs
       }
 
       priceData.push(newTick);
+      priceDataZZ.push({ time: newTick.time, close: newTick.value });
+
+      // Met à jour le graphique sans clignoter
       currentSeries.update(newTick);
 
-      // Mise à jour pour les indicateurs
-      const barFormat = { time: newTick.time, close: newTick.value };
-      if (priceDataZZ.length >= 1000) priceDataZZ.shift();
-      priceDataZZ.push(barFormat);
-
-      // Rendu des indicateurs (MA/ZigZag) sur le tick
-      renderIndicators();
+      // Rafraîchit les indicateurs (MA, ZigZag) sur le nouveau point
+      renderIndicators();  
     }
-  } 
+  }
 
   // --- CONNECT DERIV ---
   function connectDeriv() {
@@ -726,7 +780,6 @@ document.addEventListener("DOMContentLoaded", () => {
     wsOpenLines.onerror = (e) => console.log("⚠️ WS error:", e);
     wsOpenLines.onclose = () => console.log("❌ WS closed for open lines");
   }
-
 
   function startMLCountdown() {
     console.log("🤖 ML STARTED");
@@ -1484,16 +1537,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderIndicators() {
-    if (!isWsInitialized) return;
+    // Ne rien faire si le WebSocket n'est pas prêt ou s'il n'y a pas assez de données
+    if (!isWsInitialized || priceDataZZ.length < 2) return;
 
     requestAnimationFrame(() => {
       // 1. Mise à jour ZigZag
-      if (isZigZagActive) {
+      if (isZigZagActive && typeof refreshZigZag === "function") {
         refreshZigZag();
       }
 
-      // 2. Mise à jour des MA
-      if (activePeriods.length > 0) {
+      // 2. Mise à jour des MA (EMA 20, 50, 200)
+      if (activePeriods.length > 0 && typeof updateMAs === "function") {
         updateMAs();
       }
     });
@@ -1581,7 +1635,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   function refreshZigZag() {
-    if (!isZigZagActive || !isWsInitialized || !zigzagSeries || priceDataZZ.length < 2) return;
+    if (!isZigZagActive || !isWsInitialized || !zigzagSeries || priceDataZZ.length < 10) return;
 
     const results = calculateZigZag(priceDataZZ, 7);
 
