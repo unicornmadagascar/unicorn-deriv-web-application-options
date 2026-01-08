@@ -438,7 +438,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         ws.send(JSON.stringify(payload));
         return; // On attend le prochain message (les data)
-      }
+      }  
 
       // --- B. AIGUILLAGE VERS LES TRAITEMENTS ---
       if (chartType === "candlestick") {
