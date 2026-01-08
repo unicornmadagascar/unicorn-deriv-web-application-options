@@ -400,15 +400,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!symbol) return;
 
-    // --- NETTOYAGE ---
+    // --- NETTOYAGE COMPLET ---
     if (ws) {
-      ws.onclose = null;
+      ws.onclose = null; // Désactive la reconnexion auto de l'ancienne session
       ws.close();
       ws = null;
     }
 
     cache = [];
-    priceDataZZ = [];
+    priceDataZZ = []; // Contiendra les objets {time, open, high, low, close}
     isWsInitialized = false;
 
     // --- INITIALISATION DU GRAPHIQUE ---
@@ -422,6 +422,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     ws.onmessage = ({ data }) => {
+      // Sécurité de session pour éviter le mélange de données
       if (thisSessionId !== currentSessionId) {
         if (ws) ws.close();
         return;
@@ -446,7 +447,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // 2. Gestion des données Candlestick
+      // 2. Gestion des données Candlestick (Historique + Live)
       if (msg.msg_type === "candles" || msg.msg_type === "ohlc") {
         const rawData = msg.ohlc ? msg.ohlc : msg.candles;
         const bars = Array.isArray(rawData)
@@ -456,30 +457,40 @@ document.addEventListener("DOMContentLoaded", () => {
         if (bars.length === 0) return;
 
         if (cache.length === 0) {
-          // Historique initial
+          // --- CHARGEMENT INITIAL ---
           cache = bars;
           currentSeries.setData(cache);
+
+          // IMPORTANT : On passe l'objet bar complet au ZigZag
+          priceDataZZ = [...cache];
+
           chart.timeScale().fitContent();
-          priceDataZZ = cache.map(b => ({ time: b.time, value: b.close }));
           isWsInitialized = true;
         } else {
-          // Mise à jour live
-          const bar = bars[bars.length - 1];
-          const last = cache[cache.length - 1];
-          if (last && last.time === bar.time) {
-            cache[cache.length - 1] = bar;
+          // --- MISE À JOUR EN TEMPS RÉEL ---
+          const lastBar = bars[bars.length - 1];
+          const lastCache = cache[cache.length - 1];
+
+          if (lastCache && lastCache.time === lastBar.time) {
+            cache[cache.length - 1] = lastBar;
           } else {
-            cache.push(bar);
+            cache.push(lastBar);
           }
-          currentSeries.update(bar);
-          updateZZData(bar.time, bar.close);
+
+          currentSeries.update(lastBar);
+
+          // Synchronisation de la source de données indicateurs
+          updateIndicatorData(lastBar.time, lastBar);
         }
-        if (isZigZagActive) refreshZigZag();
+
+        // --- DESSIN DES INDICATEURS (ZIGZAG, MA, ETC) ---
+        // On centralise tout ici pour éviter le clignotement
+        renderIndicators();
       }
 
       // 3. Gestion des données Ticks (Area/Line)
       if (msg.msg_type === "history" || msg.msg_type === "tick") {
-        handleTickData(msg); // Appelle votre logique Tick habituelle
+        handleTickData(msg);
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
@@ -492,12 +503,37 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  function updateZZData(time, price) {
+  /**
+ * Met à jour la source de données pour les indicateurs (ZigZag, MA)
+ */
+  function updateIndicatorData(time, bar) {
     if (priceDataZZ.length > 0 && priceDataZZ[priceDataZZ.length - 1].time === time) {
-      priceDataZZ[priceDataZZ.length - 1].value = price;
+      priceDataZZ[priceDataZZ.length - 1] = bar;
     } else {
-      priceDataZZ.push({ time, value: price });
+      priceDataZZ.push(bar);
+      // On limite la taille pour garder des performances fluides
+      if (priceDataZZ.length > 2000) priceDataZZ.shift();
     }
+  }
+
+  /**
+ * Centralise tous les rendus d'indicateurs via requestAnimationFrame
+ * C'est la clé pour supprimer le clignotement
+ */
+  function renderIndicators() {
+    if (!isWsInitialized) return;
+
+    requestAnimationFrame(() => {
+      // Rendu ZigZag
+      if (isZigZagActive && typeof refreshZigZag === "function") {
+        refreshZigZag();
+      }
+
+      // Rendu MA (si activé)
+      if (window.isMAActive && typeof updateMAs === "function") {
+        updateMAs();
+      }
+    });
   }
 
   function handleTickData(msg) {
@@ -627,7 +663,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wspl.onopen = () => { wspl.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    wspl.onmessage = (evt) =>    {
+    wspl.onmessage = (evt) => {
       const data = JSON.parse(evt.data);
       // authorize response
       if (data.msg_type === "authorize" && data.authorize) {
@@ -1598,7 +1634,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     requestAnimationFrame(() => {
       if (isZigZagActive && zigzagSeries && isWsInitialized) {
-        zigzagSeries.setData(results.points);
+        zigzagSeries.setData(results.points);  
         zigzagSeries.setMarkers(results.markers);
       }
     });
@@ -3177,8 +3213,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.onload = async () => {
     if (!currentSymbol) return;
-    if (currentChartType !== "candlestick") return;  
-    await loadSymbol(currentSymbol, currentInterval, currentChartType);  
+    if (currentChartType !== "candlestick") return;
+    await loadSymbol(currentSymbol, currentInterval, currentChartType);
   };
 
   // Simulation : mise à jour toutes les 2 secondes
