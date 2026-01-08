@@ -3400,7 +3400,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ws.send(JSON.stringify({ forget_all: ["candles", "ticks"] })); // oublie l'ancien symbole
       await loadSymbol(currentSymbol, currentInterval, currentChartType);
   
-    });
+    });  
   });
 
   // === Changement d’intervalle ===
