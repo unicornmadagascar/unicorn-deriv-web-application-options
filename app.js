@@ -1790,7 +1790,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }  
   
     if (currentSeries) {
-      currentSeries.setData([]);    
+      currentSeries.setData([]);       
     }
 
     // --- 4. NETTOYAGE DES SÉRIES ET DES DONNÉES ---  
