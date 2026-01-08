@@ -531,6 +531,9 @@ document.addEventListener("DOMContentLoaded", () => {
       priceData.push(newTick);
       currentSeries.update(newTick);
     }
+
+    // try to auto-fit time scale (safe)
+    try { chart.timeScale().fitContent(); } catch (e) { }
   }
 
   function connectInit(symbol, currentInterval, currentChartType) {
