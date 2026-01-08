@@ -454,7 +454,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         currentSeries.setData([{ time: testTime, value: 10 }]);
       }
-      chart.timeScale().fitContent();
+      chart.timeScale().fitContent();  
 
       // --- C. INDICATEURS & PING ---
       if (isWsInitialized && typeof refreshZigZag === "function") {
