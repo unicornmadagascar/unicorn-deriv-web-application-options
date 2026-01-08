@@ -1754,7 +1754,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function resetZZChartVariable() {
 
-    if (chart) { chart.remove(); chart = null; }
+    if (chart) { chart.remove(); chart = null; }  
 
     // --- 1. FERMETURE SÉCURISÉE DES WEBSOCKETS ---
     // On vérifie d'abord si l'objet existe avant d'accéder à ses propriétés  
