@@ -1806,6 +1806,8 @@ document.addEventListener("DOMContentLoaded", () => {
     priceDataZZ = [];
     zigzagCache = [];
     zigzagMarkers = [];
+    candles = [];
+    cache = [];
 
     console.log("Système ZigZag réinitialisé avec succès.");
   }
