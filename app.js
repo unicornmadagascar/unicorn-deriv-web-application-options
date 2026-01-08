@@ -271,6 +271,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- INIT CHART ---
   function initChart(currentChartType) {
+    const container = document.getElementById("chartInner"); // Remplacez par votre ID réel
+    if (!container) {
+      console.error("Conteneur de graphique introuvable !");
+      return;
+    }
+
     try {
       if (chart) {
         chart.remove();
@@ -278,9 +284,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (e) { console.error("Erreur destruction chart:", e); }
 
-    chartInner.innerHTML = "";
+    container.innerHTML = "";
 
-    chart = LightweightCharts.createChart(chartInner, {
+    chart = LightweightCharts.createChart(container, {
       layout: {
         textColor: "#333",
         background: { type: "solid", color: "#fff" },
@@ -437,7 +443,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- B. AIGUILLAGE VERS LES TRAITEMENTS ---
       if (chartType === "candlestick") {
         //handleCandleData(data);
-      } else {      
+      } else {
         //handleTickData(data);
       }
 
@@ -445,14 +451,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (chartType === "candlestick") {
         currentSeries.setData([{ time: testTime, open: 10, high: 15, low: 5, close: 12 }]);
-      } else {   
+      } else {
         currentSeries.setData([{ time: testTime, value: 10 }]);
       }
+      chart.timeScale().fitContent();
 
       // --- C. INDICATEURS & PING ---
       if (isWsInitialized && typeof refreshZigZag === "function") {
         refreshZigZag();
-      }
+      }  
 
       if (data.msg_type === "ping") {
         ws.send(JSON.stringify({ ping: 1 }));
