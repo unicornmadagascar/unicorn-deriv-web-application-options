@@ -1797,7 +1797,7 @@ document.addEventListener("DOMContentLoaded", () => {
             socket.close();
           }
         } catch (e) {
-          console.warn("Erreur lors de la fermeture d'un socket:", e);
+          console.warn("Erreur lors de la fermeture d'un socket:", e);  
         }
       }
     }
