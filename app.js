@@ -437,7 +437,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- B. AIGUILLAGE VERS LES TRAITEMENTS ---
       if (chartType === "candlestick") {
         //handleCandleData(data);
-      } else {
+      } else {    
         //handleTickData(data);
       }
 
