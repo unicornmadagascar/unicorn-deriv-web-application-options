@@ -3175,10 +3175,10 @@ document.addEventListener("DOMContentLoaded", () => {
   initHistoricalTable();
   inihistoricalchart();
 
-  window.onload = () => {
+  window.onload = async () => {
     if (!currentSymbol) return;
     if (currentChartType !== "candlestick") return;
-    connectInit(currentSymbol, currentInterval, currentChartType);
+    await loadSymbol(currentSymbol, currentInterval, currentChartType);  
   };
 
   // Simulation : mise à jour toutes les 2 secondes
