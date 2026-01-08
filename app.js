@@ -270,7 +270,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- INIT CHART ---
   function initChart(currentChartType) {
-    try { if (chart) chart.remove(); } catch (e) { }
+    try {
+      if (chart) {
+        chart.remove();
+        chart = null; // Important de mettre à null
+      }
+    } catch (e) { console.error("Erreur destruction chart:", e); }
+
     chartInner.innerHTML = "";
 
     chart = LightweightCharts.createChart(chartInner, {
@@ -279,10 +285,14 @@ document.addEventListener("DOMContentLoaded", () => {
         background: { type: "solid", color: "#fff" },
       },
       grid: { vertLines: { color: "#eee" }, horzLines: { color: "#eee" } },
-      timeScale: { timeVisible: true, secondsVisible: true }
+      timeScale: {
+        timeVisible: true,
+        secondsVisible: true,
+        autoScale: true // Ajouté pour assurer la visibilité immédiate
+      }
     });
 
-    // === Type de graphique dynamique ===  
+    // === Création de la série ===  
     if (currentChartType === "area") {
       currentSeries = chart.addAreaSeries({
         lineColor: "rgba(189, 6, 221, 1)",
@@ -292,12 +302,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     } else if (currentChartType === "candlestick") {
       currentSeries = chart.addCandlestickSeries({
-        upColor: "#26a69a",
-        borderUpColor: "#26a69a",
-        wickUpColor: "#26a69a",
-        downColor: "#ef5350",
-        borderDownColor: "#ef5350",
-        wickDownColor: "#ef5350",
+        upColor: "#26a69a", borderUpColor: "#26a69a", wickUpColor: "#26a69a",
+        downColor: "#ef5350", borderDownColor: "#ef5350", wickDownColor: "#ef5350",
       });
     } else if (currentChartType === "line") {
       currentSeries = chart.addLineSeries({
@@ -306,10 +312,12 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // --- NETTOYAGE CRUCIAL DES DONNÉES ---
+    candles = [];       // Pour handleCandleData
+    priceData = [];     // Pour handleTickData
     chartData = [];
     recentChanges = [];
     lastPrices = {};
-
   }
 
   function styleType(currentChartType) {
@@ -672,7 +680,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (data.ping && data.msg_type === "ping") {
-        wspl.send(JSON.stringify({ ping: 1 }));  
+        wspl.send(JSON.stringify({ ping: 1 }));
       }
     };
 
@@ -3344,8 +3352,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!currentSymbol) return;
       ws.send(JSON.stringify({ forget_all: ["candles", "ticks"] })); // oublie l'ancien symbole
       await loadSymbol(currentSymbol, currentInterval, currentChartType);
-  
-    });  
+
+    });
   });
 
   // === Changement d’intervalle ===
