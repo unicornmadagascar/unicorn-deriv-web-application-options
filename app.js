@@ -436,17 +436,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // --- B. AIGUILLAGE VERS LES TRAITEMENTS ---
       if (chartType === "candlestick") {
-        handleCandleData(data);
+        //handleCandleData(data);
       } else {
-        handleTickData(data);
+        //handleTickData(data);
+      }
+      
+      const testTime = Math.floor(Date.now() / 1000);
+
+      if (chartType === "candlestick") {
+        currentSeries.setData([{ time: testTime, open: 10, high: 15, low: 5, close: 12 }]);
+      } else {
+        currentSeries.setData([{ time: testTime, value: 10 }]);
       }
 
       // --- C. INDICATEURS & PING ---
       if (isWsInitialized && typeof refreshZigZag === "function") {
         refreshZigZag();
-      } 
+      }
 
-      if (data.msg_type === "ping") {  
+      if (data.msg_type === "ping") {
         ws.send(JSON.stringify({ ping: 1 }));
       }
     };
@@ -1797,7 +1805,7 @@ document.addEventListener("DOMContentLoaded", () => {
             socket.close();
           }
         } catch (e) {
-          console.warn("Erreur lors de la fermeture d'un socket:", e);  
+          console.warn("Erreur lors de la fermeture d'un socket:", e);
         }
       }
     }
