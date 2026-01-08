@@ -422,14 +422,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let payload;
         if (chartType === "candlestick") {
-          payload = {
-            ticks_history: symbol,
-            adjust_start_time: 1,           
-            end: "latest",
-            granularity: convertTF(currentInterval),
-            style: "candles", 
-            subscribe: 1
-          };
+          payload = Payloadforsubscription(currentSymbol, currentInterval, currentChartType);
         } else {
           payload = {
             ticks: symbol,
@@ -479,6 +472,7 @@ document.addEventListener("DOMContentLoaded", () => {
         close: Number(c.close),
       }));
       currentSeries.setData(candles);
+      chart.timeScale().fitContent();
     }
 
     // B. Mise à jour en temps réel (OHLC)
@@ -503,9 +497,6 @@ document.addEventListener("DOMContentLoaded", () => {
         currentSeries.update(bar);
       }
     }
-
-    // try to auto-fit time scale (safe)
-    try { chart.timeScale().fitContent(); } catch (e) { }
   }
 
   function handleTickData(msg) {
