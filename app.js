@@ -627,7 +627,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wspl.onopen = () => { wspl.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    wspl.onmessage = (evt) => {
+    wspl.onmessage = (evt) =>    {
       const data = JSON.parse(evt.data);
       // authorize response
       if (data.msg_type === "authorize" && data.authorize) {
