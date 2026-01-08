@@ -372,7 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     //if (ws) { ws.close(); ws = null; }
 
-    if (!symbol) return;
+    if (!symbol) return;  
 
     if (currentChartType !== "candlestick") return;
 
