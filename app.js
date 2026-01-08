@@ -1803,7 +1803,7 @@ document.addEventListener("DOMContentLoaded", () => {
       zigzagSeries = null; // On libère la série pour la recréer sur le prochain chart
     }
 
-    // On vide les données systématiquement (même si zigzagSeries était déjà null)
+    // On vide les données systématiquement (même si zigzagSeries était déjà null)  
     priceDataZZ = [];
     zigzagCache = [];
     zigzagMarkers = [];
