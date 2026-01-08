@@ -689,7 +689,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }, 300);
         }
 
-        displaySymbols(currentInterval, currentChartType);
+        //isplaySymbols(currentInterval, currentChartType);
         return;
       }
 
