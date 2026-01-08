@@ -1792,7 +1792,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
     if (currentSeries) {
       currentSeries.setData([]);
-      currentSeries = null;
+      //currentSeries = null;
       initChart(currentChartType);  
     }
 
