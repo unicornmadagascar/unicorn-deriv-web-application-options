@@ -370,14 +370,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function connect(symbol, currentInterval, currentChartType) {
 
-    //if (ws) { ws.close(); ws = null; }
+    if (ws) { ws.close(); ws = null; }
 
     if (!symbol) return;  
 
     if (currentChartType !== "candlestick") return;
 
     currentSymbol = symbol;
-    resetZZChartVariable();  
+    initChart(currentChartType);  
     console.log("Connexion...");
 
     ws = new WebSocket(WS_URL);
@@ -1752,9 +1752,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function resetZZChartVariable() {
-
-    initChart(currentChartType);  
-
     // --- 1. FERMETURE SÉCURISÉE DES WEBSOCKETS ---
     // On vérifie d'abord si l'objet existe avant d'accéder à ses propriétés  
     if (maws) {
