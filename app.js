@@ -570,7 +570,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Rendu des indicateurs (MA/ZigZag) sur le tick
       renderIndicators();
     }
-  }
+  } 
 
   // --- CONNECT DERIV ---
   function connectDeriv() {
