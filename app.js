@@ -340,7 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
     candles = [];       // Pour handleCandleData
     priceData = [];     // Pour handleTickData
     chartData = [];
-    recentChanges = [];
+    recentChanges = [];  
     lastPrices = {};
   }  
 
