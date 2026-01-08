@@ -320,12 +320,21 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // On prépare la série ZigZag (invisible tant qu'elle n'a pas de data)
-    zigzagSeries = chart.addLineSeries({
-      color: '#f39c12',
-      lineWidth: 2,
-      priceLineVisible: false,
-    });
+    // 5. AUTO-RÉACTIVATION DES INDICATEURS
+    // Si l'utilisateur avait déjà activé le ZigZag ou les MA sur le symbole précédent,
+    // on recrée les séries immédiatement pour le nouveau symbole.
+    
+    if (isZigZagActive) {
+        zigzagSeries = chart.addLineSeries({
+            color: '#f39c12',
+            lineWidth: 2,
+            priceLineVisible: false,
+        });
+    }
+
+    if (activePeriods.length > 0) {
+        initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200
+    }
 
     // --- NETTOYAGE CRUCIAL DES DONNÉES ---
     candles = [];       // Pour handleCandleData
@@ -517,26 +526,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  /**
- * Centralise tous les rendus d'indicateurs via requestAnimationFrame
- * C'est la clé pour supprimer le clignotement
- */
-  function renderIndicators() {
-    if (!isWsInitialized) return;
-
-    requestAnimationFrame(() => {
-      // Rendu ZigZag
-      if (isZigZagActive && typeof refreshZigZag === "function") {
-        refreshZigZag();  
-      }
-
-      // Rendu MA (si activé)
-      if (window.isMAActive && typeof updateMAs === "function") {
-        //updateMAs();  
-      }
-    });
-  }
-
   function handleTickData(msg) {
     if (!currentSeries) return;
 
@@ -687,7 +676,7 @@ document.addEventListener("DOMContentLoaded", () => {
               currentSymbol = pendingSubscribe;
               pendingSubscribe = null;
             }
-          }, 300); 
+          }, 300);
         }
 
         //displaySymbols(currentInterval, currentChartType);
@@ -1495,28 +1484,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- INITIALISATION (À appeler une seule fois au chargement ou au 1er clic) ---
   function initMaSeries() {
-    // "chart" doit déjà exister globalement
+    if (!chart) return;
+
+    // On crée les 3 séries d'un coup, mais elles restent vides au début
     maSeries = {
-      20: chart.addLineSeries({ color: '#2962FF', lineWidth: 2, title: 'EMA 20' }),
-      50: chart.addLineSeries({ color: '#9c27b0', lineWidth: 2, title: 'EMA 50' }),
-      200: chart.addLineSeries({ color: '#ff9800', lineWidth: 2, title: 'EMA 200' })
+      20: chart.addLineSeries({ color: '#2962FF', lineWidth: 2, priceLineVisible: false, lastValueVisible: false }),
+      50: chart.addLineSeries({ color: '#9c27b0', lineWidth: 2, priceLineVisible: false, lastValueVisible: false }),
+      200: chart.addLineSeries({ color: '#ff9800', lineWidth: 2, priceLineVisible: false, lastValueVisible: false })
     };
   }
 
   // --- LOGIQUE DES BOUTONS (Appelée depuis le HTML) ---  
   window.toggleMA = function (period, button) {
-    // ÉTAPE 1 : Si c'est le TOUT PREMIER CLIC sur n'importe quel bouton MA
+    if (!chart) return;
+
+    // Si on change de symbole, initChart aura mis maSeries à null
     if (maSeries === null) {
-      console.log("Premier clic : Initialisation des MA et de la connexion...");
-      initMaSeries(); // Crée les lignes bleues, violettes, oranges
+      initMaSeries();
     }
 
-    if (!isConnected) {
-      startDerivConnection(); // Lance le WebSocket si ce n'est pas déjà fait
-      isConnected = true;
-    }
-
-    // ÉTAPE 2 : Logique habituelle de toggle
     const index = activePeriods.indexOf(period);
     const className = `active-${period}`;
 
@@ -1528,11 +1514,25 @@ document.addEventListener("DOMContentLoaded", () => {
       activePeriods.splice(index, 1);
       button.classList.remove(className);
       button.innerText = `MA ${period} : OFF`;
+      // On efface la ligne immédiatement si on désactive
+      if (maSeries[period]) maSeries[period].setData([]);
     }
 
-    // ÉTAPE 3 : Mise à jour immédiate
-    updateMAs();
+    // On demande un rendu fluide
+    renderIndicators();
   };
+
+  function updateMAs() {
+    if (!maSeries || !isWsInitialized || priceDataZZ.length === 0) return;
+
+    [20, 50, 200].forEach(p => {
+      if (activePeriods.includes(p)) {
+        const data = calculateEMA(priceDataZZ, p);
+        maSeries[p].setData(data);
+      }
+      // Note: Le "setData([])" est géré dans le toggle pour éviter de vider inutilement ici
+    });
+  }
 
   // --- CALCULS ET MISES À JOUR ---
   function calculateEMA(data, period) {
@@ -1545,6 +1545,22 @@ document.addEventListener("DOMContentLoaded", () => {
       if (i >= period - 1) ema.push({ time: data[i].time, value: emaValue });
     }
     return ema;
+  }
+
+  function renderIndicators() {
+    if (!isWsInitialized) return;
+
+    requestAnimationFrame(() => {
+      // 1. Mise à jour ZigZag
+      if (isZigZagActive) {
+        refreshZigZag();
+      }
+
+      // 2. Mise à jour des MA
+      if (activePeriods.length > 0) {
+        updateMAs();
+      }
+    });
   }
 
   // --- ALGORITHME ZIGZAG AVEC MISE À JOUR DES EXTRÊMES ---
@@ -1632,207 +1648,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!isZigZagActive || !isWsInitialized || !zigzagSeries || priceDataZZ.length < 2) return;
 
     const results = calculateZigZag(priceDataZZ, 7);
-    
+
     requestAnimationFrame(() => {
       if (isZigZagActive && zigzagSeries && isWsInitialized) {
-        zigzagSeries.setData(results.points);  
+        zigzagSeries.setData(results.points);
         zigzagSeries.setMarkers(results.markers);
       }
-    });   
-  }
-
-  function updateMAs() {
-    if (!maSeries) return;
-
-    [20, 50, 200].forEach(p => {
-      // Si la période est active, on calcule, sinon on envoie un tableau vide []
-      const data = activePeriods.includes(p) ? calculateEMA(priceData, p) : [];
-      maSeries[p].setData(data); // C'est le [] qui fait disparaître la ligne
     });
-  }
-
-  function startDerivConnection() {
-    /* ===============================  
-       CONNEXION DERIV API (Live)
-    ================================ */
-    //if (maws && maws.readyState === WebSocket.OPEN) maws.close();
-
-    const maws = new WebSocket(WS_URL);
-    maws.onopen = () => {
-      maws.send(JSON.stringify({ authorize: TOKEN }));
-    };
-
-    maws.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-
-      if (data.msg_type === "authorize" && data.authorize) {
-        console.log("WS Connected and Authorized");
-        maws.send(JSON.stringify(Payloadforsubscription(currentSymbol, currentInterval, currentChartType)));
-      }
-
-      // Historique au chargement
-      if (data.candles) {
-        priceData = data.candles.map(c => ({
-          time: c.epoch,
-          open: Number(c.open),
-          high: Number(c.high),
-          low: Number(c.low),
-          close: Number(c.close)
-        }));
-        currentSeries.setData(priceData);
-        chart.timeScale().fitContent();
-      }
-
-      // Nouveau tick (bougie en cours)
-      if (data.ohlc) {
-        const o = data.ohlc;
-        const newCandle = {
-          time: o.open_time,
-          open: Number(o.open),
-          high: Number(o.high),
-          low: Number(o.low),
-          close: Number(o.close)
-        };
-
-        if (priceData.length > 0 && priceData[priceData.length - 1].time === newCandle.time) {
-          priceData[priceData.length - 1] = newCandle;
-        } else {
-          priceData.push(newCandle);
-        }
-        currentSeries.update(newCandle);
-      }
-
-      // Mise à jour des lignes MA à chaque nouveau mouvement de prix
-      updateMAs();
-    };
-  }
-
-  // --- CONNEXION DERIV ---
-  function startDerivConnectionZZ() {
-
-    const wszz = new WebSocket(WS_URL);
-    wszz.onopen = () => { wszz.send(JSON.stringify({ authorize: TOKEN })) };
-
-    wszz.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-
-      if (data.msg_type === "authorize" && data.authorize) {
-        console.log("WS Authorized and Connected");
-        // 1. Demander l'historique ET s'abonner (subscribe: 1)
-        wszz.send(JSON.stringify(Payloadforsubscription(currentSymbol, currentInterval, currentChartType)));
-      }
-
-      // A. HISTORIQUE (reçu une seule fois au début)
-      if (data.candles) {
-        priceDataZZ = data.candles.map(c => ({
-          time: c.epoch,
-          open: Number(c.open),
-          high: Number(c.high),
-          low: Number(c.low),
-          close: Number(c.close)
-        }));
-        currentSeries.setData(priceDataZZ);
-        refreshZigZag(); // Calcul initial
-      }
-
-      // B. TEMPS RÉEL (reçu à chaque tick via 'ohlc')
-      if (data.ohlc) {
-        const o = data.ohlc;
-        const newCandle = {
-          time: o.open_time,
-          open: Number(o.open),
-          high: Number(o.open), // Au début d'un tick, high/low sont l'open
-          low: Number(o.low),
-          close: Number(o.close)
-        };
-
-        // Vérifier si on met à jour la bougie actuelle ou si on en crée une nouvelle
-        if (priceDataZZ.length > 0 && priceDataZZ[priceDataZZ.length - 1].time === newCandle.time) {
-          priceDataZZ[priceDataZZ.length - 1] = newCandle;
-        } else {
-          priceDataZZ.push(newCandle);
-        }
-
-        // Mettre à jour le graphique et recalculer le ZigZag
-        currentSeries.update(newCandle);
-        refreshZigZag();
-      }
-    };
-
-    wszz.onclose = () => {
-      console.log("Connexion fermée. Reconnexion...");
-      setTimeout(startDerivConnectionZZ, 5000);
-    };
-  }
-
-  async function resetZZChartVariable() {
-    // 1. Invalider immédiatement la session actuelle pour stopper les calculs en cours
-    currentSessionId++;
-
-    console.log("Nettoyage de la session en cours...");
-
-    priceDataZZ = []; // Indispensable pour éviter le clignotement au changement de symbole
-
-    // 2. Fermeture propre et sécurisée de tous les WebSockets
-    const sockets = [ws, wspl, maws, wszz];
-
-    for (let socket of sockets) {
-      if (socket) {
-        try {
-          // On retire les écouteurs pour éviter que le onclose ne déclenche des erreurs
-          socket.onmessage = null;
-          socket.onclose = null;
-          socket.onerror = null;
-
-          if (socket.readyState === WebSocket.OPEN) {
-            // Optionnel : informer le serveur avant de couper
-            socket.send(JSON.stringify({ forget_all: ["candles", "ticks"] }));
-            socket.close();
-          }
-        } catch (e) {
-          console.warn("Erreur lors de la fermeture d'un socket:", e);
-        }
-      }
-    }
-
-    // Reset des références de sockets
-    ws = wspl = maws = wszz = null;
-
-    // 3. Réinitialisation des états logiques
-    isWsInitialized = false;
-
-    // 4. Nettoyage de l'Interface Utilisateur (Bouton)
-    const btn = document.querySelector('button[onclick*="toggleZigZag"]');
-    if (btn) {
-      btn.classList.remove("active");
-      btn.innerText = "ZigZag 14 : OFF";
-    }
-
-    // 5. Destruction physique du graphique (Crucial contre le clignotement)
-    if (chart) {
-      try {
-        chart.remove();
-        chart = null;
-      } catch (e) {
-        console.error("Erreur lors de la suppression du graphique:", e);
-      }
-    }
-
-    // 6. Vidage complet de tous les tableaux de données et caches
-    candles = [];
-    priceData = [];
-    priceDataZZ = [];
-    zigzagCache = [];
-    zigzagMarkers = [];
-
-    // Reset des séries pour forcer leur recréation au prochain loadSymbol
-    currentSeries = null;
-    zigzagSeries = null;
-
-    // Petite pause asynchrone pour laisser le navigateur libérer la mémoire
-    await new Promise(resolve => setTimeout(resolve, 50));
-
-    console.log("Système entièrement réinitialisé. Prêt pour le nouveau symbole.");
   }
 
   // Table
