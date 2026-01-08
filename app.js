@@ -1616,12 +1616,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Petite fonction utilitaire pour mettre à jour le cache et le dessin
   function refreshZigZag() {
-    const results = calculateZigZag(priceDataZZ, 14);
+    const results = calculateZigZag(priceDataZZ, 7);
     zigzagCache = results.points;
     zigzagMarkers = results.markers;
 
     // Si le bouton est sur "ON", on affiche immédiatement
-    const btn = document.querySelector('.popup-body button');
+    const btn = document.querySelector('.controls button');
     if (btn && btn.classList.contains('active')) {
       zigzagSeries.setData(zigzagCache);
       zigzagSeries.setMarkers(zigzagMarkers);
