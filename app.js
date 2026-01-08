@@ -3200,7 +3200,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTable();
   initHistoricalTable();
   inihistoricalchart();
-
+   
   window.onload = () => {
     if (!currentSymbol) return;
     if (currentChartType !== "candlestick") return;
