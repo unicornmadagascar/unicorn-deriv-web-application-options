@@ -3203,7 +3203,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.onload = () => {
     if (!currentSymbol) return;
     if (currentChartType !== "candlestick") return;
-    //connectInit(currentSymbol, currentInterval, currentChartType);
+    //connectInit(currentSymbol, currentInterval, currentChartType);  
   };
 
   // Simulation : mise à jour toutes les 2 secondes
