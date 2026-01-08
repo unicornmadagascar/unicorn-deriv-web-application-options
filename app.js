@@ -3236,7 +3236,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.onload = () => {
     if (!currentSymbol) return;
-    if (currentChartType !== "candlestick") return;
+    if (currentChartType !== "candlestick") return;   
     connectInit(currentSymbol, currentInterval, currentChartType);  
   };
 
