@@ -407,14 +407,14 @@ document.addEventListener("DOMContentLoaded", () => {
       ws.send(JSON.stringify({ authorize: TOKEN }));
     };
 
-    ws.onmessage = ({ data }) => {
+    ws.onmessage = (msg) => {
       // --- FILTRE SESSION ---
       if (thisSessionId !== currentSessionId) {
         if (ws) ws.close();
         return;
       }
 
-      const msg = JSON.parse(data);
+      const data = JSON.parse(msg.data);
 
       // --- A. GESTION DE L'AUTORISATION ---
       // Note: On vérifie 'msg.msg_type' et non 'data.msg_type'
@@ -436,9 +436,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // --- B. AIGUILLAGE VERS LES TRAITEMENTS ---
       if (chartType === "candlestick") {
-        handleCandleData(msg);
+        handleCandleData(data);
       } else {
-        handleTickData(msg);
+        handleTickData(data);
       }
 
       // --- C. INDICATEURS & PING ---
