@@ -1637,7 +1637,7 @@ document.addEventListener("DOMContentLoaded", () => {
         zigzagSeries.setData(results.points);  
         zigzagSeries.setMarkers(results.markers);
       }
-    });
+    });   
   }
 
   function updateMAs() {
