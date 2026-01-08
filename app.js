@@ -3237,7 +3237,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.onload = () => {
     if (!currentSymbol) return;
     if (currentChartType !== "candlestick") return;
-    //connectInit(currentSymbol, currentInterval, currentChartType);  
+    connectInit(currentSymbol, currentInterval, currentChartType);  
   };
 
   // Simulation : mise à jour toutes les 2 secondes
@@ -3502,8 +3502,6 @@ document.addEventListener("DOMContentLoaded", () => {
   overlaygemini.addEventListener("click", (e) => {
     if (e.target === overlaygemini) closePopup();
   });
-
-
 
   // ================================
   // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
