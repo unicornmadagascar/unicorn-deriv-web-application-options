@@ -3177,7 +3177,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.onload = async () => {
     if (!currentSymbol) return;
-    if (currentChartType !== "candlestick") return;
+    if (currentChartType !== "candlestick") return;  
     await loadSymbol(currentSymbol, currentInterval, currentChartType);  
   };
 
