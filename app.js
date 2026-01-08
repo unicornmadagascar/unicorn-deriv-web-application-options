@@ -668,12 +668,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // tick handling  
-      if (data.msg_type === "tick" && data.tick) {
-        handleTick(data.tick);
-        return;
-      }
-
       if (data.ping && data.msg_type === "ping") {
         wspl.send(JSON.stringify({ ping: 1 }));
       }
@@ -701,58 +695,6 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("Socket Closed");
       }
     }, 500);
-  }
-
-  // --- TICK HANDLER ---
-  function handleTick(tick) {
-    // ensure tick belongs to current symbol (or accept if no currentSymbol)
-    if (!tick || !tick.symbol) return;
-    if (currentSymbol && tick.symbol !== currentSymbol) return;
-
-    const quote = safe(Number(tick.quote));
-    // Deriv epoch is seconds; lightweight-charts accepts number seconds
-    const epoch = Number(tick.epoch) || Math.floor(Date.now() / 1000);
-
-    // update lastPrices per symbol key (keep generic)
-    const prev = lastPrices[tick.symbol] ?? quote;
-    lastPrices[tick.symbol] = quote;
-
-    const change = quote - prev;
-    recentChanges.push(change);
-    if (recentChanges.length > 60) recentChanges.splice(0, 1);
-
-    // update chartData and series   
-    if (!currentSeries || !chart) return;
-
-    const point = { time: epoch, value: quote };
-
-    // if first data point, setData with small array to initialize
-    if (!chartData.length) {
-      chartData.push(point);
-      if (chartData.length > 600) chartData.splice(0, 1);
-      try {
-        currentSeries.setData(chartData);
-      } catch (e) {
-        // fallback: try update
-        try { currentSeries.update(point); } catch (err) { }
-      }
-    } else {
-      // append and update
-      chartData.push(point);
-      if (chartData.length > 600) chartData.shift();
-
-      // Prefer update (faster); fallback to setData if update throws
-      try {
-        currentSeries.update(point);
-      } catch (e) {
-        try { currentSeries.setData(chartData); } catch (err) { }
-      }
-    }
-
-    // try to auto-fit time scale (safe)
-    try { chart.timeScale().fitContent(); } catch (e) { }
-
-    Openpositionlines(currentSeries);
   }
 
   // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
