@@ -261,7 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
           subscribeSymbol(s.symbol, currentChartType);
         }
       });
-   
+      
       symbolList.appendChild(el);
     });
   }
