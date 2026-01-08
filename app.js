@@ -89,6 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let isWsConnected = false;
   let isWsInitialized = false;
   let currentSessionId = 0;
+  let isZigZagActive = false;
   // ================== x ==================
 
   let wsReady = false;
@@ -431,7 +432,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         ws.send(JSON.stringify(payload));
         return; // On attend le prochain message (les data)
-      }  
+      }
 
       // --- B. AIGUILLAGE VERS LES TRAITEMENTS ---
       if (chartType === "candlestick") {
@@ -462,8 +463,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function handleCandleData(msg) {
     if (!currentSeries) return;
 
-    // A. Historique complet
-    if (msg.msg_type === "candles" && Array.isArray(msg.candles)) {
+    if (msg.msg_type === "candles") {
       candles = msg.candles.map(c => ({
         time: Number(c.epoch),
         open: Number(c.open),
@@ -472,29 +472,31 @@ document.addEventListener("DOMContentLoaded", () => {
         close: Number(c.close),
       }));
       currentSeries.setData(candles);
+
+      // ALIMENTATION INITIALE DU ZIGZAG
+      priceDataZZ = candles.map(c => ({ time: c.time, value: c.close }));
+
       chart.timeScale().fitContent();
     }
 
-    // B. Mise à jour en temps réel (OHLC)
     if (msg.msg_type === "ohlc" && msg.ohlc) {
       const o = msg.ohlc;
-      const openTime = Number(o.open_time);
       const bar = {
-        time: openTime,
+        time: Number(o.open_time),
         open: Number(o.open),
         high: Number(o.high),
         low: Number(o.low),
         close: Number(o.close),
       };
 
-      if (candles.length > 0) {
-        const last = candles[candles.length - 1];
-        if (last.time !== openTime) {
-          candles.push(bar); // Nouvelle bougie
-        } else {
-          candles[candles.length - 1] = bar; // Mise à jour bougie actuelle
-        }
-        currentSeries.update(bar);
+      // ... logique de mise à jour de 'candles' ...
+
+      // MISE À JOUR DU ZIGZAG (On remplace ou ajoute le dernier point)
+      const lastZZ = { time: bar.time, value: bar.close };
+      if (priceDataZZ.length > 0 && priceDataZZ[priceDataZZ.length - 1].time === bar.time) {
+        priceDataZZ[priceDataZZ.length - 1] = lastZZ;
+      } else {
+        priceDataZZ.push(lastZZ);
       }
     }
   }
@@ -502,30 +504,30 @@ document.addEventListener("DOMContentLoaded", () => {
   function handleTickData(msg) {
     if (!currentSeries) return;
 
-    // A. Historique des prix (Area/Line)
-    if (msg.msg_type === "history" && msg.history) {
-      const h = msg.history;
-      priceData = h.times.map((t, i) => ({
+    if (msg.msg_type === "history") {
+      priceData = msg.history.times.map((t, i) => ({
         time: Number(t),
-        value: Number(h.prices[i])
+        value: Number(msg.history.prices[i])
       }));
       currentSeries.setData(priceData);
+
+      // ALIMENTATION DU ZIGZAG
+      priceDataZZ = [...priceData];
+      chart.timeScale().fitContent();
     }
 
-    // B. Nouveau Tick en temps réel
     if (msg.msg_type === "tick" && msg.tick) {
-      const t = msg.tick;
-      const newTick = {
-        time: Number(t.epoch),
-        value: Number(t.quote)
+      const tick = {
+        time: Number(msg.tick.epoch),
+        value: Number(msg.tick.quote)
       };
 
-      priceData.push(newTick);
-      currentSeries.update(newTick);
-    }
+      priceData.push(tick);
+      currentSeries.update(tick);
 
-    // try to auto-fit time scale (safe)
-    try { chart.timeScale().fitContent(); } catch (e) { }
+      // MISE À JOUR DU ZIGZAG
+      priceDataZZ.push(tick);
+    }
   }
 
   function connectInit(symbol, currentInterval, currentChartType) {
@@ -1497,44 +1499,42 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // --- COMMANDE BOUTON ---   
+  // Déclarez cette variable en haut de votre fichier
   window.toggleZigZag = function (btn) {
+    if (!chart) return; // Sécurité si le graphique n'est pas encore créé
 
-    // 2. RÉ-INITIALISATION : Si on change de symbole, zigzagSeries devient invalide.
-    // On la recrée si elle est absente ou si le graphique a été réinitialisé.
-    if (!zigzagSeries || zigzagSeries == null) {
-      zigzagSeries = chart.addLineSeries({
-        color: '#f39c12',
-        lineWidth: 2,
-        priceLineVisible: false,
-      });
-    }
+    // 1. Basculer l'état global
+    isZigZagActive = btn.classList.toggle("active");
 
-    const active = btn.classList.toggle("active");
-
-    if (active) {
+    if (isZigZagActive) {
       btn.innerText = "ZigZag 14 : ON";
 
-      // Lancer la connexion si nécessaire
-      if (!isWsInitialized) {
-        startDerivConnectionZZ();
-        isWsInitialized = true;
+      // 2. Création de la série si inexistante
+      if (!zigzagSeries) {
+        zigzagSeries = chart.addLineSeries({
+          color: '#f39c12',
+          lineWidth: 2,
+          priceLineVisible: false,
+          crosshairMarkerVisible: false, // Évite les points parasites
+        });
       }
 
-      // 3. Recalculer les points avec les données actuelles du nouveau symbole
+      // 3. Demander le rafraîchissement
+      // On n'appelle plus startDerivConnectionZZ() car loadSymbol s'en occupe
+      isWsInitialized = true;
       refreshZigZag();
-
-      // 4. Appliquer les données (Vérification de sécurité sur le cache)
-      if (zigzagCache && zigzagCache.length > 0) {
-        zigzagSeries.setData(zigzagCache);
-        zigzagSeries.setMarkers(zigzagMarkers);
-      }
 
     } else {
       btn.innerText = "ZigZag 14 : OFF";
-      // On vérifie toujours l'existence avant d'agir
+      isWsInitialized = false;
+
+      // 4. Nettoyage visuel immédiat
       if (zigzagSeries) {
         zigzagSeries.setData([]);
         zigzagSeries.setMarkers([]);
+        // Optionnel : supprimer la série pour libérer de la mémoire
+        // chart.removeSeries(zigzagSeries);
+        // zigzagSeries = null;
       }
     }
   };
@@ -1619,15 +1619,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Petite fonction utilitaire pour mettre à jour le cache et le dessin
   function refreshZigZag() {
+    // 1. SÉCURITÉ : On arrête tout si le système est en reset ou la série absente
+    if (!isZigZagActive || !isWsInitialized || !zigzagSeries || !priceDataZZ || priceDataZZ.length < 2) {
+      return;
+    }
+
+    // 2. CALCUL : On isole le calcul (Lourd) du rendu (Visuel)
     const results = calculateZigZag(priceDataZZ, 7);
+
+    // Si pas de points calculés, on ne touche pas au graphique
+    if (!results || !results.points || results.points.length === 0) return;
+
+    // Mise à jour des caches globaux
     zigzagCache = results.points;
     zigzagMarkers = results.markers;
 
-    // Si le bouton est sur "ON", on affiche immédiatement
-    const btn = document.querySelector('.controls button');
-    if (btn && btn.classList.contains('active')) {
-      zigzagSeries.setData(zigzagCache);
-      zigzagSeries.setMarkers(zigzagMarkers);
+    // 3. RENDU : On utilise une variable d'état plutôt que de lire le bouton (plus rapide)
+    // On suppose que isZigZagActive est mis à jour quand vous cliquez sur le bouton
+    if (isZigZagActive) {
+      // Utilisation de requestAnimationFrame pour synchroniser avec l'écran
+      requestAnimationFrame(() => {
+        // Vérification finale : est-on toujours sur la même session ?
+        if (zigzagSeries && isWsInitialized) {
+          zigzagSeries.setData(zigzagCache);
+          zigzagSeries.setMarkers(zigzagMarkers);
+        }
+      });
     }
   }
 
@@ -1760,6 +1777,8 @@ document.addEventListener("DOMContentLoaded", () => {
     currentSessionId++;
 
     console.log("Nettoyage de la session en cours...");
+
+    priceDataZZ = []; // Indispensable pour éviter le clignotement au changement de symbole
 
     // 2. Fermeture propre et sécurisée de tous les WebSockets
     const sockets = [ws, wspl, maws, wszz];
@@ -3200,7 +3219,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTable();
   initHistoricalTable();
   inihistoricalchart();
-   
+
   window.onload = () => {
     if (!currentSymbol) return;
     if (currentChartType !== "candlestick") return;
@@ -3399,8 +3418,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // 1. Quand on ouvre la fenêtre, on initialise le WS + authorize
   // -------------------------------------------------------------
   openCashierBtn.addEventListener("click", () => {
-     cashierModal.classList.add("active");
-     connectDeriv__();
+    cashierModal.classList.add("active");
+    connectDeriv__();
   });
 
   closePopupBtn.onclick = () => {
