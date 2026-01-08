@@ -686,10 +686,10 @@ document.addEventListener("DOMContentLoaded", () => {
               currentSymbol = pendingSubscribe;
               pendingSubscribe = null;
             }
-          }, 300);
+          }, 300); 
         }
 
-        //isplaySymbols(currentInterval, currentChartType);
+        //displaySymbols(currentInterval, currentChartType);
         return;
       }
 
