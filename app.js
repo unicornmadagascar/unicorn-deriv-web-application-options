@@ -342,7 +342,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chartData = [];
     recentChanges = [];
     lastPrices = {};
-  }
+  }  
 
   function styleType(currentChartType) {
     if (!currentChartType || currentChartType === null) return;
