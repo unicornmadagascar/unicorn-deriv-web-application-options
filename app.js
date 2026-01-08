@@ -3229,7 +3229,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // startup
   initDerivAccountManager();
   displaySymbols(currentInterval, currentChartType);
-  loadSymbol(currentSymbol, currentInterval, currentChartType);
   initChart(currentChartType);
   initTable();
   initHistoricalTable();
