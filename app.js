@@ -1754,7 +1754,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function resetZZChartVariable() {
 
-    if (chart) { chart.remove(); chart = null; }  
+    initChart(currentChartType);  
 
     // --- 1. FERMETURE SÉCURISÉE DES WEBSOCKETS ---
     // On vérifie d'abord si l'objet existe avant d'accéder à ses propriétés  
@@ -1792,8 +1792,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
     if (currentSeries) {
       currentSeries.setData([]); 
-      currentSeries = null;
-      initChart(currentChartType);  
+      currentSeries = null; 
     }
 
     // --- 4. NETTOYAGE DES SÉRIES ET DES DONNÉES ---  
@@ -3191,7 +3190,6 @@ document.addEventListener("DOMContentLoaded", () => {
   window.onload = () => {
     if (!currentSymbol) return;
     if (currentChartType !== "candlestick") return;
-    resetZZChartVariable();
     connectInit(currentSymbol, currentInterval, currentChartType);
   };
 
