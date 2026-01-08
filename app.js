@@ -1631,7 +1631,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!isZigZagActive || !isWsInitialized || !zigzagSeries || priceDataZZ.length < 2) return;
 
     const results = calculateZigZag(priceDataZZ, 7);
-
+    
     requestAnimationFrame(() => {
       if (isZigZagActive && zigzagSeries && isWsInitialized) {
         zigzagSeries.setData(results.points);  
