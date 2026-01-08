@@ -527,7 +527,7 @@ document.addEventListener("DOMContentLoaded", () => {
     requestAnimationFrame(() => {
       // Rendu ZigZag
       if (isZigZagActive && typeof refreshZigZag === "function") {
-        refreshZigZag();
+        refreshZigZag();  
       }
 
       // Rendu MA (si activé)
