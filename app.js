@@ -440,12 +440,12 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         //handleTickData(data);
       }
-      
+
       const testTime = Math.floor(Date.now() / 1000);
 
       if (chartType === "candlestick") {
         currentSeries.setData([{ time: testTime, open: 10, high: 15, low: 5, close: 12 }]);
-      } else {
+      } else {   
         currentSeries.setData([{ time: testTime, value: 10 }]);
       }
 
