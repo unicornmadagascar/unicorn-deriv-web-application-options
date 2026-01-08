@@ -305,8 +305,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    resetZZChartVariable();
-
     chartData = [];
     recentChanges = [];
     lastPrices = {};
@@ -1754,28 +1752,30 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  function resetZZChartVariable() {
+  async function resetZZChartVariable() {
+
+    if (chart) { chart.remove(); chart = null; }
 
     // --- 1. FERMETURE SÉCURISÉE DES WEBSOCKETS ---
     // On vérifie d'abord si l'objet existe avant d'accéder à ses propriétés  
     if (maws) {
       try { 
-          maws.send(JSON.stringify({ forget_all: "candles" }));
-          maws.close(); 
+          await maws.send(JSON.stringify({ forget_all: "candles" }));
+          await maws.close(); 
           maws = null;
       } catch (e) { } 
     }
     if (wszz) {
       try {    
-          wszz.send(JSON.stringify({ forget_all: "candles" }));
-          wszz.close(); 
+          await wszz.send(JSON.stringify({ forget_all: "candles" }));
+          await wszz.close(); 
           wszz = null;
       } catch (e) { }
     }
     if (ws) {
       try { 
-          ws.send(JSON.stringify({ forget_all: ["candles","ticks"] }));
-          ws.close(); 
+          await ws.send(JSON.stringify({ forget_all: ["candles","ticks"] }));
+          await ws.close(); 
           ws = null;
       } catch (e) { }  
     }
