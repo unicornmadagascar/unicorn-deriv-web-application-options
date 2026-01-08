@@ -424,11 +424,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (chartType === "candlestick") {
           payload = {
             ticks_history: symbol,
-            adjust_start_time: 1,
-            subscribe: 1,
+            adjust_start_time: 1,           
             end: "latest",
             granularity: convertTF(currentInterval),
-            style: "candles" // "styleType(currentChartType)" peut être risqué ici, "candles" est plus sûr pour candlesticks
+            style: "candles", 
+            subscribe: 1
           };
         } else {
           payload = {
@@ -3406,9 +3406,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // -------------------------------------------------------------
   // 1. Quand on ouvre la fenêtre, on initialise le WS + authorize
   // -------------------------------------------------------------
-  openCashierBtn.addEventListener("click", async () => {
-    cashierModal.classList.add("active");
-    connectDeriv__();
+  openCashierBtn.addEventListener("click", () => {
+     cashierModal.classList.add("active");
+     connectDeriv__();
   });
 
   closePopupBtn.onclick = () => {
