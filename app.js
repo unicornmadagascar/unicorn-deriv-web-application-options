@@ -3230,9 +3230,9 @@ document.addEventListener("DOMContentLoaded", () => {
   initDerivAccountManager();
   displaySymbols(currentInterval, currentChartType);
   initChart(currentChartType);
-  initTable();
+  initTable();     
   initHistoricalTable();
-  inihistoricalchart();
+  inihistoricalchart();   
 
   window.onload = () => {
     if (!currentSymbol) return;
