@@ -332,7 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }  
 
-    if (activePeriods.length > 0) {  
+    if (activePeriods.length > 0) {    
         initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200
     }
 
