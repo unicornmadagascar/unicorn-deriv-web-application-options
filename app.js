@@ -669,7 +669,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (data.ping && data.msg_type === "ping") {
-        wspl.send(JSON.stringify({ ping: 1 }));
+        wspl.send(JSON.stringify({ ping: 1 }));  
       }
     };
 
