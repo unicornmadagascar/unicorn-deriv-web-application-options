@@ -377,7 +377,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentChartType !== "candlestick") return;
 
     currentSymbol = symbol;
-    resetZZChartVariable();
+    resetZZChartVariable();  
     console.log("Connexion...");
 
     ws = new WebSocket(WS_URL);
