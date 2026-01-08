@@ -446,7 +446,7 @@ document.addEventListener("DOMContentLoaded", () => {
         refreshZigZag();
       }
 
-      if (data.msg_type === "ping") {
+      if (data.msg_type === "ping") {  
         ws.send(JSON.stringify({ ping: 1 }));
       }
     };
