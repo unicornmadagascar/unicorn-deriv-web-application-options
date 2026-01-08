@@ -1548,8 +1548,8 @@ document.addEventListener("DOMContentLoaded", () => {
         zigzagSeries.setData([]);
         zigzagSeries.setMarkers([]);
         // Optionnel : supprimer la série pour libérer de la mémoire
-        // chart.removeSeries(zigzagSeries);
-        // zigzagSeries = null;
+        chart.removeSeries(zigzagSeries);
+        zigzagSeries = null;
       }
     }
   };
