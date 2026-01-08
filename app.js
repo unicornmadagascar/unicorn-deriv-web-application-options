@@ -256,7 +256,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // appel de la fonction connect/subscribe selon le type de chart
         if (currentChartType === "candlestick") {
-          resetZZChartVariable(); 
           connect(s.symbol, currentInterval, currentChartType);
         } else {
           subscribeSymbol(s.symbol, currentChartType);
