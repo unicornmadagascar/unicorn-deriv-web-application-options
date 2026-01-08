@@ -85,9 +85,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let zigzagSeries = null;
   let priceDataZZ = [];
   let zigzagCache = [];
-  let zigzagMarkers = [];    
-  let isWsConnected = false;  
-  let isWsInitialized = false;  
+  let zigzagMarkers = [];
+  let isWsConnected = false;
+  let isWsInitialized = false;
+  let currentSessionId = 0;
   // ================== x ==================
 
   let wsReady = false;
@@ -243,25 +244,26 @@ document.addEventListener("DOMContentLoaded", () => {
       el.textContent = s.name;
       el.dataset.symbol = s.symbol;
 
-      el.addEventListener("click", () => {
+      // On rend l'écouteur d'événement asynchrone pour gérer le reset
+      el.addEventListener("click", async () => {
 
-        // retire la sélection sur tous les symboles
+        // 1. Gestion visuelle de la sélection
         document.querySelectorAll("#symbolList .symbol-item")
           .forEach(item => item.classList.remove("selected"));
-
-        // ajoute la sélection
         el.classList.add("selected");
 
         if (!s.symbol) return;
 
-        // appel de la fonction connect/subscribe selon le type de chart
-        if (currentChartType === "candlestick") {
-          connect(s.symbol, currentInterval, currentChartType);
-        } else {
-          subscribeSymbol(s.symbol, currentChartType);
+        // 2. Appel de la fonction unifiée (remplace connect et subscribeSymbol)
+        // loadSymbol gère en interne le await resetZZChartVariable()
+        try {
+          await loadSymbol(s.symbol, currentInterval, currentChartType);
+          console.log(`Changement vers ${s.name} réussi.`);
+        } catch (error) {
+          console.error("Erreur lors du basculement de symbole:", error);
         }
       });
-      
+
       symbolList.appendChild(el);
     });
   }
@@ -368,77 +370,167 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  function connect(symbol, currentInterval, currentChartType) {
+  async function loadSymbol(symbol, interval, chartType) {
+    // 1. Incrémenter la session pour invalider tout flux précédent
+    currentSessionId++;
+    const thisSessionId = currentSessionId;
 
-    if (ws) { ws.close(); ws = null; }
+    if (!symbol) return;
 
-    if (!symbol) return;  
-
-    if (currentChartType !== "candlestick") return;
+    // 2. Nettoyage complet (Sockets, Chart, Données, UI)
+    // On attend que tout soit effacé proprement
+    await resetZZChartVariable();
 
     currentSymbol = symbol;
-    initChart(currentChartType);  
-    console.log("Connexion...");
+    currentInterval = interval;
+    currentChartType = chartType;
 
+    // 3. Créer le nouveau graphique vierge
+    initChart(chartType);
+
+    console.log(`Chargement : ${symbol} | Style : ${chartType} | Session : ${thisSessionId}`);
+
+    // 4. Initialisation de la connexion WebSocket
     ws = new WebSocket(WS_URL);
 
     ws.onopen = () => {
-      console.log("Connecté");
-      ws.send(JSON.stringify(Payloadforsubscription(currentSymbol, currentInterval, currentChartType)));
+      // Sécurité : vérifier si on est toujours sur la bonne session
+      if (thisSessionId !== currentSessionId) return;
+
+      console.log("Connexion établie.");
+      ws.send(JSON.stringify({ authorize: TOKEN }));
     };
 
-    ws.onmessage = ({ data }) => {  
+    ws.onmessage = ({ data }) => {
+      // --- FILTRE ANTI-CLIGNOTEMENT ---
+      if (thisSessionId !== currentSessionId) {
+        if (ws) ws.close();
+        return;
+      }
+
       const msg = JSON.parse(data);
-      if (msg.msg_type === "candles" && Array.isArray(msg.candles)) {
-        candles = msg.candles.map(c => ({
-          time: Number(c.epoch),  
-          open: Number(c.open),
-          high: Number(c.high),
-          low: Number(c.low),
-          close: Number(c.close),
-        }));
-        currentSeries.setData(candles);
-        chart.timeScale().fitContent();
-      }
 
-      if (msg.msg_type === "ohlc" && msg.ohlc) {
-        const o = msg.ohlc;
-        const openTime = Number(o.open_time);  // time of the current candle
-        const bar = {
-          time: openTime,
-          open: Number(o.open),
-          high: Number(o.high),
-          low: Number(o.low),
-          close: Number(o.close),
-        };
-
-        if (!bar || candles === null || candles === undefined) return;
-
-        const last = candles[candles.length - 1];
-
-        if (!last || last.time !== openTime) {
-          // Nouvelle bougie
-          candles.push(bar);
-          currentSeries.update(bar);
+      if (data.msg_type === "authorize" && data.authorize) {
+        // Préparation du message selon le type de graphique
+        let payload;
+        if (chartType === "candlestick") {
+          payload = {
+            ticks_history: symbol,
+            adjust_start_time: 1,
+            subscribe: 1,
+            end: "latest",
+            granularity: convertTF(currentInterval), // Assurez-vous de convertir votre intervalle en secondes
+            style: styleType(currentChartType)
+          };
         } else {
-          // Mise à jour de la dernière bougie
-          candles[candles.length - 1] = bar;
-          currentSeries.update(bar);
+          payload = {
+            ticks: symbol,
+            subscribe: 1
+          };
         }
+
+        ws.send(JSON.stringify(payload));
       }
 
-      if (data.ping && data.msg_type === "ping") {
+      // AILLUAGE VERS LES FONCTIONS DE TRAITEMENT
+      if (chartType === "candlestick") {
+        handleCandleData(msg); // Utilise la fonction OHLC
+      } else {
+        handleTickData(msg);   // Utilise la fonction Ticks
+      }
+
+      // --- MISE À JOUR INDICATEURS (ZIGZAG) ---
+      // Si le bouton ZigZag est actif (isWsInitialized), on recalcule
+      if (isWsInitialized && typeof refreshZigZag === "function") {
+        refreshZigZag();
+      }
+
+      // Gestion du Ping
+      if (msg.msg_type === "ping") {
         ws.send(JSON.stringify({ ping: 1 }));
       }
 
       Openpositionlines(currentSeries);
     };
 
-    ws.onclose = () => console.log("Déconnecté");
-    ws.onerror = (e) => {
-      console.error("WS Error:", e);
-      console.log("Erreur WebSocket");
+    ws.onclose = () => {
+      if (thisSessionId === currentSessionId) {
+        console.log("Session terminée.");
+      }
     };
+
+    ws.onerror = (err) => {
+      if (thisSessionId === currentSessionId) {
+        console.error("Erreur WebSocket:", err);
+      }
+    };
+  }
+
+  function handleCandleData(msg) {
+    if (!currentSeries) return;
+
+    // A. Historique complet
+    if (msg.msg_type === "candles" && Array.isArray(msg.candles)) {
+      candles = msg.candles.map(c => ({
+        time: Number(c.epoch),
+        open: Number(c.open),
+        high: Number(c.high),
+        low: Number(c.low),
+        close: Number(c.close),
+      }));
+      currentSeries.setData(candles);
+      chart.timeScale().fitContent();
+    }
+
+    // B. Mise à jour en temps réel (OHLC)
+    if (msg.msg_type === "ohlc" && msg.ohlc) {
+      const o = msg.ohlc;
+      const openTime = Number(o.open_time);
+      const bar = {
+        time: openTime,
+        open: Number(o.open),
+        high: Number(o.high),
+        low: Number(o.low),
+        close: Number(o.close),
+      };
+
+      if (candles.length > 0) {
+        const last = candles[candles.length - 1];
+        if (last.time !== openTime) {
+          candles.push(bar); // Nouvelle bougie
+        } else {
+          candles[candles.length - 1] = bar; // Mise à jour bougie actuelle
+        }
+        currentSeries.update(bar);
+      }
+    }
+  }
+
+  function handleTickData(msg) {
+    if (!currentSeries) return;
+
+    // A. Historique des prix (Area/Line)
+    if (msg.msg_type === "history" && msg.history) {
+      const h = msg.history;
+      priceData = h.times.map((t, i) => ({
+        time: Number(t),
+        value: Number(h.prices[i])
+      }));
+      currentSeries.setData(priceData);
+      chart.timeScale().fitContent();
+    }
+
+    // B. Nouveau Tick en temps réel
+    if (msg.msg_type === "tick" && msg.tick) {
+      const t = msg.tick;
+      const newTick = {
+        time: Number(t.epoch),
+        value: Number(t.quote)
+      };
+
+      priceData.push(newTick);
+      currentSeries.update(newTick);
+    }
   }
 
   function connectInit(symbol, currentInterval, currentChartType) {
@@ -485,7 +577,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!bars.length) return;
 
         // première fois : setData pour l'historique
-        if (cache.length === 0) {  
+        if (cache.length === 0) {
           cache = bars;
           currentSeries.setData(cache);
           chart.timeScale().fitContent();
@@ -520,31 +612,6 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("WS Error:", e);
       console.log("Erreur WebSocket");
     };
-  }
-
-  // --- SUBSCRIBE SYMBOL ---
-  function subscribeSymbol(symbol, currentChartType) {
-    if (wspl === null) {
-      pendingSubscribe = symbol;
-      return;
-    }
-
-    if (currentChartType === "candlestick") return;
-
-    currentSymbol = symbol;
-    initChart(currentChartType);
-
-    if (!wspl || wspl.readyState === WebSocket.CLOSED) {
-      pendingSubscribe = symbol;
-      connectDeriv();
-    }
-
-    if (wspl && wspl.readyState === WebSocket.OPEN && authorized) {
-
-      wspl.send(JSON.stringify({ forget_all: "ticks" }));
-      wspl.send(JSON.stringify({ ticks: currentSymbol, subscribe: 1 }));
-
-    }
   }
 
   // --- CONNECT DERIV ---
@@ -678,7 +745,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         currentSeries.update(point);
       } catch (e) {
-        try { currentSeries.setData(chartData); } catch (err) { }  
+        try { currentSeries.setData(chartData); } catch (err) { }
       }
     }
 
@@ -1563,7 +1630,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data[i].low > data[i - j].low || data[i].low > data[i + j].low) isLow = false;
       }
 
-      if (isHigh) {  
+      if (isHigh) {
         if (lastType === 'H') {
           if (data[i].high > points[points.length - 1].value) {
             points[points.length - 1] = { time: data[i].time, value: data[i].high };
@@ -1752,61 +1819,73 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function resetZZChartVariable() {
-    // --- 1. FERMETURE SÉCURISÉE DES WEBSOCKETS ---
-    // On vérifie d'abord si l'objet existe avant d'accéder à ses propriétés  
-    if (maws) {
-      try { 
-          await maws.send(JSON.stringify({ forget_all: "candles" }));
-          await maws.close(); 
-          maws = null;
-      } catch (e) { } 
+    // 1. Invalider immédiatement la session actuelle pour stopper les calculs en cours
+    currentSessionId++;
+
+    console.log("Nettoyage de la session en cours...");
+
+    // 2. Fermeture propre et sécurisée de tous les WebSockets
+    const sockets = [ws, wspl, maws, wszz];
+
+    for (let socket of sockets) {
+      if (socket) {
+        try {
+          // On retire les écouteurs pour éviter que le onclose ne déclenche des erreurs
+          socket.onmessage = null;
+          socket.onclose = null;
+          socket.onerror = null;
+
+          if (socket.readyState === WebSocket.OPEN) {
+            // Optionnel : informer le serveur avant de couper
+            socket.send(JSON.stringify({ forget_all: ["candles", "ticks"] }));
+            socket.close();
+          }
+        } catch (e) {
+          console.warn("Erreur lors de la fermeture d'un socket:", e);
+        }
+      }
     }
-    if (wszz) {
-      try {    
-          await wszz.send(JSON.stringify({ forget_all: "candles" }));
-          await wszz.close(); 
-          wszz = null;
-      } catch (e) { }
-    }
-    if (ws) {
-      try { 
-          await ws.send(JSON.stringify({ forget_all: ["candles","ticks"] }));
-          await ws.close(); 
-          ws = null;
-      } catch (e) { }  
-    }
-  
-    // --- 2. RÉINITIALISATION DES ÉTATS ---
+
+    // Reset des références de sockets
+    ws = wspl = maws = wszz = null;
+
+    // 3. Réinitialisation des états logiques
     isWsInitialized = false;
 
-    // --- 3. MISE À JOUR DE L'INTERFACE (UI) ---  
-    const btn = document.querySelector('button[onclick*="toggleZigZag"]');  
+    // 4. Nettoyage de l'Interface Utilisateur (Bouton)
+    const btn = document.querySelector('button[onclick*="toggleZigZag"]');
     if (btn) {
       btn.classList.remove("active");
       btn.innerText = "ZigZag 14 : OFF";
-    }  
-  
-    if (currentSeries) {
-      currentSeries.setData([]);       
     }
 
-    // --- 4. NETTOYAGE DES SÉRIES ET DES DONNÉES ---  
-    if (zigzagSeries) {
-      zigzagSeries.setData([]);
-      zigzagSeries.setMarkers([]);  
-      zigzagSeries = null; // On libère la série pour la recréer sur le prochain chart
+    // 5. Destruction physique du graphique (Crucial contre le clignotement)
+    if (chart) {
+      try {
+        chart.remove();
+        chart = null;
+      } catch (e) {
+        console.error("Erreur lors de la suppression du graphique:", e);
+      }
     }
 
-    // On vide les données systématiquement (même si zigzagSeries était déjà null)  
-    priceDataZZ = [];
-    zigzagCache = [];  
-    zigzagMarkers = [];
+    // 6. Vidage complet de tous les tableaux de données et caches
     candles = [];
-    cache = [];
+    priceData = [];
+    priceDataZZ = [];
+    zigzagCache = [];
+    zigzagMarkers = [];
 
-    console.log("Système ZigZag réinitialisé avec succès.");
+    // Reset des séries pour forcer leur recréation au prochain loadSymbol
+    currentSeries = null;
+    zigzagSeries = null;
+
+    // Petite pause asynchrone pour laisser le navigateur libérer la mémoire
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    console.log("Système entièrement réinitialisé. Prêt pour le nouveau symbole.");
   }
-  
+
   // Table
   function initTable() {
     // Construction du tableau HTML
@@ -3314,31 +3393,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // === Changement du type de graphique ===
   document.querySelectorAll(".chart-type-btn").forEach(btn => {
-    btn.addEventListener("click", e => {
+    btn.addEventListener("click", async (e) => {
       currentChartType = e.target.dataset.type.trim();
       console.log("Current Chart Type : " + currentChartType);
       if (!currentSymbol) return;
-      if (currentChartType === "candlestick") {
-        wspl.send(JSON.stringify({ forget_all: ["candles", "ticks"] })); // oublie l'ancien symbole
-        connect(currentSymbol, currentInterval, currentChartType);
-      } else {
-        ws.send(JSON.stringify({ forget_all: ["candles", "ticks"] })); // oublie l'ancien symbole
-        subscribeSymbol(currentSymbol, currentChartType);
-      }
+      ws.send(JSON.stringify({ forget_all: ["candles", "ticks"] })); // oublie l'ancien symbole
+      await loadSymbol(currentSymbol, currentInterval, currentChartType);
+  
     });
   });
 
   // === Changement d’intervalle ===
   document.querySelectorAll(".interval-btn").forEach(btn => {
-    btn.addEventListener("click", e => {
+    btn.addEventListener("click", async (e) => {
       // Récupère le texte du bouton (ex: "1 minute")
       currentInterval = e.target.textContent.trim();
       if (!currentSymbol) return;
-      if (currentChartType === "candlestick") {
-        connect(currentSymbol, currentInterval, currentChartType);
-      } else {
-        subscribeSymbol(currentSymbol, currentChartType);
-      }
+      await loadSymbol(currentSymbol, currentInterval, currentChartType);
       console.log("⏱️ Current Interval:", currentInterval);
 
       // Supprime la classe active sur tous les boutons
@@ -3350,14 +3421,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // === Changement de symbole  ===
   document.querySelectorAll(".symbol-item").forEach(btn => {
-    btn.addEventListener("click", e => {
+    btn.addEventListener("click", async (e) => {
       currentSymbol = e.target.dataset.symbol.trim();
       if (!currentSymbol) return;
-      if (currentChartType === "candlestick") {
-        connect(currentSymbol, currentInterval, currentChartType);
-      } else {
-        subscribeSymbol(currentSymbol, currentChartType);
-      }
+      await loadSymbol(currentSymbol, currentInterval, currentChartType);
       console.log("Current Symbol:", currentSymbol);
     });
   });
