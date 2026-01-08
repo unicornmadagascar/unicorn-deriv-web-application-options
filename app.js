@@ -418,7 +418,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // --- A. GESTION DE L'AUTORISATION ---
       // Note: On vérifie 'msg.msg_type' et non 'data.msg_type'
-      if (msg.msg_type === "authorize") {
+      if (data.msg_type === "authorize") {
         console.log("Autorisé avec succès. Souscription en cours...");
 
         let payload;
@@ -446,7 +446,7 @@ document.addEventListener("DOMContentLoaded", () => {
         refreshZigZag();
       }
 
-      if (msg.msg_type === "ping") {
+      if (data.msg_type === "ping") {
         ws.send(JSON.stringify({ ping: 1 }));
       }
     };
