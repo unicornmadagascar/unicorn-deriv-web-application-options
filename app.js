@@ -1804,7 +1804,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // On vide les données systématiquement (même si zigzagSeries était déjà null)  
     priceDataZZ = [];
-    zigzagCache = [];
+    zigzagCache = [];  
     zigzagMarkers = [];
     candles = [];
     cache = [];
