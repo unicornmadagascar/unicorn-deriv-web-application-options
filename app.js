@@ -323,26 +323,26 @@ document.addEventListener("DOMContentLoaded", () => {
     // 5. AUTO-RÉACTIVATION DES INDICATEURS
     // Si l'utilisateur avait déjà activé le ZigZag ou les MA sur le symbole précédent,
     // on recrée les séries immédiatement pour le nouveau symbole.
-    
-    if (isZigZagActive) {
-        zigzagSeries = chart.addLineSeries({
-            color: '#f39c12',
-            lineWidth: 2,
-            priceLineVisible: false,
-        });
-    }  
 
-    if (activePeriods.length > 0) {     
-        initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200  
-    }  
+    if (isZigZagActive) {
+      zigzagSeries = chart.addLineSeries({
+        color: '#f39c12',
+        lineWidth: 2,
+        priceLineVisible: false,
+      });
+    }
+
+    if (activePeriods.length > 0) {
+      initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200  
+    }
 
     // --- NETTOYAGE CRUCIAL DES DONNÉES ---
     candles = [];       // Pour handleCandleData
     priceData = [];     // Pour handleTickData
     chartData = [];
-    recentChanges = [];    
+    recentChanges = [];
     lastPrices = {};
-  }  
+  }
 
   function styleType(currentChartType) {
     if (!currentChartType || currentChartType === null) return;
@@ -442,16 +442,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 1. Autorisation -> Envoi du Payload
       if (msg.msg_type === "authorize") {
-        const payload = (chartType === "candlestick") ? {
+        const payload = {
           ticks_history: symbol,
           subscribe: 1,
           end: "latest",
           count: 1000,
           granularity: convertTF(interval),
-          style: "candles"
-        } : {
-          ticks: symbol,
-          subscribe: 1
+          style: chartType === "candlestick" ? "candles" : "ticks"
         };
         ws.send(JSON.stringify(payload));
         return;
@@ -529,111 +526,50 @@ document.addEventListener("DOMContentLoaded", () => {
   function handleTickData(msg) {
     if (!currentSeries) return;
 
-    if (msg.msg_type === "history") {
-      priceData = msg.history.times.map((t, i) => ({
+    // A. RÉCEPTION DE L'HISTORIQUE (Les 1000 premiers points)
+    if (msg.msg_type === "history" && msg.history) {
+      const h = msg.history;
+      priceData = h.times.map((t, i) => ({
         time: Number(t),
-        value: Number(msg.history.prices[i])
+        value: Number(h.prices[i])
       }));
-      currentSeries.setData(priceData);
 
-      // ALIMENTATION DU ZIGZAG
-      priceDataZZ = [...priceData];
+      currentSeries.setData(priceData);
       chart.timeScale().fitContent();
+
+      // Synchronisation pour les indicateurs (MA/ZigZag)
+      priceDataZZ = priceData.map(p => ({ time: p.time, close: p.value }));
+      isWsInitialized = true;
     }
 
+    // B. RÉCEPTION DU TICK EN DIRECT (Un par un)
     if (msg.msg_type === "tick" && msg.tick) {
-      const tick = {
-        time: Number(msg.tick.epoch),
-        value: Number(msg.tick.quote)
+      const t = msg.tick;
+      const newTick = {
+        time: Number(t.epoch),
+        value: Number(t.quote)
       };
 
-      priceData.push(tick);
-      currentSeries.update(tick);
-
-      // MISE À JOUR DU ZIGZAG
-      priceDataZZ.push(tick);
-    }
-  }
-
-  function connectInit(symbol, currentInterval, currentChartType) {
-
-    if (!symbol) return;
-
-    if (currentChartType !== "candlestick") return;
-
-    currentSymbol = symbol;
-    initChart(currentChartType);
-    console.log("Connexion...");
-
-    if (ws === null) {
-      ws = new WebSocket(WS_URL);
-      ws.onopen = () => { ws.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
-    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-      ws.onopen = () => { ws.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
-    if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING)) {
-      ws = new WebSocket(WS_URL);
-      ws.onopen = () => { ws.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
-    ws.onclose = () => { setTimeout(connectInit, 500); };
-
-    ws.onmessage = ({ data }) => {
-      let msg = {};
-      try { msg = JSON.parse(data); } catch (e) { return; }
-
-      if (msg.msg_type === "authorize" && msg.authorize) {
-        console.log("Connecté");
-        ws.send(JSON.stringify(Payloadforsubscription(currentSymbol, currentInterval, currentChartType)));
+      // --- LOGIQUE DE LIMITATION À 1000 ---
+      if (priceData.length >= 1000) {
+        priceData.shift(); // Enlève le plus vieux tick (le premier)
+        // Note: Lightweight Charts gère très bien les updates, 
+        // mais si vous voulez supprimer visuellement le défilement 
+        // sur une série Area, setData est parfois nécessaire.
+        // Cependant, .update() suffit généralement pour la fluidité.
       }
 
-      // Historique initial ou mise à jour live   
-      if (msg.msg_type === "candles" && msg.candles) {
-        const bars = Array.isArray(msg.candles)
-          ? msg.candles.map(normalize).filter(Boolean)
-          : [normalize(msg.candles)].filter(Boolean);
+      priceData.push(newTick);
+      currentSeries.update(newTick);
 
-        if (!bars.length) return;
+      // Mise à jour pour les indicateurs
+      const barFormat = { time: newTick.time, close: newTick.value };
+      if (priceDataZZ.length >= 1000) priceDataZZ.shift();
+      priceDataZZ.push(barFormat);
 
-        // première fois : setData pour l'historique
-        if (cache.length === 0) {
-          cache = bars;
-          currentSeries.setData(cache);
-          chart.timeScale().fitContent();
-          console.log(`Historique prêt (${bars.length} bougies)`);
-          return;
-        }
-
-        // ensuite : live bougie par bougie
-        const bar = bars[bars.length - 1];
-        const last = cache[cache.length - 1];
-        if (last && last.time === bar.time) {
-          cache[cache.length - 1] = bar;
-          currentSeries.update(bar);
-        } else {
-          cache.push(bar);
-          currentSeries.update(bar);
-        }
-      }
-
-      if (data.msg_type === "ping") {
-        ws.send(JSON.stringify({ ping: 1 }));
-      }
-
-      if (msg.msg_type === "error") {
-        console.error("Erreur WS:", msg);
-        console.log("Erreur réseau ou payload");
-      }
-
-    };
-
-    ws.onerror = (e) => {
-      console.error("WS Error:", e);
-      console.log("Erreur WebSocket");
-    };
+      // Rendu des indicateurs (MA/ZigZag) sur le tick
+      renderIndicators();
+    }
   }
 
   // --- CONNECT DERIV ---
