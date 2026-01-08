@@ -379,38 +379,35 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadSymbol(symbol, interval, chartType) {
-    // 1. Incrémenter la session pour invalider tout flux précédent
+    // 1. Session unique
     currentSessionId++;
     const thisSessionId = currentSessionId;
 
     if (!symbol) return;
 
-    // 2. Nettoyage complet (Sockets, Chart, Données, UI)
-    // On attend que tout soit effacé proprement
+    // 2. Nettoyage (Attendre la fin du reset)
     await resetZZChartVariable();
 
     currentSymbol = symbol;
     currentInterval = interval;
     currentChartType = chartType;
 
-    // 3. Créer le nouveau graphique vierge
+    // 3. Init UI
     initChart(chartType);
 
-    console.log(`Chargement : ${symbol} | Style : ${chartType} | Session : ${thisSessionId}`);
+    console.log(`Chargement : ${symbol} | Session : ${thisSessionId}`);
 
-    // 4. Initialisation de la connexion WebSocket
+    // 4. Connexion
     ws = new WebSocket(WS_URL);
 
     ws.onopen = () => {
-      // Sécurité : vérifier si on est toujours sur la bonne session
       if (thisSessionId !== currentSessionId) return;
-
-      console.log("Connexion établie.");
+      console.log("Connexion établie, envoi de l'autorisation...");
       ws.send(JSON.stringify({ authorize: TOKEN }));
     };
 
     ws.onmessage = ({ data }) => {
-      // --- FILTRE ANTI-CLIGNOTEMENT ---
+      // --- FILTRE SESSION ---
       if (thisSessionId !== currentSessionId) {
         if (ws) ws.close();
         return;
@@ -418,8 +415,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const msg = JSON.parse(data);
 
-      if (data.msg_type === "authorize" && data.authorize) {
-        // Préparation du message selon le type de graphique
+      // --- A. GESTION DE L'AUTORISATION ---
+      // Note: On vérifie 'msg.msg_type' et non 'data.msg_type'
+      if (msg.msg_type === "authorize") {
+        console.log("Autorisé avec succès. Souscription en cours...");
+
         let payload;
         if (chartType === "candlestick") {
           payload = {
@@ -427,8 +427,8 @@ document.addEventListener("DOMContentLoaded", () => {
             adjust_start_time: 1,
             subscribe: 1,
             end: "latest",
-            granularity: convertTF(currentInterval), // Assurez-vous de convertir votre intervalle en secondes
-            style: styleType(currentChartType)
+            granularity: convertTF(currentInterval),
+            style: "candles" // "styleType(currentChartType)" peut être risqué ici, "candles" est plus sûr pour candlesticks
           };
         } else {
           payload = {
@@ -436,41 +436,33 @@ document.addEventListener("DOMContentLoaded", () => {
             subscribe: 1
           };
         }
-
         ws.send(JSON.stringify(payload));
+        return; // On attend le prochain message (les data)
       }
 
-      // AILLUAGE VERS LES FONCTIONS DE TRAITEMENT
+      // --- B. AIGUILLAGE VERS LES TRAITEMENTS ---
       if (chartType === "candlestick") {
-        handleCandleData(msg); // Utilise la fonction OHLC
+        handleCandleData(msg);
       } else {
-        handleTickData(msg);   // Utilise la fonction Ticks
+        handleTickData(msg);
       }
 
-      // --- MISE À JOUR INDICATEURS (ZIGZAG) ---
-      // Si le bouton ZigZag est actif (isWsInitialized), on recalcule
+      // --- C. INDICATEURS & PING ---
       if (isWsInitialized && typeof refreshZigZag === "function") {
         refreshZigZag();
       }
 
-      // Gestion du Ping
       if (msg.msg_type === "ping") {
         ws.send(JSON.stringify({ ping: 1 }));
       }
-
-      Openpositionlines(currentSeries);
     };
 
     ws.onclose = () => {
-      if (thisSessionId === currentSessionId) {
-        console.log("Session terminée.");
-      }
+      if (thisSessionId === currentSessionId) console.log("Session terminée.");
     };
 
     ws.onerror = (err) => {
-      if (thisSessionId === currentSessionId) {
-        console.error("Erreur WebSocket:", err);
-      }
+      if (thisSessionId === currentSessionId) console.error("Erreur WS:", err);
     };
   }
 
@@ -487,7 +479,6 @@ document.addEventListener("DOMContentLoaded", () => {
         close: Number(c.close),
       }));
       currentSeries.setData(candles);
-      chart.timeScale().fitContent();
     }
 
     // B. Mise à jour en temps réel (OHLC)
@@ -512,6 +503,9 @@ document.addEventListener("DOMContentLoaded", () => {
         currentSeries.update(bar);
       }
     }
+
+    // try to auto-fit time scale (safe)
+    try { chart.timeScale().fitContent(); } catch (e) { }
   }
 
   function handleTickData(msg) {
@@ -525,7 +519,6 @@ document.addEventListener("DOMContentLoaded", () => {
         value: Number(h.prices[i])
       }));
       currentSeries.setData(priceData);
-      chart.timeScale().fitContent();
     }
 
     // B. Nouveau Tick en temps réel
