@@ -1612,7 +1612,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (zzData.markers) {
         zigzagSeries.setMarkers(zzData.markers);  
       }
-    }
+    }  
   }
 
   // Table
