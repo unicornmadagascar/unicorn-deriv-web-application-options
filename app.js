@@ -149,9 +149,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let profitHistory = [];
   const contractsData = {}; // stockage des contrats {id: {profits: [], infos: {…}}}
   let contractSymbol;
-  let contracts = [];  
+  let contracts = [];
   let wsAI = null;
-  let contracttype__ = "";  
+  let contracttype__ = "";
   let contractid__;
   const MAX_HISTORY = 500; // max taille du buffer    
   let proposal__ = [];
@@ -347,7 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else { // Fallback sur "line"
       currentSeries = chart.addLineSeries({
         color: "#2962FF",
-        lineWidth: 2, 
+        lineWidth: 2,
       });
     }
 
@@ -356,8 +356,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isZigZagActive) {
       zigzagSeries = chart.addLineSeries({
         color: '#f39c12',
-        lineWidth: 2,  
-        priceLineVisible: false, 
+        lineWidth: 2,
+        priceLineVisible: false,
       });
     }
 
@@ -1569,31 +1569,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Petite fonction utilitaire pour mettre à jour le cache et le dessin
   window.toggleZigZag = function (btn) {
+    if (!chart) return; // Sécurité : le graphique doit exister
+
     isZigZagActive = btn.classList.toggle("active");
 
     if (isZigZagActive) {
       btn.innerText = "ZigZag : ON";
+
+      // CRÉATION IMMÉDIATE de la série si elle est absente
+      if (!zigzagSeries) {
+        zigzagSeries = chart.addLineSeries({
+          color: '#f39c12',
+          lineWidth: 2,
+          priceLineVisible: false,
+          lastValueVisible: false,
+        });
+      }
+
+      // EXÉCUTION IMMÉDIATE du calcul
       refreshZigZag();
     } else {
       btn.innerText = "ZigZag : OFF";
       if (zigzagSeries) {
         zigzagSeries.setData([]);
         zigzagSeries.setMarkers([]);
+        // Optionnel : on peut supprimer la série ou simplement la laisser vide
       }
     }
   };
 
   function refreshZigZag() {
-    if (!isZigZagActive || !isWsInitialized || !zigzagSeries || priceDataZZ.length < 10) return;
+    // 1. Vérifications de sécurité
+    if (!isZigZagActive || !zigzagSeries || !priceDataZZ || priceDataZZ.length < 2) {
+      return;
+    }
 
-    const results = calculateZigZag(priceDataZZ, 7);
+    // 2. Calcul (assurez-vous que calculateZigZag retourne bien des données)
+    const zzData = calculateZigZag(priceDataZZ, 7);
 
-    requestAnimationFrame(() => {
-      if (isZigZagActive && zigzagSeries && isWsInitialized) {
-        zigzagSeries.setData(results.points);
-        zigzagSeries.setMarkers(results.markers);
+    if (zzData && zzData.points) {
+      zigzagSeries.setData(zzData.points);
+      if (zzData.markers) {
+        zigzagSeries.setMarkers(zzData.markers);
       }
-    });
+    }
   }
 
   // Table
