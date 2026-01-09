@@ -673,7 +673,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const entryPrice = parseFloat(contract.entry_tick_display_value || contract.buy_price);
+    const entryPrice = parseFloat(contract.entry_tick_display_value);
     const pnl = parseFloat(contract.profit).toFixed(2);
 
     // Couleurs modernes
@@ -681,7 +681,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 3. Création ou Mise à jour
     if (!priceLines4openlines[id]) {
-      // Nouvelle ligne
+      // Nouvelle ligne  
       priceLines4openlines[id] = currentSeries.createPriceLine({
         price: entryPrice,
         color: color,
