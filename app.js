@@ -91,6 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentSessionId = 0;
   let isZigZagActive = false;
   let isMAActive = false; // Variable globale pour l'état
+  let lastTotalPnL = 0;
   // ================== x ==================
 
   let wsReady = false;
@@ -144,6 +145,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let closePrice;
   let tickHistory4openpricelines = [];
   let priceLines4openlines = {}; // Stocke les lignes actives (clé = contract_id)
+  let currentContractTypeGlobal = "";
+  let activeContractsData = {}; // Stockage des infos détaillées (profit, etc.)
   let Tick_arr = [];
   // Historique de profits
   let profitHistory = [];
@@ -364,6 +367,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (activePeriods.length > 0) {
       initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200 via le nouveau chart
     }
+
+    // Dans initChart()
+    lastTotalPnL = 0;
+    if (document.getElementById("pnl-arrow")) {
+      document.getElementById("pnl-arrow").innerText = "";
+    }
   }
 
   function styleType(currentChartType) {
@@ -532,10 +541,42 @@ document.addEventListener("DOMContentLoaded", () => {
       // 4. Gestion des Positions Ouvertes (Lignes de prix + PnL)
       if (msg.msg_type === "proposal_open_contract" && msg.proposal_open_contract) {
         const contract = msg.proposal_open_contract;
-        // On ne dessine la ligne que si le contrat appartient au symbole actuel
-        if (contract.symbol === symbol) {
-          updateContractLines(contract);
+        const id = contract.contract_id;
+
+        // 1. Mémorisation de la direction pour la fonction Reverse
+        if (!contract.is_settled) {
+          currentContractTypeGlobal = contract.contract_type;
         }
+
+        // 2. Cas du contrat FERMÉ (vendu, expiré, etc.)
+        if (contract.is_settled || contract.status === "sold" || contract.exit_tick) {
+          // Nettoyage des données
+          delete activeContractsData[id];
+
+          // Nettoyage visuel du graphique
+          if (priceLines4openlines[id]) {
+            try {
+              currentSeries.removePriceLine(priceLines4openlines[id]);
+            } catch (e) {
+              console.warn("Erreur lors de la suppression de la ligne:", e);
+            }
+            delete priceLines4openlines[id];
+          }
+        }
+        // 3. Cas du contrat OUVERT
+        else {
+          // On ne traite et n'affiche que si c'est le symbole actuellement affiché
+          if (contract.symbol === symbol) {
+            // Mise à jour des données pour les fonctions CloseWinning / Reverse
+            activeContractsData[id] = contract;
+
+            // Une seule exécution de la mise à jour graphique
+            updateContractLines(contract);
+          }
+        }
+
+        // AJOUTEZ CECI À LA FIN DU BLOC :
+        updateGlobalPnL();
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
@@ -548,25 +589,71 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
+  function updateGlobalPnL() {
+    const pnlSpan = document.getElementById("total-pnl");
+    const arrowSpan = document.getElementById("pnl-arrow");
+    if (!pnlSpan || !arrowSpan) return;
+
+    let currentTotal = 0;
+    Object.values(activeContractsData).forEach(c => {
+      currentTotal += parseFloat(c.profit || 0);
+    });
+
+    // 1. Déterminer la flèche de tendance
+    if (currentTotal > lastTotalPnL) {
+      arrowSpan.innerText = " ▲"; // Profit augmente
+      arrowSpan.style.color = "#00ffa3";
+    } else if (currentTotal < lastTotalPnL) {
+      arrowSpan.innerText = " ▼"; // Profit diminue
+      arrowSpan.style.color = "#ff3d60";
+    }
+
+    // 2. Mise à jour du texte et de la couleur principale
+    pnlSpan.innerText = currentTotal.toFixed(2);
+    pnlSpan.style.color = currentTotal >= 0 ? "#00ffa3" : "#ff3d60";
+
+    // 3. Animation Flash (Optionnel)
+    // Si le profit augmente, on fait briller brièvement le badge
+    if (currentTotal > lastTotalPnL && currentTotal > 0) {
+      pnlSpan.parentElement.style.transition = "box-shadow 0.2s";
+      pnlSpan.parentElement.style.boxShadow = "0 0 15px rgba(0, 255, 163, 0.6)";
+      setTimeout(() => {
+        pnlSpan.parentElement.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+      }, 200);
+    }
+
+    // 4. Sauvegarder pour la prochaine comparaison
+    lastTotalPnL = currentTotal;
+  }
+
   function updateContractLines(contract) {
+    // 1. Sécurité : Si la série n'existe plus (changement de symbole), on arrête
+    if (!currentSeries) return;
+
     const id = contract.contract_id;
 
-    // Suppression si clos
+    // 2. Suppression si clos (Double sécurité avec votre gestionnaire de messages)
     if (contract.is_settled || contract.status === "sold" || contract.exit_tick) {
       if (priceLines4openlines[id]) {
-        currentSeries.removePriceLine(priceLines4openlines[id]);
+        try {
+          currentSeries.removePriceLine(priceLines4openlines[id]);
+        } catch (e) {
+          console.warn("Ligne déjà supprimée");
+        }
         delete priceLines4openlines[id];
       }
       return;
     }
 
     const entryPrice = parseFloat(contract.entry_tick_display_value || contract.buy_price);
-    const currentPrice = parseFloat(contract.current_spot_display_value);
     const pnl = parseFloat(contract.profit).toFixed(2);
+
+    // Couleurs modernes
     const color = pnl >= 0 ? '#00ffa3' : '#ff3d60';
 
-    // Création ou Mise à jour de la ligne
+    // 3. Création ou Mise à jour
     if (!priceLines4openlines[id]) {
+      // Nouvelle ligne
       priceLines4openlines[id] = currentSeries.createPriceLine({
         price: entryPrice,
         color: color,
@@ -576,10 +663,12 @@ document.addEventListener("DOMContentLoaded", () => {
         title: `${contract.contract_type} [${pnl}$]`,
       });
     } else {
-      // Mise à jour du titre avec le PnL en temps réel
+      // Mise à jour dynamique (PnL et Couleur)
       priceLines4openlines[id].applyOptions({
         title: `${contract.contract_type} [${pnl}$]`,
-        color: color
+        color: color,
+        // On peut aussi changer le style si c'est gagnant pour le feedback visuel
+        lineWidth: pnl >= 0 ? 3 : 2
       });
     }
   }
@@ -1128,192 +1217,147 @@ document.addEventListener("DOMContentLoaded", () => {
     engineStarted = false;
   }
 
+  reverseBtn.onclick = () => {
+    console.log("🔄 Exécution du Reverse...");
+    reverseFunction();
+  };
+
+  function reverseFunction() {
+    // 1. Vérification de la connexion
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      alert("Connexion non disponible");
+      return;
+    }
+
+    // 2. Récupérer les IDs des contrats actuellement affichés sur le graphique
+    const activeContractIds = Object.keys(priceLines4openlines);
+
+    if (activeContractIds.length === 0) {
+      console.warn("Aucune position ouverte à inverser.");
+      return;
+    }
+
+    // On récupère le type du premier contrat pour déterminer l'inversion
+    // (On suppose que l'utilisateur veut inverser la tendance actuelle)
+    // Note : Il est préférable de stocker le type dans l'objet priceLines4openlines lors de la création
+
+    let lastContractType = "";
+    // On récupère les infos du dernier contrat traité
+    // Si vous n'avez pas stocké le type, on peut utiliser une variable globale mise à jour par onmessage
+    lastContractType = currentContractTypeGlobal; // Assurez-vous de mettre à jour cette variable dans ws.onmessage
+
+    const oppositeType = (lastContractType === "MULTUP") ? "MULTDOWN" : "MULTUP";
+
+    // 3. Fermer tous les contrats actuels
+    activeContractIds.forEach(id => {
+      ws.send(JSON.stringify({ sell: id, price: 0 }));
+      console.log(`⛔ Fermeture contrat : ${id}`);
+    });
+
+    // 4. Ouvrir les nouvelles positions dans le sens opposé
+    const stake = parseFloat(stakeInput.value) || 1;
+    const multiplier = parseInt(multiplierInput.value) || 40;
+    const qty = (oppositeType === "MULTUP") ? (parseInt(buyNumber.value) || 1) : (parseInt(sellNumber.value) || 1);
+
+    const payload = {
+      buy: "1",
+      price: stake.toFixed(2),
+      parameters: {
+        contract_type: oppositeType,
+        symbol: currentSymbol,
+        currency: CURRENCY,
+        basis: "stake",
+        amount: stake.toFixed(2),
+        multiplier: multiplier
+      }
+    };
+
+    for (let i = 0; i < qty; i++) {
+      ws.send(JSON.stringify(payload));
+    }
+
+    console.log(`✅ Reverse terminé : Fermeture de ${activeContractIds.length} et ouverture de ${qty} ${oppositeType}`);
+  }
+
+  // Vos boutons restent les mêmes
   buyBtn.onclick = () => executeTrade("BUY");
   sellBtn.onclick = () => executeTrade("SELL");
-  reverseBtn.onclick = () => {
-    console.log("Reversing positions...");
-    reversefunction();
-  }
 
-  function reversefunction() {
-    if (wsContracts_reverse) { wsContracts_reverse.close(); wsContracts_reverse = null; }
-
-    console.log("Reversing positions...");
-
-    wsContracts_reverse = new WebSocket(WS_URL);
-    wsContracts_reverse.onopen = () => { wsContracts_reverse.send(JSON.stringify({ authorize: TOKEN })); };
-
-    wsContracts_reverse.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-
-      // 1. Authorization
-      if (data.msg_type === "authorize") {
-        wsContracts_reverse.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
-        wsContracts_reverse.send(JSON.stringify({ portfolio: 1 }));
-        return;
-      }
-
-      // 2. Save contract info
-      if (data.msg_type === "proposal_open_contract") {
-        const poc = data.proposal_open_contract;
-        contracttype__ = poc.contract_type;
-        contractid__ = poc.contract_id;
-        return;
-      }
-
-      // 3. Portfolio received
-      if (data.msg_type !== "portfolio") return;
-
-      const contracts = data.portfolio.contracts;
-      console.log("📌 Contrats ouverts :", contracts);
-
-      if (!contracttype__) return;
-
-      // Determine opposite direction
-      const oppositeType = (contracttype__ === "MULTUP") ? "MULTDOWN" : "MULTUP";
-
-      // User inputs
-      const stake = parseFloat(stakeInput.value) || 1;
-      const multiplier = parseInt(multiplierInput.value) || 40;
-      const qty = (contracttype__ === "MULTUP")
-        ? (parseInt(sellNumber.value) || 1)
-        : (parseInt(buyNumber.value) || 1);
-
-      // 4. Close all matching contracts   
-      contracts
-        .filter(c => c.contract_type === contracttype__)
-        .forEach(c => {
-          wsContracts_reverse.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-          console.log("⛔ Fermeture demandée :", c.contract_id);
-        });
-
-      // 5. Open opposite direction
-      for (let i = 0; i < qty; i++) {
-        wsContracts_reverse.send(JSON.stringify({
-          buy: 1,
-          price: stake.toFixed(2),
-          parameters: {
-            contract_type: oppositeType,
-            symbol: currentSymbol,
-            currency: CURRENCY,
-            basis: "stake",
-            amount: stake.toFixed(2),
-            multiplier: multiplier
-          }
-        }));
-      }
-
-      console.log(`✔️ Reverse exécuté → ${oppositeType} x${qty}`);
-    };
-
-  }
-
-  //--- Trades (New)
   function executeTrade(type) {
-    if (wsContracts) { wsContracts.close(); wsContracts = null; }
+    // 1. Sécurité : Vérifier si le WebSocket principal est prêt
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      console.error("Connexion non établie. Impossible de trader.");
+      alert("Connexion en cours... réessayez dans un instant.");
+      return;
+    }
 
-    wsContracts = new WebSocket(WS_URL);
-    wsContracts.onopen = () => { wsContracts.send(JSON.stringify({ authorize: TOKEN })); };
-
-    wsContracts.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-      if (data.authorize && data.msg_type === "authorize") {
-        const payload = {
-          buy: 1,
-          price: stake.toFixed(2),
-          parameters: {
-            contract_type: type === "BUY" ? "MULTUP" : "MULTDOWN",
-            symbol: currentSymbol,
-            currency: CURRENCY.toString(),
-            basis: "stake",
-            amount: stake.toFixed(2),
-            multiplier: multiplier,
-            //limit_order: { take_profit: 150, stop_loss: 130 }
-          }
-        }
-
-        const numb_ = (type === "BUY") ? (parseInt(buyNumber.value) || 1)
-          : (parseInt(sellNumber.value) || 1);
-
-        for (let i = 0; i < numb_; i++) {
-          wsContracts.send(JSON.stringify(payload));
-        }
-      }
-
-      if (data.ping && data.msg_type === "ping") {
-        wsContracts.send(JSON.stringify({ ping: 1 }));
+    // 2. Préparation du payload
+    // Note : On utilise 'stake' (global) et 'multiplier' (global)
+    const payload = {
+      buy: "1", // La valeur doit souvent être un string "1" ou le price_proposal_id
+      price: parseFloat(stake).toFixed(2),
+      parameters: {
+        contract_type: type === "BUY" ? "MULTUP" : "MULTDOWN",
+        symbol: currentSymbol,
+        currency: CURRENCY,
+        basis: "stake",
+        amount: parseFloat(stake).toFixed(2),
+        multiplier: parseInt(multiplier),
+        // stop_loss: 10, // Optionnel
+        // take_profit: 20 // Optionnel
       }
     };
+
+    // 3. Récupération du nombre de positions à ouvrir
+    const inputElement = (type === "BUY") ? buyNumber : sellNumber;
+    const count = parseInt(inputElement.value) || 1;
+
+    // 4. Envoi immédiat (pas d'attente de reconnexion !)
+    console.log(`🚀 Envoi de ${count} ordres ${type} sur ${currentSymbol}`);
+
+    for (let i = 0; i < count; i++) {
+      ws.send(JSON.stringify(payload));
+    }
   }
 
   closewinning.onclick = () => {
-    if (wsContracts_winning) { wsContracts_winning.close(); wsContracts_winning = null; }
-
-    console.log("Closing all profitable trades...");
-
-    wsContracts_winning = new WebSocket(WS_URL);
-    wsContracts_winning.onopen = () => { wsContracts_winning.send(JSON.stringify({ authorize: TOKEN })); };
-    wsContracts_winning.onerror = (e) => {
-      console.log("❌ WS Error: " + JSON.stringify(e));
-    };
-
-    wsContracts_winning.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-
-      // Authorization successful
-      if (data.msg_type === "authorize") {
-        console.log("✅ Authorized successfully. Fetching portfolio...");
-        wsContracts_winning.send(JSON.stringify({ portfolio: 1 }));
-      }
-
-      // Portfolio received
-      if (data.msg_type === "portfolio" && data.portfolio?.contracts?.length > 0) {
-        const contracts = data.portfolio.contracts || [];
-        console.log("📊 Found " + contracts.length + " active contracts.");
-
-        contracts.forEach((contract, i) => {
-          setTimeout(() => {
-            wsContracts_winning.send(
-              JSON.stringify({
-                proposal_open_contract: 1,
-                contract_id: contract.contract_id,
-              })
-            );
-          }, i * 200); // Délai de 500ms entre chaque demande
-        });
-      }
-
-      // Proposal open contract (detail for each active trade)
-      if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
-        const poc = data.proposal_open_contract;
-        const profit = parseFloat(poc.profit);
-
-        if (profit > 0) {
-          console.log(
-            `💰 Closing profitable trade ${poc.contract_id} with profit ${profit.toFixed(2)}`
-          );
-
-          wsContracts_winning.send(
-            JSON.stringify({
-              sell: poc.contract_id,
-              price: 0, // 0 = sell at market price
-            })
-          );
-        }
-      }
-
-      // Sell confirmation
-      if (data.msg_type === "sell") {
-        const profit = parseFloat(data.sell.profit);
-        console.log(`✅ Trade ${data.sell.contract_id} closed with profit: ${profit.toFixed(2)}`);
-      }
-
-      // No open contracts
-      if (data.msg_type === "portfolio" && (!data.portfolio || !data.portfolio.contracts.length)) {
-        console.log("⚠️ No active contracts found.");
-      }
-    };
+    console.log("💰 Analyse des positions gagnantes...");
+    closeProfitableTrades();
   };
+
+  function closeProfitableTrades() {
+    // 1. Sécurité connexion
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      console.error("WebSocket non connecté");
+      return;
+    }
+
+    let foundWinning = false;
+
+    // 2. On utilise l'objet 'priceLines4openlines' qui contient nos contrats actifs
+    // Mais attention : on a besoin du profit. 
+    // Nous allons donc utiliser une Map globale 'activeContractsData' 
+    // que nous remplissons dans le flux principal.
+
+    Object.keys(priceLines4openlines).forEach((contractId) => {
+      // On récupère les données temps réel stockées pour ce contrat
+      const contractData = activeContractsData[contractId];
+
+      if (contractData && parseFloat(contractData.profit) > 0) {
+        foundWinning = true;
+        console.log(`🚀 Fermeture éclair du contrat ${contractId} (Profit: ${contractData.profit}$)`);
+
+        ws.send(JSON.stringify({
+          sell: contractId,
+          price: 0
+        }));
+      }
+    });
+
+    if (!foundWinning) {
+      console.log("ℹ️ Aucune position n'est actuellement en profit.");
+    }
+  }
 
   closelosing.onclick = () => {
     if (wsContracts_losing) { wsContracts_losing.close(); wsContracts_losing = null; }
@@ -1610,9 +1654,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (zzData && zzData.points) {
       zigzagSeries.setData(zzData.points);
       if (zzData.markers) {
-        zigzagSeries.setMarkers(zzData.markers);  
+        zigzagSeries.setMarkers(zzData.markers);
       }
-    }  
+    }
   }
 
   // Table

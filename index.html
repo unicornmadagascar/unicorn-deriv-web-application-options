@@ -223,8 +223,11 @@
       flex: 1;
       display: flex;
       flex-direction: column;
+      position: relative;
+      /* Indispensable pour le positionnement du PnL */
     }
 
+    /* Le graphique lui-même */
     #chartInner {
       flex: 0;
       min-height: 750px;
@@ -233,6 +236,45 @@
       border-radius: 8px;
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
       overflow: hidden;
+      position: relative;
+    }
+
+    /* Style du badge PnL */
+    #pnl-container {
+      position: absolute;
+      top: 25px;
+      /* Ajusté pour être à l'intérieur du margin de 12px */
+      right: 35px;
+      /* Ajusté pour ne pas couvrir l'échelle des prix */
+      z-index: 100;
+      font-family: sans-serif;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.75);
+      /* Fond sombre pour contraste sur graphique blanc */
+      padding: 8px 15px;
+      border-radius: 6px;
+      color: #fff;
+      pointer-events: none;
+      /* Permet de cliquer sur le graphique à travers le texte */
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    #total-pnl {
+      font-size: 1.2em;
+    }
+
+    #pnl-arrow {
+      font-size: 1.1em;
+      transition: all 0.2s ease;
+    }
+
+    .pnl-label {
+      font-size: 0.75em;
+      opacity: 0.8;
+      margin-right: 5px;
     }
 
     /* top controls */
@@ -1618,12 +1660,12 @@
       background: #ff9800 !important;
       color: white;
       border-color: #ff9800;
-    }  
-   
+    }
+
     .popup-body button.active {
       background: #88ff00 !important;
       color: rgb(71, 68, 68);
-      border-color: #88ff00;  
+      border-color: #88ff00;
     }
 
     /* Style pour les boutons d'objets (Trendline, etc.) */
@@ -1752,9 +1794,23 @@
   <div id="ticker-container" class="tradingview-widget-container"></div>
   <!-- TradingView Widget END -->
 
+  <div id="pnl-container"
+    style="position: absolute; top: 10px; right: 150px; z-index: 10; font-family: sans-serif; font-weight: bold; background: rgba(0,0,0,0.6); padding: 8px 15px; border-radius: 5px; color: #fff;">
+    Total PnL: <span id="total-pnl">0.00</span> $
+  </div>
+
   <div id="container__">
     <div id="chartArea">
+
+      <div id="pnl-container">
+        <span class="pnl-label">PnL Global:</span>
+        <span id="total-pnl">0.00</span>
+        <span id="pnl-arrow"></span>
+        <span class="pnl-currency">$</span>
+      </div>
+
       <div id="chartInner"></div>
+
     </div>
   </div>
 
@@ -2021,7 +2077,7 @@
   </div>
 
   <script>
-    
+
     function closePopup() {
       const overlay = document.getElementById('indicatorOverlay');
       if (overlay) {
