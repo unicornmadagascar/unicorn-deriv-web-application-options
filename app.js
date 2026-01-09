@@ -706,7 +706,7 @@ document.addEventListener("DOMContentLoaded", () => {
         authorized = false;
         console.log("Socket Closed");
       }
-    }, 500);
+    }, 500);   
   }
 
   function startMLCountdown() {
