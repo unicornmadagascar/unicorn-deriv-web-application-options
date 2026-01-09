@@ -291,7 +291,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     container.innerHTML = "";
 
-    chart = LightweightCharts.createChart(container, {
+    chart = LightweightCharts.createChart(container, {  
       layout: {
         textColor: "#333",
         background: { type: "solid", color: "#fff" },
