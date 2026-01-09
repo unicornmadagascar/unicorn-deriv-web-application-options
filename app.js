@@ -1009,64 +1009,62 @@ document.addEventListener("DOMContentLoaded", () => {
    WS SIGNAL ON HISTORY TABLE - VERSION MODERNE
    ============================================= */
   function addTradeHistoryColumn(trade) {
-    // 1. Sécurité et ciblage du body
     if (trade.type !== "ML_SIGNAL") return;
     const tradeHistoryBody = document.getElementById("tradeHistoryBody__");
     if (!tradeHistoryBody) return;
 
-    // 2. Création de la ligne avec classe d'animation
     const tr = document.createElement("tr");
     tr.className = "new-signal-row";
 
-    /* ========= TIME (Style muted) ========= */
+    /* ========= TIME (Gris neutre) ========= */
     const timeTd = document.createElement("td");
-    timeTd.innerHTML = `<span class="time-dim">${formatUnixTime(trade.time)}</span>`;
+    timeTd.innerHTML = `<span class="time-dim-light">${formatUnixTime(trade.time)}</span>`;
     tr.appendChild(timeTd);
 
-    /* ========= SYMBOL (Bold) ========= */
+    /* ========= SYMBOL (Texte sombre) ========= */
     const symbolTd = document.createElement("td");
-    symbolTd.innerHTML = `<strong>${trade.symbol}</strong>`;
+    symbolTd.innerHTML = `<strong class="symbol-light">${trade.symbol}</strong>`;
     tr.appendChild(symbolTd);
 
-    /* ========= SIGNAL (Badge dynamique) ========= */
+    /* ========= SIGNAL (Badge doux) ========= */
     const signalTd = document.createElement("td");
     const isBuy = trade.signal === "BUY" || trade.signal === "UP";
-    const signalClass = isBuy ? "signal-badge-buy" : "signal-badge-sell";
+    const signalClass = isBuy ? "signal-badge-buy-light" : "signal-badge-sell-light";
     signalTd.innerHTML = `<span class="${signalClass}">${trade.signal}</span>`;
     tr.appendChild(signalTd);
 
-    /* ========= PRICE (Monospace) ========= */
+    /* ========= PRICE (Police technique) ========= */
     const priceTd = document.createElement("td");
-    priceTd.className = "price-mono";
+    priceTd.className = "price-mono-light";
     priceTd.textContent = parseFloat(trade.price).toFixed(5);
     tr.appendChild(priceTd);
 
-    /* ========= PROB (Indicateur visuel) ========= */
+    /* ========= PROB (Contraste sur blanc) ========= */
     const probTd = document.createElement("td");
     const p = Math.min(Math.max(parseFloat(trade.prob), 0), 1);
     const probPercent = (p * 100).toFixed(1) + "%";
 
-    // Application de vos règles de couleurs spécifiques
     let probStyle = "";
     if (p >= 0.5080 && p < 0.5092) {
-      probStyle = "background-color: #ffffff; color: #414040; border-radius: 4px; padding: 2px 6px; font-weight: bold;";
+      // Fond gris très clair pour le mode blanc
+      probStyle = "background-color: #f1f2f6; color: #2d3436; border: 1px solid #dfe4ea; border-radius: 6px; padding: 2px 8px; font-weight: 700;";
     } else {
-      probStyle = "background-color: #89027e; color: #ffffff; border-radius: 4px; padding: 2px 6px; font-weight: bold;";
+      // Violet/Magenta profond pour un bon contraste
+      probStyle = "background-color: #89027e; color: #ffffff; border-radius: 6px; padding: 2px 8px; font-weight: 700;";
     }
 
     probTd.innerHTML = `
-        <div class="prob-container">  
+        <div class="prob-container-light">  
             <span style="${probStyle}">${probPercent}</span>
-            <div class="prob-bar-bg">
-                <div class="prob-bar-fill" style="width: ${p * 100}%; background-color: ${p >= 0.5080 ? '#00ffa3' : '#89027e'}"></div>
+            <div class="prob-bar-bg-light">
+                <div class="prob-bar-fill-light" style="width: ${p * 100}%; background-color: ${p >= 0.5080 ? '#00b894' : '#89027e'}"></div>
             </div>
         </div>
     `;
-    tr.appendChild(probTd);  
+    tr.appendChild(probTd);
 
     /* ========= AJOUT ET LIMITE ========= */
     tradeHistoryBody.prepend(tr);
-
     while (tradeHistoryBody.rows.length > 10) {
       tradeHistoryBody.deleteRow(tradeHistoryBody.rows.length - 1);
     }
