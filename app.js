@@ -1005,61 +1005,68 @@ document.addEventListener("DOMContentLoaded", () => {
     activeSignal = null;
   }
 
-  /* ============================
-   WS SIGNAL ON HISTORY TABLE
-  ============================ */
+  /* =============================================
+   WS SIGNAL ON HISTORY TABLE - VERSION MODERNE
+   ============================================= */
   function addTradeHistoryColumn(trade) {
-
-    // Sécurité
+    // 1. Sécurité et ciblage du body
     if (trade.type !== "ML_SIGNAL") return;
+    const tradeHistoryBody = document.getElementById("tradeHistoryBody__");
+    if (!tradeHistoryBody) return;
 
-    // Création d'une NOUVELLE LIGNE
+    // 2. Création de la ligne avec classe d'animation
     const tr = document.createElement("tr");
+    tr.className = "new-signal-row";
 
-    /* ========= TIME ========= */
+    /* ========= TIME (Style muted) ========= */
     const timeTd = document.createElement("td");
-    timeTd.textContent = formatUnixTime(trade.time);
+    timeTd.innerHTML = `<span class="time-dim">${formatUnixTime(trade.time)}</span>`;
     tr.appendChild(timeTd);
 
-    /* ========= SYMBOL ========= */
+    /* ========= SYMBOL (Bold) ========= */
     const symbolTd = document.createElement("td");
-    symbolTd.textContent = trade.symbol;
+    symbolTd.innerHTML = `<strong>${trade.symbol}</strong>`;
     tr.appendChild(symbolTd);
 
-    /* ========= SIGNAL ========= */
+    /* ========= SIGNAL (Badge dynamique) ========= */
     const signalTd = document.createElement("td");
-    signalTd.textContent = trade.signal;
-    signalTd.classList.add(
-      trade.signal === "BUY"
-        ? "tradeHistory__-signal-buy"
-        : "tradeHistory__-signal-sell"
-    );
+    const isBuy = trade.signal === "BUY" || trade.signal === "UP";
+    const signalClass = isBuy ? "signal-badge-buy" : "signal-badge-sell";
+    signalTd.innerHTML = `<span class="${signalClass}">${trade.signal}</span>`;
     tr.appendChild(signalTd);
 
-    /* ========= PRICE ========= */
+    /* ========= PRICE (Monospace) ========= */
     const priceTd = document.createElement("td");
-    priceTd.textContent = trade.price;
+    priceTd.className = "price-mono";
+    priceTd.textContent = parseFloat(trade.price).toFixed(5);
     tr.appendChild(priceTd);
 
-    /* ========= PROB ========= */
+    /* ========= PROB (Indicateur visuel) ========= */
     const probTd = document.createElement("td");
-    probTd.textContent = trade.prob;
-    const p = Math.min(Math.max(trade.prob, 0), 1);
-    probTd.classList.add("tradeHistory__-prob");
+    const p = Math.min(Math.max(parseFloat(trade.prob), 0), 1);
+    const probPercent = (p * 100).toFixed(1) + "%";
+
+    // Application de vos règles de couleurs spécifiques
+    let probStyle = "";
     if (p >= 0.5080 && p < 0.5092) {
-      probTd.style.backgroundColor = "#ffffffff";
-      probTd.style.color = "#414040ff";
+      probStyle = "background-color: #ffffff; color: #414040; border-radius: 4px; padding: 2px 6px; font-weight: bold;";
+    } else {
+      probStyle = "background-color: #89027e; color: #ffffff; border-radius: 4px; padding: 2px 6px; font-weight: bold;";
     }
-    else {
-      probTd.style.backgroundColor = "#89027eff";
-      probTd.style.color = "#ffffffff";
-    }
+
+    probTd.innerHTML = `
+        <div class="prob-container">
+            <span style="${probStyle}">${probPercent}</span>
+            <div class="prob-bar-bg">
+                <div class="prob-bar-fill" style="width: ${p * 100}%; background-color: ${p >= 0.5080 ? '#00ffa3' : '#89027e'}"></div>
+            </div>
+        </div>
+    `;
     tr.appendChild(probTd);
 
-    /* ========= AJOUT EN HAUT ========= */
+    /* ========= AJOUT ET LIMITE ========= */
     tradeHistoryBody.prepend(tr);
 
-    /* ========= LIMITE À 10 LIGNES ========= */
     while (tradeHistoryBody.rows.length > 10) {
       tradeHistoryBody.deleteRow(tradeHistoryBody.rows.length - 1);
     }
@@ -1432,7 +1439,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. Sécurité : vérifier la connexion
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       console.error("WebSocket non connecté");
-      return;  
+      return;
     }
 
     // 2. Récupérer tous les IDs des contrats actuellement suivis
@@ -1675,28 +1682,6 @@ document.addEventListener("DOMContentLoaded", () => {
    `;
 
     const autoTradeBody = document.getElementById("autoTradeBody");
-  }
-
-  // Fonction d’ajout d’une ligne de trade
-  function addTradeRow(trade) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><input type="checkbox" class="rowSelect"></td>
-      <td>${trade.time}</td>
-      <td>${trade.contract_id}</td>
-      <td>${String(trade.symbol)}</td>
-      <td class="${trade.type === "BUY" ? "buy" : "sell"}">${trade.type}</td>
-      <td>${trade.stake.toFixed(2)}</td>
-      <td>${trade.multiplier}</td>
-      <td>${trade.entry_spot}</td>
-      <td>${trade.tp}%</td>
-      <td>${trade.sl}%</td>
-      <td>${trade.profit}</td>
-      <td>
-        <button class="deleteRowBtn" style="background:#ef4444; border:none; color:white; border-radius:4px; padding:2px 6px; cursor:pointer;">Delete</button>
-      </td>
-    `;
-    autoTradeBody.appendChild(tr);
   }
 
   // ==========================
