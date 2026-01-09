@@ -1610,7 +1610,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (zzData && zzData.points) {
       zigzagSeries.setData(zzData.points);
       if (zzData.markers) {
-        zigzagSeries.setMarkers(zzData.markers);
+        zigzagSeries.setMarkers(zzData.markers);  
       }
     }
   }
