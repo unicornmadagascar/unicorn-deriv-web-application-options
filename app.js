@@ -3206,7 +3206,7 @@ document.addEventListener("DOMContentLoaded", () => {
     stake = parseFloat(Number(document.getElementById("stakeInput").value)) || 1.0;
     buyNum = parseInt(Number(document.getElementById("buyNumberInput").value)) || 1;
     sellNum = parseInt(Number(document.getElementById("sellNumberInput").value)) || 1;
-    tp_contract = Number(document.getElementById("tpInput").value);
+    tp_contract = Number(document.getElementById("tpInput").value);  
     sl_contract = Number(document.getElementById("slInput").value);  
   
     console.log("Données sauvegardées :");
