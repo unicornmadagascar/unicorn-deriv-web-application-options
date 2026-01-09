@@ -356,7 +356,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isZigZagActive) {
       zigzagSeries = chart.addLineSeries({
         color: '#f39c12',
-        lineWidth: 2,
+        lineWidth: 2,  
         priceLineVisible: false, 
       });
     }
