@@ -1062,7 +1062,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         </div>
     `;
-    tr.appendChild(probTd);
+    tr.appendChild(probTd);  
 
     /* ========= AJOUT ET LIMITE ========= */
     tradeHistoryBody.prepend(tr);
