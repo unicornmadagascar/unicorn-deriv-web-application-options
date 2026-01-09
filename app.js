@@ -3208,7 +3208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     sellNum = parseInt(Number(document.getElementById("sellNumberInput").value)) || 1;
     tp_contract = Number(document.getElementById("tpInput").value);
     sl_contract = Number(document.getElementById("slInput").value);
-
+  
     console.log("Données sauvegardées :");
     console.log({ multiplier, stake, buyNumber, sellNumber, tp_contract, sl_contract });
 
