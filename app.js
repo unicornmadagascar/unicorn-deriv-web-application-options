@@ -1440,7 +1440,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   function updateMAs() {
-    if (!maSeries || !isWsInitialized || priceDataZZ.length === 0) return;
+    if (!maSeries || !chart || !isWsInitialized || priceDataZZ.length === 0) return;
 
     [20, 50, 200].forEach(p => {
       if (activePeriods.includes(p)) {
