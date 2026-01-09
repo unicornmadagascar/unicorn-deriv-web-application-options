@@ -552,38 +552,65 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // 4. Gestion des Positions Ouvertes (Lignes de prix + PnL)
-      if (msg.msg_type === "proposal_open_contract" && msg.proposal_open_contract) {
-        const contract = msg.proposal_open_contract;
-        const id = contract.contract_id;
+      if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
+        const c = data.proposal_open_contract;
+        const id = c.contract_id;
 
-        // 1. Cas du contrat FERMÉ (vendu, expiré, etc.)
-        if (contract.is_settled || contract.status === "sold" || contract.exit_tick) {
-          // Nettoyage des données globales
-          delete activeContractsData[id];
-
-          // Nettoyage visuel du graphique
+        // 1️⃣ CAS DU CONTRAT FERMÉ (Vendu / Expiré)
+        if (c.is_settled || c.status === "sold" || c.exit_tick) {
           if (priceLines4openlines[id]) {
             try {
               currentSeries.removePriceLine(priceLines4openlines[id]);
-            } catch (e) {
-              console.warn("Erreur lors de la suppression de la ligne:", e);
-            }
+            } catch (e) { }
             delete priceLines4openlines[id];
           }
-        }
-        // 2. Cas du contrat OUVERT
-        else {
-          // Mémorisation pour les fonctions globales (Reverse, CloseWinning, etc.)
-          currentContractTypeGlobal = contract.contract_type;
-          activeContractsData[id] = contract; // Correction ici (contract au lieu de c)
+          delete activeContractsData[id];
 
-          // Affichage uniquement si c'est le symbole actuel
-          if (contract.symbol === symbol) {
-            updateContractLines(contract);
+          // Si plus aucun contrat, on reset le type global
+          if (Object.keys(activeContractsData).length === 0) {
+            currentContractTypeGlobal = null;
+          }
+
+          updateGlobalPnL();
+          return;
+        }
+
+        // 2️⃣ CAS DU CONTRAT OUVERT
+        activeContractsData[id] = c;
+        currentContractTypeGlobal = c.contract_type; // Indispensable pour le REVERSE
+
+        // 3️⃣ AFFICHAGE DE LA LIGNE (Si symbole correspond)
+        if (c.symbol === symbol) {
+          // Sécurité prix : on prend le premier disponible
+          const rawPrice = c.entry_tick_display_value || c.buy_price || c.current_spot_display_value;
+          const entryPrice = parseFloat(rawPrice);
+
+          if (!isNaN(entryPrice)) {
+            const pnl = parseFloat(c.profit || 0).toFixed(2);
+            const color = pnl >= 0 ? "#00ff80" : "#ff4d4d";
+            const title = `${c.contract_type} [${pnl}$]`;
+
+            if (!priceLines4openlines[id]) {
+              // Création de la ligne
+              priceLines4openlines[id] = currentSeries.createPriceLine({
+                price: entryPrice,
+                color: color,
+                lineWidth: 2,
+                lineStyle: 2, // Dashed
+                axisLabelVisible: true,
+                title: title,
+              });
+            } else {
+              // Mise à jour dynamique du titre et de la couleur
+              priceLines4openlines[id].applyOptions({
+                title: title,
+                color: color
+              });
+            }
           }
         }
 
-        // 3. Mise à jour du PnL Global (toujours appeler pour refléter les fermetures ou les gains)
+        // 4️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
         updateGlobalPnL();
       }
 
@@ -1338,8 +1365,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 3. Récupération du nombre de positions à ouvrir
     const count = type === "BUY"
-        ? (parseInt(buyNumber.value) || 1)
-        : (parseInt(sellNumber.value) || 1); 
+      ? (parseInt(buyNumber.value) || 1)
+      : (parseInt(sellNumber.value) || 1);
 
     if (multiplier === "" || stake === "" || count === "" || CURRENCY === "" || currentSymbol === "") {
       return;
@@ -1348,11 +1375,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // 4. Envoi immédiat (pas d'attente de reconnexion !)
     console.log(`🚀 Envoi de ${count} ordres ${type} sur ${currentSymbol}`);
 
-    for (let i = 0; i < count; i++) {  
+    for (let i = 0; i < count; i++) {
       ws.send(JSON.stringify(payload));
     }
   }
-  
+
   closewinning.onclick = () => {
     console.log("💰 Analyse des positions gagnantes...");
     closeProfitableTrades();
