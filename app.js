@@ -1348,7 +1348,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 4. Envoi immédiat (pas d'attente de reconnexion !)
     console.log(`🚀 Envoi de ${count} ordres ${type} sur ${currentSymbol}`);
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < count; i++) {  
       ws.send(JSON.stringify(payload));
     }
   }
