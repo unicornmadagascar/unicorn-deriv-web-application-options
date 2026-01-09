@@ -416,17 +416,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function convertTF(currentInterval) {
     switch (currentInterval) {
-      case "1 minute": return 60;
-      case "2 minutes": return 120;
-      case "3 minutes": return 180;
-      case "5 minutes": return 300;
-      case "10 minutes": return 600;
-      case "15 minutes": return 900;
-      case "30 minutes": return 1800;
-      case "1 hour": return 3600;
-      case "2 hours": return 7200;
-      case "4 hours": return 14400;
-      case "8 hours": return 2880;
+      case "1m": return 60;
+      case "2m": return 120;
+      case "3m": return 180;
+      case "5m": return 300;
+      case "10m": return 600;
+      case "15m": return 900;
+      case "30m": return 1800;
+      case "1h": return 3600;
+      case "2h": return 7200;
+      case "4h": return 14400;
+      case "8h": return 2880;  
       default: return 86400;
     }
   }
