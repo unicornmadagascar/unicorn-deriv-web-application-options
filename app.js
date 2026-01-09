@@ -1055,7 +1055,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     probTd.innerHTML = `
-        <div class="prob-container">
+        <div class="prob-container">  
             <span style="${probStyle}">${probPercent}</span>
             <div class="prob-bar-bg">
                 <div class="prob-bar-fill" style="width: ${p * 100}%; background-color: ${p >= 0.5080 ? '#00ffa3' : '#89027e'}"></div>
