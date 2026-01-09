@@ -2101,10 +2101,10 @@ document.addEventListener("DOMContentLoaded", () => {
           const span = circle.querySelector("span");
           const color =
             circle.classList.contains("red")
-              ? "#434040ff"
+              ? "#ff4d4d"
               : circle.classList.contains("blue")
-                ? "#434040ff"
-                : "#434040ff";
+                ? "#1655d4ff"
+                : "#18bc18ff";
 
           const interval = setInterval(() => {
             if (currentDeg >= targetDeg) {
@@ -2238,10 +2238,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // AreaSeries unique
     areahistoricalSeries = charthistorical.addAreaSeries({
-      lineColor: "gray",
+      lineColor: '#2563eb',          // Bleu vif (Royal Blue)
       lineWidth: 2,
-      topColor: "gray",
-      bottomColor: "gray",
+      topColor: 'rgba(37, 99, 235, 0.4)',    // Bleu semi-transparent en haut
+      bottomColor: 'rgba(37, 99, 235, 0.05)', // Presque transparent en bas
     });
 
     // Données aléatoires au démarrage
