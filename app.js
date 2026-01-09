@@ -1349,80 +1349,81 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Événement du bouton
   closewinning.onclick = () => {
+    const btn = document.getElementById("closewinning");
     console.log("💰 Analyse des positions gagnantes...");
-    closeProfitableTrades();
+
+    // On lance la fonction qui renvoie 'true' si elle a trouvé des gagnants
+    const hasClosed = closeProfitableTrades();
+
+    if (hasClosed) {
+      // Effet visuel de succès
+      btn.classList.add("btn-success-flash");
+      setTimeout(() => btn.classList.remove("btn-success-flash"), 600);
+    }
   };
 
   function closeProfitableTrades() {
-    // 1. Sécurité connexion
-    if (!ws || ws.readyState !== WebSocket.OPEN) {
-      console.error("WebSocket non connecté");
-      return;
-    }
+    if (!ws || ws.readyState !== WebSocket.OPEN) return false;
 
     let foundWinning = false;
+    const contractIds = Object.keys(activeContractsData);
 
-    // 2. On utilise l'objet 'priceLines4openlines' qui contient nos contrats actifs
-    // Mais attention : on a besoin du profit. 
-    // Nous allons donc utiliser une Map globale 'activeContractsData' 
-    // que nous remplissons dans le flux principal.
+    contractIds.forEach((id) => {
+      const contractData = activeContractsData[id];
+      const profit = parseFloat(contractData.profit || 0);
 
-    Object.keys(priceLines4openlines).forEach((contractId) => {
-      // On récupère les données temps réel stockées pour ce contrat
-      const contractData = activeContractsData[contractId];
-
-      if (contractData && parseFloat(contractData.profit) > 0) {
+      if (profit > 0) {
         foundWinning = true;
-        console.log(`🚀 Fermeture éclair du contrat ${contractId} (Profit: ${contractData.profit}$)`);
-
         ws.send(JSON.stringify({
-          sell: contractId,
+          sell: id,
           price: 0
         }));
       }
     });
 
-    if (!foundWinning) {
-      console.log("ℹ️ Aucune position n'est actuellement en profit.");
-    }
+    return foundWinning; // On retourne le résultat pour le flash
   }
 
   closelosing.onclick = () => {
-    console.log("🔴 Fermeture de toutes les positions en perte...");
-    closeLosingTrades();
+    const btn = document.getElementById("closelosing");
+    console.log("🔴 Analyse des positions perdantes...");
+
+    // On lance la fonction qui renvoie 'true' si elle a trouvé des pertes
+    const hasClosed = closeLosingTrades();
+
+    if (hasClosed) {
+      // Effet visuel de flash rouge
+      btn.classList.add("btn-danger-flash");
+      setTimeout(() => btn.classList.remove("btn-danger-flash"), 600);
+    }
   };
 
   function closeLosingTrades() {
-    // 1. Sécurité connexion
-    if (!ws || ws.readyState !== WebSocket.OPEN) {
-      console.error("WebSocket non connecté");
-      return;
-    }
+    if (!ws || ws.readyState !== WebSocket.OPEN) return false;
 
     let foundLosing = false;
+    // On utilise la source de données globale pour être sûr de ne rien rater
+    const contractIds = Object.keys(activeContractsData);
 
-    // 2. On boucle sur les IDs des contrats actuellement affichés
-    Object.keys(priceLines4openlines).forEach((contractId) => {
-      // On récupère les données temps réel (profit, etc.) stockées globalement
-      const contractData = activeContractsData[contractId];
+    contractIds.forEach((id) => {
+      const contractData = activeContractsData[id];
+      const profit = parseFloat(contractData.profit || 0);
 
-      // On vérifie si le profit est strictement inférieur à 0
-      if (contractData && parseFloat(contractData.profit) < 0) {
+      // Condition : Profit strictement inférieur à 0
+      if (profit < 0) {
         foundLosing = true;
-        console.log(`📉 Fermeture perte : ${contractId} (Profit: ${contractData.profit}$)`);
+        console.log(`📉 Fermeture contrat perdant ${id} | PnL: ${profit}$`);
 
-        // Envoi de l'ordre de vente immédiat sur le flux principal
         ws.send(JSON.stringify({
-          sell: contractId,
+          sell: id,
           price: 0
         }));
       }
     });
 
-    if (!foundLosing) {
-      console.log("ℹ️ Aucune position n'est actuellement en perte.");
-    }
+    return foundLosing;
   }
 
   closeAll.onclick = () => {

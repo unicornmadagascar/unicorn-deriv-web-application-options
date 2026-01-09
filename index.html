@@ -488,7 +488,7 @@
     /* BOUTONS BLANCS AVEC DOUCE OMBRE */
     .popup-buttons {
       display: flex;
-      justify-content: space-between; 
+      justify-content: space-between;
       margin-top: 30px;
       gap: 15px;
     }
@@ -1684,10 +1684,60 @@
     }
 
     @keyframes pulse-red {
-    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 61, 96, 0.7); }
-    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 61, 96, 0); }
-    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 61, 96, 0); }
-}
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 61, 96, 0.7);
+      }
+
+      70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(255, 61, 96, 0);
+      }
+
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 61, 96, 0);
+      }
+    }
+
+    /* Animation de succès pour le bouton */
+    .btn-success-flash {
+      animation: flash-green 0.6s ease-out;
+    }
+
+    @keyframes flash-green {
+      0% {
+        background-color: #00ffa3;
+        box-shadow: 0 0 20px #00ffa3;
+        transform: scale(1.05);
+      }
+
+      100% {
+        background-color: transparent;
+        /* Ou votre couleur de bouton initiale */
+        box-shadow: 0 0 0px transparent;
+        transform: scale(1);
+      }
+    }
+
+    /* Animation de flash rouge pour les pertes */
+    .btn-danger-flash {
+      animation: flash-red 0.6s ease-out;
+    }
+
+    @keyframes flash-red {
+      0% {
+        background-color: #ff3d60;
+        box-shadow: 0 0 20px #ff3d60;
+        transform: scale(1.05);
+      }
+
+      100% {
+        background-color: transparent;
+        box-shadow: 0 0 0px transparent;
+        transform: scale(1);
+      }
+    }
   </style>
 </head>
 
