@@ -1322,7 +1322,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. Préparation du payload
     // Note : On utilise 'stake' (global) et 'multiplier' (global)
     const payload = {
-      buy: "1", // La valeur doit souvent être un string "1" ou le price_proposal_id
+      buy: 1, // La valeur doit souvent être un string "1" ou le price_proposal_id
       price: parseFloat(stake).toFixed(2),
       parameters: {
         contract_type: type === "BUY" ? "MULTUP" : "MULTDOWN",
