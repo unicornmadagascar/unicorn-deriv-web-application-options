@@ -3189,20 +3189,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  //--- Connexion automatique au chargement de la page si conditions remplies ---
   // Ouvrir popup
   document.getElementById("DatasettingPopup").onclick = () => {
-    document.getElementById("settingsPopup").style.display = "flex";
+    document.getElementById("settingsPopup").classList.add("active");
   };
 
-  // Fermer popup
+  // Fermer le popup
   document.getElementById("closePopupBtn").onclick = () => {
-    document.getElementById("settingsPopup").style.display = "none";
+    document.getElementById("settingsPopup").classList.remove("active");
   };
 
-  // Sauvegarder + assigner les variables
+  // Sauvegarder les valeurs
   document.getElementById("savePopupBtn").onclick = () => {
-
+    // Exemple de récupération :
     multiplier = parseInt(Number(document.getElementById("multiplierSelect").value)) || 40;
     stake = parseFloat(Number(document.getElementById("stakeInput").value)) || 1.0;
     buyNum = parseInt(Number(document.getElementById("buyNumberInput").value)) || 1;
@@ -3213,8 +3212,9 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Données sauvegardées :");
     console.log({ multiplier, stake, buyNumber, sellNumber, tp_contract, sl_contract });
 
-    // Fermer le popup
-    document.getElementById("settingsPopup").style.display = "none";
+    // Fermer après sauvegarde
+    document.getElementById("settingsPopup").classList.remove("active");
+    console.log("Paramètres sauvegardés !");
   };
 
   // -------------------------------------------------------------
