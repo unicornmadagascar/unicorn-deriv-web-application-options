@@ -1352,7 +1352,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ws.send(JSON.stringify(payload));
     }
   }
-
+  
   closewinning.onclick = () => {
     console.log("💰 Analyse des positions gagnantes...");
     closeProfitableTrades();
