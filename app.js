@@ -274,37 +274,64 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- INIT CHART ---
   function initChart(currentChartType) {
-    const container = document.getElementById("chartInner"); // Remplacez par votre ID réel
+    const container = document.getElementById("chartInner");
     if (!container) {
       console.error("Conteneur de graphique introuvable !");
       return;
     }
 
-    try {
-      if (chart) {
-        chart.remove();
-        chart = null; // Important de mettre à null
+    // 1. NETTOYAGE PHYSIQUE ET MÉMOIRE
+    if (chart) {
+      // Avant de supprimer le chart, on nettoie les lignes de prix actives
+      // pour éviter les fuites de mémoire (Memory Leaks)
+      if (currentSeries && priceLines4openlines) {
+        Object.values(priceLines4openlines).forEach(line => {
+          try { currentSeries.removePriceLine(line); } catch (e) { }
+        });
       }
-    } catch (e) { console.error("Erreur destruction chart:", e); }
 
+      try {
+        chart.remove();
+      } catch (e) {
+        console.error("Erreur lors de la destruction du chart:", e);
+      }
+      chart = null;
+    }
+
+    // 2. RÉINITIALISATION DES VARIABLES GLOBALES
     container.innerHTML = "";
+    priceLines4openlines = {}; // Reset de l'objet des contrats
 
-    chart = LightweightCharts.createChart(container, {  
+    // Reset des séries pour forcer leur recréation
+    currentSeries = null;
+    zigzagSeries = null;
+    maSeries = null;
+
+    // Reset des tableaux de données (Important pour ne pas mélanger les symboles)
+    cache = [];         // Votre historique bougies
+    priceData = [];     // Votre historique ticks (300)
+    priceDataZZ = [];   // Source unifiée pour ZigZag/MA
+    isWsInitialized = false;
+
+    // 3. CRÉATION DU NOUVEAU GRAPHIQUE
+    chart = LightweightCharts.createChart(container, {
       layout: {
         textColor: "#333",
         background: { type: "solid", color: "#fff" },
       },
-      grid: { vertLines: { color: "#eee" }, horzLines: { color: "#eee" } },
+      grid: {
+        vertLines: { color: "#f0f0f0" },
+        horzLines: { color: "#f0f0f0" }
+      },
       timeScale: {
         timeVisible: true,
         secondsVisible: true,
-        autoScale: true // Ajouté pour assurer la visibilité immédiate
+        // barSpacing: 10 // Optionnel: pour aérer les 300 ticks
       }
     });
 
-    // === Création de la série ===  
+    // 4. CONFIGURATION DES SÉRIES SELON LE TYPE
     if (currentChartType === "area") {
       currentSeries = chart.addAreaSeries({
         lineColor: "rgba(189, 6, 221, 1)",
@@ -317,7 +344,7 @@ document.addEventListener("DOMContentLoaded", () => {
         upColor: "#26a69a", borderUpColor: "#26a69a", wickUpColor: "#26a69a",
         downColor: "#ef5350", borderDownColor: "#ef5350", wickDownColor: "#ef5350",
       });
-    } else if (currentChartType === "line") {
+    } else { // Fallback sur "line"
       currentSeries = chart.addLineSeries({
         color: "#2962FF",
         lineWidth: 2,
@@ -325,9 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 5. AUTO-RÉACTIVATION DES INDICATEURS
-    // Si l'utilisateur avait déjà activé le ZigZag ou les MA sur le symbole précédent,
-    // on recrée les séries immédiatement pour le nouveau symbole.
-
+    // On recrée les "réceptacles" (séries) pour les données qui vont arriver
     if (isZigZagActive) {
       zigzagSeries = chart.addLineSeries({
         color: '#f39c12',
@@ -337,15 +362,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (activePeriods.length > 0) {
-      initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200  
+      initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200 via le nouveau chart
     }
-
-    // --- NETTOYAGE CRUCIAL DES DONNÉES ---
-    candles = [];       // Pour handleCandleData
-    priceData = [];     // Pour handleTickData
-    chartData = [];
-    recentChanges = [];
-    lastPrices = {};
   }
 
   function styleType(currentChartType) {
@@ -411,9 +429,9 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadSymbol(symbol, interval, chartType) {
 
     if (!symbol || !interval || !chartType) {
-        throw new Error("Paramètres manquants pour loadSymbol");
+      throw new Error("Paramètres manquants pour loadSymbol");
     }
-    
+
     currentSessionId++;
     const thisSessionId = currentSessionId;
 
