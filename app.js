@@ -238,6 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- SYMBOLS ---
   function displaySymbols(currentInterval, currentChartType) {
     const symbolList = document.getElementById("symbolList");
+    if (!symbolList) return;
     symbolList.innerHTML = "";
 
     SYMBOLS.forEach(s => {
@@ -246,24 +247,27 @@ document.addEventListener("DOMContentLoaded", () => {
       el.textContent = s.name;
       el.dataset.symbol = s.symbol;
 
-      // On rend l'écouteur d'événement asynchrone pour gérer le reset
-      el.addEventListener("click", async () => {
-
-        // 1. Gestion visuelle de la sélection
-        document.querySelectorAll("#symbolList .symbol-item")
-          .forEach(item => item.classList.remove("selected"));
+      // On enlève le async ici car loadSymbol gère ses propres asynchronicités (WS)
+      el.addEventListener("click", () => {
+        // 1. Mise à jour visuelle (immédiate pour le feedback utilisateur)
+        const allItems = symbolList.querySelectorAll(".symbol-item");
+        allItems.forEach(item => item.classList.remove("selected"));
         el.classList.add("selected");
 
         if (!s.symbol) return;
 
-        // 2. Appel de la fonction unifiée (remplace connect et subscribeSymbol)
-        // loadSymbol gère en interne le await resetZZChartVariable()
-        try {
-          await loadSymbol(s.symbol, currentInterval, currentChartType);
-          console.log(`Changement vers ${s.name} réussi.`);
-        } catch (error) {
-          console.error("Erreur lors du basculement de symbole:", error);
-        }
+        console.log(`Tentative de basculement vers : ${s.name}`);
+
+        // 2. Appel de loadSymbol
+        // On ne met pas "await" devant loadSymbol car c'est une fonction de flux (WS)
+        // mais on utilise .catch pour attraper les erreurs d'initialisation
+        loadSymbol(s.symbol, currentInterval, currentChartType)
+          .then(() => {
+            console.log(`Commande de chargement envoyée pour ${s.symbol}`);
+          })
+          .catch(error => {
+            console.error("Erreur critique lors du basculement :", error);
+          });
       });
 
       symbolList.appendChild(el);
@@ -411,6 +415,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadSymbol(symbol, interval, chartType) {
+
+    if (!symbol || !interval || !chartType) {
+        throw new Error("Paramètres manquants pour loadSymbol");
+    }
+    
     currentSessionId++;
     const thisSessionId = currentSessionId;
 
@@ -622,7 +631,7 @@ document.addEventListener("DOMContentLoaded", () => {
       currentSeries.update(newTick);
 
       // Rafraîchit les indicateurs (MA, ZigZag) sur le nouveau point
-      renderIndicators();  
+      renderIndicators();
     }
   }
 
@@ -706,7 +715,7 @@ document.addEventListener("DOMContentLoaded", () => {
         authorized = false;
         console.log("Socket Closed");
       }
-    }, 500);   
+    }, 500);
   }
 
   function startMLCountdown() {
