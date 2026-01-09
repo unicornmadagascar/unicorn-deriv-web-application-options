@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let profitHistory = [];
   const contractsData = {}; // stockage des contrats {id: {profits: [], infos: {…}}}
   let contractSymbol;
-  let contracts = [];
+  let contracts = [];  
   let wsAI = null;
   let contracttype__ = "";  
   let contractid__;
