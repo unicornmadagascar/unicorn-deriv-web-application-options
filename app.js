@@ -153,7 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsAI = null;
   let contracttype__ = "";  
   let contractid__;
-  const MAX_HISTORY = 500; // max taille du buffer
+  const MAX_HISTORY = 500; // max taille du buffer  
   let proposal__ = [];
   let transactions__ = [];
   let structresponse = [];
