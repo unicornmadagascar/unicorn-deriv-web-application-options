@@ -3210,7 +3210,7 @@ document.addEventListener("DOMContentLoaded", () => {
     sl_contract = Number(document.getElementById("slInput").value);
   
     console.log("Données sauvegardées :");
-    console.log({ multiplier, stake, buyNumber, sellNumber, tp_contract, sl_contract });
+    console.log({ multiplier, stake, buyNumber, sellNumber, tp_contract, sl_contract });  
 
     // Fermer après sauvegarde
     document.getElementById("settingsPopup").classList.remove("active");
