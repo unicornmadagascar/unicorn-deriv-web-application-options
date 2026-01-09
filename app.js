@@ -675,7 +675,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const entryPrice = parseFloat(contract.entry_tick_display_value);
     const pnl = parseFloat(contract.profit).toFixed(2);
-  
+
     // Couleurs modernes
     const color = pnl >= 0 ? '#00ffa3' : '#ff3d60';
 
@@ -1329,7 +1329,7 @@ document.addEventListener("DOMContentLoaded", () => {
         symbol: currentSymbol,
         currency: CURRENCY,
         basis: "stake",
-        amount: stake.toFixed(2),  
+        amount: stake.toFixed(2),
         multiplier: multiplier,
         // stop_loss: 10, // Optionnel
         // take_profit: 20 // Optionnel
@@ -1337,8 +1337,13 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // 3. Récupération du nombre de positions à ouvrir
-    const inputElement = (type === "BUY") ? buyNumber : sellNumber;
-    const count = parseInt(inputElement.value) || 1;
+    const count = direction === "BUY"
+        ? (parseInt(buyNumber.value) || 1)
+        : (parseInt(sellNumber.value) || 1);
+
+    if (multiplier === "" || stake === "" || count === "" || CURRENCY === "" || currentSymbol === "") {
+      return;
+    }
 
     // 4. Envoi immédiat (pas d'attente de reconnexion !)
     console.log(`🚀 Envoi de ${count} ordres ${type} sur ${currentSymbol}`);
@@ -3206,11 +3211,11 @@ document.addEventListener("DOMContentLoaded", () => {
     stake = parseFloat(Number(document.getElementById("stakeInput").value)) || 1.0;
     buyNum = parseInt(Number(document.getElementById("buyNumberInput").value)) || 1;
     sellNum = parseInt(Number(document.getElementById("sellNumberInput").value)) || 1;
-    tp_contract = Number(document.getElementById("tpInput").value);  
-    sl_contract = Number(document.getElementById("slInput").value);  
-  
+    tp_contract = Number(document.getElementById("tpInput").value);
+    sl_contract = Number(document.getElementById("slInput").value);
+
     console.log("Données sauvegardées :");
-    console.log({ multiplier, stake, buyNumber, sellNumber, tp_contract, sl_contract });  
+    console.log({ multiplier, stake, buyNumber, sellNumber, tp_contract, sl_contract });
 
     // Fermer après sauvegarde
     document.getElementById("settingsPopup").classList.remove("active");
