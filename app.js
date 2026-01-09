@@ -1323,14 +1323,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // Note : On utilise 'stake' (global) et 'multiplier' (global)
     const payload = {
       buy: 1, // La valeur doit souvent être un string "1" ou le price_proposal_id
-      price: parseFloat(stake).toFixed(2),
+      price: stake.toFixed(2),
       parameters: {
         contract_type: type === "BUY" ? "MULTUP" : "MULTDOWN",
         symbol: currentSymbol,
         currency: CURRENCY,
         basis: "stake",
-        amount: parseFloat(stake).toFixed(2),
-        multiplier: parseInt(multiplier),
+        amount: stake.toFixed(2),  
+        multiplier: multiplier,
         // stop_loss: 10, // Optionnel
         // take_profit: 20 // Optionnel
       }
@@ -3207,7 +3207,7 @@ document.addEventListener("DOMContentLoaded", () => {
     buyNum = parseInt(Number(document.getElementById("buyNumberInput").value)) || 1;
     sellNum = parseInt(Number(document.getElementById("sellNumberInput").value)) || 1;
     tp_contract = Number(document.getElementById("tpInput").value);
-    sl_contract = Number(document.getElementById("slInput").value);
+    sl_contract = Number(document.getElementById("slInput").value);  
   
     console.log("Données sauvegardées :");
     console.log({ multiplier, stake, buyNumber, sellNumber, tp_contract, sl_contract });  
