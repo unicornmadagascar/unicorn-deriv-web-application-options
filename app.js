@@ -1432,7 +1432,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. Sécurité : vérifier la connexion
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       console.error("WebSocket non connecté");
-      return;
+      return;  
     }
 
     // 2. Récupérer tous les IDs des contrats actuellement suivis
