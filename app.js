@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Historique local des ticks
   let closePrice;
   let tickHistory4openpricelines = [];
-  const priceLines4openlines = {}; // Stocke les lignes actives (clé = contract_id)
+  let priceLines4openlines = {}; // Stocke les lignes actives (clé = contract_id)
   let Tick_arr = [];
   // Historique de profits
   let profitHistory = [];
