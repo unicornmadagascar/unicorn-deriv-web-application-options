@@ -291,12 +291,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     container.innerHTML = "";
 
-    // Reset des références
-    currentSeries = null;
-    zigzagSeries = null;
-    maSeries = null;
-    priceLines4openlines = {};
-
     chart = LightweightCharts.createChart(container, {
       layout: {
         textColor: "#333",
