@@ -675,7 +675,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const entryPrice = parseFloat(contract.entry_tick_display_value);
     const pnl = parseFloat(contract.profit).toFixed(2);
-
+  
     // Couleurs modernes
     const color = pnl >= 0 ? '#00ffa3' : '#ff3d60';
 
