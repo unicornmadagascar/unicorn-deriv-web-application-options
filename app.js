@@ -368,10 +368,23 @@ document.addEventListener("DOMContentLoaded", () => {
       initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200 via le nouveau chart
     }
 
-    // Dans initChart()
-    lastTotalPnL = 0;
-    if (document.getElementById("pnl-arrow")) {
-      document.getElementById("pnl-arrow").innerText = "";
+    // --- DANS VOTRE FONCTION initChart ---
+
+    // 1. Réinitialisation de la mémoire des contrats
+    activeContractsData = {};
+    lastTotalPnL = 0; // On remet aussi la mémoire de tendance à zéro
+
+    // 2. Réinitialisation visuelle du compteur PnL
+    const pnlDisplay = document.getElementById("total-pnl");
+    const arrowDisplay = document.getElementById("pnl-arrow");
+
+    if (pnlDisplay) {
+      pnlDisplay.innerText = "0.00";
+      pnlDisplay.style.color = "#fff"; // On remet en blanc (neutre)
+    }
+
+    if (arrowDisplay) {
+      arrowDisplay.innerText = ""; // On enlève la flèche (haut ou bas)
     }
   }
 
@@ -543,14 +556,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const contract = msg.proposal_open_contract;
         const id = contract.contract_id;
 
-        // 1. Mémorisation de la direction pour la fonction Reverse
-        if (!contract.is_settled) {
-          currentContractTypeGlobal = contract.contract_type;
-        }
-
-        // 2. Cas du contrat FERMÉ (vendu, expiré, etc.)
+        // 1. Cas du contrat FERMÉ (vendu, expiré, etc.)
         if (contract.is_settled || contract.status === "sold" || contract.exit_tick) {
-          // Nettoyage des données
+          // Nettoyage des données globales
           delete activeContractsData[id];
 
           // Nettoyage visuel du graphique
@@ -563,19 +571,19 @@ document.addEventListener("DOMContentLoaded", () => {
             delete priceLines4openlines[id];
           }
         }
-        // 3. Cas du contrat OUVERT
+        // 2. Cas du contrat OUVERT
         else {
-          // On ne traite et n'affiche que si c'est le symbole actuellement affiché
-          if (contract.symbol === symbol) {
-            // Mise à jour des données pour les fonctions CloseWinning / Reverse
-            activeContractsData[id] = contract;
+          // Mémorisation pour les fonctions globales (Reverse, CloseWinning, etc.)
+          currentContractTypeGlobal = contract.contract_type;
+          activeContractsData[id] = contract; // Correction ici (contract au lieu de c)
 
-            // Une seule exécution de la mise à jour graphique
+          // Affichage uniquement si c'est le symbole actuel
+          if (contract.symbol === symbol) {
             updateContractLines(contract);
           }
         }
 
-        // AJOUTEZ CECI À LA FIN DU BLOC :
+        // 3. Mise à jour du PnL Global (toujours appeler pour refléter les fermetures ou les gains)
         updateGlobalPnL();
       }
 
@@ -590,39 +598,59 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateGlobalPnL() {
+    const container = document.getElementById("pnl-container");
     const pnlSpan = document.getElementById("total-pnl");
     const arrowSpan = document.getElementById("pnl-arrow");
-    if (!pnlSpan || !arrowSpan) return;
 
-    let currentTotal = 0;
-    Object.values(activeContractsData).forEach(c => {
-      currentTotal += parseFloat(c.profit || 0);
-    });
+    if (!container || !pnlSpan || !arrowSpan) return;
 
-    // 1. Déterminer la flèche de tendance
-    if (currentTotal > lastTotalPnL) {
-      arrowSpan.innerText = " ▲"; // Profit augmente
-      arrowSpan.style.color = "#00ffa3";
-    } else if (currentTotal < lastTotalPnL) {
-      arrowSpan.innerText = " ▼"; // Profit diminue
-      arrowSpan.style.color = "#ff3d60";
+    const activeIds = Object.keys(activeContractsData);
+
+    // 1. Gestion de la visibilité du conteneur
+    if (activeIds.length === 0) {
+      container.style.display = "none";
+      lastTotalPnL = 0; // Reset de la mémoire
+      return;
+    } else {
+      container.style.display = "flex";
     }
 
-    // 2. Mise à jour du texte et de la couleur principale
+    // 2. Calcul du profit total
+    let currentTotal = 0;
+    activeIds.forEach(id => {
+      currentTotal += parseFloat(activeContractsData[id].profit || 0);
+    });
+
+    // 3. Déterminer la tendance (Flèche)
+    if (currentTotal > lastTotalPnL) {
+      arrowSpan.innerText = " ▲";
+      arrowSpan.style.color = "#00ffa3";
+    } else if (currentTotal < lastTotalPnL) {
+      arrowSpan.innerText = " ▼";
+      arrowSpan.style.color = "#ff3d60";
+    } else {
+      arrowSpan.innerText = ""; // Pas de changement, on cache la flèche
+    }
+
+    // 4. Mise à jour du texte et de la couleur du PnL
     pnlSpan.innerText = currentTotal.toFixed(2);
     pnlSpan.style.color = currentTotal >= 0 ? "#00ffa3" : "#ff3d60";
 
-    // 3. Animation Flash (Optionnel)
-    // Si le profit augmente, on fait briller brièvement le badge
-    if (currentTotal > lastTotalPnL && currentTotal > 0) {
-      pnlSpan.parentElement.style.transition = "box-shadow 0.2s";
-      pnlSpan.parentElement.style.boxShadow = "0 0 15px rgba(0, 255, 163, 0.6)";
+    // 5. Animation Flash (Feedback visuel)
+    if (currentTotal !== lastTotalPnL) {
+      const isWinning = currentTotal > lastTotalPnL;
+      container.style.transition = "box-shadow 0.2s ease";
+      container.style.boxShadow = isWinning
+        ? "0 0 15px rgba(0, 255, 163, 0.5)"
+        : "0 0 15px rgba(255, 61, 96, 0.5)";
+
       setTimeout(() => {
-        pnlSpan.parentElement.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+        // Retour au style par défaut défini dans votre CSS
+        container.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
       }, 200);
     }
 
-    // 4. Sauvegarder pour la prochaine comparaison
+    // 6. Sauvegarder pour le prochain tick
     lastTotalPnL = currentTotal;
   }
 
@@ -1360,108 +1388,67 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   closelosing.onclick = () => {
-    if (wsContracts_losing) { wsContracts_losing.close(); wsContracts_losing = null; }
-
-    console.log("Closing all profitable trades...");
-
-    wsContracts_losing = new WebSocket(WS_URL);
-    wsContracts_losing.onopen = () => { wsContracts_losing.send(JSON.stringify({ authorize: TOKEN })); };
-    wsContracts_losing.onerror = (e) => {
-      console.log("❌ WS Error: " + JSON.stringify(e));
-    };
-
-    wsContracts_losing.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-
-      // Authorization successful
-      if (data.msg_type === "authorize") {
-        console.log("✅ Authorized successfully. Fetching portfolio...");
-        wsContracts_losing.send(JSON.stringify({ portfolio: 1 }));
-      }
-
-      // Portfolio received
-      if (data.msg_type === "portfolio" && data.portfolio?.contracts?.length > 0) {
-        const contracts = data.portfolio.contracts || [];
-        console.log("📊 Found " + contracts.length + " active contracts.");
-
-        contracts.forEach((contract, i) => {
-          setTimeout(() => {
-            wsContracts_losing.send(
-              JSON.stringify({
-                proposal_open_contract: 1,
-                contract_id: contract.contract_id,
-              })
-            );
-          }, i * 200); // Délai de 500ms entre chaque demande
-        });
-      }
-
-      // Proposal open contract (detail for each active trade)
-      if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
-        const poc = data.proposal_open_contract;
-        const profit = parseFloat(poc.profit);
-
-        if (profit < 0) {
-          console.log(
-            `💰 Closing profitable trade ${poc.contract_id} with profit ${profit.toFixed(2)}`
-          );
-
-          wsContracts_losing.send(
-            JSON.stringify({
-              sell: poc.contract_id,
-              price: 0, // 0 = sell at market price
-            })
-          );
-        }
-      }
-
-      // Sell confirmation
-      if (data.msg_type === "sell") {
-        const profit = parseFloat(data.sell.profit);
-        console.log(`✅ Trade ${data.sell.contract_id} closed with profit: ${profit.toFixed(2)}`);
-      }
-
-      // No open contracts
-      if (data.msg_type === "portfolio" && (!data.portfolio || !data.portfolio.contracts.length)) {
-        console.log("⚠️ No active contracts found.");
-      }
-    };
+    console.log("🔴 Fermeture de toutes les positions en perte...");
+    closeLosingTrades();
   };
 
+  function closeLosingTrades() {
+    // 1. Sécurité connexion
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      console.error("WebSocket non connecté");
+      return;
+    }
+
+    let foundLosing = false;
+
+    // 2. On boucle sur les IDs des contrats actuellement affichés
+    Object.keys(priceLines4openlines).forEach((contractId) => {
+      // On récupère les données temps réel (profit, etc.) stockées globalement
+      const contractData = activeContractsData[contractId];
+
+      // On vérifie si le profit est strictement inférieur à 0
+      if (contractData && parseFloat(contractData.profit) < 0) {
+        foundLosing = true;
+        console.log(`📉 Fermeture perte : ${contractId} (Profit: ${contractData.profit}$)`);
+
+        // Envoi de l'ordre de vente immédiat sur le flux principal
+        ws.send(JSON.stringify({
+          sell: contractId,
+          price: 0
+        }));
+      }
+    });
+
+    if (!foundLosing) {
+      console.log("ℹ️ Aucune position n'est actuellement en perte.");
+    }
+  }
+
   closeAll.onclick = () => {
-    if (wsContracts__close) { wsContracts__close.close(); wsContracts__close = null; }
+    console.log("🛑 PANIC MODE : Fermeture de TOUTES les positions...");
 
-    console.log("Closing all trades...");
+    // 1. Sécurité : vérifier la connexion
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      console.error("WebSocket non connecté");
+      return;
+    }
 
-    wsContracts__close = new WebSocket(WS_URL);
-    wsContracts__close.onopen = () => { wsContracts__close.send(JSON.stringify({ authorize: TOKEN })); };
-    wsContracts__close.onclose = () => { console.log("Disconnected"); console.log("WS closed"); };
-    wsContracts__close.onerror = e => { console.log("WS error " + JSON.stringify(e)); };
-    wsContracts__close.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
+    // 2. Récupérer tous les IDs des contrats actuellement suivis
+    const allIds = Object.keys(activeContractsData);
 
-      // 2️⃣ Quand autorisé, on demande le portefeuille
-      if (data.msg_type === 'authorize') {
-        wsContracts__close.send(JSON.stringify({ portfolio: 1 }));
-      }
+    if (allIds.length === 0) {
+      console.log("ℹ️ Aucune position ouverte à fermer.");
+      return;
+    }
 
-      // 3️⃣ Quand on reçoit les contrats ouverts
-      if (data.msg_type === 'portfolio') {
-        const contracts = data.portfolio.contracts || [];
-        console.log('Contrats ouverts:', contracts);
-
-        // 4️⃣ Fermer chaque contrat
-        contracts.forEach(c => {
-          wsContracts__close.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
-          console.log(`⛔ Fermeture du contrat ${c.contract_id} demandée`);
-        });
-      }
-
-      // 5️⃣ Confirmation de fermeture
-      if (data.msg_type === 'sell') {
-        console.log('✅ Contrat fermé:', data.sell.contract_id);
-      }
-    };
+    // 3. Envoyer l'ordre de vente pour chaque contrat instantanément
+    allIds.forEach(id => {
+      ws.send(JSON.stringify({
+        sell: id,
+        price: 0
+      }));
+      console.log(`⛔ Requête de vente envoyée pour : ${id}`);
+    });
   };
 
   // --- INITIALISATION (À appeler une seule fois au chargement ou au 1er clic) ---
