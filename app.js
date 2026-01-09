@@ -357,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
       zigzagSeries = chart.addLineSeries({
         color: '#f39c12',
         lineWidth: 2,
-        priceLineVisible: false,
+        priceLineVisible: false, 
       });
     }
 
