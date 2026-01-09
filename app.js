@@ -628,15 +628,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("pnl-container");
     const pnlSpan = document.getElementById("total-pnl");
     const arrowSpan = document.getElementById("pnl-arrow");
+    const closeAllBtn = document.getElementById("closeAll"); // Ajout de la référence au bouton
 
     if (!container || !pnlSpan || !arrowSpan) return;
 
     const activeIds = Object.keys(activeContractsData);
 
-    // 1. Gestion de la visibilité du conteneur
+    // 1. Gestion de la visibilité et Reset si 0 positions
     if (activeIds.length === 0) {
       container.style.display = "none";
-      lastTotalPnL = 0; // Reset de la mémoire
+      lastTotalPnL = 0;
+
+      // Reset du bouton Close All quand tout est fermé
+      if (closeAllBtn) {
+        closeAllBtn.style.animation = "none";
+        closeAllBtn.innerText = "CLOSE ALL";
+      }
       return;
     } else {
       container.style.display = "flex";
@@ -655,15 +662,13 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (currentTotal < lastTotalPnL) {
       arrowSpan.innerText = " ▼";
       arrowSpan.style.color = "#ff3d60";
-    } else {
-      arrowSpan.innerText = ""; // Pas de changement, on cache la flèche
     }
 
     // 4. Mise à jour du texte et de la couleur du PnL
     pnlSpan.innerText = currentTotal.toFixed(2);
     pnlSpan.style.color = currentTotal >= 0 ? "#00ffa3" : "#ff3d60";
 
-    // 5. Animation Flash (Feedback visuel)
+    // 5. Animation Flash du container
     if (currentTotal !== lastTotalPnL) {
       const isWinning = currentTotal > lastTotalPnL;
       container.style.transition = "box-shadow 0.2s ease";
@@ -672,60 +677,24 @@ document.addEventListener("DOMContentLoaded", () => {
         : "0 0 15px rgba(255, 61, 96, 0.5)";
 
       setTimeout(() => {
-        // Retour au style par défaut défini dans votre CSS
         container.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
       }, 200);
     }
 
-    // 6. Sauvegarder pour le prochain tick
-    lastTotalPnL = currentTotal;
-  }
-
-  function updateContractLines(contract) {
-    // 1. Sécurité : Si la série n'existe plus (changement de symbole), on arrête
-    if (!currentSeries) return;
-
-    const id = contract.contract_id;
-
-    // 2. Suppression si clos (Double sécurité avec votre gestionnaire de messages)
-    if (contract.is_settled || contract.status === "sold" || contract.exit_tick) {
-      if (priceLines4openlines[id]) {
-        try {
-          currentSeries.removePriceLine(priceLines4openlines[id]);
-        } catch (e) {
-          console.warn("Ligne déjà supprimée");
-        }
-        delete priceLines4openlines[id];
+    // 6. NOUVEAU : Animation du bouton Close All
+    if (closeAllBtn) {
+      const count = activeIds.length;
+      if (count > 5) {
+        closeAllBtn.style.animation = "pulse-red 1s infinite";
+        closeAllBtn.innerText = `CLOSE ALL (${count})`;
+      } else {
+        closeAllBtn.style.animation = "none";
+        closeAllBtn.innerText = "CLOSE ALL";
       }
-      return;
     }
 
-    const entryPrice = parseFloat(contract.entry_tick_display_value);
-    const pnl = parseFloat(contract.profit).toFixed(2);
-
-    // Couleurs modernes
-    const color = pnl >= 0 ? '#00ffa3' : '#ff3d60';
-
-    // 3. Création ou Mise à jour
-    if (!priceLines4openlines[id]) {
-      // Nouvelle ligne  
-      priceLines4openlines[id] = currentSeries.createPriceLine({
-        price: entryPrice,
-        color: color,
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: `${contract.contract_type} [${pnl}$]`,
-      });
-    } else {
-      // Mise à jour dynamique (PnL et Couleur)
-      priceLines4openlines[id].applyOptions({
-        title: `${contract.contract_type} [${pnl}$]`,
-        color: color,
-        // On peut aussi changer le style si c'est gagnant pour le feedback visuel
-        lineWidth: pnl >= 0 ? 3 : 2
-      });
-    }
+    // 7. Sauvegarder pour le prochain tick
+    lastTotalPnL = currentTotal;
   }
 
   /**
