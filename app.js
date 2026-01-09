@@ -1337,9 +1337,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // 3. Récupération du nombre de positions à ouvrir
-    const count = direction === "BUY"
+    const count = type === "BUY"
         ? (parseInt(buyNumber.value) || 1)
-        : (parseInt(sellNumber.value) || 1);
+        : (parseInt(sellNumber.value) || 1); 
 
     if (multiplier === "" || stake === "" || count === "" || CURRENCY === "" || currentSymbol === "") {
       return;
