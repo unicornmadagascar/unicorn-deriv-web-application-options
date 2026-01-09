@@ -347,7 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else { // Fallback sur "line"
       currentSeries = chart.addLineSeries({
         color: "#2962FF",
-        lineWidth: 2,
+        lineWidth: 2, 
       });
     }
 
