@@ -2246,7 +2246,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Données aléatoires au démarrage
     setRandomSeries();
-  }
+  }  
 
   // === Série aléatoire avant les vrais contrats ===
   function setRandomSeries() {
