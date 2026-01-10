@@ -2480,7 +2480,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const lastTrade = data.profit_table.transactions[0];
         // APPEL DE LA NOTIFICATION
         notifyNewTrade(lastTrade);
-        updateHistoricalTable(data.profit_table.transactions);
+        updateHistoricalTable(data.profit_table.transactions);  
       }
     };
   }   
