@@ -2327,7 +2327,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     currentPage = 1;
     filterAndRender();
-    updateHistoricalChart(trades);  
+    updateHistoricalChart(trades);
   }
 
   /**
@@ -2468,22 +2468,67 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function fetchHistoricalData(from, to) {
-    if (historicalConn) historicalConn.close();
-    historicalConn = new WebSocket(WS_URL);
-    historicalConn.onopen = () => historicalConn.send(JSON.stringify({ authorize: TOKEN }));
+    // 1. Fermer proprement l'ancienne connexion
+    if (historicalConn) {
+      historicalConn.onopen = null;
+      historicalConn.onmessage = null;
+      historicalConn.onerror = null;
+      historicalConn.close();
+    }
+
+    // 2. Initialisation (Utilisez l'URL directe si WS_URL pose problème)
+    const APP_ID = '109310';
+    const finalURL = `wss://ws.binaryws.com/websockets/v3?app_id=${APP_ID}`;
+
+    historicalConn = new WebSocket(finalURL);
+
+    // 3. Gestionnaire d'erreur de connexion
+    historicalConn.onerror = (error) => {
+      console.error("WebSocket Error:", error);
+      alert("Connection timeout or network error. Please check your internet.");
+    };
+
+    historicalConn.onopen = () => {
+      console.log("Connected to Deriv API...");
+      historicalConn.send(JSON.stringify({ authorize: TOKEN }));
+    };
+
     historicalConn.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
+
+      if (data.error) {
+        console.error("API Error:", data.error.message);
+        return;
+      }
+
       if (data.msg_type === "authorize") {
-        historicalConn.send(JSON.stringify({ profit_table: 1, description: 1, date_from: from, date_to: to, limit: 100, sort: "DESC" }));
+        historicalConn.send(JSON.stringify({
+          profit_table: 1,
+          description: 1,
+          date_from: from,
+          date_to: to,
+          limit: 100,
+          sort: "DESC"
+        }));
       }
-      if (data.msg_type === "profit_table" && data.profit_table.count > 0) {
-        const lastTrade = data.profit_table.transactions[0];
-        // APPEL DE LA NOTIFICATION
-        notifyNewTrade(lastTrade);
-        updateHistoricalTable(data.profit_table.transactions);     
+
+      if (data.msg_type === "profit_table") {
+        if (data.profit_table && data.profit_table.transactions.length > 0) {
+          const transactions = data.profit_table.transactions;
+
+          // On notifie seulement le premier (le plus récent)
+          notifyNewTrade(transactions[0]);
+
+          // On met à jour l'interface
+          updateHistoricalTable(transactions);
+        } else {
+          // Cas où il n'y a aucun trade sur la période
+          document.getElementById("autoHistoricalBody").innerHTML =
+            '<tr><td colspan="10" style="text-align:center;">No trades found for this period.</td></tr>';
+        }
       }
-    };
-  }   
+    };  
+  }
 
   function calculateWinRate(trades) {
     if (!trades.length) return { winRate: 0, lossRate: 0, totalProfitPrice__: 0, totalLossPrice__: 0 };
@@ -3044,9 +3089,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 2. Convertir les dates en TimeStamp UNIX (secondes) pour l'API Deriv
-    const fromTimestamp =  startValue.toString();                                      // Math.floor(new Date(startValue).getTime() / 1000);
+    const fromTimestamp = startValue.toString();                                      // Math.floor(new Date(startValue).getTime() / 1000);
     // On ajoute 86399 secondes pour inclure toute la journée de fin (jusqu'à 23:59:59)
-    const toTimestamp =  endValue.toString();                                                              // Math.floor(new Date(endValue).getTime() / 1000) + 86399;
+    const toTimestamp = endValue.toString();                                                              // Math.floor(new Date(endValue).getTime() / 1000) + 86399;
 
     // 3. APPEL DE LA FONCTION
     fetchHistoricalData(fromTimestamp, toTimestamp);
