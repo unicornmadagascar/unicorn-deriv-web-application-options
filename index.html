@@ -599,7 +599,7 @@
     }
 
     /* 📊 Panneau des contrats ouverts */
-    /* --- Conteneur des contrats --- */
+    /* --- 1. CONTENEURS PRINCIPAUX --- */
     #contractsPanelContainer {
       background: #ffffff;
       border-radius: 16px;
@@ -607,8 +607,8 @@
       border: 1px solid #e2e8f0;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
       width: 100%;
-      /* Assure une largeur stable */
       box-sizing: border-box;
+      margin-bottom: 20px;
     }
 
     #contractsPanel {
@@ -620,29 +620,55 @@
 
     #contractsPanel.active {
       display: block;
-      /* Évitez flex ici pour la stabilité du tableau */
     }
 
-    /* --- Table Styles Rectifiés --- */
+    /* --- 2. BOUTON DE CONTRÔLE PRINCIPAL --- */
+    #contractsPanelToggle {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    #contractsPanelToggle:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+      filter: brightness(1.1);
+    }
+
+    /* --- 3. STRUCTURE DE LA TABLE (ISOLÉE) --- */
+    .table-wrapper {
+      background: #ffffff;
+      padding: 10px;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
     .table-responsive {
       width: 100%;
-      overflow-x: auto;
-      /* Permet le scroll horizontal sans casser le layout */
+      overflow-x: auto;  
       margin-top: 15px;
+      border-radius: 8px;  
     }
 
     .trade-table {
       width: 100%;
       min-width: 900px;
-      /* Empêche l'écrasement des colonnes */
       border-collapse: separate;
       border-spacing: 0 8px;
       table-layout: auto;
-      /* Laisse le contenu définir la largeur intelligemment */
     }
 
     .trade-table th {
-      color: #64748b;
+      color: #94a3b8;
       font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -650,16 +676,15 @@
       border-bottom: 2px solid #f1f5f9;
       text-align: left;
       white-space: nowrap;
-      /* EMPÊCHE LE RÉTRÉCISSEMENT DES TITRES */
     }
 
     .trade-table tbody tr {
       background: #ffffff;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: all 0.2s ease;
     }
 
-    /* On applique le hover sur les cellules pour éviter les bugs de scale sur les lignes */
-    .trade-table tbody tr:hover td {
+    .trade-table tbody tr:hover {
+      transform: translateX(5px);
       background: #f8fafc;
     }
 
@@ -669,10 +694,10 @@
       border-bottom: 1px solid #f1f5f9;
       font-size: 0.85rem;
       white-space: nowrap;
-      /* Garde les données sur une ligne */
+      color: #1e293b;
     }
 
-    /* --- Arrondis des lignes (puisque border-collapse est separate) --- */
+    /* Arrondis des lignes */
     .trade-table td:first-child {
       border-left: 1px solid #f1f5f9;
       border-radius: 10px 0 0 10px;
@@ -683,25 +708,41 @@
       border-radius: 0 10px 10px 0;
     }
 
-    /* --- Badges & Animations --- */
-    .badge-type {
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 0.7rem;
-      display: inline-block;
+    /* --- 4. BOUTONS D'ACTION DANS LA TABLE --- */
+    .table-wrapper #exportCSV {
+      background: #f0f7ff;
+      color: #2563eb;
+      border: 1px solid #dbeafe;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      transition: all 0.2s ease;
     }
 
-    .MULTUP {
-      background: rgba(16, 185, 129, 0.1);
-      color: #10b981;
+    .table-wrapper #exportCSV:hover {
+      background: #2563eb;
+      color: white;
+      transform: translateY(-2px);
     }
 
-    .MULTDOWN {
-      background: rgba(239, 68, 68, 0.1);
-      color: #ef4444;
+    .panic-btn {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+      transition: all 0.3s ease;
     }
 
+    .panic-btn:hover {
+      filter: brightness(1.1);
+      transform: scale(1.02);
+    }
+
+    /* --- 5. INDICATEURS DE PROFIT & STATUT --- */
     .profit-positive {
       color: #10b981;
       font-weight: 800;
@@ -713,253 +754,67 @@
       font-weight: 800;
     }
 
-    /* Bouton Principal (Show/Hide) */
-    #contractsPanelToggle {
-      background: linear-gradient(135deg, var(--primary), #3b82f6);
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 12px;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    #contractsPanelToggle:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
-      filter: brightness(1.1);
-    }
-
-    #contractsPanelToggle:active {
-      transform: translateY(0);
-    }
-
-    /* Bouton Export (Style Outline Moderne) */
-    /* --- ISOLATION ET STRUCTURE --- */
-    .table-wrapper {
-      background: #ffffff;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    }
-
-    /* --- BOUTONS DYNAMIQUES --- */
-    .table-wrapper button {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      border: none;
-      font-weight: 600;
-    }
-
-    /* Bouton Export (Style Verre) */
-    .table-wrapper #exportCSV {
-      background: #f0f7ff;  
-      color: #2563eb;
-      border: 1px solid #dbeafe;  
-      padding: 8px 16px;
-      border-radius: 10px;
-    }
-
-    .table-wrapper #exportCSV:hover {
-      background: #2563eb;
-      color: white;
-      transform: translateY(-2px);
-    }
-
-    /* Bouton Panic (Gradient Danger) */
-    .table-wrapper .panic-btn {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-      color: white;
-      padding: 10px 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-    }
-
-    .table-wrapper .panic-btn:hover {
-      filter: brightness(1.1);
-      transform: translateY(-2px) scale(1.02);
-      box-shadow: 0 6px 15px rgba(239, 68, 68, 0.3);
-    }
-
-    /* Bouton Delete Selected (Minimaliste) */
-    .table-wrapper .btn-delete-light {
-      background: transparent;
-      color: #64748b;
-      font-size: 0.9rem;
-      padding: 8px;
-    }
-
-    .table-wrapper .btn-delete-light:hover {
-      color: #ef4444;
-      background: #fef2f2;
-      border-radius: 8px;
-    }
-
-    /* --- TABLE MODERNE --- */
-    .table-wrapper .trade-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0 10px;
-      /* Espacement entre les lignes */
-      margin: 15px 0;
-      min-width: 900px;
-    }
-
-    .table-wrapper .trade-table th {
-      padding: 12px;
-      color: #94a3b8;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      text-align: left;
-      border-bottom: 2px solid #f1f5f9;
-    }
-
-    .table-wrapper .trade-table tbody tr {
-      background: #ffffff;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
-      transition: all 0.2s ease;
-    }
-
-    .table-wrapper .trade-table tbody tr:hover {
-      transform: translateX(5px);
-      background: #f8fafc;
-    }
-
-    .table-wrapper .trade-table td {
-      padding: 15px 12px;
-      border-top: 1px solid #f1f5f9;
-      border-bottom: 1px solid #f1f5f9;
-      font-size: 0.9rem;
-      color: #1e293b;
-    }
-
-    /* Arrondis des lignes */
-    .table-wrapper .trade-table td:first-child {
-      border-left: 1px solid #f1f5f9;
-      border-radius: 12px 0 0 12px;
-    }
-
-    .table-wrapper .trade-table td:last-child {
-      border-right: 1px solid #f1f5f9;
-      border-radius: 0 12px 12px 0;
-    }
-
-    /* --- FOOTER & STATS --- */
-    .table-wrapper .table-footer-stats {
-      background: #f8fafc;
-      padding: 20px;
-      border-radius: 14px;
-      border: 1px solid #e2e8f0;
-      margin-top: 15px;
-    }
-
-    .table-wrapper .stats-item label {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: #64748b;
-      text-transform: uppercase;
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    .table-wrapper #totalFloatingProfit,
-    .table-wrapper #totalOpenContracts {
-      font-size: 1.2rem;
-      font-weight: 800;
-      font-variant-numeric: tabular-nums;
-    }
-
-    /* --- STATUS INDICATOR --- */
-    .table-wrapper .status-dot {
+    .status-dot {
       width: 10px;
       height: 10px;
       border-radius: 50%;
       display: inline-block;
-      margin-left: 5px;
+      margin-left: 8px;
     }
 
-    .table-wrapper .status-online {
+    .status-online {
       background: #10b981;
-      box-shadow: 0 0 8px #10b981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
       animation: pulse-status 2s infinite;
     }
 
-    .table-wrapper .status-offline {
+    .status-offline {
       background: #cbd5e1;
     }
 
-    @keyframes pulse-status {
-      0% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.5;
-      }
-
-      100% {
-        opacity: 1;
-      }
-    }
-
-    /* --- Footer & Stats --- */
+    /* --- 6. FOOTER STATISTIQUES --- */
     .table-footer-stats {
       display: flex;
       justify-content: space-between;
       align-items: center;
       background: #f8fafc;
       padding: 15px 20px;
-      border-radius: 12px;
+      border-radius: 14px;
       margin-top: 20px;
       border: 1px solid #e2e8f0;
       flex-wrap: wrap;
-      /* Sécurité pour mobile */
       gap: 15px;
     }
 
-    .stats-item {
-      display: flex;
-      flex-direction: column;
+    .stats-item label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 4px;
     }
 
     #totalFloatingProfit,
     #totalOpenContracts {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       font-weight: 800;
+      font-variant-numeric: tabular-nums;
     }
 
-    /* --- Statut Dot --- */
-    .status-dot {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-left: 10px;
+    /* --- 7. ANIMATIONS --- */
+    @keyframes pulse-green {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.7;
+      }
     }
 
-    .status-online {
-      background-color: #10b981;
-      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
-      animation: status-pulse 2s infinite;
-    }
-
-    .status-offline {
-      background-color: #94a3b8;
-    }
-
-    @keyframes status-pulse {
+    @keyframes pulse-status {
       0% {
         transform: scale(1);
         opacity: 1;
@@ -975,6 +830,7 @@
         opacity: 1;
       }
     }
+
 
     /* --- ACCOUNT MANAGEMENT CONTAINER STYLES --- */
     #tradeEvaluationContainer {
