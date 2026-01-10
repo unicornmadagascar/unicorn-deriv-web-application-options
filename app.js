@@ -2208,7 +2208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     populateAccountCombo();
   }
 
-  function initHistoricalTable() {
+  function initHistoricalTable() {  
     const container = document.getElementById("HistoricalContract");
 
     container.innerHTML = `
