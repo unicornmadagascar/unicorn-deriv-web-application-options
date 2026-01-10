@@ -2222,7 +2222,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span id="winLossRatio" style="font-size: 1.2rem; font-weight: 800; color: #10b981;">0%</span>
         </div> 
     </div>
-
+  
     <div id="symbolAnalysisContainer" style="margin-bottom: 20px; padding: 15px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
         <h4 style="margin: 0 0 10px 0; font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">📊 Profit per Symbol</h4>
         <div id="symbolBarChart" style="display: flex; align-items: flex-end; gap: 10px; height: 120px; padding-top: 20px; overflow-x: auto; min-width: 100%;">
