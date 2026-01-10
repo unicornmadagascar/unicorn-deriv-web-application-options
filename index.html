@@ -596,36 +596,46 @@
 
     /* 📊 Panneau des contrats ouverts */
     /* --- Conteneur des contrats --- */
+    /* --- Conteneur et Panneau --- */
     #contractsPanelContainer {
       background: #ffffff;
       border-radius: 16px;
       padding: 20px;
       border: 1px solid #e2e8f0;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      width: 100%;
+      /* Assure une largeur stable */
+      box-sizing: border-box;
     }
 
-    #contractsPanelToggle {
-      background: #f1f5f9;
-      color: #475569;
-      border: 1px solid #cbd5e1;
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
+    #contractsPanel {
+      display: none;
+      /* Masqué par défaut */
+      width: 100%;
+      overflow: hidden;
     }
 
-    #contractsPanelToggle:hover {
-      background: #e2e8f0;
+    #contractsPanel.active {
+      display: block;
+      /* Évitez flex ici pour la stabilité du tableau */
     }
 
-    /* --- Table Styles --- */
+    /* --- Table Styles Rectifiés --- */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      /* Permet le scroll horizontal sans casser le layout */
+      margin-top: 15px;
+    }
+
     .trade-table {
       width: 100%;
+      min-width: 900px;
+      /* Empêche l'écrasement des colonnes */
       border-collapse: separate;
       border-spacing: 0 8px;
-      /* Espace entre les lignes */
-      margin-top: 15px;
+      table-layout: auto;
+      /* Laisse le contenu définir la largeur intelligemment */
     }
 
     .trade-table th {
@@ -635,6 +645,9 @@
       letter-spacing: 0.05em;
       padding: 12px;
       border-bottom: 2px solid #f1f5f9;
+      text-align: left;
+      white-space: nowrap;
+      /* EMPÊCHE LE RÉTRÉCISSEMENT DES TITRES */
     }
 
     .trade-table tbody tr {
@@ -642,19 +655,21 @@
       transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    .trade-table tbody tr:hover {
-      transform: scale(1.005);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      z-index: 10;
+    /* On applique le hover sur les cellules pour éviter les bugs de scale sur les lignes */
+    .trade-table tbody tr:hover td {
+      background: #f8fafc;
     }
 
     .trade-table td {
       padding: 14px 12px;
       border-top: 1px solid #f1f5f9;
       border-bottom: 1px solid #f1f5f9;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
+      white-space: nowrap;
+      /* Garde les données sur une ligne */
     }
 
+    /* --- Arrondis des lignes (puisque border-collapse est separate) --- */
     .trade-table td:first-child {
       border-left: 1px solid #f1f5f9;
       border-radius: 10px 0 0 10px;
@@ -665,12 +680,13 @@
       border-radius: 0 10px 10px 0;
     }
 
-    /* --- Badges & Profits --- */
+    /* --- Badges & Animations --- */
     .badge-type {
       padding: 4px 8px;
       border-radius: 6px;
       font-weight: 700;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
+      display: inline-block;
     }
 
     .MULTUP {
@@ -694,35 +710,7 @@
       font-weight: 800;
     }
 
-    @keyframes pulse-green {
-      0% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.7;
-      }
-
-      100% {
-        opacity: 1;
-      }
-    }
-
-    /* Bouton delete global */
-    #deleteSelected {
-      background: #fee2e2 !important;
-      color: #ef4444 !important;
-      font-weight: 600;
-      border: 1px solid #fecaca !important;
-      padding: 8px 16px !important;
-      transition: all 0.2s;
-    }
-
-    #deleteSelected:hover {
-      background: #ef4444 !important;
-      color: white !important;
-    }
-
+    /* --- Footer & Stats --- */
     .table-footer-stats {
       display: flex;
       justify-content: space-between;
@@ -730,8 +718,11 @@
       background: #f8fafc;
       padding: 15px 20px;
       border-radius: 12px;
-      margin-top: 10px;
+      margin-top: 20px;
       border: 1px solid #e2e8f0;
+      flex-wrap: wrap;
+      /* Sécurité pour mobile */
+      gap: 15px;
     }
 
     .stats-item {
@@ -739,54 +730,29 @@
       flex-direction: column;
     }
 
-    .stats-item label {
-      font-size: 0.7rem;
-      color: #64748b;
-      text-transform: uppercase;
-      font-weight: 700;
-    }
-
-    #totalFloatingProfit {
-      font-size: 1.1rem;
-      font-weight: 800;
-      transition: color 0.3s ease;
-    }
-
+    #totalFloatingProfit,
     #totalOpenContracts {
       font-size: 1.1rem;
       font-weight: 800;
-      color: #1e293b;
     }
 
-    /* Couleurs dynamiques pour le total */
-    .total-pos {
-      color: #10b981;
-    }
-
-    .total-neg {
-      color: #ef4444;
-    }
-
+    /* --- Statut Dot --- */
     .status-dot {
       display: inline-block;
       width: 10px;
       height: 10px;
       border-radius: 50%;
       margin-left: 10px;
-      transition: all 0.3s ease;
     }
 
-    /* État Connecté */
     .status-online {
       background-color: #10b981;
-      box-shadow: 0 0 8px #10b981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
       animation: status-pulse 2s infinite;
     }
 
-    /* État Déconnecté / En cours */
     .status-offline {
       background-color: #94a3b8;
-      box-shadow: none;
     }
 
     @keyframes status-pulse {
@@ -804,99 +770,6 @@
         transform: scale(1);
         opacity: 1;
       }
-    }
-
-    .table-wrapper {
-      background: white;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
-
-    .table-header-flex {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-    }
-
-    .table-footer-stats {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f8fafc;
-      padding: 15px;
-      border-radius: 10px;
-      margin-top: 10px;
-    }
-
-    .stats-item label {
-      display: block;
-      font-size: 0.7rem;
-      color: #64748b;
-      text-transform: uppercase;
-      font-weight: 700;
-    }
-
-    #totalFloatingProfit {
-      font-weight: 800;
-      font-size: 1.1rem;
-    }
-
-    .total-pos {
-      color: #10b981;
-    }
-
-    .total-neg {
-      color: #ef4444;
-    }
-    
-    #exportCSV {
-      background: #ffffff;
-      color: #2563eb;
-      border: 1px solid #2563eb;
-      padding: 8px 16px;
-      border-radius: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    #exportCSV:hover {
-      background: #eff6ff;
-      transform: translateY(-1px);
-    }
-
-    .table-header-flex {
-      padding: 0 5px;
-    }
-
-    .btn-secondary {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-secondary:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
-    }
-
-    .btn-delete-light {
-      background: transparent;
-      border: none;
-      color: #64748b;
-      font-size: 0.85rem;
-      cursor: pointer;
-      font-weight: 500;
-    }
-
-    .btn-delete-light:hover {
-      color: #ef4444;
     }
 
     /* --- ACCOUNT MANAGEMENT CONTAINER STYLES --- */
