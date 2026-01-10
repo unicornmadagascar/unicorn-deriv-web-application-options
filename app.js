@@ -97,6 +97,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const rowsPerPage = 10;
   let currentSortOrder = 'none';
   let lastSeenTradeId = null;
+  let historicalConn = null;
+  let closedTradesHistory = [];
   // ================== x ==================
 
   let wsReady = false;
@@ -283,6 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function initChart(currentChartType) {
+    const containerHistoryList = document.getElementById("autoHistoryList");
     const container = document.getElementById("chartInner");
     if (!container) {
       console.error("Conteneur de graphique introuvable !");
@@ -308,6 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // RÉINITIALISATION DES VARIABLES GLOBALES
+    containerHistoryList.innerHTML.trim() = "";
     container.innerHTML = "";
     priceLines4openlines = {}; // Reset de l'objet des contrats
 
