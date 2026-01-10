@@ -2273,12 +2273,13 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("symbolFilter").addEventListener("input", filterAndRender);
     document.getElementById("resetFilters").addEventListener("click", resetAll);
     document.getElementById("sortProfit").addEventListener("click", sortDataByProfit);
-    document.getElementById("prevPage").addEventListener("click", () => { if (currentPage > 1) { currentPage--; filterAndRender(); } });
-    document.getElementById("nextPage").addEventListener("click", () => {
-      const maxPage = Math.ceil(allTradesData.length / rowsPerPage);
-      if (currentPage < maxPage) { currentPage++; filterAndRender(); }
+    document.getElementById("prevPage").addEventListener("click", () => { if(currentPage > 1) { currentPage--; filterAndRender(); } });
+    document.getElementById("nextPage").addEventListener("click", () => { 
+        const maxPage = Math.ceil(allTradesData.length / rowsPerPage);
+        if(currentPage < maxPage) { currentPage++; filterAndRender(); } 
     });
     document.getElementById("generateReport").addEventListener("click", GetpdfTradereport);
+  }
 
   function resetAll() {
     // 1. Réinitialiser les champs de saisie (Filtre par symbole)
