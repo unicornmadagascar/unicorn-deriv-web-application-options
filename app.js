@@ -2590,7 +2590,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     ws_calendar.onerror = (e) => { statusEl.textContent = 'Erreur WebSocket'; console.error(e); };
     ws_calendar.onclose = () => { statusEl.textContent = 'Connexion closed'; };
-  }
+  }  
 
   // ✅ Envoi du payload calendrier
   function sendCalendarRequest() {
