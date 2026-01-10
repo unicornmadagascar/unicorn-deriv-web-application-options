@@ -2054,7 +2054,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function connectDeriv_table() {
     // 1. Empêcher les connexions multiples si une est déjà en cours ou ouverte
     if (wsplContracts && (wsplContracts.readyState === WebSocket.OPEN || wsplContracts.readyState === WebSocket.CONNECTING)) {
-      console.log("ℹ️ Connexion déjà active ou en cours...");
+      console.log("ℹ️ Connexion déjà active ou en cours...");  
       return;
     }
 
