@@ -2209,7 +2209,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function initHistoricalTable() {  
-    const container = document.getElementById("HistoricalContract");
+    const container = document.getElementById("HistoricalContract");   
 
     container.innerHTML = `
     <div id="quickStatsHeader" style="display: flex; gap: 15px; margin-bottom: 15px;">
