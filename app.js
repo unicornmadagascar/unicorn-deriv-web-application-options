@@ -2175,7 +2175,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!existing.some(a => a.account === acc.account)) {
         existing.push(acc);
       }
-    });
+    });  
     saveAccounts(existing);  
     return existing;
   }
