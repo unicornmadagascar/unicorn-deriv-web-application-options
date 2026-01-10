@@ -311,12 +311,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // RÉINITIALISATION DES VARIABLES GLOBALES
-    containerHistoryList.innerHTML = "";      
+    containerHistoryList.innerHTML = "";
     container.innerHTML = "";
     priceLines4openlines = {}; // Reset de l'objet des contrats
 
     // Reset des séries pour forcer leur recréation
-    currentSeries = null;     
+    currentSeries = null;
     zigzagSeries = null;
     maSeries = null;
 
@@ -2175,8 +2175,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!existing.some(a => a.account === acc.account)) {
         existing.push(acc);
       }
-    });  
-    saveAccounts(existing);  
+    });
+    saveAccounts(existing);
     return existing;
   }
 
@@ -2208,8 +2208,8 @@ document.addEventListener("DOMContentLoaded", () => {
     populateAccountCombo();
   }
 
-  function initHistoricalTable() {  
-    const container = document.getElementById("HistoricalContract");   
+  function initHistoricalTable() {
+    const container = document.getElementById("HistoricalContract");
 
     container.innerHTML = `
     <div id="quickStatsHeader" style="display: flex; gap: 15px; margin-bottom: 15px;">
@@ -2273,11 +2273,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("symbolFilter").addEventListener("input", filterAndRender);
     document.getElementById("resetFilters").addEventListener("click", resetAll);
     document.getElementById("sortProfit").addEventListener("click", sortDataByProfit);
-    document.getElementById("prevPage").addEventListener("click", () => { if(currentPage > 1) { currentPage--; filterAndRender(); } });
-    document.getElementById("nextPage").addEventListener("click", () => { 
-        const maxPage = Math.ceil(allTradesData.length / rowsPerPage);
-        if(currentPage < maxPage) { currentPage++; filterAndRender(); }   
-    }); 
+    document.getElementById("prevPage").addEventListener("click", () => { if (currentPage > 1) { currentPage--; filterAndRender(); } });
+    document.getElementById("nextPage").addEventListener("click", () => {
+      const maxPage = Math.ceil(allTradesData.length / rowsPerPage);
+      if (currentPage < maxPage) { currentPage++; filterAndRender(); }
+    });
     document.getElementById("generateReport").addEventListener("click", GetpdfTradereport);
   }
 
@@ -2327,7 +2327,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     currentPage = 1;
     filterAndRender();
-    updateHistoricalChart(trades);
+    updateHistoricalChart(trades);  
   }
 
   /**
@@ -2368,24 +2368,53 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function filterAndRender() {
-    const filterValue = document.getElementById("symbolFilter").value.toUpperCase();
-    const filtered = allTradesData.filter(t => (t.underlying_symbol || t.description).toUpperCase().includes(filterValue));
+    // 1. Sécurisation de l'accès au champ de filtre
+    const filterInput = document.getElementById("symbolFilter");
+    const filterValue = filterInput ? filterInput.value.toUpperCase() : "";
 
-    // Mise à jour des stats et du graphique en barres
+    // 2. Filtrage sécurisé (Correction du crash)
+    const filtered = allTradesData.filter(t => {
+      // On récupère une chaîne de caractère quoi qu'il arrive
+      const symbol = String(t.underlying_symbol || t.description || "");
+      return symbol.toUpperCase().includes(filterValue);
+    });
+
+    // 3. Calcul des statistiques
     const stats = calculateWinRate(filtered);
-    document.getElementById("totalTradesCount").textContent = filtered.length;
-    document.getElementById("winLossRatio").textContent = stats.winRate + "%";
-    document.getElementById("winLossRatio").style.color = stats.winRate >= 50 ? "#10b981" : "#ef4444";
 
+    // 4. Mise à jour sécurisée des éléments de l'en-tête
+    const totalCountEl = document.getElementById("totalTradesCount");
+    const winRatioEl = document.getElementById("winLossRatio");
+
+    if (totalCountEl) totalCountEl.textContent = filtered.length;
+    if (winRatioEl) {
+      winRatioEl.textContent = stats.winRate + "%";
+      winRatioEl.style.color = stats.winRate >= 50 ? "#10b981" : "#ef4444";
+    }
+
+    // 5. Mise à jour des composants visuels
     updateCirclesUI(stats);
     renderSymbolAnalysis(filtered);
 
-    // Pagination
-    const totalPages = Math.ceil(filtered.length / rowsPerPage) || 1;
-    const start = (currentPage - 1) * rowsPerPage;
-    renderTableRows(filtered.slice(start, start + rowsPerPage));
+    // 6. Gestion de la Pagination sécurisée
+    const rPerPage = typeof rowsPerPage !== 'undefined' ? rowsPerPage : 10;
+    const totalPages = Math.ceil(filtered.length / rPerPage) || 1;
 
-    document.getElementById("pageInfo").textContent = `Page ${currentPage} / ${totalPages}`;
+    // Sécurité pour ne pas être sur une page inexistante
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    const start = (currentPage - 1) * rPerPage;
+    const paginatedData = filtered.slice(start, start + rPerPage);
+
+    // 7. Rendu final du tableau
+    renderTableRows(paginatedData);
+
+    // 8. Mise à jour du texte de pagination
+    const pageInfoEl = document.getElementById("pageInfo");
+    if (pageInfoEl) {
+      pageInfoEl.textContent = `Page ${currentPage} / ${totalPages}`;
+    }
   }
 
   function renderTableRows(trades) {
@@ -2447,7 +2476,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.msg_type === "authorize") {
         historicalConn.send(JSON.stringify({ profit_table: 1, date_from: from, date_to: to, limit: 100, sort: "DESC" }));
       }
-      if (data.msg_type === "profit_table" && data.profit_table.count > 0) { 
+      if (data.msg_type === "profit_table" && data.profit_table.count > 0) {
         const lastTrade = data.profit_table.transactions[0];
         // APPEL DE LA NOTIFICATION
         notifyNewTrade(lastTrade);
@@ -2595,13 +2624,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     ws_calendar.onerror = (e) => { statusEl.textContent = 'Erreur WebSocket'; console.error(e); };
     ws_calendar.onclose = () => { statusEl.textContent = 'Connexion closed'; };
-  }  
+  }
 
   // ✅ Envoi du payload calendrier
   function sendCalendarRequest() {
     const currency = document.getElementById('currency').value || undefined;
     const start = document.getElementById('startDate').value;
-    const end = document.getElementById('endDate').value;  
+    const end = document.getElementById('endDate').value;
     const payload = { economic_calendar: 1 };
 
     if (currency) payload.currency = currency;
@@ -2981,7 +3010,7 @@ document.addEventListener("DOMContentLoaded", () => {
     displayedEvents = filtered; // garde la liste filtrée pour le tri
     updateCalendarTable(filtered);
   }
-   
+
   // ===============================
   // 🔹 Événement du bouton Rechercher
   // ===============================
@@ -3002,7 +3031,7 @@ document.addEventListener("DOMContentLoaded", () => {
     GetProfitgraphical();
     GetProfitConnection();
     connectHistoricalDeriv();
-  });*/  
+  });*/
 
   document.getElementById("fetchTrades").addEventListener("click", () => {
     // 1. Récupérer les dates des inputs HTML
@@ -3376,7 +3405,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // === Trade Evaluation Panel Toggle ===
-   tradeEvalToggle.addEventListener("click", () => {
+  tradeEvalToggle.addEventListener("click", () => {
     tradeEvalPanel.classList.toggle("active");
 
     if (tradeEvalPanel.classList.contains("active")) {
@@ -3421,7 +3450,7 @@ document.addEventListener("DOMContentLoaded", () => {
         span.textContent = "0%";
       });
     }
-  }); 
+  });
 
   window.addEventListener('load', () => {
     // sécurise la récupération des tokens ici
