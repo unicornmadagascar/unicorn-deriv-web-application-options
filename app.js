@@ -2276,7 +2276,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("prevPage").addEventListener("click", () => { if(currentPage > 1) { currentPage--; filterAndRender(); } });
     document.getElementById("nextPage").addEventListener("click", () => { 
         const maxPage = Math.ceil(allTradesData.length / rowsPerPage);
-        if(currentPage < maxPage) { currentPage++; filterAndRender(); } 
+        if(currentPage < maxPage) { currentPage++; filterAndRender(); }   
     });
     document.getElementById("generateReport").addEventListener("click", GetpdfTradereport);
   }
