@@ -2335,36 +2335,115 @@ document.addEventListener("DOMContentLoaded", () => {
  * @param {Array} trades - Liste des transactions récupérées de l'API
  */
   function updateHistoricalChart(trades) {
-    const chartDiv = document.getElementById("HistoricalgraphicalContract");
-    if (!chartDiv) return;
+    if (!areahistoricalSeries || !trades || trades.length === 0) return;
 
-    // 1. Trier les trades par date (du plus ancien au plus récent)
-    // C'est crucial pour que la courbe de profit cumulative soit cohérente
+    // 1. Transformer les trades en profit CUMULÉ (Courbe d'équité)
+    // C'est plus parlant visuellement que des profits isolés
     const sortedTrades = [...trades].sort((a, b) => a.sell_time - b.sell_time);
 
     let cumulativeProfit = 0;
-    const chartData = sortedTrades.map(t => {
-      const profit = parseFloat(t.sell_price) - parseFloat(t.buy_price);
-      cumulativeProfit += profit;
+    const seenTimes = new Set();
+    const chartData = [];
 
-      return {
-        time: t.sell_time, // Timestamp UNIX (secondes)
-        value: parseFloat(cumulativeProfit.toFixed(2))
-      };
+    sortedTrades.forEach(t => {
+      const time = Number(t.sell_time);
+      const profit = parseFloat(t.sell_price) - parseFloat(t.buy_price);
+
+      if (!isNaN(time) && !isNaN(profit) && !seenTimes.has(time)) {
+        cumulativeProfit += profit;
+        seenTimes.add(time);
+        chartData.push({
+          time: time,
+          value: parseFloat(cumulativeProfit.toFixed(2))
+        });
+      }
     });
 
-    // 2. Mise à jour de la série (areahistoricalSeries doit être initialisée globalement)
-    if (typeof areahistoricalSeries !== 'undefined' && areahistoricalSeries !== null) {
-      // Mise à jour des données de la courbe
+    if (chartData.length > 0) {
+      console.log("📊 Chart updated with cumulative data:", chartData);
       areahistoricalSeries.setData(chartData);
-
-      // Ajustement automatique de l'échelle pour voir tous les points
       charthistorical.timeScale().fitContent();
-
-      console.log("📈 Historical Chart updated with " + chartData.length + " points.");
-    } else {
-      console.warn("⚠️ Chart series 'areahistoricalSeries' is not initialized.");
     }
+  }
+
+  function inithistoricalchart() {
+    const container = document.getElementById("HistoricalgraphicalContract");
+    if (!container) {
+      console.error("❌ Container 'HistoricalgraphicalContract' introuvable !");
+      return;
+    }
+
+    // Nettoyage si un graphique existe déjà
+    if (charthistorical) {
+      charthistorical.remove();
+      charthistorical = null;
+    }
+    container.innerHTML = "";
+
+    // Création du graphique Lightweight
+    charthistorical = LightweightCharts.createChart(container, {
+      width: container.clientWidth,
+      height: 300,
+      layout: {
+        background: { type: 'solid', color: '#ffffff' },
+        textColor: '#64748b',
+      },
+      grid: {
+        vertLines: { color: '#f1f5f9' },
+        horzLines: { color: '#f1f5f9' },
+      },
+      timeScale: {
+        timeVisible: true,
+        secondsVisible: false,
+        borderColor: '#e2e8f0',
+      },
+      rightPriceScale: {
+        borderColor: '#e2e8f0',
+      },
+    });
+
+    // Configuration de la série Area (Profit cumulé)
+    areahistoricalSeries = charthistorical.addAreaSeries({
+      lineColor: '#3b82f6',
+      topColor: 'rgba(59, 130, 246, 0.4)',
+      bottomColor: 'rgba(59, 130, 246, 0.0)',
+      lineWidth: 3,
+      priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
+    });
+
+    // Charger les données aléatoires initiales
+    setRandomSeries();
+
+    // Responsive : ajuster la taille si la fenêtre change
+    window.addEventListener('resize', () => {
+      if (charthistorical) {
+        charthistorical.applyOptions({ width: container.clientWidth });
+      }
+    });
+  }
+
+  // === Série aléatoire avant les vrais contrats ===
+  function setRandomSeries() {
+    const now = Math.floor(Date.now() / 1000);
+    let randomData = [];
+    const target = 1.0;      // Valeur cible (asymptote)    
+    let value = 0;           // Point de départ
+
+    for (let i = 300; i >= 1; i--) {
+      const time = now - i * 3600; // toutes les heures
+
+      // facteur d'apprentissage + petite variation aléatoire
+      const delta = (target - value) * 0.05 + (Math.random() * 0.1 - 0.05);
+
+      value += delta;
+
+      randomData.push({
+        time,
+        value: +value.toFixed(3)
+      });
+    }
+
+    areahistoricalSeries.setData(randomData);
   }
 
   function filterAndRender() {
@@ -2515,12 +2594,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.msg_type === "profit_table") {
         if (data.profit_table && data.profit_table.transactions.length > 0) {
           const transactions = data.profit_table.transactions;
-
-          // On notifie seulement le premier (le plus récent)
-          notifyNewTrade(transactions[0]);
-
-          // On met à jour l'interface
-          updateHistoricalTable(transactions);
+          if (transactions.length > 0) {
+            // 1. Notifier le dernier trade
+            notifyNewTrade(transactions[0]);
+            // 2. Mettre à jour la table et les stats
+            updateHistoricalTable(transactions);
+            // 3. Mettre à jour le graphique (Nouvelle fonction ci-dessus)
+            updateHistoricalChart(transactions);
+          }
         } else {
           // Cas où il n'y a aucun trade sur la période
           document.getElementById("autoHistoricalBody").innerHTML =
@@ -2578,9 +2659,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderSymbolAnalysis(trades) {
-    const chart = document.getElementById("symbolBarChart");   
+    const chart = document.getElementById("symbolBarChart");
     if (!chart) return;
-    const totals = {};  
+    const totals = {};
     trades.forEach(t => {
       const s = t.underlying_symbol || "Other";
       totals[s] = (totals[s] || 0) + (t.sell_price - t.buy_price);
@@ -2603,155 +2684,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     document.getElementById("sortProfit").textContent = currentSortOrder === 'desc' ? "Profit ↓" : "Profit ↑";
     filterAndRender();
-  }
-
-  // LIGHTWEIGHT CHART FOR PROFIT GRAPHICAL
-  function inithistoricalchart() {
-    if (!historicalchartcontainer) {
-      console.error("❌ Container 'HistoricalContract' introuvable !");
-      return;
-    }
-
-    // Supprimer le graphique précédent
-    if (charthistorical) charthistorical.remove();
-    historicalchartcontainer.innerHTML = "";
-
-    // Créer le graphique
-    charthistorical = LightweightCharts.createChart(historicalchartcontainer, {
-      layout: {
-        textColor: "#333",
-        background: { type: "solid", color: "#fff" },
-      },
-      grid: {
-        vertLines: { color: "rgba(200,200,200,0.3)" },
-        horzLines: { color: "rgba(200,200,200,0.3)" },
-      },
-      timeScale: { timeVisible: true, secondsVisible: false },
-    });
-
-    // AreaSeries unique
-    areahistoricalSeries = charthistorical.addAreaSeries({
-      lineColor: "gray",
-      lineWidth: 2,
-      topColor: "gray",
-      bottomColor: "gray",
-    });
-
-    // Données aléatoires au démarrage
-    setRandomSeries();
-  }
-
-  // === Série aléatoire avant les vrais contrats ===
-  function setRandomSeries() {
-    const now = Math.floor(Date.now() / 1000);
-    let randomData = [];
-    const target = 1.0;      // Valeur cible (asymptote)    
-    let value = 0;           // Point de départ
-
-    for (let i = 300; i >= 1; i--) {
-      const time = now - i * 3600; // toutes les heures
-
-      // facteur d'apprentissage + petite variation aléatoire
-      const delta = (target - value) * 0.05 + (Math.random() * 0.1 - 0.05);
-
-      value += delta;
-
-      randomData.push({
-        time,
-        value: +value.toFixed(3)
-      });
-    }
-
-    areahistoricalSeries.setData(randomData);
-  }
-
-  function GetProfitgraphical() {
-    const startInput = document.getElementById("startDate").value;
-    const endInput = document.getElementById("endDate").value;   
-
-    if (!startInput || !endInput) {
-      alert("Please select a start date and an end date.");  
-      return;  
-    }  
-
-    // Initialiser WS si nécessaire
-    if (!connection_ws_htx || connection_ws_htx.readyState === WebSocket.CLOSED) {
-      connection_ws_htx = new WebSocket(WS_URL);
-
-      connection_ws_htx.onopen = () => {
-        connection_ws_htx.send(JSON.stringify({ authorize: TOKEN }));
-      };
-    } else if (connection_ws_htx.readyState === WebSocket.OPEN) {
-      connection_ws_htx.send(JSON.stringify({ authorize: TOKEN }));
-    }
-
-    connection_ws_htx.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-
-      if (data.msg_type === "authorize") {
-        connection_ws_htx.send(JSON.stringify({
-          profit_table: 1,
-          description: 1,
-          date_from: startInput.toString(),
-          date_to: endInput.toString(),
-          limit: 500,
-          sort: "ASC",
-        }));
-      }
-
-      // Quand on reçoit la profit_table
-      if (data.msg_type === "profit_table") {
-        const txs = data.profit_table.transactions;
-
-        // === Transformation des transactions en série exploitable ===
-        const profitData = txs
-          .filter(t => t.sell_time && !isNaN(t.sell_price)) // uniquement les clôturées
-          .map(t => ({
-            time: Number(t.sell_time),                  // timestamp UNIX en secondes
-            value: +(t.sell_price - t.buy_price).toFixed(2), // profit net
-          }))
-          .filter(p => p.time > 0 && !isNaN(p.value))     // validation des données
-          .sort((a, b) => a.time - b.time);               // ordre chronologique
-
-        console.log("profitData:", profitData); // vérification 
-
-        if (profitData.length > 0) {
-          // 🔍 Filtrage & validation
-          const cleanProfitData = profitData.filter((p, i) => {
-            if (p.value === null || p.value === undefined || isNaN(p.value)) {
-              console.warn(`⚠️ Valeur invalide @ index ${i}:`, p);
-              return false;
-            }
-            return true;
-          });
-
-          const seenTimes = new Set();
-          const uniqueData = cleanProfitData.filter(p => {
-            if (seenTimes.has(p.time)) {
-              console.warn(`⛔ Timestamp dupliqué ignoré:`, p);
-              return false;
-            }
-            seenTimes.add(p.time);
-            return true;
-          });
-
-          if (!uniqueData.length) {
-            console.error("❌ Aucune donnée valide à afficher !");
-            return;
-          }
-
-          console.log("📊 Données finales utilisées:", uniqueData);
-          areahistoricalSeries.setData(uniqueData);
-          charthistorical.timeScale().fitContent();
-        } else {
-          alert("No contracts found for this period.");
-        }
-      }
-    };
-
-    connection_ws_htx.onerror = (err) => {
-      console.error("Erreur WS:", err);
-    };
   }
 
   // ✅ Initialisation du tableau HTML
@@ -3586,7 +3518,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initHistoricalTable();
   inithistoricalchart();
 
-  window.onload = async () => {
+  window.onload = async () => {  
     if (!currentSymbol) return;
     if (currentChartType !== "candlestick") return;
     await loadSymbol(currentSymbol, currentInterval, currentChartType);
