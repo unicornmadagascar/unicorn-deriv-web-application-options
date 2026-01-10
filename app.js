@@ -279,7 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function initChart(currentChartType) {
     const container = document.getElementById("chartInner");
-    if (!container) {
+    if (!container) {  
       console.error("Conteneur de graphique introuvable !");
       return;  
     }
