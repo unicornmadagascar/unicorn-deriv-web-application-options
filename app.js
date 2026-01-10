@@ -3260,6 +3260,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 3. APPEL DE LA FONCTION
     fetchHistoricalData(fromTimestamp, toTimestamp);
+    GetProfitgraphical();
   });
 
   function GetpdfTradereport() {
@@ -3583,6 +3584,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initChart(currentChartType);
   initTable();
   initHistoricalTable();
+  inithistoricalchart();
 
   window.onload = async () => {
     if (!currentSymbol) return;
