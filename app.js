@@ -2670,7 +2670,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const endInput = document.getElementById("endDate").value;   
 
     if (!startInput || !endInput) {
-      alert("Please select a start date and an end date.");
+      alert("Please select a start date and an end date.");  
       return;  
     }  
 
