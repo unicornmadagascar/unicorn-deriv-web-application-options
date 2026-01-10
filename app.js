@@ -426,7 +426,7 @@ document.addEventListener("DOMContentLoaded", () => {
       case "1h": return 3600;
       case "2h": return 7200;
       case "4h": return 14400;
-      case "8h": return 2880;  
+      case "8h": return 2880;
       default: return 86400;
     }
   }
@@ -1655,52 +1655,133 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Table
   function initTable() {
-    // Construction du tableau HTML
-    autoHistoryList.innerHTML = `
-    <table class="trade-table" id="autoTradeTable">
-      <thead>
-        <tr>
-          <th><input type="checkbox" id="selectAll"></th>
-          <th>Time of Trade</th>
-          <th>Contract ID</th>
-          <th>Symbol</th>    
-          <th>Contract Type</th>  
-          <th>Stake</th>
-          <th>Multiplier</th>
-          <th>Entry Spot</th>
-          <th>TP (%)</th>
-          <th>SL (%)</th>
-          <th>Profit</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="autoTradeBody"></tbody>
-    </table>
-    <button id="deleteSelected" style="margin-top:8px; background:#dc2626; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer;">🗑 Delete Selected</button>
-   `;
+    const container = document.getElementById("autoHistoryList");
 
-    const autoTradeBody = document.getElementById("autoTradeBody");
-  }
+    container.innerHTML = `
+    <div class="table-wrapper">
+        <div class="table-header-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #1e293b;">
+                Live Portfolio 
+                <span id="wsStatus" class="status-dot status-offline" title="Checking connection..."></span>
+            </h3>
+            <div class="header-actions">
+                <button id="exportCSV" onclick="downloadHistoryCSV()" class="btn-secondary">📊 Export CSV</button>
+            </div>
+        </div>
 
-  // ==========================
-  // 3️⃣ Souscription au portfolio et contrats ouverts
-  // ==========================
-  // --- 🔍 Récupère tous les contrats ouverts
-  function fetchOpenContracts() {
-    if (wsplContracts && wsplContracts.readyState === WebSocket.OPEN) {
-      wsplContracts.send(JSON.stringify({ portfolio: 1 }));
+        <div class="table-responsive" style="overflow-x: auto;">
+            <table class="trade-table" id="autoTradeTable">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
+                        <th>Time</th>
+                        <th>Contract ID</th>
+                        <th>Symbol</th>    
+                        <th>Type</th>  
+                        <th>Stake</th>
+                        <th>Mult.</th>
+                        <th>Entry</th>
+                        <th>TP</th>
+                        <th>SL</th>
+                        <th>Profit</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="autoTradeBody">
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="table-footer-stats">
+            <div class="stats-group" style="display: flex; gap: 30px;">
+                <div class="stats-item">
+                    <label>Active Positions</label>
+                    <span id="totalOpenContracts">0</span>
+                </div>
+                <div class="stats-item">
+                    <label>Floating P/L</label>
+                    <span id="totalFloatingProfit" class="total-neutral">0.00 USD</span>
+                </div>
+            </div>
+            
+            <div class="actions-group" style="display: flex; gap: 12px; align-items: center;">
+                <button id="deleteSelected" onclick="deleteSelectedRows()" class="btn-delete-light">🗑 Delete Selected</button>
+                <button id="panicCloseAll" class="panic-btn" onclick="panicCloseAll()">🚨 Emergency Close All</button>
+            </div>
+        </div>
+    </div>
+    `;
+
+    // Petit script interne pour gérer le "Select All"
+    document.getElementById('selectAll').addEventListener('change', function () {
+      const checkboxes = document.querySelectorAll('.rowSelect');
+      checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+
+    const panicBtn = document.getElementById("panicCloseAll");
+    if (panicBtn) {
+      panicBtn.addEventListener("click", panicCloseAll);
+    }
+
+    const download = document.getElementById("exportCSV");
+    if (download) {
+      download.addEventListener("click", downloadHistoryCSV);
     }
   }
 
-  // --- 🔄 S’abonne aux détails d’un contrat
-  function subscribeContractDetails(contract_id) {
-    wsplContracts.send(JSON.stringify({ proposal_open_contract: 1, contract_id: contract_id, subscribe: 1 }));
-  }
 
   // --- 💰 Ferme un contrat
+  /**
+ * Envoie un ordre de vente (fermeture) pour un contrat spécifique
+ * @param {string|number} contract_id - L'identifiant unique du contrat
+ */
   function closeContract(contract_id) {
-    wsplContracts.send(JSON.stringify({ sell: contract_id.trim(), price: 0 }));
-    console.log("🚪 Closing contract:", contract_id);
+    // 1. Sécurité : Vérifier si l'ID est présent
+    if (!contract_id) {
+      console.warn("⚠️ Tentative de fermeture sans ID de contrat.");
+      return;
+    }
+
+    const id = contract_id.toString().trim();
+
+    // 2. Vérifier si la connexion WebSocket existe et est ouverte
+    if (typeof wsplContracts !== 'undefined' && wsplContracts !== null && wsplContracts.readyState === WebSocket.OPEN) {
+
+      // Préparation de la requête API Deriv
+      const sellRequest = {
+        sell: id,
+        price: 0 // "0" force la vente immédiate au prix du marché
+      };
+
+      // Envoi de la requête
+      wsplContracts.send(JSON.stringify(sellRequest));
+
+      console.log(`%c 📤 Ordre de vente envoyé pour le contrat : ${id}`, "color: #3b82f6; font-weight: bold;");
+
+      // 3. Feedback visuel immédiat sur la ligne du tableau
+      const tr = document.querySelector(`tr[data-contract="${id}"]`);
+      if (tr) {
+        const btn = tr.querySelector('.close-btn');
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = `<span class="spinner"></span> Closing...`;
+          btn.style.opacity = "0.6";
+        }
+        // On ajoute une classe pour griser légèrement la ligne en attendant la confirmation
+        tr.style.backgroundColor = "rgba(241, 245, 249, 0.5)";
+      }
+
+    } else {
+      // 4. Gestion de l'erreur de connexion
+      console.error("❌ Impossible de fermer le contrat : WebSocket déconnecté.");
+      alert("Action impossible : La connexion au serveur est perdue.");
+
+      // Optionnel : Tentative de reconnexion automatique
+      if (typeof connectDeriv_table === 'function') {
+        setUIStatus('offline');
+        connectDeriv_table();
+      }
+    }
   }
 
   // --- 🧠 Gère les réponses Deriv
@@ -1727,106 +1808,319 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const autoTradeBody = document.getElementById("autoTradeBody");
 
-    // Supprime la ligne si le contrat est vendu
+    // CAS : CONTRAT FERMÉ (SOLD)
     if (c.is_sold) {
+      // Enregistrement pour l'export CSV avant suppression
+      if (!closedTradesHistory.find(t => t.ID === c.contract_id)) {
+        closedTradesHistory.push({
+          Time: new Date(c.date_start * 1000).toLocaleString(),
+          ID: c.contract_id,
+          Symbol: c.underlying || c.symbol,
+          Type: c.contract_type,
+          Stake: c.buy_price,
+          Profit: c.profit.toFixed(2),
+          Status: "Closed"
+        });
+      }
+
       const tr = autoTradeBody.querySelector(`[data-contract='${c.contract_id}']`);
-      if (tr) tr.remove();
-      console.log(`✅ Contract ${c.contract_id} closed.`);
+      if (tr) {
+        tr.style.opacity = '0';
+        tr.style.transform = 'translateX(20px)';
+        setTimeout(() => { tr.remove(); updateTotalStats(); }, 300);
+      }
       return;
     }
 
-    // Objet formaté pour ton tableau
-    const trade = {
-      time: new Date(c.date_start * 1000).toLocaleTimeString(),
-      contract_id: c.contract_id,
-      symbol: c.underlying || c.symbol,
-      type: c.contract_type === "MULTUP" ? "MULTUP" : "MULTDOWN",
-      stake: c.buy_price || 0,
-      multiplier: c.multiplier || "-",
-      entry_spot: c.entry_tick_display_value ?? "-",
-      tp: c.take_profit ?? "-",
-      sl: c.stop_loss ?? "-",
-      profit:
-        c.profit !== undefined
-          ? (c.profit >= 0 ? `+${c.profit.toFixed(2)}` : c.profit.toFixed(2))
-          : "-"
-    };
+    // CAS : CONTRAT OUVERT (MISE À JOUR)
+    const isPositive = c.profit >= 0;
+    const profitClass = isPositive ? "profit-positive" : "profit-negative";
+    const typeClass = c.contract_type.includes("UP") ? "MULTUP" : "MULTDOWN";
+    const formattedProfit = (isPositive ? "+" : "") + c.profit.toFixed(2);
 
-    // Vérifie si déjà présent
     let tr = autoTradeBody.querySelector(`[data-contract='${c.contract_id}']`);
 
     if (!tr) {
-      // 🔹 Création d’une nouvelle ligne
       tr = document.createElement("tr");
       tr.dataset.contract = c.contract_id;
-      tr.innerHTML = `  
-        <td><input type="checkbox" class="rowSelect"></td>
-        <td>${trade.time}</td>
-        <td>${trade.contract_id}</td>
-        <td>${trade.symbol.toString()}</td>
-        <td class="${trade.type === "MULTUP" ? "MULTUP" : "MULTDOWN"}">${trade.type}</td>
-        <td>${Number(trade.stake).toFixed(2)}</td>
-        <td>${trade.multiplier}</td>
-        <td>${trade.entry_spot}</td>
-        <td>${trade.tp}</td>
-        <td>${trade.sl}</td>
-        <td style="color:${trade.profit >= 0 ? 'blue' : 'red'};">${(trade.profit > 0 ? "+" : "") + trade.profit}</td> 
-        <td>
-        <button class="deleteRowBtn"
-          style="background:#ef4444; border:none; color:white; border-radius:4px; padding:2px 6px; cursor:pointer;">
-          Close
-        </button>
-        </td>
-      `;
-      autoTradeBody.appendChild(tr);
+      tr.style.transition = "all 0.3s ease";
+      injectRowHTML(tr, c, profitClass, typeClass, formattedProfit);
+      autoTradeBody.prepend(tr);
     } else {
-      // 🔄 Mise à jour en temps réel du profit
-      tr.cells[10].textContent = trade.profit;
+      // Mise à jour ciblée du Profit (Performance)
+      const profitCell = tr.cells[10];
+      if (profitCell.textContent !== formattedProfit) {
+        profitCell.textContent = formattedProfit;
+        profitCell.className = profitClass;
+      }
+    }
+    updateTotalStats();
+  }
+
+  /**
+ * Calcule et met à jour les statistiques globales du portfolio en temps réel
+ */
+  function updateTotalStats() {
+    // 1. Récupération des éléments du DOM
+    const autoTradeBody = document.getElementById("autoTradeBody");
+    const totalProfitSpan = document.getElementById("totalFloatingProfit");
+    const totalCountSpan = document.getElementById("totalOpenContracts");
+
+    if (!autoTradeBody || !totalProfitSpan || !totalCountSpan) return;
+
+    const rows = autoTradeBody.querySelectorAll("tr");
+    let totalProfit = 0;
+    let count = rows.length;
+
+    // 2. Boucle sur chaque ligne pour additionner les profits
+    rows.forEach(row => {
+      // Le profit est dans la 11ème colonne (index 10)
+      // On nettoie le texte (on enlève le '+' et les espaces éventuels)
+      const profitText = row.cells[10].textContent.replace('+', '').trim();
+      const profitVal = parseFloat(profitText);
+
+      if (!isNaN(profitVal)) {
+        totalProfit += profitVal;
+      }
+    });
+
+    // 3. Mise à jour du compteur de positions
+    totalCountSpan.textContent = count;
+
+    // 4. Mise à jour de l'affichage du Profit Total (P/L)
+    const formattedTotal = (totalProfit >= 0 ? "+" : "") + totalProfit.toFixed(2);
+    totalProfitSpan.textContent = `${formattedTotal} USD`;
+
+    // 5. Gestion dynamique des couleurs (Style Moderne)
+    if (totalProfit > 0) {
+      totalProfitSpan.className = "total-pos"; // Vert
+    } else if (totalProfit < 0) {
+      totalProfitSpan.className = "total-neg"; // Rouge
+    } else {
+      totalProfitSpan.className = "total-neutral"; // Gris/Noir si 0
+    }
+
+    // 6. Synchronisation avec les graphiques circulaires (Donuts)
+    // Cette fonction mettra à jour les cercles SVG avec ces nouvelles valeurs
+    if (typeof updateCircularCharts === "function") {
+      updateCircularCharts();
+    }
+  }
+
+  /**
+ * Synchronise les graphiques circulaires SVG avec les données du tableau
+ */
+  function updateCircularCharts() {
+    const rows = document.querySelectorAll("#autoTradeBody tr");
+
+    let countProfit = 0;
+    let countLoss = 0;
+    let totalProfitVal = 0;
+    let totalLossVal = 0;
+
+    // 1. Analyse des lignes du tableau
+    rows.forEach(row => {
+      const val = parseFloat(row.cells[10].textContent.replace('+', '').trim());
+      if (!isNaN(val)) {
+        if (val >= 0) {
+          countProfit++;
+          totalProfitVal += val;
+        } else {
+          countLoss++;
+          totalLossVal += Math.abs(val);
+        }
+      }
+    });
+
+    const totalTrades = countProfit + countLoss;
+
+    // 2. Calcul des pourcentages (0 à 100)
+    const winRate = totalTrades > 0 ? (countProfit / totalTrades) * 100 : 0;
+    const lossRate = totalTrades > 0 ? (countLoss / totalTrades) * 100 : 0;
+
+    // 3. Mise à jour visuelle des cercles (SVG Path et Texte)
+
+    // --- Cercle PROFIT (Bleu) ---
+    updateCircleElement('circle-profit-path', 'profit-percent-text', winRate);
+    const profitValElem = document.getElementById('profitvalue');
+    if (profitValElem) profitValElem.innerHTML = `${totalProfitVal.toFixed(2)} <span class="currency">USD</span>`;
+
+    // --- Cercle LOSS (Rouge) ---
+    updateCircleElement('circle-loss-path', 'loss-percent-text', lossRate);
+    const lossValElem = document.getElementById('lossvalue');
+    if (lossValElem) lossValElem.innerHTML = `${totalLossVal.toFixed(2)} <span class="currency">USD</span>`;
+
+    // --- Cercle GLOBAL P/L (Mixte) ---
+    // On utilise souvent le Win Rate pour la jauge globale
+    updateCircleElement('circle-pl-path', 'pl-percent-text', winRate);
+    const netPL = totalProfitVal - totalLossVal;
+    const plValElem = document.getElementById('plvalue');
+    if (plValElem) {
+      plValElem.innerHTML = `${(netPL >= 0 ? "+" : "") + netPL.toFixed(2)} <span class="currency">USD</span>`;
+      plValElem.style.color = netPL >= 0 ? "#10b981" : "#ef4444";
+    }
+  }
+
+  /**
+   * Utilitaire pour modifier les attributs SVG (Animation du tracé)
+   */
+  function updateCircleElement(pathId, textId, percentage) {
+    const path = document.getElementById(pathId);
+    const text = document.getElementById(textId);
+
+    if (path) {
+      // stroke-dasharray: [longueur du trait, longueur du vide]
+      // Le cercle total fait 100 unités dans notre configuration SVG
+      path.setAttribute('stroke-dasharray', `${percentage.toFixed(1)}, 100`);
+    }
+
+    if (text) {
+      text.textContent = `${percentage.toFixed(0)}%`;
+    }
+  }
+
+  /**
+ * ACTIONS DE FERMETURE EN MASSE
+ */
+  function panicCloseAll() {
+    if (confirm("🚨 ATTENTION: Voulez-vous fermer TOUTES les positions immédiatement ?")) {
+      const rows = document.querySelectorAll("#autoTradeBody tr");
+      rows.forEach(row => {
+        const id = row.dataset.contract;
+        closeContract(id);
+      });
+    }
+  }
+
+  /**
+ * Action pour le bouton Export CSV
+ */
+  function downloadHistoryCSV() {
+    // 1. Récupérer toutes les lignes du tableau (header + corps)
+    const table = document.getElementById("autoTradeTable");
+    if (!table) return alert("Tableau introuvable.");
+
+    const rows = Array.from(table.querySelectorAll("tr"));
+
+    // 2. Transformer les lignes en format CSV
+    const csvContent = rows.map(row => {
+      const cells = Array.from(row.querySelectorAll("th, td"));
+      return cells.map(cell => {
+        // Nettoyage : on enlève les sauts de ligne et on gère les virgules
+        let data = cell.innerText.replace(/\n/g, ' ').trim();
+        // Si la donnée contient une virgule, on l'entoure de guillemets
+        return data.includes(',') ? `"${data}"` : data;
+      }).join(",");
+    }).join("\n");
+
+    // 3. Créer le Blob (le fichier virtuel)
+    const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+
+    // 4. Créer un lien invisible pour déclencher le téléchargement
+    const link = document.createElement("a");
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", `trading_report_${timestamp}.csv`);
+    link.style.visibility = 'hidden';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    console.log("📊 Rapport CSV exporté avec succès.");
+  }
+
+  function setUIStatus(state) {
+    const dot = document.getElementById("wsStatus");
+    if (!dot) return;
+
+    if (state === 'online') {
+      dot.classList.remove("status-offline");
+      dot.classList.add("status-online");
+      dot.title = "Connected to Deriv";
+    } else {
+      dot.classList.remove("status-online");
+      dot.classList.add("status-offline");
+      dot.title = "Connection Lost / Connecting...";
     }
   }
 
   // --- 🧱 Connexion WebSocket
+  /**
+ * Initialise la connexion WebSocket avec Deriv et gère le flux de données
+ */
   function connectDeriv_table() {
-
-    if (wsplContracts === null) {
-      wsplContracts = new WebSocket(WS_URL);
-      wsplContracts.onopen = () => { wsplContracts.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
+    // 1. Empêcher les connexions multiples si une est déjà en cours ou ouverte
     if (wsplContracts && (wsplContracts.readyState === WebSocket.OPEN || wsplContracts.readyState === WebSocket.CONNECTING)) {
-      wsplContracts.onopen = () => { wsplContracts.send(JSON.stringify({ authorize: TOKEN })); };
+      console.log("ℹ️ Connexion déjà active ou en cours...");
+      return;
     }
 
-    if (wsplContracts && (wsplContracts.readyState === WebSocket.CLOSED || wsplContracts.readyState === WebSocket.CLOSING)) {
-      wsplContracts = new WebSocket(WS_URL);
-      wsplContracts.onopen = () => { wsplContracts.send(JSON.stringify({ authorize: TOKEN })); };
-    }
+    console.log("🌐 Connexion au serveur de trading...");
+    wsplContracts = new WebSocket(WS_URL);
 
-    wsplContracts.onclose = () => { console.log("Disconnected"); console.log("WS closed"); setTimeout(connectDeriv_table, 300); };
-    wsplContracts.onerror = e => { console.log("WS error " + JSON.stringify(e)); wsplContracts.close(); wsplContracts = null; setTimeout(connectDeriv_table, 300); };
-    wsplContracts.onmessage = msg => {
+    // --- ÉVÉNEMENT : OUVERTURE ---
+    wsplContracts.onopen = () => {
+      console.log("✅ WebSocket Connecté");
+      setUIStatus('online'); // La pastille passe au vert
+
+      // Authentification immédiate
+      wsplContracts.send(JSON.stringify({ authorize: TOKEN }));
+    };
+
+    // --- ÉVÉNEMENT : RÉCEPTION DES MESSAGES ---
+    wsplContracts.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
+
       switch (data.msg_type) {
         case "authorize":
-          console.log("✅ Authorized, fetching open contracts...");
-          fetchOpenContracts();
+          console.log("🔓 Authentifié avec succès !");
+          // Une fois autorisé, on demande le portfolio et on s'abonne aux contrats
+          wsplContracts.send(JSON.stringify({ portfolio: 1 }));
+          wsplContracts.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
           break;
-        case "portfolio":
-          handlePortfolio(data);
-          break;
+
         case "proposal_open_contract":
-          handleContractDetails(data);
+          // C'est ici que la table reçoit ses données en temps réel
+          if (typeof handleContractDetails === 'function') {
+            handleContractDetails(data);
+          }
           break;
+
+        case "portfolio":
+          if (typeof handlePortfolio === 'function') {
+            handlePortfolio(data);
+          }
+          break;
+
         case "sell":
-          console.log("💰 Sell response:", data);
+          console.log("💰 Confirmation de vente reçue pour le contrat :", data.sell.contract_id);
           break;
-        default:
+
+        case "error":
+          console.error("❌ Erreur API :", data.error.message);
           break;
       }
     };
 
-    wsplContracts.onerror = (err) => console.error("❌ WebSocket error:", err);
-    wsplContracts.onclose = () => console.log("🔴 Disconnected");
+    // --- ÉVÉNEMENT : FERMETURE ---
+    wsplContracts.onclose = () => {
+      console.warn("🔴 Connexion perdue. Tentative de reconnexion dans 3s...");
+      setUIStatus('offline'); // La pastille passe au gris
+      wsplContracts = null;
+
+      // Tentative de reconnexion automatique
+      setTimeout(connectDeriv_table, 3000);
+    };
+
+    // --- ÉVÉNEMENT : ERREUR RÉSEAU ---
+    wsplContracts.onerror = (error) => {
+      console.error("❌ Erreur WebSocket :", error);
+      setUIStatus('offline');
+      wsplContracts.close(); // Déclenche onclose pour la reconnexion
+    };
   }
 
   // 🔹 Fonction utilitaire : obtenir tous les comptes depuis l’URL (après authorization Deriv)
@@ -2246,7 +2540,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Données aléatoires au démarrage
     setRandomSeries();
-  }  
+  }
 
   // === Série aléatoire avant les vrais contrats ===
   function setRandomSeries() {

@@ -723,6 +723,182 @@
       color: white !important;
     }
 
+    .table-footer-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      padding: 15px 20px;
+      border-radius: 12px;
+      margin-top: 10px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .stats-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stats-item label {
+      font-size: 0.7rem;
+      color: #64748b;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    #totalFloatingProfit {
+      font-size: 1.1rem;
+      font-weight: 800;
+      transition: color 0.3s ease;
+    }
+
+    #totalOpenContracts {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #1e293b;
+    }
+
+    /* Couleurs dynamiques pour le total */
+    .total-pos {
+      color: #10b981;
+    }
+
+    .total-neg {
+      color: #ef4444;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-left: 10px;
+      transition: all 0.3s ease;
+    }
+
+    /* État Connecté */
+    .status-online {
+      background-color: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: status-pulse 2s infinite;
+    }
+
+    /* État Déconnecté / En cours */
+    .status-offline {
+      background-color: #94a3b8;
+      box-shadow: none;
+    }
+
+    @keyframes status-pulse {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .table-wrapper {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .table-header-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .table-footer-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    .stats-item label {
+      display: block;
+      font-size: 0.7rem;
+      color: #64748b;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    #totalFloatingProfit {
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+
+    .total-pos {
+      color: #10b981;
+    }
+
+    .total-neg {
+      color: #ef4444;
+    }
+    
+    #exportCSV {
+      background: #ffffff;
+      color: #2563eb;
+      border: 1px solid #2563eb;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    #exportCSV:hover {
+      background: #eff6ff;
+      transform: translateY(-1px);
+    }
+
+    .table-header-flex {
+      padding: 0 5px;
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .btn-delete-light {
+      background: transparent;
+      border: none;
+      color: #64748b;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .btn-delete-light:hover {
+      color: #ef4444;
+    }
+
     /* --- ACCOUNT MANAGEMENT CONTAINER STYLES --- */
     #tradeEvaluationContainer {
       background: var(--bg-card);
@@ -2180,9 +2356,11 @@
 
   <!-- Nouveau panneau des contrats ouverts -->
   <div id="contractsPanelContainer">
-    <button id="contractsPanelToggle">📄 Show Contracts</button>
+    <button id="contractsPanelToggle">📄 Show Open Contracts</button>
+
     <div id="contractsPanel">
-      <div id="autoHistoryList"></div>
+      <div id="autoHistoryList">
+      </div>
     </div>
   </div>
 
