@@ -2521,7 +2521,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // On met à jour l'interface
           updateHistoricalTable(transactions);
-        } else {
+        } else {  
           // Cas où il n'y a aucun trade sur la période
           document.getElementById("autoHistoricalBody").innerHTML =
             '<tr><td colspan="10" style="text-align:center;">No trades found for this period.</td></tr>';
