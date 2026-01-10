@@ -2981,7 +2981,7 @@ document.addEventListener("DOMContentLoaded", () => {
     displayedEvents = filtered; // garde la liste filtrée pour le tri
     updateCalendarTable(filtered);
   }
-
+  
   // ===============================
   // 🔹 Événement du bouton Rechercher
   // ===============================
