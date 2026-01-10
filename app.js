@@ -304,7 +304,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Si le tableau existe déjà, on ne ré-injecte pas tout le HTML
-    if (containerHistoryList.innerHTML.trim() !== "") return;
+    containerHistoryList.innerHTML.trim() = "";
     // RÉINITIALISATION DES VARIABLES GLOBALES
     container.innerHTML = "";
     priceLines4openlines = {}; // Reset de l'objet des contrats
