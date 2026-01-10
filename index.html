@@ -647,16 +647,16 @@
 
     /* --- 3. STRUCTURE DE LA TABLE (ISOLÉE) --- */
     .table-wrapper {
-      background: #ffffff;   
+      background: #ffffff;
       padding: 10px;
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
-    .table-responsive {  
+    .table-responsive {
       width: 100%;
-      overflow-x: auto;  
+      overflow-x: auto;
       margin-top: 15px;
-      border-radius: 8px;    
+      border-radius: 8px;
     }
 
     .trade-table {
@@ -1029,6 +1029,35 @@
       border: 1px dashed var(--border);
       border-radius: 16px;
       min-height: 350px;
+    }
+
+    /* Conteneur de badge de base */
+    .badge-status {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: inline-block;
+      letter-spacing: 0.5px;
+    }
+
+    /* Style spécifique WIN (Succès) */
+    .badge-win {
+      background-color: rgba(16, 185, 129, 0.1);
+      /* Vert très clair */
+      color: #059669;
+      /* Vert forêt */
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    /* Style spécifique LOSS (Échec) */
+    .badge-loss {
+      background-color: rgba(239, 68, 68, 0.1);
+      /* Rouge très clair */
+      color: #dc2626;
+      /* Rouge vif */
+      border: 1px solid rgba(239, 68, 68, 0.2);
     }
 
     /* -- Foot Page --- */

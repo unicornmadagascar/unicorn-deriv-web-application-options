@@ -92,6 +92,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let isZigZagActive = false;
   let isMAActive = false; // Variable globale pour l'état
   let lastTotalPnL = 0;
+  let allTradesData = [];
+  let currentPage = 1;
+  const rowsPerPage = 10;
+  let currentSortOrder = 'none';
+  let lastSeenTradeId = null;
   // ================== x ==================
 
   let wsReady = false;
@@ -279,9 +284,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function initChart(currentChartType) {
     const container = document.getElementById("chartInner");
-    if (!container) {  
+    if (!container) {
       console.error("Conteneur de graphique introuvable !");
-      return;  
+      return;
     }
 
     // 1. NETTOYAGE PHYSIQUE ET MÉMOIRE
@@ -294,12 +299,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
-      try {  
+      try {
         chart.remove();
       } catch (e) {
         console.error("Erreur lors de la destruction du chart:", e);
       }
-      chart = null;    
+      chart = null;
     }
 
     // RÉINITIALISATION DES VARIABLES GLOBALES
@@ -2200,403 +2205,312 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function initHistoricalTable() {
-    // Construction du tableau HTML
-    HistoricalContract.innerHTML = `
-    <table class="trade-table" id = "autoHistoricalTrade">
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>Contract ID</th>
-            <th>Symbol</th>
-            <th>Contract Type</th>
-            <th>Stake</th>
-            <th>Multiplier</th>
-            <th>TP</th>
-            <th>SL</th>
-            <th>Profit</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="autoHistoricalBody">
-          <tr><td colspan="10" style="text-align:center;">No trade Found</td></tr>
-        </tbody>
-      </table>
-   `;
+    const container = document.getElementById("HistoricalContract");
 
-    const autoHistoricalBody = document.getElementById("autoHistoricalBody");
+    container.innerHTML = `
+    <div id="quickStatsHeader" style="display: flex; gap: 15px; margin-bottom: 15px;">
+        <div style="flex: 1; background: #f1f5f9; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;">
+            <label style="display: block; font-size: 0.65rem; color: #64748b; text-transform: uppercase; font-weight: bold;">Total Trades</label>
+            <span id="totalTradesCount" style="font-size: 1.2rem; font-weight: 800; color: #1e293b;">0</span>
+        </div>
+        <div style="flex: 1; background: #f1f5f9; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;">
+            <label style="display: block; font-size: 0.65rem; color: #64748b; text-transform: uppercase; font-weight: bold;">Win/Loss Ratio</label>
+            <span id="winLossRatio" style="font-size: 1.2rem; font-weight: 800; color: #10b981;">0%</span>
+        </div>
+    </div>
+
+    <div id="symbolAnalysisContainer" style="margin-bottom: 20px; padding: 15px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <h4 style="margin: 0 0 10px 0; font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">📊 Profit per Symbol</h4>
+        <div id="symbolBarChart" style="display: flex; align-items: flex-end; gap: 10px; height: 120px; padding-top: 20px; overflow-x: auto; min-width: 100%;">
+            </div>
+    </div>
+
+    <div class="table-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; flex-wrap: wrap;">
+        <div style="display: flex; gap: 8px; flex: 1; min-width: 300px;">
+            <input type="text" id="symbolFilter" placeholder="🔍 Filter by symbol (ex: R_100)..." 
+                   style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; outline: none;">
+            <button id="resetFilters" style="padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; cursor: pointer; font-weight: bold; color: #64748b;">🔄 Reset</button>
+            <button id="generateReport" style="padding: 10px; border-radius: 8px; border: none; background: #1e293b; color: white; cursor: pointer; font-weight: bold;">📄 PDF</button>
+        </div>
+
+        <div class="pagination-controls" style="display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 5px 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <button id="prevPage" style="border: none; background: transparent; cursor: pointer; color: #2563eb; font-weight: bold;">◀</button>
+            <span id="pageInfo" style="font-size: 0.8rem; font-weight: 800; color: #475569; min-width: 80px; text-align: center;">Page 1 / 1</span>
+            <button id="nextPage" style="border: none; background: transparent; cursor: pointer; color: #2563eb; font-weight: bold;">▶</button>
+        </div>
+    </div>
+
+    <div class="table-responsive" style="border-radius: 10px; border: 1px solid #f1f5f9; overflow: hidden;">
+        <table class="trade-table" id="autoHistoricalTrade" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8fafc;">
+                    <th style="padding: 12px; font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Time</th>
+                    <th style="padding: 12px; font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Contract</th>
+                    <th style="padding: 12px; font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Symbol</th>
+                    <th style="padding: 12px; font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Type</th>
+                    <th style="padding: 12px; font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Stake</th>
+                    <th style="padding: 12px; font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Mult.</th>
+                    <th style="padding: 12px; font-size: 0.7rem; color: #64748b; text-transform: uppercase;">TP</th>
+                    <th style="padding: 12px; font-size: 0.7rem; color: #64748b; text-transform: uppercase;">SL</th>
+                    <th id="sortProfit" style="padding: 12px; font-size: 0.7rem; color: #2563eb; text-transform: uppercase; cursor: pointer; font-weight: 800; border-bottom: 2px solid #dbeafe;">Profit ↕</th>
+                    <th style="padding: 12px; font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Status</th>
+                </tr>
+            </thead>
+            <tbody id="autoHistoricalBody">
+                <tr><td colspan="10" style="text-align: center; padding: 40px; color: #94a3b8;">No data available.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="tradeNotifier" style="position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px;"></div>
+    `;
+
+    // Attachement immédiat des nouveaux événements
+    document.getElementById("symbolFilter").addEventListener("input", filterAndRender);
+    document.getElementById("resetFilters").addEventListener("click", resetAll);
+    document.getElementById("sortProfit").addEventListener("click", sortDataByProfit);
+    document.getElementById("prevPage").addEventListener("click", () => { if (currentPage > 1) { currentPage--; filterAndRender(); } });
+    document.getElementById("nextPage").addEventListener("click", () => {
+      const maxPage = Math.ceil(allTradesData.length / rowsPerPage);
+      if (currentPage < maxPage) { currentPage++; filterAndRender(); }
+    });
   }
 
-  // ==================================
-  // 🔹 Fonction de connexion WebSocket
-  // ==================================
-  function connectHistoricalDeriv() {
+  function resetAll() {
+    // 1. Réinitialiser les champs de saisie (Filtre par symbole)
+    const filterInput = document.getElementById("symbolFilter");
+    if (filterInput) filterInput.value = "";
 
-    if (connection === null) {
-      connection = new WebSocket(WS_URL);
-      connection.onopen = () => {
-        connection.send(JSON.stringify({ authorize: TOKEN }));
+    // 2. Réinitialiser l'état du tri (Revenir au tri par date DESC)
+    currentSortOrder = 'none';
+    const sortBtn = document.getElementById("sortProfit");
+    if (sortBtn) {
+      sortBtn.textContent = "Profit ↕";
+      sortBtn.style.color = "#2563eb"; // On remet la couleur bleue d'origine
+    }
+
+    // 3. Remettre les données dans l'ordre chronologique original (Le plus récent en haut)
+    // On suppose que l'API renvoie les données triées par date de vente (sell_time)
+    allTradesData.sort((a, b) => b.sell_time - a.sell_time);
+
+    // 4. Revenir à la première page
+    currentPage = 1;
+
+    // 5. Relancer le rendu global
+    // Cela va recalculer les stats (cercles), le graphique en barres et le tableau
+    filterAndRender();
+
+    // 6. Petit feedback visuel (Optionnel)
+    console.log("Filtres réinitialisés avec succès.");
+  }
+
+  function updateHistoricalTable(trades) {
+    allTradesData = trades;
+
+    // Si on a des trades et que le premier (le plus récent) est différent du dernier vu
+    if (trades.length > 0) {
+      const latestTrade = trades[0];
+
+      if (lastSeenTradeId !== null && latestTrade.contract_id !== lastSeenTradeId) {
+        // APPEL DE LA NOTIFICATION pour le nouveau trade détecté
+        notifyNewTrade(latestTrade);
+      }
+
+      // On met à jour l'ID du dernier trade vu
+      lastSeenTradeId = latestTrade.contract_id;
+    }
+
+    currentPage = 1;
+    filterAndRender();
+    updateHistoricalChart(trades);
+  }
+
+  /**
+ * Met à jour le graphique linéaire de performance cumulative
+ * @param {Array} trades - Liste des transactions récupérées de l'API
+ */
+  function updateHistoricalChart(trades) {
+    const chartDiv = document.getElementById("HistoricalgraphicalContract");
+    if (!chartDiv) return;
+
+    // 1. Trier les trades par date (du plus ancien au plus récent)
+    // C'est crucial pour que la courbe de profit cumulative soit cohérente
+    const sortedTrades = [...trades].sort((a, b) => a.sell_time - b.sell_time);
+
+    let cumulativeProfit = 0;
+    const chartData = sortedTrades.map(t => {
+      const profit = parseFloat(t.sell_price) - parseFloat(t.buy_price);
+      cumulativeProfit += profit;
+
+      return {
+        time: t.sell_time, // Timestamp UNIX (secondes)
+        value: parseFloat(cumulativeProfit.toFixed(2))
       };
+    });
+
+    // 2. Mise à jour de la série (areahistoricalSeries doit être initialisée globalement)
+    if (typeof areahistoricalSeries !== 'undefined' && areahistoricalSeries !== null) {
+      // Mise à jour des données de la courbe
+      areahistoricalSeries.setData(chartData);
+
+      // Ajustement automatique de l'échelle pour voir tous les points
+      charthistorical.timeScale().fitContent();
+
+      console.log("📈 Historical Chart updated with " + chartData.length + " points.");
+    } else {
+      console.warn("⚠️ Chart series 'areahistoricalSeries' is not initialized.");
     }
-
-    if (connection && (connection.readyState === WebSocket.OPEN || connection.readyState === WebSocket.CONNECTING)) {
-      connection.onopen = () => { connection.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
-    if (connection && (connection.readyState === WebSocket.CLOSED || connection.readyState === WebSocket.CLOSING)) {
-      connection = new WebSocket(WS_URL);
-      connection.onopen = () => { connection.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
-    connection.onclose = () => { console.log("Disconnected"); console.log("WS closed"); };
-    connection.onerror = e => { console.log("WS error " + JSON.stringify(e)); };
-    connection.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-
-      if (data.msg_type === "authorize") {
-        console.log("✅ Connecté à Deriv API");
-      }
-
-      // Quand on reçoit la profit_table
-      if (data.msg_type === "profit_table") {
-        transactions__ = data.profit_table.transactions;
-        updateTradeTable(transactions__);
-      }
-
-      if (data.error) {
-        console.error("⚠️ Erreur API :", data.error.message);
-        alert("Erreur : " + data.error.message);
-      }
-    };
   }
 
-  // ==========================================
-  // 🔹 Fonction pour récupérer le profit_table
-  // ==========================================
-  function getProfitTable(fromTimestamp, toTimestamp) {
-    if (!connection || connection.readyState !== WebSocket.OPEN) {
-      console.error("❌ WebSocket non connecté.");
-      return;
-    }
+  function filterAndRender() {
+    const filterValue = document.getElementById("symbolFilter").value.toUpperCase();
+    const filtered = allTradesData.filter(t => (t.underlying_symbol || t.description).toUpperCase().includes(filterValue));
 
-    connection.send(JSON.stringify({
-      profit_table: 1,
-      description: 1,
-      date_from: fromTimestamp,
-      date_to: toTimestamp,
-      limit: 500,
-      sort: "DESC"
-    }));
+    // Mise à jour des stats et du graphique en barres
+    const stats = calculateWinRate(filtered);
+    document.getElementById("totalTradesCount").textContent = filtered.length;
+    document.getElementById("winLossRatio").textContent = stats.winRate + "%";
+    document.getElementById("winLossRatio").style.color = stats.winRate >= 50 ? "#10b981" : "#ef4444";
+
+    updateCirclesUI(stats);
+    renderSymbolAnalysis(filtered);
+
+    // Pagination
+    const totalPages = Math.ceil(filtered.length / rowsPerPage) || 1;
+    const start = (currentPage - 1) * rowsPerPage;
+    renderTableRows(filtered.slice(start, start + rowsPerPage));
+
+    document.getElementById("pageInfo").textContent = `Page ${currentPage} / ${totalPages}`;
   }
 
-  // ===============================
-  // 🔹 Fonction pour mettre à jour le tableau
-  // ===============================
-  function updateTradeTable(trades) {
+  function renderTableRows(trades) {
     const tbody = document.getElementById("autoHistoricalBody");
     tbody.innerHTML = "";
 
     if (trades.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">No Trade Found</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 30px;">No matching trades found</td></tr>';
       return;
     }
 
-    trades.forEach(trade => {
+    trades.forEach(t => {
+      const profit = parseFloat(t.sell_price) - parseFloat(t.buy_price);
+      const isWin = profit > 0;
+
+      // On crée la ligne
       const tr = document.createElement("tr");
-      const time = trade.sell_time
-        ? new Date(trade.sell_time * 1000).toLocaleString()
-        : "-";
-
-      const profit = trade.sell_price - trade.buy_price;
-      const status = profit.toFixed(2) > 0 ? "Win" : (profit.toFixed(2) < 0 ? "Loss" : "Even");
-
+      tr.style.borderBottom = "1px solid #f1f5f9";
 
       tr.innerHTML = `
-       <td>${time}</td>
-       <td>${trade.contract_id || "-"}</td>
-       <td>${trade.underlying_symbol || "-"}</td>
-       <td>${trade.contract_type || "-"}</td>
-       <td>${trade.buy_price?.toFixed(2) || "-"}</td>
-       <td>${trade.multiplier || "-"}</td>
-       <td>${trade.take_profit || "-"}</td>
-       <td>${trade.stop_loss || "-"}</td>
-       <td style="color:${profit.toFixed(2) >= 0 ? 'limegreen' : 'red'};">${(profit.toFixed(2) > 0 ? "+" : "") + profit.toFixed(2)}</td>
-       <td>${status}</td>
-     `;
+            <td style="padding: 12px; font-size: 0.8rem;">${new Date(t.sell_time * 1000).toLocaleString()}</td>
+            <td style="padding: 12px; font-size: 0.75rem; color: #64748b;">#${t.contract_id}</td>
+            <td style="padding: 12px; font-weight: 700;">${t.underlying_symbol}</td>
+            <td style="padding: 12px; font-size: 0.75rem;">${t.contract_type}</td>
+            <td style="padding: 12px;">${t.buy_price.toFixed(2)}</td>
+            <td style="padding: 12px;">${t.multiplier || "-"}</td>
+            <td style="padding: 12px; color: #10b981;">${t.take_profit || "-"}</td>
+            <td style="padding: 12px; color: #ef4444;">${t.stop_loss || "-"}</td>
+            <td style="padding: 12px; font-weight: 800; color: ${isWin ? '#10b981' : '#ef4444'};">
+                ${isWin ? '+' : ''}${profit.toFixed(2)}
+            </td>
+            <td style="padding: 12px;">
+                <span class="badge-status ${isWin ? 'badge-win' : 'badge-loss'}">
+                    ${isWin ? 'WIN' : 'LOSS'}
+                </span>
+            </td>
+        `;
       tbody.appendChild(tr);
     });
   }
 
-  function GetProfitConnection() {
-    const startInput = document.getElementById("startDate").value;
-    const endInput = document.getElementById("endDate").value;
+  function notifyNewTrade(trade) {
+    const notifier = document.getElementById("tradeNotifier");
+    const profit = (parseFloat(trade.sell_price) - parseFloat(trade.buy_price)).toFixed(2);
+    const toast = document.createElement("div");
+    toast.className = "toast-notification"; // Ajoutez du CSS pour le style
+    toast.style.cssText = `background: white; border-left: 5px solid ${profit > 0 ? '#10b981' : '#ef4444'}; padding: 15px; margin-top: 10px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);`;
+    toast.innerHTML = `<strong>${trade.underlying_symbol}</strong>: ${profit} USD`;
+    notifier.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  }
 
-    if (connection_ws === null) {
-      connection_ws = new WebSocket(WS_URL);
-      connection_ws.onopen = () => {
-        connection_ws.send(JSON.stringify({ authorize: TOKEN }));
-      };
-    }
-
-    if (connection_ws && (connection_ws.readyState === WebSocket.OPEN || connection_ws.readyState === WebSocket.CONNECTING)) {
-      connection_ws.onopen = () => { connection_ws.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
-    if (connection_ws && (connection_ws.readyState === WebSocket.CLOSED || connection_ws.readyState === WebSocket.CLOSING)) {
-      connection_ws = new WebSocket(WS_URL);
-      connection_ws.onopen = () => { connection_ws.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
-    connection_ws.onclose = () => { console.log("Disconnected"); console.log("WS closed"); };
-    connection_ws.onerror = e => { console.log("WS error " + JSON.stringify(e)); };
-    connection_ws.onmessage = (msg) => {
+  function fetchHistoricalData(from, to) {
+    if (historicalConn) historicalConn.close();
+    historicalConn = new WebSocket(WS_URL);
+    historicalConn.onopen = () => historicalConn.send(JSON.stringify({ authorize: TOKEN }));
+    historicalConn.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
-
       if (data.msg_type === "authorize") {
-        connection_ws.send(JSON.stringify({
-          profit_table: 1,
-          description: 1,
-          date_from: startInput.toString(),
-          date_to: endInput.toString(),
-          limit: 500,
-          sort: "DESC"
-        }));
+        historicalConn.send(JSON.stringify({ profit_table: 1, date_from: from, date_to: to, limit: 100, sort: "DESC" }));
       }
-
-      // Quand on reçoit la profit_table
-      if (data.msg_type === "profit_table") {
-        structresponse = getProfitStats(data);
-        // Animation simultanée des cercles et des chiffres 
-        profitvalue.textContent = " " + structresponse.totalProfitPrice__ + " " + CURRENCY.toString();
-        lossvalue.textContent = " " + structresponse.totalLossPrice__ + " " + CURRENCY.toString();
-
-        if (structresponse.totalPNLprice__ > 0) {
-          plvalue.style.color = "#10b981";
-          plvalue.textContent = " " + structresponse.totalPNLprice__ + " " + CURRENCY.toString();
-        }
-        else {
-          plvalue.style.color = "#ff4d4d";
-          plvalue.textContent = " " + structresponse.totalPNLprice__ + " " + CURRENCY.toString();
-        }
-
-        circles.forEach(circle => {
-          let targetDeg = 0;
-          let targetPercent = 0;
-
-          if (circle.classList.contains("red")) { targetDeg = parseFloat(structresponse.lossRate) * 3.6; targetPercent = parseFloat(structresponse.lossRate); }
-          if (circle.classList.contains("blue")) { targetDeg = parseFloat(structresponse.winRate) * 3.6; targetPercent = parseFloat(structresponse.winRate); }
-          if (circle.classList.contains("mix")) { targetDeg = parseFloat(structresponse.pnlPercent) * 3.6; targetPercent = parseFloat(structresponse.pnlPercent); }
-
-          let currentDeg = 0;
-          let currentPercent = 0;
-          const stepDeg = targetDeg / 60;       // 60 frames (≈ 1 sec)   
-          const stepPercent = targetPercent / 60;
-          const span = circle.querySelector("span");
-          const color =
-            circle.classList.contains("red")
-              ? "#ff4d4d"
-              : circle.classList.contains("blue")
-                ? "#1655d4ff"
-                : "#18bc18ff";
-
-          const interval = setInterval(() => {
-            if (currentDeg >= targetDeg) {
-              clearInterval(interval);
-              span.textContent = targetPercent + "%";
-            } else {
-              currentDeg += stepDeg;
-              currentPercent += stepPercent;
-              circle.style.background = `conic-gradient(${color} ${currentDeg}deg, #e5e7eb ${currentDeg}deg)`;
-              span.textContent = Math.round(currentPercent) + "%";
-            }
-          }, 16); // 60 FPS
-        });
+      if (data.msg_type === "profit_table" && data.profit_table.count > 0) { 
+        const lastTrade = data.profit_table.transactions[0];
+        // APPEL DE LA NOTIFICATION
+        notifyNewTrade(lastTrade);
+        updateHistoricalTable(data.profit_table.transactions);
       }
     };
   }
 
-  // === Récupérer les contrats Deriv et tracer le profit ===
-  function GetProfitgraphical() {
-    const startInput = document.getElementById("startDate").value;
-    const endInput = document.getElementById("endDate").value;
-
-    if (!startInput || !endInput) {
-      alert("Please select a start date and an end date.");
-      return;
-    }
-
-    // Initialiser WS si nécessaire
-    if (!connection_ws_htx || connection_ws_htx.readyState === WebSocket.CLOSED) {
-      connection_ws_htx = new WebSocket(WS_URL);
-
-      connection_ws_htx.onopen = () => {
-        connection_ws_htx.send(JSON.stringify({ authorize: TOKEN }));
-      };
-    } else if (connection_ws_htx.readyState === WebSocket.OPEN) {
-      connection_ws_htx.send(JSON.stringify({ authorize: TOKEN }));
-    }
-
-    connection_ws_htx.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
-
-      if (data.msg_type === "authorize") {
-        connection_ws_htx.send(JSON.stringify({
-          profit_table: 1,
-          description: 1,
-          date_from: startInput.toString(),
-          date_to: endInput.toString(),
-          limit: 500,
-          sort: "ASC",
-        }));
-      }
-
-      // Quand on reçoit la profit_table
-      if (data.msg_type === "profit_table") {
-        const txs = data.profit_table.transactions;
-
-        // === Transformation des transactions en série exploitable ===
-        const profitData = txs
-          .filter(t => t.sell_time && !isNaN(t.sell_price)) // uniquement les clôturées
-          .map(t => ({
-            time: Number(t.sell_time),                  // timestamp UNIX en secondes
-            value: +(t.sell_price - t.buy_price).toFixed(2), // profit net
-          }))
-          .filter(p => p.time > 0 && !isNaN(p.value))     // validation des données
-          .sort((a, b) => a.time - b.time);               // ordre chronologique
-
-        console.log("profitData:", profitData); // vérification 
-
-        if (profitData.length > 0) {
-          // 🔍 Filtrage & validation
-          const cleanProfitData = profitData.filter((p, i) => {
-            if (p.value === null || p.value === undefined || isNaN(p.value)) {
-              console.warn(`⚠️ Valeur invalide @ index ${i}:`, p);
-              return false;
-            }
-            return true;
-          });
-
-          const seenTimes = new Set();
-          const uniqueData = cleanProfitData.filter(p => {
-            if (seenTimes.has(p.time)) {
-              console.warn(`⛔ Timestamp dupliqué ignoré:`, p);
-              return false;
-            }
-            seenTimes.add(p.time);
-            return true;
-          });
-
-          if (!uniqueData.length) {
-            console.error("❌ Aucune donnée valide à afficher !");
-            return;
-          }
-
-          console.log("📊 Données finales utilisées:", uniqueData);
-          areahistoricalSeries.setData(uniqueData);
-          charthistorical.timeScale().fitContent();
-        } else {
-          alert("No contracts found for this period.");
-        }
-      }
-    };
-
-    connection_ws_htx.onerror = (err) => {
-      console.error("Erreur WS:", err);
-    };
-  }
-
-  // === Initialisation du graphique ===
-  function inihistoricalchart() {
-    if (!historicalchartcontainer) {
-      console.error("❌ Container 'HistoricalContract' introuvable !");
-      return;
-    }
-
-    // Supprimer le graphique précédent
-    if (charthistorical) charthistorical.remove();
-    historicalchartcontainer.innerHTML = "";
-
-    // Créer le graphique
-    charthistorical = LightweightCharts.createChart(historicalchartcontainer, {
-      layout: {
-        textColor: "#333",
-        background: { type: "solid", color: "#fff" },
-      },
-      grid: {
-        vertLines: { color: "rgba(200,200,200,0.3)" },
-        horzLines: { color: "rgba(200,200,200,0.3)" },
-      },
-      timeScale: { timeVisible: true, secondsVisible: false },
+  function calculateWinRate(trades) {
+    if (!trades.length) return { winRate: 0, lossRate: 0, totalProfitPrice__: 0, totalLossPrice__: 0 };
+    let wins = 0, p = 0, l = 0;
+    trades.forEach(t => {
+      const diff = t.sell_price - t.buy_price;
+      if (diff > 0) { wins++; p += diff; } else { l += Math.abs(diff); }
     });
+    return {
+      winRate: Math.round((wins / trades.length) * 100),
+      lossRate: 100 - Math.round((wins / trades.length) * 100),
+      totalProfitPrice__: p.toFixed(2),
+      totalLossPrice__: l.toFixed(2)
+    };
+  }
 
-    // AreaSeries unique
-    areahistoricalSeries = charthistorical.addAreaSeries({
-      lineColor: '#2563eb',          // Bleu vif (Royal Blue)
-      lineWidth: 2,
-      topColor: 'rgba(37, 99, 235, 0.4)',    // Bleu semi-transparent en haut
-      bottomColor: 'rgba(37, 99, 235, 0.05)', // Presque transparent en bas
+  function updateCirclesUI(stats) {
+    const configs = [
+      { id: "circle-profit-path", val: stats.winRate, textId: "profit", color: "#3b82f6" },
+      { id: "circle-loss-path", val: stats.lossRate, textId: "loss", color: "#ef4444" },
+      { id: "circle-pl-path", val: stats.winRate, textId: "pl", color: "#10b981" }
+    ];
+    configs.forEach(c => {
+      const path = document.getElementById(c.id);
+      const span = document.getElementById(c.textId);
+      if (path) path.setAttribute("stroke-dasharray", `${c.val}, 100`);
+      if (span) span.textContent = `${c.val}%`;
     });
-
-    // Données aléatoires au démarrage
-    setRandomSeries();
+    document.getElementById("profitvalue").textContent = stats.totalProfitPrice__;
+    document.getElementById("lossvalue").textContent = stats.totalLossPrice__;
   }
 
-  // === Série aléatoire avant les vrais contrats ===
-  function setRandomSeries() {
-    const now = Math.floor(Date.now() / 1000);
-    let randomData = [];
-    const target = 1.0;      // Valeur cible (asymptote)    
-    let value = 0;           // Point de départ
-
-    for (let i = 300; i >= 1; i--) {
-      const time = now - i * 3600; // toutes les heures
-
-      // facteur d'apprentissage + petite variation aléatoire
-      const delta = (target - value) * 0.05 + (Math.random() * 0.1 - 0.05);
-
-      value += delta;
-
-      randomData.push({
-        time,
-        value: +value.toFixed(3)
-      });
-    }
-
-    areahistoricalSeries.setData(randomData);
+  function renderSymbolAnalysis(trades) {
+    const chart = document.getElementById("symbolBarChart");
+    if (!chart) return;
+    const totals = {};
+    trades.forEach(t => {
+      const s = t.underlying_symbol || "Other";
+      totals[s] = (totals[s] || 0) + (t.sell_price - t.buy_price);
+    });
+    const maxP = Math.max(...Object.values(totals).map(Math.abs), 1);
+    chart.innerHTML = Object.entries(totals).map(([sym, val]) => `
+        <div style="display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 50px;">
+            <span style="font-size: 0.7rem; color: ${val >= 0 ? '#10b981' : '#ef4444'}">${val.toFixed(0)}</span>
+            <div style="width: 15px; height: ${(Math.abs(val) / maxP) * 100}px; background: ${val >= 0 ? '#10b981' : '#ef4444'}; border-radius: 3px 3px 0 0;"></div>
+            <span style="font-size: 0.6rem; transform: rotate(-45deg); margin-top: 10px;">${sym}</span>
+        </div>`).join('');
   }
 
-  // 🔹 Fonction de calcul PNL, WinRate, LossRate  
-  function getProfitStats(response) {
-    const transactions = response?.profit_table?.transactions || [];
-    if (!transactions.length) return { pnlPercent: '0', winRate: '0', lossRate: '0' };
-
-    let totalProfit = 0, totalBuy = 0, wins = 0, losses = 0, totalprofitprice = 0, totallossprice = 0;
-
-    for (const c of transactions) {
-      if (!c.sell_price || !c.buy_price) continue;
-      const profit = c.sell_price - c.buy_price;
-      totalProfit += profit;
-      totalBuy += c.buy_price;
-      if (profit > 0) {
-        wins++;
-        totalprofitprice += profit;
-      }
-      else if (profit < 0) {
-        losses++;
-        totallossprice += profit;
-      }
-    }
-
-    const totalPNLprice__ = totalProfit.toFixed(2);
-    const totalProfitPrice__ = totalprofitprice.toFixed(2);
-    const totalLossPrice__ = totallossprice.toFixed(2);
-    const total = wins + losses;
-    const pnlPercent = totalBuy > 0 ? ((totalProfit / totalBuy) * 100).toFixed(2) : 0;
-    const winRate = total > 0 ? ((wins / total) * 100).toFixed(2) : 0;
-    const lossRate = total > 0 ? ((losses / total) * 100).toFixed(2) : 0;
-
-    return { pnlPercent, winRate, lossRate, totalPNLprice__, totalProfitPrice__, totalLossPrice__ };
+  function sortDataByProfit() {
+    currentSortOrder = (currentSortOrder === 'desc') ? 'asc' : 'desc';
+    allTradesData.sort((a, b) => {
+      const pA = a.sell_price - a.buy_price;
+      const pB = b.sell_price - b.buy_price;
+      return currentSortOrder === 'desc' ? pB - pA : pA - pB;
+    });
+    document.getElementById("sortProfit").textContent = currentSortOrder === 'desc' ? "Profit ↓" : "Profit ↑";
+    filterAndRender();
   }
-
+  
+  // ✅ Initialisation du tableau HTML
   function initCalendarTable() {
     const CalendarList = document.getElementById("CalendarList");
 
@@ -3083,6 +2997,136 @@ document.addEventListener("DOMContentLoaded", () => {
     GetProfitgraphical();
     GetProfitConnection();
     connectHistoricalDeriv();
+  });
+
+  document.getElementById("fetchTrades").addEventListener("click", () => {
+    // 1. Récupérer les dates des inputs HTML
+    const startValue = document.getElementById("startDate").value; // Format YYYY-MM-DD
+    const endValue = document.getElementById("endDate").value;
+
+    if (!startValue || !endValue) {
+      alert("Please select both Start and End dates");
+      return;
+    }
+
+    // 2. Convertir les dates en TimeStamp UNIX (secondes) pour l'API Deriv
+    const fromTimestamp = Math.floor(new Date(startValue).getTime() / 1000);
+    // On ajoute 86399 secondes pour inclure toute la journée de fin (jusqu'à 23:59:59)
+    const toTimestamp = Math.floor(new Date(endValue).getTime() / 1000) + 86399;
+
+    // 3. APPEL DE LA FONCTION
+    fetchHistoricalData(fromTimestamp, toTimestamp);
+  });
+
+  document.getElementById("generateReport").addEventListener("click", () => {
+    // 1. Récupération des données actuelles
+    const holder = document.getElementById("accountHolder")?.textContent || "N/A";
+    const balance = document.getElementById("balanceValue")?.textContent || "N/A";
+    const start = document.getElementById("startDate").value;
+    const end = document.getElementById("endDate").value;
+    const winRate = document.getElementById("profit").textContent;
+    const netProfit = document.getElementById("plvalue").textContent;
+
+    // 2. Création du contenu du rapport
+    const reportWindow = window.open('', '_blank');
+
+    const htmlContent = `
+        <html>
+        <head>
+            <title>Trading Report - ${holder}</title>
+            <style>
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
+                .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 30px; }
+                .header h1 { margin: 0; color: #2563eb; font-size: 24px; }
+                .info-box { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px; }
+                .info-item { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #f1f5f9; }
+                .info-item label { display: block; font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: bold; }
+                .info-item span { font-size: 18px; font-weight: 700; }
+                
+                .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 40px; }
+                .stat-card { text-align: center; padding: 20px; border-radius: 12px; color: white; }
+                .card-blue { background: #3b82f6; }
+                .card-green { background: #10b981; }
+                .card-red { background: #ef4444; }
+                
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+                th { background: #f1f5f9; text-align: left; padding: 12px; color: #475569; border-bottom: 2px solid #e2e8f0; }
+                td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
+                .win-text { color: #10b981; font-weight: bold; }
+                .loss-text { color: #ef4444; font-weight: bold; }
+                
+                @media print {
+                    button { display: none; }
+                    body { padding: 0; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div>
+                    <h1>Trading Performance Report</h1>
+                    <p style="margin: 5px 0 0; color: #64748b;">Generated on ${new Date().toLocaleString()}</p>
+                </div>
+                <div style="text-align: right;">
+                    <span style="background: #dbeafe; color: #1e40af; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">CONFIDENTIAL</span>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <div class="info-item"><label>Account Holder</label><span>${holder}</span></div>
+                <div class="info-item"><label>Current Balance</label><span>${balance}</span></div>
+                <div class="info-item"><label>Period Start</label><span>${start}</span></div>
+                <div class="info-item"><label>Period End</label><span>${end}</span></div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card card-blue"><h3>${winRate}</h3><p>Win Rate</p></div>
+                <div class="stat-card card-green"><h3>${document.getElementById("profitvalue").textContent}</h3><p>Total Gross Profit</p></div>
+                <div class="stat-card card-red"><h3>${document.getElementById("lossvalue").textContent}</h3><p>Total Gross Loss</p></div>
+            </div>
+
+            <h2 style="font-size: 16px; border-left: 4px solid #2563eb; padding-left: 10px;">Transaction History</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>Symbol</th>
+                        <th>Type</th>
+                        <th>Stake</th>
+                        <th>Profit/Loss</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${Array.from(document.querySelectorAll("#autoHistoricalBody tr")).map(tr => `
+                        <tr>
+                            <td>${tr.cells[0].innerText}</td>
+                            <td>${tr.cells[2].innerText}</td>
+                            <td>${tr.cells[3].innerText}</td>
+                            <td>${tr.cells[4].innerText}</td>
+                            <td class="${parseFloat(tr.cells[8].innerText) >= 0 ? 'win-text' : 'loss-text'}">
+                                ${tr.cells[8].innerText}
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+
+            <div style="margin-top: 40px; text-align: center; color: #94a3b8; font-size: 10px;">
+                <p>This report was generated automatically. Trading involves risk.</p>
+            </div>
+        </body>
+        </html>
+    `;
+
+    // 3. Injection et Impression
+    reportWindow.document.write(htmlContent);
+    reportWindow.document.close();
+
+    // On attend un court instant pour que le rendu soit prêt
+    setTimeout(() => {
+      reportWindow.print();
+      // reportWindow.close(); // Optionnel : fermer l'onglet après impression
+    }, 500);
   });
 
   // 🔹 Gérer le changement de compte dans la combobox
