@@ -295,7 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
-      try {
+      try {  
         chart.remove();
       } catch (e) {
         console.error("Erreur lors de la destruction du chart:", e);
