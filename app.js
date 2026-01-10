@@ -2221,7 +2221,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <label style="display: block; font-size: 0.65rem; color: #64748b; text-transform: uppercase; font-weight: bold;">Win/Loss Ratio</label>
             <span id="winLossRatio" style="font-size: 1.2rem; font-weight: 800; color: #10b981;">0%</span>
         </div> 
-    </div>
+    </div>  
   
     <div id="symbolAnalysisContainer" style="margin-bottom: 20px; padding: 15px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
         <h4 style="margin: 0 0 10px 0; font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">📊 Profit per Symbol</h4>
@@ -2985,7 +2985,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===============================
   // 🔹 Événement du bouton Rechercher
   // ===============================
-  document.getElementById("fetchTrades").addEventListener("click", () => {
+  /*document.getElementById("fetchTrades").addEventListener("click", () => {
     const startInput = document.getElementById("startDate").value;
     const endInput = document.getElementById("endDate").value;
 
@@ -3002,7 +3002,7 @@ document.addEventListener("DOMContentLoaded", () => {
     GetProfitgraphical();
     GetProfitConnection();
     connectHistoricalDeriv();
-  });
+  });*/
 
   document.getElementById("fetchTrades").addEventListener("click", () => {
     // 1. Récupérer les dates des inputs HTML
@@ -3376,7 +3376,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // === Trade Evaluation Panel Toggle ===
-  /* tradeEvalToggle.addEventListener("click", () => {
+   tradeEvalToggle.addEventListener("click", () => {
     tradeEvalPanel.classList.toggle("active");
 
     if (tradeEvalPanel.classList.contains("active")) {
@@ -3421,7 +3421,7 @@ document.addEventListener("DOMContentLoaded", () => {
         span.textContent = "0%";
       });
     }
-  }); */
+  }); 
 
   window.addEventListener('load', () => {
     // sécurise la récupération des tokens ici
