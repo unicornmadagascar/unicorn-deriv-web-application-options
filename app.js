@@ -279,9 +279,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function initChart(currentChartType) {
     const container = document.getElementById("chartInner");
+    const containerHistoryList = document.getElementById("autoHistoryList");
     if (!container) {
       console.error("Conteneur de graphique introuvable !");
-      return;
+      return;  
     }
 
     // 1. NETTOYAGE PHYSIQUE ET MÉMOIRE
@@ -302,7 +303,9 @@ document.addEventListener("DOMContentLoaded", () => {
       chart = null;
     }
 
-    // 2. RÉINITIALISATION DES VARIABLES GLOBALES
+    // Si le tableau existe déjà, on ne ré-injecte pas tout le HTML
+    if (containerHistoryList.innerHTML.trim() !== "") return;
+    // RÉINITIALISATION DES VARIABLES GLOBALES
     container.innerHTML = "";
     priceLines4openlines = {}; // Reset de l'objet des contrats
 
@@ -317,7 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
     priceDataZZ = [];   // Source unifiée pour ZigZag/MA
     isWsInitialized = false;
 
-    // 3. CRÉATION DU NOUVEAU GRAPHIQUE
+    // CRÉATION DU NOUVEAU GRAPHIQUE
     chart = LightweightCharts.createChart(container, {
       layout: {
         textColor: "#333",
@@ -334,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // 4. CONFIGURATION DES SÉRIES SELON LE TYPE
+    // CONFIGURATION DES SÉRIES SELON LE TYPE
     if (currentChartType === "area") {
       currentSeries = chart.addAreaSeries({
         lineColor: "rgba(189, 6, 221, 1)",
@@ -354,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // 5. AUTO-RÉACTIVATION DES INDICATEURS
+    // AUTO-RÉACTIVATION DES INDICATEURS
     // On recrée les "réceptacles" (séries) pour les données qui vont arriver
     if (isZigZagActive) {
       zigzagSeries = chart.addLineSeries({
@@ -367,8 +370,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (activePeriods.length > 0) {
       initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200 via le nouveau chart
     }
-
-    // --- DANS VOTRE FONCTION initChart ---
 
     // 1. Réinitialisation de la mémoire des contrats
     activeContractsData = {};
@@ -2054,7 +2055,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function connectDeriv_table() {
     // 1. Empêcher les connexions multiples si une est déjà en cours ou ouverte
     if (wsplContracts && (wsplContracts.readyState === WebSocket.OPEN || wsplContracts.readyState === WebSocket.CONNECTING)) {
-      console.log("ℹ️ Connexion déjà active ou en cours...");  
+      console.log("ℹ️ Connexion déjà active ou en cours...");
       return;
     }
 
@@ -3210,23 +3211,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  contractsPanelToggle.addEventListener("click", () => {
-    if (!contractsPanel.classList.contains("active")) {
-      contractsPanel.style.display = "flex";
-      const contentHeight = contractsPanel.scrollHeight + "px";
-      contractsPanel.style.height = contentHeight;
-      contractsPanel.classList.add("active");
-      contractsPanelToggle.textContent = "📁 Hide Contracts";
-      autoHistoryList.innerHTML = " ";
-      initTable();
-    } else {
-      contractsPanel.style.height = contractsPanel.scrollHeight + "px";
-      requestAnimationFrame(() => {
-        contractsPanel.style.height = "0";
-      });
-      contractsPanel.classList.remove("active");
-      contractsPanelToggle.textContent = "📄 Show Contracts";
-      setTimeout(() => (contractsPanel.style.display = "none"), 400);
+  document.getElementById('contractsPanelToggle').addEventListener('click', function () {
+    const panel = document.getElementById('contractsPanel');
+    const isOpening = !panel.classList.contains('active');
+
+    panel.classList.toggle('active');
+
+    // Changer le texte du bouton
+    this.textContent = isOpening ? "📄 Hide Open Contracts" : "📄 Show Open Contracts";
+
+    // Si on ouvre, on demande un rafraîchissement des calculs pour forcer le rendu
+    if (isOpening) {
+      if (typeof updateTotalStats === 'function') {
+        updateTotalStats();
+      }
     }
   });
 
