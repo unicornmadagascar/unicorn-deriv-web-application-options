@@ -2667,7 +2667,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function GetProfitgraphical() {
     const startInput = document.getElementById("startDate").value;
-    const endInput = document.getElementById("endDate").value;
+    const endInput = document.getElementById("endDate").value;   
 
     if (!startInput || !endInput) {
       alert("Please select a start date and an end date.");
