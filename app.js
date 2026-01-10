@@ -2578,7 +2578,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderSymbolAnalysis(trades) {
-    const chart = document.getElementById("symbolBarChart");
+    const chart = document.getElementById("symbolBarChart");   
     if (!chart) return;
     const totals = {};  
     trades.forEach(t => {
