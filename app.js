@@ -316,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
     priceLines4openlines = {}; // Reset de l'objet des contrats
 
     // Reset des séries pour forcer leur recréation
-    currentSeries = null;  
+    currentSeries = null;   
     zigzagSeries = null;
     maSeries = null;
 
