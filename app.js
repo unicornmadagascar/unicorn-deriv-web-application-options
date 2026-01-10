@@ -279,7 +279,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function initChart(currentChartType) {
     const container = document.getElementById("chartInner");
-    const containerHistoryList = document.getElementById("autoHistoryList");
     if (!container) {
       console.error("Conteneur de graphique introuvable !");
       return;  
@@ -303,8 +302,6 @@ document.addEventListener("DOMContentLoaded", () => {
       chart = null;    
     }
 
-    // Si le tableau existe déjà, on ne ré-injecte pas tout le HTML
-    containerHistoryList.innerHTML.trim() = "";
     // RÉINITIALISATION DES VARIABLES GLOBALES
     container.innerHTML = "";
     priceLines4openlines = {}; // Reset de l'objet des contrats
