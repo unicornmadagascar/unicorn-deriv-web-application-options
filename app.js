@@ -3002,7 +3002,7 @@ document.addEventListener("DOMContentLoaded", () => {
     GetProfitgraphical();
     GetProfitConnection();
     connectHistoricalDeriv();
-  });*/
+  });*/  
 
   document.getElementById("fetchTrades").addEventListener("click", () => {
     // 1. Récupérer les dates des inputs HTML
