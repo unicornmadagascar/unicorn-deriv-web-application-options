@@ -2278,7 +2278,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const maxPage = Math.ceil(allTradesData.length / rowsPerPage);
       if (currentPage < maxPage) { currentPage++; filterAndRender(); }
     });
-  }
+    document.getElementById("generateReport").addEventListener("click", GetpdfTradereport);
 
   function resetAll() {
     // 1. Réinitialiser les champs de saisie (Filtre par symbole)
@@ -3022,7 +3022,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchHistoricalData(fromTimestamp, toTimestamp);
   });
 
-  document.getElementById("generateReport").addEventListener("click", () => {
+  function GetpdfTradereport() {
     // 1. Récupération des données actuelles
     const holder = document.getElementById("accountHolder")?.textContent || "N/A";
     const balance = document.getElementById("balanceValue")?.textContent || "N/A";
@@ -3131,7 +3131,7 @@ document.addEventListener("DOMContentLoaded", () => {
       reportWindow.print();
       // reportWindow.close(); // Optionnel : fermer l'onglet après impression
     }, 500);
-  });
+  }
 
   // 🔹 Gérer le changement de compte dans la combobox
   document.getElementById("accountSelect")?.addEventListener("change", (e) => {
@@ -3376,7 +3376,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // === Trade Evaluation Panel Toggle ===
-  tradeEvalToggle.addEventListener("click", () => {
+  /* tradeEvalToggle.addEventListener("click", () => {
     tradeEvalPanel.classList.toggle("active");
 
     if (tradeEvalPanel.classList.contains("active")) {
@@ -3421,7 +3421,7 @@ document.addEventListener("DOMContentLoaded", () => {
         span.textContent = "0%";
       });
     }
-  });
+  }); */
 
   window.addEventListener('load', () => {
     // sécurise la récupération des tokens ici
