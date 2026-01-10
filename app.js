@@ -2277,7 +2277,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("nextPage").addEventListener("click", () => { 
         const maxPage = Math.ceil(allTradesData.length / rowsPerPage);
         if(currentPage < maxPage) { currentPage++; filterAndRender(); }   
-    });
+    }); 
     document.getElementById("generateReport").addEventListener("click", GetpdfTradereport);
   }
 
