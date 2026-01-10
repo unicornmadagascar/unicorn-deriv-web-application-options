@@ -300,7 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (e) {
         console.error("Erreur lors de la destruction du chart:", e);
       }
-      chart = null;  
+      chart = null;    
     }
 
     // Si le tableau existe déjà, on ne ré-injecte pas tout le HTML
