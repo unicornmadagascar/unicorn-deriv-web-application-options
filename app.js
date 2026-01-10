@@ -2521,13 +2521,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // On met à jour l'interface
           updateHistoricalTable(transactions);
-        } else {  
+        } else {
           // Cas où il n'y a aucun trade sur la période
           document.getElementById("autoHistoricalBody").innerHTML =
             '<tr><td colspan="10" style="text-align:center;">No trades found for this period.</td></tr>';
         }
       }
-    };  
+    };
   }
 
   function calculateWinRate(trades) {
@@ -2551,20 +2551,36 @@ document.addEventListener("DOMContentLoaded", () => {
       { id: "circle-loss-path", val: stats.lossRate, textId: "loss", color: "#ef4444" },
       { id: "circle-pl-path", val: stats.winRate, textId: "pl", color: "#10b981" }
     ];
+
     configs.forEach(c => {
       const path = document.getElementById(c.id);
       const span = document.getElementById(c.textId);
       if (path) path.setAttribute("stroke-dasharray", `${c.val}, 100`);
       if (span) span.textContent = `${c.val}%`;
     });
-    document.getElementById("profitvalue").textContent = stats.totalProfitPrice__;
-    document.getElementById("lossvalue").textContent = stats.totalLossPrice__;
+
+    // Mise à jour des valeurs brutes (Profit et Perte)
+    if (document.getElementById("profitvalue"))
+      document.getElementById("profitvalue").textContent = stats.totalProfitPrice__;
+
+    if (document.getElementById("lossvalue"))
+      document.getElementById("lossvalue").textContent = stats.totalLossPrice__;
+
+    // AJOUT : Calcul et affichage du P/L Net
+    const plValueEl = document.getElementById("plvalue");
+    if (plValueEl) {
+      const netPL = (parseFloat(stats.totalProfitPrice__) - parseFloat(stats.totalLossPrice__)).toFixed(2);
+      plValueEl.textContent = (netPL > 0 ? "+" : "") + netPL; // Ajoute un "+" si positif
+
+      // Changement de couleur dynamique pour le P/L Net
+      plValueEl.style.color = netPL >= 0 ? "#10b981" : "#ef4444";
+    }
   }
 
   function renderSymbolAnalysis(trades) {
     const chart = document.getElementById("symbolBarChart");
     if (!chart) return;
-    const totals = {};
+    const totals = {};  
     trades.forEach(t => {
       const s = t.underlying_symbol || "Other";
       totals[s] = (totals[s] || 0) + (t.sell_price - t.buy_price);
@@ -2587,6 +2603,155 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     document.getElementById("sortProfit").textContent = currentSortOrder === 'desc' ? "Profit ↓" : "Profit ↑";
     filterAndRender();
+  }
+
+  // LIGHTWEIGHT CHART FOR PROFIT GRAPHICAL
+  function inithistoricalchart() {
+    if (!historicalchartcontainer) {
+      console.error("❌ Container 'HistoricalContract' introuvable !");
+      return;
+    }
+
+    // Supprimer le graphique précédent
+    if (charthistorical) charthistorical.remove();
+    historicalchartcontainer.innerHTML = "";
+
+    // Créer le graphique
+    charthistorical = LightweightCharts.createChart(historicalchartcontainer, {
+      layout: {
+        textColor: "#333",
+        background: { type: "solid", color: "#fff" },
+      },
+      grid: {
+        vertLines: { color: "rgba(200,200,200,0.3)" },
+        horzLines: { color: "rgba(200,200,200,0.3)" },
+      },
+      timeScale: { timeVisible: true, secondsVisible: false },
+    });
+
+    // AreaSeries unique
+    areahistoricalSeries = charthistorical.addAreaSeries({
+      lineColor: "gray",
+      lineWidth: 2,
+      topColor: "gray",
+      bottomColor: "gray",
+    });
+
+    // Données aléatoires au démarrage
+    setRandomSeries();
+  }
+
+  // === Série aléatoire avant les vrais contrats ===
+  function setRandomSeries() {
+    const now = Math.floor(Date.now() / 1000);
+    let randomData = [];
+    const target = 1.0;      // Valeur cible (asymptote)    
+    let value = 0;           // Point de départ
+
+    for (let i = 300; i >= 1; i--) {
+      const time = now - i * 3600; // toutes les heures
+
+      // facteur d'apprentissage + petite variation aléatoire
+      const delta = (target - value) * 0.05 + (Math.random() * 0.1 - 0.05);
+
+      value += delta;
+
+      randomData.push({
+        time,
+        value: +value.toFixed(3)
+      });
+    }
+
+    areahistoricalSeries.setData(randomData);
+  }
+
+  function GetProfitgraphical() {
+    const startInput = document.getElementById("startDate").value;
+    const endInput = document.getElementById("endDate").value;
+
+    if (!startInput || !endInput) {
+      alert("Please select a start date and an end date.");
+      return;
+    }
+
+    // Initialiser WS si nécessaire
+    if (!connection_ws_htx || connection_ws_htx.readyState === WebSocket.CLOSED) {
+      connection_ws_htx = new WebSocket(WS_URL);
+
+      connection_ws_htx.onopen = () => {
+        connection_ws_htx.send(JSON.stringify({ authorize: TOKEN }));
+      };
+    } else if (connection_ws_htx.readyState === WebSocket.OPEN) {
+      connection_ws_htx.send(JSON.stringify({ authorize: TOKEN }));
+    }
+
+    connection_ws_htx.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+
+      if (data.msg_type === "authorize") {
+        connection_ws_htx.send(JSON.stringify({
+          profit_table: 1,
+          description: 1,
+          date_from: startInput.toString(),
+          date_to: endInput.toString(),
+          limit: 500,
+          sort: "ASC",
+        }));
+      }
+
+      // Quand on reçoit la profit_table
+      if (data.msg_type === "profit_table") {
+        const txs = data.profit_table.transactions;
+
+        // === Transformation des transactions en série exploitable ===
+        const profitData = txs
+          .filter(t => t.sell_time && !isNaN(t.sell_price)) // uniquement les clôturées
+          .map(t => ({
+            time: Number(t.sell_time),                  // timestamp UNIX en secondes
+            value: +(t.sell_price - t.buy_price).toFixed(2), // profit net
+          }))
+          .filter(p => p.time > 0 && !isNaN(p.value))     // validation des données
+          .sort((a, b) => a.time - b.time);               // ordre chronologique
+
+        console.log("profitData:", profitData); // vérification 
+
+        if (profitData.length > 0) {
+          // 🔍 Filtrage & validation
+          const cleanProfitData = profitData.filter((p, i) => {
+            if (p.value === null || p.value === undefined || isNaN(p.value)) {
+              console.warn(`⚠️ Valeur invalide @ index ${i}:`, p);
+              return false;
+            }
+            return true;
+          });
+
+          const seenTimes = new Set();
+          const uniqueData = cleanProfitData.filter(p => {
+            if (seenTimes.has(p.time)) {
+              console.warn(`⛔ Timestamp dupliqué ignoré:`, p);
+              return false;
+            }
+            seenTimes.add(p.time);
+            return true;
+          });
+
+          if (!uniqueData.length) {
+            console.error("❌ Aucune donnée valide à afficher !");
+            return;
+          }
+
+          console.log("📊 Données finales utilisées:", uniqueData);
+          areahistoricalSeries.setData(uniqueData);
+          charthistorical.timeScale().fitContent();
+        } else {
+          alert("No contracts found for this period.");
+        }
+      }
+    };
+
+    connection_ws_htx.onerror = (err) => {
+      console.error("Erreur WS:", err);
+    };
   }
 
   // ✅ Initialisation du tableau HTML
