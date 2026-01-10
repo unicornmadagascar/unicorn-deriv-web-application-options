@@ -2671,7 +2671,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!startInput || !endInput) {
       alert("Please select a start date and an end date.");
-      return;
+      return;  
     }
 
     // Initialiser WS si nécessaire
