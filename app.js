@@ -2509,7 +2509,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("sortProfit").textContent = currentSortOrder === 'desc' ? "Profit ↓" : "Profit ↑";
     filterAndRender();
   }
-  
+
   // ✅ Initialisation du tableau HTML
   function initCalendarTable() {
     const CalendarList = document.getElementById("CalendarList");
@@ -2596,7 +2596,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function sendCalendarRequest() {
     const currency = document.getElementById('currency').value || undefined;
     const start = document.getElementById('startDate').value;
-    const end = document.getElementById('endDate').value;
+    const end = document.getElementById('endDate').value;  
     const payload = { economic_calendar: 1 };
 
     if (currency) payload.currency = currency;
