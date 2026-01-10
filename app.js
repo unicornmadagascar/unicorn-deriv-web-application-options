@@ -2672,7 +2672,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!startInput || !endInput) {
       alert("Please select a start date and an end date.");
       return;  
-    }
+    }  
 
     // Initialiser WS si nécessaire
     if (!connection_ws_htx || connection_ws_htx.readyState === WebSocket.CLOSED) {
