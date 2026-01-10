@@ -311,7 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // RÉINITIALISATION DES VARIABLES GLOBALES
-    containerHistoryList.innerHTML = "";  
+    containerHistoryList.innerHTML = "";    
     container.innerHTML = "";
     priceLines4openlines = {}; // Reset de l'objet des contrats
 
