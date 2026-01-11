@@ -3544,7 +3544,7 @@ document.addEventListener("DOMContentLoaded", () => {
   displaySymbols(currentInterval, currentChartType);
   initChart(currentChartType);
   initHistoricalTable();
-  inithistoricalchart();
+  inithistoricalchart();  
 
   window.onload = async () => {
     if (!currentSymbol) return;
