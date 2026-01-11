@@ -579,7 +579,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
 
           updateGlobalPnL();
-          return;
+          return;  
         }
         
         // 4️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
