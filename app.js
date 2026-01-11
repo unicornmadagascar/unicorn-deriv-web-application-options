@@ -3553,7 +3553,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initChart(currentChartType);
   initTable();
   // Appelez cette fonction au chargement de votre application
-  setupContractsPanel();
+  setupContractsPanel();  
   initHistoricalTable();
   inithistoricalchart();
 
