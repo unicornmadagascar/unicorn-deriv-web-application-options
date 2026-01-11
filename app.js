@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const historicalMarkers = []; // Stocke tous les markers historiques
   //------
   let currentChartType = "candlestick"; // par défaut
-  let currentInterval = "1 minute";  // par défaut
+  let currentInterval = "1m";  // par défaut
 
   // --- NEW: current symbol & pending subscribe ---
   let currentSymbol = "cryBTCUSD"; // symbole par défaut
