@@ -3546,7 +3546,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }); */
 
-  // Supprimer les lignes sélectionnées
+  // Supprimer les lignes sélectionnées  
   document.getElementById("deleteSelected").addEventListener("click", () => {
     document.querySelectorAll(".rowSelect:checked").forEach(cb => {
       cb.closest("tr").remove();
