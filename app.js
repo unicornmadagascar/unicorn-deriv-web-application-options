@@ -3310,7 +3310,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On attend un court instant pour que le rendu soit prêt
     setTimeout(() => {
       reportWindow.print();
-      // reportWindow.close(); // Optionnel : fermer l'onglet après impression
+      // reportWindow.close(); // Optionnel : fermer l'onglet après impression  
     }, 500);
   }
 
