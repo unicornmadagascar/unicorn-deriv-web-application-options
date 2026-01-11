@@ -1719,6 +1719,21 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
     `;
 
+    // --- RE-ATTACHEMENT DES ÉVÉNEMENTS ---
+
+    // 1. Bouton Toggle du panneau (Le bouton principal)
+    const toggleBtn = document.getElementById("contractsPanelToggle");
+    const panel = document.getElementById("contractsPanel");
+
+    // On retire l'ancien écouteur pour éviter les doubles déclenchements
+    toggleBtn.replaceWith(toggleBtn.cloneNode(true));
+    const newToggleBtn = document.getElementById("contractsPanelToggle");
+
+    newToggleBtn.addEventListener("click", () => {
+      panel.classList.toggle("active");
+      newToggleBtn.innerText = panel.classList.contains("active") ? "🔼 Hide Contracts" : "📄 Show Open Contracts";
+    });
+
     // Petit script interne pour gérer le "Select All"
     document.getElementById('selectAll').addEventListener('change', function () {
       const checkboxes = document.querySelectorAll('.rowSelect');
@@ -1950,12 +1965,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- Cercle PROFIT (Bleu) ---
     updateCircleElement('circle-profit-path', 'profit-percent-text', winRate);
     const profitValElem = document.getElementById('profitvalue');
-    if (profitValElem) profitValElem.innerHTML = `${totalProfitVal.toFixed(2)} <span class="currency">USD</span>`;
+    if (profitValElem) profitValElem.innerHTML = `${totalProfitVal.toFixed(2)} <span class="currency">${CURRENCY}</span>`;
 
     // --- Cercle LOSS (Rouge) ---
     updateCircleElement('circle-loss-path', 'loss-percent-text', lossRate);
     const lossValElem = document.getElementById('lossvalue');
-    if (lossValElem) lossValElem.innerHTML = `${totalLossVal.toFixed(2)} <span class="currency">USD</span>`;
+    if (lossValElem) lossValElem.innerHTML = `${totalLossVal.toFixed(2)} <span class="currency">U${CURRENCY}/span>`;
 
     // --- Cercle GLOBAL P/L (Mixte) ---
     // On utilise souvent le Win Rate pour la jauge globale
@@ -1963,7 +1978,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const netPL = totalProfitVal - totalLossVal;
     const plValElem = document.getElementById('plvalue');
     if (plValElem) {
-      plValElem.innerHTML = `${(netPL >= 0 ? "+" : "") + netPL.toFixed(2)} <span class="currency">USD</span>`;
+      plValElem.innerHTML = `${(netPL >= 0 ? "+" : "") + netPL.toFixed(2)} <span class="currency">${CURRENCY}</span>`;
       plValElem.style.color = netPL >= 0 ? "#10b981" : "#ef4444";
     }
   }
@@ -3429,19 +3444,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  document.getElementById('contractsPanelToggle').addEventListener('click', function () {
-    const panel = document.getElementById('contractsPanel');
+  document.getElementById('tradeEvalToggle').addEventListener('click', function () {
+    const panel = document.getElementById('tradeEvalPanel');
     const isOpening = !panel.classList.contains('active');
 
     panel.classList.toggle('active');
 
     // Changer le texte du bouton
-    this.textContent = isOpening ? "📄 Hide Open Contracts" : "📄 Show Open Contracts";
+    this.textContent = isOpening ? "📄 Hide Account Management" : "📄 Account Management";
 
     // Si on ouvre, on demande un rafraîchissement des calculs pour forcer le rendu
     if (isOpening) {
       if (typeof updateTotalStats === 'function') {
-        updateTotalStats();
+        updateTotalStats();  
       }
     }
   });
@@ -3518,7 +3533,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initHistoricalTable();
   inithistoricalchart();
 
-  window.onload = async () => {  
+  window.onload = async () => {
     if (!currentSymbol) return;
     if (currentChartType !== "candlestick") return;
     await loadSymbol(currentSymbol, currentInterval, currentChartType);
