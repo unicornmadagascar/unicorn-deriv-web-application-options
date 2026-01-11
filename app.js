@@ -3559,7 +3559,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTable();
   // Appelez cette fonction au chargement de votre application
   setupContractsPanel();
-  initHistoricalTable();
+  initHistoricalTable();    
   inithistoricalchart();
 
   window.onload = async () => {
