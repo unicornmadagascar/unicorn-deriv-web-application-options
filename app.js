@@ -1719,20 +1719,28 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
     `;
 
-    // --- RE-ATTACHEMENT DES ÉVÉNEMENTS ---
+    // --- 2. GESTION DU BOUTON TOGGLE (Correction principale) ---
+    const toggleBtn = document.getElementById('contractsPanelToggle');
+    const panel = document.getElementById('contractsPanel');
 
-    // 1. Bouton Toggle du panneau (Le bouton principal)
-    const toggleBtn = document.getElementById("contractsPanelToggle");
-    const panel = document.getElementById("contractsPanel");
+    if (toggleBtn && panel) {
+      // On supprime d'abord tout ancien écouteur pour éviter les doubles clics
+      const newToggleBtn = toggleBtn.cloneNode(true);
+      toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
 
-    // On retire l'ancien écouteur pour éviter les doubles déclenchements
-    toggleBtn.replaceWith(toggleBtn.cloneNode(true));
-    const newToggleBtn = document.getElementById("contractsPanelToggle");
+      newToggleBtn.addEventListener('click', function () {
+        const isOpening = !panel.classList.contains('active');
+        panel.classList.toggle('active');
 
-    newToggleBtn.addEventListener("click", () => {
-      panel.classList.toggle("active");
-      newToggleBtn.innerText = panel.classList.contains("active") ? "🔼 Hide Contracts" : "📄 Show Open Contracts";
-    });
+        // Mise à jour visuelle du bouton
+        this.textContent = isOpening ? "🔼 Hide Contracts" : "📄 Show Open Contracts";
+
+        // Mise à jour des stats si nécessaire
+        if (isOpening && typeof updateTotalStats === 'function') {
+          updateTotalStats();
+        }
+      });
+    }
 
     // Petit script interne pour gérer le "Select All"
     document.getElementById('selectAll').addEventListener('change', function () {
@@ -3466,28 +3474,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // On attache l'événement au PARENT qui est statique dans le HTML
-  document.getElementById('contractsPanelContainer').addEventListener('click', function (event) {
-    // On vérifie si l'élément cliqué est bien notre bouton Toggle
-    if (event.target && event.target.id === 'contractsPanelToggle') {
-      const btn = event.target;
-      const panel = document.getElementById('contractsPanel');  
-
-      if (!panel) return;    
-
-      const isOpening = !panel.classList.contains('active');     
-      panel.classList.toggle('active');
-
-      // Changer le texte du bouton   
-      btn.textContent = isOpening ? "📄 Hide Contracts" : "📄 Show Open Contracts";
-
-      // Rafraîchissement des calculs
-      if (isOpening && typeof updateTotalStats === 'function') {
-        //updateTotalStats();
-      }
-    }
-  });  
-
   // === Automation Toggle ===
   startbtn.onclick = () => {  
     setTimeout(startMLCountdown, 7000);
@@ -3557,15 +3543,13 @@ document.addEventListener("DOMContentLoaded", () => {
   displaySymbols(currentInterval, currentChartType);
   initChart(currentChartType);
   initTable();
-  // Appelez cette fonction au chargement de votre application
-  setupContractsPanel();
-  initHistoricalTable();    
+  initHistoricalTable();
   inithistoricalchart();
 
   window.onload = async () => {
     if (!currentSymbol) return;
     if (currentChartType !== "candlestick") return;
-    await loadSymbol(currentSymbol, currentInterval, currentChartType);   
+    await loadSymbol(currentSymbol, currentInterval, currentChartType);
   };
 
   // Simulation : mise à jour toutes les 2 secondes
