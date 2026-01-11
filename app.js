@@ -3768,7 +3768,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.addEventListener('click', (event) => {
-    // On cherche si le clic vient du bouton de fermeture
+    // On cherche si le clic vient du bouton de fermeture  
     const closeBtn = event.target.closest('.action-close');
 
     if (closeBtn) {
