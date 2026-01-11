@@ -2267,7 +2267,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const rawText = profitCell.textContent.replace(/[^+-.0-9]/g, '');
         const val = parseFloat(rawText);
 
-        if (!isNaN(val)) { 
+        if (!isNaN(val)) {
           if (val >= 0) {
             countProfit++;
             totalProfitVal += val;
@@ -3769,6 +3769,33 @@ document.addEventListener("DOMContentLoaded", () => {
     stopControlPipeline();
     shutdownAllPipelines();
   };
+
+  contractsPanelToggle.addEventListener('click', (event) => {
+    // 1. On vérifie si l'élément cliqué est le bouton de bascule
+    if (event.target && event.target.id === 'contractsPanelToggle') {
+      const toggleBtn = event.target;
+      const panel = document.getElementById('contractsPanel');
+
+      if (panel) {
+        // Alterne la classe active
+        const isActive = panel.classList.toggle('active');
+
+        // Mise à jour du texte et du style du bouton
+        if (isActive) {
+          toggleBtn.textContent = "🔼 Hide Open Contracts";
+          toggleBtn.classList.add('btn-active');
+
+          // Calcul immédiat des statistiques à l'ouverture
+          if (typeof updateTotalStats === 'function') {
+            updateTotalStats();
+          }
+        } else {
+          toggleBtn.textContent = "📄 Show Open Contracts";
+          toggleBtn.classList.remove('btn-active');
+        }
+      }
+    }
+  });
 
   // --- TOGGLE PANEL ---
   controlPanelToggle.addEventListener("click", () => {
