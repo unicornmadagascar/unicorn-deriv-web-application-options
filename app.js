@@ -3471,7 +3471,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On vérifie si l'élément cliqué est bien notre bouton Toggle
     if (event.target && event.target.id === 'contractsPanelToggle') {
       const btn = event.target;
-      const panel = document.getElementById('contractsPanel');
+      const panel = document.getElementById('contractsPanel');  
 
       if (!panel) return;
 
