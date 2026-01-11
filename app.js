@@ -3551,7 +3551,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".rowSelect:checked").forEach(cb => {
       cb.closest("tr").remove();
     });
-    selectAll.checked = false;
+    selectAll.checked = false;  
   });
 
   // === Trade Evaluation Panel Toggle ===
