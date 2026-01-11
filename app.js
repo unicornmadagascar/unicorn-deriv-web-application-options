@@ -2591,7 +2591,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => toast.remove(), 4000);
   }
 
-  function fetchHistoricalData(from, to) {
+  function fetchHistoricalData(from, to) {  
     // 1. Fermer proprement l'ancienne connexion
     if (historicalConn) {
       historicalConn.onopen = null;
