@@ -3544,7 +3544,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".rowSelect").forEach(cb => {
       cb.checked = selectAll.checked;
     });
-  }); */
+  }); */  
 
   // Supprimer les lignes sélectionnées  
   document.getElementById("deleteSelected").addEventListener("click", () => {
