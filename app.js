@@ -2604,7 +2604,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const APP_ID = '109310';
     const finalURL = `wss://ws.binaryws.com/websockets/v3?app_id=${APP_ID}`;
 
-    historicalConn = new WebSocket(finalURL);  
+    historicalConn = new WebSocket(finalURL);    
 
     // 3. Gestionnaire d'erreur de connexion
     historicalConn.onerror = (error) => {
