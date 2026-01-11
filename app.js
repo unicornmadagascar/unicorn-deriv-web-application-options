@@ -3538,7 +3538,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, 300);
 
-  // Gestion du "Select All"  
+  // Gestion du "Select All"    
   /* const selectAll = document.getElementById("selectAll");
   selectAll.addEventListener("change", () => {
     document.querySelectorAll(".rowSelect").forEach(cb => {
