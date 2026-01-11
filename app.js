@@ -1869,30 +1869,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
     </div>
     `;
-
-    // --- 2. GESTION DU BOUTON TOGGLE (Correction principale) ---
-    const toggleBtn = document.getElementById('contractsPanelToggle');
-    const panel = document.getElementById('contractsPanel');
-
-    if (toggleBtn && panel) {
-      // On supprime d'abord tout ancien écouteur pour éviter les doubles clics
-      const newToggleBtn = toggleBtn.cloneNode(true);
-      toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
-
-      newToggleBtn.addEventListener('click', function () {
-        const isOpening = !panel.classList.contains('active');
-        panel.classList.toggle('active');
-
-        // Mise à jour visuelle du bouton
-        this.textContent = isOpening ? "🔼 Hide Contracts" : "📄 Show Open Contracts";
-
-        // Mise à jour des stats si nécessaire
-        if (isOpening && typeof updateTotalStats === 'function') {
-          updateTotalStats();
-        }
-      });
-    }
-
+    
     // Dans votre fonction initTable()
     const selectAllElement = document.getElementById('selectAll');
     if (selectAllElement) {
