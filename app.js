@@ -1666,20 +1666,34 @@ document.addEventListener("DOMContentLoaded", () => {
     return ema;
   }
 
-  function renderIndicators() {
-    // Ne rien faire si le WebSocket n'est pas prêt ou s'il n'y a pas assez de données
+  function renderIndicators() {   
+    // 1. Sécurités de base
     if (!isWsInitialized || priceDataZZ.length < 2) return;
 
+    // 2. Utilisation de requestAnimationFrame pour la fluidité (60 FPS)
     requestAnimationFrame(() => {
-      // 1. Mise à jour ZigZag
+      // --- ZIGZAG ---
+      // Le ZigZag est coûteux en calcul, on vérifie bien son état
       if (isZigZagActive && typeof refreshZigZag === "function") {
-        refreshZigZag();
+        try {
+          refreshZigZag();
+        } catch (e) {
+          console.error("Erreur lors du rafraîchissement du ZigZag:", e);
+        }
       }
 
-      // 2. Mise à jour des MA (EMA 20, 50, 200)
-      if (activePeriods.length > 0 && typeof updateMAs === "function") {
-        updateMAs();
+      // --- MOYENNES MOBILES (MA) ---
+      // On ne les met à jour que si au moins une période est active
+      if (activePeriods && activePeriods.length > 0 && typeof updateMAs === "function") {
+        try {
+          updateMAs();
+        } catch (e) {
+          console.error("Erreur lors de la mise à jour des MA:", e);
+        }
       }
+
+      // --- AUTRES INDICATEURS (Ex: RSI, Bollinger) ---
+      // Vous pouvez ajouter d'autres conditions ici
     });
   }
 
