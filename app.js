@@ -186,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let activeSignal = null;     // "BUY" ou "SELL"
   let activeLine = null;       // PriceLine
   let timeoutUntil = 0;        // timestamp (ms)
-  const SIGNAL_TIMEOUT = 20000; // 20s
+  const SIGNAL_TIMEOUT = 20000; // 20s   
   const historicalMarkers = []; // Stocke tous les markers historiques
   //------
   let currentChartType = "candlestick"; // par défaut
