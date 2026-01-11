@@ -1761,7 +1761,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const deletedSelected = document.getElementById('deleteSelected');
     deletedSelected.addEventListener('click', () => {
       document.querySelectorAll(".rowSelect:checked").forEach(cb => {
-        cb.closest("tr").remove();
+        cb.closest("tr").remove();  
       });
       selectAll.checked = false;
     });
