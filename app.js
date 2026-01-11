@@ -521,33 +521,55 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // 2. Gestion des données Candlestick
-      if (msg.msg_type === "candles" || msg.msg_type === "ohlc") {
-        const rawData = msg.ohlc ? msg.ohlc : msg.candles;
-        const bars = Array.isArray(rawData)
-          ? rawData.map(normalize).filter(Boolean)
-          : [normalize(rawData)].filter(Boolean);
+      // --- DANS VOTRE ONSMESSAGE ---
 
-        if (bars.length > 0) {
-          if (cache.length === 0) {
-            cache = bars;
-            currentSeries.setData(cache);
+      // A. Gestion de l'HISTORIQUE (Tableau de bougies)
+      if (msg.msg_type === "candles") {
+        const candles = msg.candles;
+        if (Array.isArray(candles)) {
+          // On transforme et filtre toutes les bougies historiques
+          const formattedData = candles.map(normalize).filter(Boolean);
+
+          if (formattedData.length > 0) {
+            cache = formattedData; // On remplit le cache
+            currentSeries.setData(cache); // Chargement initial complet
             priceDataZZ = [...cache];
+
             chart.timeScale().fitContent();
             isWsInitialized = true;
-          } else {
-            const lastBar = bars[bars.length - 1];
-            const lastCache = cache[cache.length - 1];
 
-            if (lastCache && lastCache.time === lastBar.time) {
-              cache[cache.length - 1] = lastBar;
+            // Calcul initial des indicateurs sur tout l'historique
+            formattedData.forEach(bar => updateIndicatorData(bar.time, bar));
+            renderIndicators();
+          }
+        }
+      }
+
+      // B. Gestion du FLUX TEMPS RÉEL (Une seule barre à la fois)
+      if (msg.msg_type === "ohlc") {
+        const ohlc = msg.ohlc;
+        const lastBar = normalize(ohlc);
+
+        if (lastBar && isWsInitialized) {
+          // Mise à jour de Lightweight Charts (gère seul le remplacement ou l'ajout)
+          currentSeries.update(lastBar);
+
+          // Mise à jour du cache local pour vos indicateurs (ZigZag, etc.)
+          if (cache.length > 0) {
+            const lastCacheIndex = cache.length - 1;
+
+            if (cache[lastCacheIndex].time === lastBar.time) {
+              // Même bougie (en cours de formation) : on remplace
+              cache[lastCacheIndex] = lastBar;
             } else {
+              // Nouvelle bougie : on ajoute
               cache.push(lastBar);
               if (cache.length > 1000) cache.shift();
             }
-            currentSeries.update(lastBar);
-            updateIndicatorData(lastBar.time, lastBar);
           }
+
+          // Mise à jour et rendu des indicateurs sur la dernière barre
+          updateIndicatorData(lastBar.time, lastBar);
           renderIndicators();
         }
       }
@@ -806,12 +828,28 @@ document.addEventListener("DOMContentLoaded", () => {
  * Met à jour la source de données pour les indicateurs (ZigZag, MA)
  */
   function updateIndicatorData(time, bar) {
-    if (priceDataZZ.length > 0 && priceDataZZ[priceDataZZ.length - 1].time === time) {
-      priceDataZZ[priceDataZZ.length - 1] = bar;
+    if (!bar || isNaN(bar.close)) return; // Sécurité : évite d'ajouter des données corrompues
+
+    const lastIdx = priceDataZZ.length - 1;
+
+    // Vérifie si on travaille sur la même bougie (temps identique)
+    if (lastIdx >= 0 && priceDataZZ[lastIdx].time === time) {
+      // Mise à jour de la bougie en cours (le prix bouge encore)
+      priceDataZZ[lastIdx] = bar;
     } else {
+      // C'est une nouvelle bougie (ou la première du flux)
+      // Sécurité supplémentaire : on vérifie que le nouveau temps est bien supérieur au précédent
+      if (lastIdx >= 0 && time < priceDataZZ[lastIdx].time) {
+        console.warn("Donnée reçue en retard ignorée");
+        return;
+      }
+
       priceDataZZ.push(bar);
-      // On limite la taille pour garder des performances fluides
-      if (priceDataZZ.length > 2000) priceDataZZ.shift();
+
+      // Limite de performance
+      if (priceDataZZ.length > 2000) {
+        priceDataZZ.shift();
+      }
     }
   }
 
@@ -3771,12 +3809,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // On cherche si le clic vient du bouton de fermeture  
     const closeBtn = event.target.closest('.action-close');
 
-    if (closeBtn) {  
+    if (closeBtn) {
       const id = closeBtn.getAttribute('data-contract-id');
       if (typeof closeSingleContract === 'function') {
         closeSingleContract(id);
       }
-    }  
+    }
   });
 
   // --- TOGGLE PANEL ---
