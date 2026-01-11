@@ -3539,12 +3539,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 300);
 
   // Gestion du "Select All"  
-  const selectAll = document.getElementById("selectAll");
+  /* const selectAll = document.getElementById("selectAll");
   selectAll.addEventListener("change", () => {
     document.querySelectorAll(".rowSelect").forEach(cb => {
       cb.checked = selectAll.checked;
     });
-  });
+  }); */
 
   // Supprimer les lignes sélectionnées
   document.getElementById("deleteSelected").addEventListener("click", () => {
