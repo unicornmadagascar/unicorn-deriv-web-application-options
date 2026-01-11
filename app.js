@@ -3766,7 +3766,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   stopbtn.onclick = () => {
-    stopControlPipeline();
+    stopControlPipeline();  
     shutdownAllPipelines();
   };
 
