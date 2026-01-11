@@ -618,8 +618,12 @@
       overflow: hidden;
     }
 
+    /* Force l'affichage quand la classe active est présente */
     #contractsPanel.active {
-      display: block;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      height: auto !important;
       animation: fadeInPanel 0.3s ease-out;
     }
 
