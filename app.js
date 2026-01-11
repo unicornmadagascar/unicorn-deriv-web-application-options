@@ -2604,7 +2604,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const APP_ID = '109310';
     const finalURL = `wss://ws.binaryws.com/websockets/v3?app_id=${APP_ID}`;
 
-    historicalConn = new WebSocket(finalURL);
+    historicalConn = new WebSocket(finalURL);  
 
     // 3. Gestionnaire d'erreur de connexion
     historicalConn.onerror = (error) => {
@@ -3198,28 +3198,6 @@ document.addEventListener("DOMContentLoaded", () => {
     updateCalendarTable(filtered);
   }
 
-  // ===============================
-  // 🔹 Événement du bouton Rechercher
-  // ===============================
-  /*document.getElementById("fetchTrades").addEventListener("click", () => {
-    const startInput = document.getElementById("startDate").value;
-    const endInput = document.getElementById("endDate").value;
-
-    if (!startInput || !endInput) {
-      alert("Please select a start and end date.");
-      return;
-    }
-
-    const start = startInput.toString();     //Math.floor(new Date(startInput + "T00:00:00Z").getTime() / 1000);
-    const end = endInput.toString();         //Math.floor(new Date(endInput + "T23:59:59Z").getTime() / 1000);
-
-    console.log(`📅 Période sélectionnée : ${startInput} → ${endInput}`);
-    getProfitTable(start, end);
-    GetProfitgraphical();
-    GetProfitConnection();
-    connectHistoricalDeriv();
-  });*/
-
   document.getElementById("fetchTrades").addEventListener("click", () => {
     // 1. Récupérer les dates des inputs HTML
     const startValue = document.getElementById("startDate").value; // Format YYYY-MM-DD
@@ -3541,7 +3519,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // startup
   initTable();    
   initDerivAccountManager();  
-  displaySymbols(currentInterval, currentChartType);
+  displaySymbols(currentInterval, currentChartType);  
   initChart(currentChartType);
   initHistoricalTable();
   inithistoricalchart();  
