@@ -613,23 +613,59 @@
 
     #contractsPanel {
       width: 100%;
-      overflow: hidden;
-      display: none !important;
+      display: none;
+      /* Caché par défaut */
       opacity: 0;
-      transition: opacity 0.3s ease;  
+      flex-direction: column;
+      /* Organise les enfants verticalement */
+      gap: 20px;
+      /* Espace entre les Donuts et le Tableau */
+      padding: 15px;
+      box-sizing: border-box;
+      transition: opacity 0.3s ease;
+      overflow: visible;
+      /* Changé de hidden à visible pour voir la table */
     }
 
-    /* Force l'affichage quand la classe active est présente */
+    /* Quand on active le panneau */
     #contractsPanel.active {
-      display: block !important;
+      display: flex !important;
+      /* Utilise FLEX et non BLOCK pour respecter le gap et la colonne */
       opacity: 1;
       animation: fadeInPanel 0.3s ease-out;
+    }
+
+    .table-responsive {
+      width: 100%;
+      max-height: 400px;
+      overflow-y: auto;  
+      overflow-x: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding-bottom: 10px;
+      /* Important pour fixer le scroll sur certains navigateurs */
+      position: relative;
+    }
+
+    /* Fixer l'en-tête pendant le scroll vertical */
+    #contractsPanel .trade-table thead th {
+      position: sticky;
+      top: 0;
+      background: #ffffff;
+      /* Couleur de fond pour ne pas voir les lignes passer dessous */
+      z-index: 10;
+      border-bottom: 2px solid #f1f5f9;
+    }
+
+    /* Style pour la ligne sélectionnée via toggleSelectAll */
+    #autoTradeBody tr {
+      transition: background-color 0.2s ease;
     }
 
     @keyframes fadeInPanel {
       from {
         opacity: 0;
-        transform: translateY(-5px);
+        transform: translateY(-10px);
       }
 
       to {
@@ -665,13 +701,6 @@
       background: #ffffff;
       padding: 10px;
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    }
-
-    .table-responsive {
-      width: 100%;
-      overflow-x: auto;
-      margin-top: 15px;
-      border-radius: 8px;
     }
 
     #contractsPanel .trade-table {
