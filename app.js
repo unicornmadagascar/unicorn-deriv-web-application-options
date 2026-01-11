@@ -3539,7 +3539,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }, true);
 
   // startup
-  initTable();  
+  initTable();    
   initDerivAccountManager();
   displaySymbols(currentInterval, currentChartType);
   initChart(currentChartType);
