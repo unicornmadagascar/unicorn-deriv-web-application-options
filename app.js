@@ -3475,10 +3475,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!panel) return;    
 
-      const isOpening = !panel.classList.contains('active');   
+      const isOpening = !panel.classList.contains('active');     
       panel.classList.toggle('active');
 
-      // Changer le texte du bouton
+      // Changer le texte du bouton   
       btn.textContent = isOpening ? "📄 Hide Contracts" : "📄 Show Open Contracts";
 
       // Rafraîchissement des calculs
