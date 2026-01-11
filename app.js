@@ -3473,7 +3473,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const btn = event.target;
       const panel = document.getElementById('contractsPanel');  
 
-      if (!panel) return;
+      if (!panel) return;    
 
       const isOpening = !panel.classList.contains('active');  
       panel.classList.toggle('active');
