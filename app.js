@@ -1767,7 +1767,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- 💰 Ferme un contrat
+  // --- 💰 Ferme un contrat  
   /**
  * Envoie un ordre de vente (fermeture) pour un contrat spécifique
  * @param {string|number} contract_id - L'identifiant unique du contrat
