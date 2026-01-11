@@ -1930,36 +1930,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /**
- * Initialise l'événement de clic pour le panneau des contrats
- */
-  function setupToggleEvent() {
-    const toggleBtn = document.getElementById('contractsPanelToggle');
-    const panel = document.getElementById('contractsPanel');
-
-    if (!toggleBtn || !panel) return;
-
-    // Utilisation d'un écouteur d'événement propre
-    toggleBtn.addEventListener('click', function () {
-      const isActive = panel.classList.contains('active');
-
-      if (isActive) {
-        // Fermeture
-        panel.classList.remove('active');
-        this.textContent = "📄 Show Open Contracts";
-        this.classList.remove('btn-active');
-      } else {
-        // Ouverture
-        panel.classList.add('active');
-        this.textContent = "🔼 Hide Contracts";
-        this.classList.add('btn-active');
-
-        // Rafraîchissement immédiat des calculs pour éviter un affichage vide
-        updateTotalStats();
-      }
-    });
-  }
-
   // --- 💰 Ferme un contrat  
   /**
  * Envoie un ordre de vente (fermeture) pour un contrat spécifique
@@ -3846,7 +3816,6 @@ document.addEventListener("DOMContentLoaded", () => {
   displaySymbols(currentInterval, currentChartType);
   initChart(currentChartType);
   initTable();
-  setupToggleEvent();
   initHistoricalTable();
   inithistoricalchart();
 
