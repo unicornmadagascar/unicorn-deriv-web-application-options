@@ -1942,53 +1942,84 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!c || !c.contract_id) return;
 
     const autoTradeBody = document.getElementById("autoTradeBody");
+    if (!autoTradeBody) return;
+  
+    const contractId = c.contract_id;
+    // On cherche la ligne par ID ou par data-attribute
+    let tr = document.getElementById(`row-${contractId}`) || autoTradeBody.querySelector(`[data-contract='${contractId}']`);
 
-    // CAS : CONTRAT FERMÉ (SOLD)
+    // --- CAS A : CONTRAT FERMÉ (SOLD) ---
     if (c.is_sold) {
-      // Enregistrement pour l'export CSV avant suppression
-      if (!closedTradesHistory.find(t => t.ID === c.contract_id)) {
+      // Enregistrement pour l'export CSV
+      const alreadyInHistory = closedTradesHistory.some(t => t.ID === contractId);
+      if (!alreadyInHistory) {
         closedTradesHistory.push({
-          Time: new Date(c.date_start * 1000).toLocaleString(),
-          ID: c.contract_id,
-          Symbol: c.underlying || c.symbol,
+          Time: new Date((c.date_start || Date.now() / 1000) * 1000).toLocaleString(),
+          ID: contractId,
+          Symbol: c.underlying || c.symbol || "N/A",
           Type: c.contract_type,
           Stake: c.buy_price,
-          Profit: c.profit.toFixed(2),
+          Profit: (c.profit || 0).toFixed(2),
           Status: "Closed"
         });
       }
 
-      const tr = autoTradeBody.querySelector(`[data-contract='${c.contract_id}']`);
       if (tr) {
+        // Animation de sortie
         tr.style.opacity = '0';
         tr.style.transform = 'translateX(20px)';
-        setTimeout(() => { tr.remove(); updateTotalStats(); }, 300);
+        setTimeout(() => {
+          tr.remove();
+          updateTotalStats();
+        }, 300);
       }
       return;
     }
 
-    // CAS : CONTRAT OUVERT (MISE À JOUR)
-    const isPositive = c.profit >= 0;
+    // --- CAS B : CONTRAT OUVERT (CRÉATION OU MISE À JOUR) ---
+    const profitVal = parseFloat(c.profit || 0);
+    const isPositive = profitVal >= 0;
     const profitClass = isPositive ? "profit-positive" : "profit-negative";
-    const typeClass = c.contract_type.includes("UP") ? "MULTUP" : "MULTDOWN";
-    const formattedProfit = (isPositive ? "+" : "") + c.profit.toFixed(2);
-
-    let tr = autoTradeBody.querySelector(`[data-contract='${c.contract_id}']`);
+    const formattedProfit = (isPositive ? "+" : "") + profitVal.toFixed(2);
 
     if (!tr) {
+      // 1. CRÉATION DE LA LIGNE
       tr = document.createElement("tr");
-      tr.dataset.contract = c.contract_id;
-      tr.style.transition = "all 0.3s ease";  
-      injectRowHTML(tr, c, profitClass, typeClass, formattedProfit);
+      tr.id = `row-${contractId}`;
+      tr.dataset.contract = contractId;
+      tr.style.transition = "all 0.3s ease";
+
+      // On utilise votre fonction d'injection (assurez-vous qu'elle gère l'ID du profit)
+      if (typeof injectRowHTML === 'function') {
+        injectRowHTML(tr, c, profitClass, c.contract_type, formattedProfit);
+      } else {
+        // Fallback si injectRowHTML n'est pas dispo
+        tr.innerHTML = `
+                <td><input type="checkbox" class="rowSelect" value="${contractId}"></td>
+                <td>${new Date().toLocaleTimeString()}</td>
+                <td>${contractId}</td>
+                <td>${c.display_name || c.underlying}</td>
+                <td>${c.contract_type}</td>
+                <td>${c.buy_price}</td>
+                <td>${c.multiplier || '-'}</td>
+                <td>${c.entry_tick_display_value || '-'}</td>
+                <td>${c.limit_order?.take_profit?.order_amount || '-'}</td>
+                <td>${c.limit_order?.stop_loss?.order_amount || '-'}</td>
+                <td id="profit-${contractId}" class="${profitClass}">${formattedProfit}</td>
+                <td><button onclick="closeSingleContract('${contractId}')" class="btn-close-row">✖</button></td>
+            `;
+      }
       autoTradeBody.prepend(tr);
     } else {
-      // Mise à jour ciblée du Profit (Performance)
-      const profitCell = tr.cells[10];
-      if (profitCell.textContent !== formattedProfit) {
+      // 2. MISE À JOUR CIBLÉE DU PROFIT (Performance)
+      const profitCell = document.getElementById(`profit-${contractId}`) || tr.cells[10];
+      if (profitCell && profitCell.textContent !== formattedProfit) {
         profitCell.textContent = formattedProfit;
         profitCell.className = profitClass;
       }
     }
+
+    // Mise à jour des compteurs globaux
     updateTotalStats();
   }
 
