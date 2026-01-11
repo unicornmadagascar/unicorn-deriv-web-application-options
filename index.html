@@ -603,7 +603,7 @@
     #contractsPanelContainer {
       background: #ffffff;
       border-radius: 16px;
-      padding: 20px;
+      padding: 20px;  
       border: 1px solid #e2e8f0;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
       width: 100%;
@@ -659,7 +659,7 @@
       border-radius: 8px;
     }
 
-    .trade-table {
+    #contractsPanel .trade-table {
       width: 100%;
       min-width: 900px;
       border-collapse: separate;
@@ -667,7 +667,7 @@
       table-layout: auto;
     }
 
-    .trade-table th {
+    #contractsPanel .trade-table th {
       color: #94a3b8;
       font-size: 0.75rem;
       text-transform: uppercase;
@@ -678,17 +678,17 @@
       white-space: nowrap;
     }
 
-    .trade-table tbody tr {
+    #contractsPanel .trade-table tbody tr {
       background: #ffffff;
       transition: all 0.2s ease;
     }
 
-    .trade-table tbody tr:hover {
+    #contractsPanel .trade-table tbody tr:hover {
       transform: translateX(5px);
       background: #f8fafc;
     }
 
-    .trade-table td {
+    #contractsPanel .trade-table td {
       padding: 14px 12px;
       border-top: 1px solid #f1f5f9;
       border-bottom: 1px solid #f1f5f9;
@@ -697,13 +697,13 @@
       color: #1e293b;
     }
 
-    /* Arrondis des lignes */
-    .trade-table td:first-child {
+    /* Arrondis spécifiques à cette table */
+    #contractsPanel .trade-table td:first-child {
       border-left: 1px solid #f1f5f9;
       border-radius: 10px 0 0 10px;
     }
 
-    .trade-table td:last-child {
+    #contractsPanel .trade-table td:last-child {
       border-right: 1px solid #f1f5f9;
       border-radius: 0 10px 10px 0;
     }
@@ -2299,7 +2299,7 @@
       <h3 class="section-title">Contrats Representation</h3>
       <div id="HistoricalgraphicalContract"></div>
 
-      <p id="message"></p>  
+      <p id="message"></p>
 
       <div id="tradeHistory">
         <div class="trade-header">
