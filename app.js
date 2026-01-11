@@ -3771,7 +3771,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On cherche si le clic vient du bouton de fermeture  
     const closeBtn = event.target.closest('.action-close');
 
-    if (closeBtn) {
+    if (closeBtn) {  
       const id = closeBtn.getAttribute('data-contract-id');
       if (typeof closeSingleContract === 'function') {
         closeSingleContract(id);
