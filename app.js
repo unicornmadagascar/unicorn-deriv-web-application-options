@@ -192,7 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentChartType = "candlestick"; // par défaut
   let currentInterval = "1m";  // par défaut
 
-  // --- NEW: current symbol & pending subscribe ---
+  // --- NEW: current symbol & pending subscribe ---  
   let currentSymbol = "cryBTCUSD"; // symbole par défaut
   let pendingSubscribe = null;
   let authorized = false;
