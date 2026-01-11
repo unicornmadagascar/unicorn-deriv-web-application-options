@@ -3475,7 +3475,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!panel) return;
 
-      const isOpening = !panel.classList.contains('active');
+      const isOpening = !panel.classList.contains('active');  
       panel.classList.toggle('active');
 
       // Changer le texte du bouton
