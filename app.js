@@ -2580,7 +2580,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function notifyNewTrade(trade) {
+  function notifyNewTrade(trade) {  
     const notifier = document.getElementById("tradeNotifier");
     const profit = (parseFloat(trade.sell_price) - parseFloat(trade.buy_price)).toFixed(2);
     const toast = document.createElement("div");
