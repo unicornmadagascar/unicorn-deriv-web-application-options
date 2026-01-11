@@ -579,11 +579,11 @@ document.addEventListener("DOMContentLoaded", () => {
           }
 
           updateGlobalPnL();
-          return;  
+          return;
         }
-        
+
         // 4️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
-        updateGlobalPnL();  
+        updateGlobalPnL();
         Openpositionlines(currentSeries);
       }
 
@@ -594,7 +594,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (thisSessionId === currentSessionId) {
         setTimeout(() => loadSymbol(symbol, interval, chartType), 2000);
       }
-    };  
+    };
   }
 
   // === GESTION DES LIGNES ET DE LA TABLE DES CONTRATS ===
@@ -614,7 +614,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = JSON.parse(msg.data);
 
       // 1. Authentification réussie -> Souscription
-      if (data.msg_type === "authorize") {  
+      if (data.msg_type === "authorize") {
         ws.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
       }
 
@@ -1978,7 +1978,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!tr) {
       tr = document.createElement("tr");
       tr.dataset.contract = c.contract_id;
-      tr.style.transition = "all 0.3s ease";
+      tr.style.transition = "all 0.3s ease";  
       injectRowHTML(tr, c, profitClass, typeClass, formattedProfit);
       autoTradeBody.prepend(tr);
     } else {
@@ -2024,7 +2024,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 4. Mise à jour de l'affichage du Profit Total (P/L)
     const formattedTotal = (totalProfit >= 0 ? "+" : "") + totalProfit.toFixed(2);
-    totalProfitSpan.textContent = `${formattedTotal} USD`;
+    totalProfitSpan.textContent = `${formattedTotal} ${CURRENCY}`;
 
     // 5. Gestion dynamique des couleurs (Style Moderne)
     if (totalProfit > 0) {
