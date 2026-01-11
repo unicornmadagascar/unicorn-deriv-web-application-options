@@ -1761,6 +1761,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Table
   function initTable() {
     const container = document.getElementById("autoHistoryList");
+    if (!container) return;
 
     container.innerHTML = `
     <div class="table-wrapper">
@@ -1778,7 +1779,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <table class="trade-table" id="autoTradeTable">
                 <thead>
                     <tr>
-                        <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
+                        <th><input type="checkbox" id="selectAll" "title="Tout sélectionner" onclick="toggleSelectAll(this)"></th>
                         <th>Time</th>
                         <th>Contract ID</th>
                         <th>Symbol</th>    
@@ -1840,11 +1841,22 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Petit script interne pour gérer le "Select All"
-    document.getElementById('selectAll').addEventListener('change', function () {
-      const checkboxes = document.querySelectorAll('.rowSelect');
-      checkboxes.forEach(cb => cb.checked = this.checked);
-    });
+    // Dans votre fonction initTable()
+    const selectAllElement = document.getElementById('selectAll');
+    if (selectAllElement) {
+      selectAllElement.addEventListener('change', function () {
+        const checkboxes = document.querySelectorAll('.rowSelect');
+        checkboxes.forEach(cb => {
+          cb.checked = this.checked;
+
+          // OPTIONNEL : Mise à jour visuelle de la ligne (couleur de fond)
+          const row = cb.closest('tr');
+          if (row) {
+            row.style.backgroundColor = this.checked ? "#f0f7ff" : "";
+          }
+        });
+      });
+    }
 
     const panicBtn = document.getElementById("panicCloseAll");
     if (panicBtn) {
@@ -1856,12 +1868,95 @@ document.addEventListener("DOMContentLoaded", () => {
       download.addEventListener("click", downloadHistoryCSV);
     }
 
-    const deletedSelected = document.getElementById('deleteSelected');
-    deletedSelected.addEventListener('click', () => {
-      document.querySelectorAll(".rowSelect:checked").forEach(cb => {
-        cb.closest("tr").remove();
+    const deleteSelectedBtn = document.getElementById("panicCloseAll");
+    if (deleteSelectedBtn) {
+      deleteSelectedBtn.addEventListener("click", deleteSelectedRows);
+    }
+
+    const masterCb = document.getElementById('selectAll');
+    if (masterCb) {
+      masterCb.addEventListener('change', function () {
+        toggleSelectAll(this); // "this" représente ici le masterCb
       });
-      selectAll.checked = false;
+    }
+  }
+
+  // DELETE SELECTED ROWS
+  function deleteSelectedRows() {
+    const selectedCheckboxes = document.querySelectorAll('.rowSelect:checked');
+
+    if (selectedCheckboxes.length === 0) {
+      alert("Aucun contrat sélectionné.");
+      return;
+    }
+
+    const confirmMsg = `Êtes-vous sûr de vouloir clôturer ces ${selectedCheckboxes.length} positions ?`;
+    if (confirm(confirmMsg)) {
+      selectedCheckboxes.forEach(cb => {
+        const contractId = cb.value;
+        // Appelle votre fonction de clôture individuelle
+        if (typeof closeSingleContract === 'function') {
+          closeSingleContract(contractId);
+        }
+      });
+
+      // Décoche la case "Tout sélectionner" si elle existe
+      const selectAllCb = document.getElementById('selectAll');
+      if (selectAllCb) selectAllCb.checked = false;
+    }
+  }
+
+  /**
+ * Alterne la sélection de toutes les lignes du tableau
+ * @param {HTMLInputElement} masterCheckbox - La case à cocher "Select All"
+ */
+  function toggleSelectAll(masterCheckbox) {
+    // On cible toutes les cases à cocher des lignes dans le corps du tableau
+    const checkboxes = document.querySelectorAll('#autoTradeBody .rowSelect');
+
+    checkboxes.forEach(cb => {
+      // On aligne l'état de chaque case sur celui de la case principale
+      cb.checked = masterCheckbox.checked;
+
+      // Mise à jour visuelle de la ligne (optionnel)
+      const row = cb.closest('tr');
+      if (row) {
+        if (masterCheckbox.checked) {
+          row.style.backgroundColor = "#f0f7ff"; // Bleu très léger si coché
+        } else {
+          row.style.backgroundColor = ""; // Retour au style normal
+        }
+      }
+    });
+  }
+
+  /**
+ * Initialise l'événement de clic pour le panneau des contrats
+ */
+  function setupToggleEvent() {
+    const toggleBtn = document.getElementById('contractsPanelToggle');
+    const panel = document.getElementById('contractsPanel');
+
+    if (!toggleBtn || !panel) return;
+
+    // Utilisation d'un écouteur d'événement propre
+    toggleBtn.addEventListener('click', function () {
+      const isActive = panel.classList.contains('active');
+
+      if (isActive) {
+        // Fermeture
+        panel.classList.remove('active');
+        this.textContent = "📄 Show Open Contracts";
+        this.classList.remove('btn-active');
+      } else {
+        // Ouverture
+        panel.classList.add('active');
+        this.textContent = "🔼 Hide Contracts";
+        this.classList.add('btn-active');
+
+        // Rafraîchissement immédiat des calculs pour éviter un affichage vide
+        updateTotalStats();
+      }
     });
   }
 
@@ -1919,6 +2014,47 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  /**
+ * Ferme instantanément toutes les positions ouvertes dans la table
+ */
+  function panicCloseAll() {
+    const tbody = document.getElementById("autoTradeBody");
+    if (!tbody) return;
+
+    // On récupère toutes les lignes de la table
+    const rows = tbody.querySelectorAll("tr");
+
+    if (rows.length === 0) {
+      console.log("Aucune position à fermer.");
+      return;
+    }
+
+    const confirmPanic = confirm(`🚨 ALERTE URGENCE 🚨\nVoulez-vous fermer immédiatement les ${rows.length} positions ouvertes ?`);
+
+    if (confirmPanic) {
+      console.warn("--- DÉCLENCHEMENT PANIC CLOSE ---");
+
+      rows.forEach(row => {
+        // On récupère l'ID du contrat stocké dans l'attribut data-contract
+        const contractId = row.dataset.contract;
+        if (contractId) {
+          closeSingleContract(contractId);
+        }
+      });
+
+      // Optionnel : désactiver le bouton panic pour éviter les doubles clics
+      const panicBtn = document.getElementById("panicCloseAll");
+      if (panicBtn) {
+        panicBtn.disabled = true;
+        panicBtn.textContent = "⌛ Closing All...";
+        setTimeout(() => {
+          panicBtn.disabled = false;
+          panicBtn.textContent = "🚨 Emergency Close All";
+        }, 3000);
+      }
+    }
+  }
+
   // --- 🧠 Gère les réponses Deriv
   function handlePortfolio(data) {
     const contracts = data?.portfolio?.contracts;
@@ -1943,14 +2079,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const autoTradeBody = document.getElementById("autoTradeBody");
     if (!autoTradeBody) return;
-  
+
     const contractId = c.contract_id;
-    // On cherche la ligne par ID ou par data-attribute
     let tr = document.getElementById(`row-${contractId}`) || autoTradeBody.querySelector(`[data-contract='${contractId}']`);
 
     // --- CAS A : CONTRAT FERMÉ (SOLD) ---
     if (c.is_sold) {
-      // Enregistrement pour l'export CSV
       const alreadyInHistory = closedTradesHistory.some(t => t.ID === contractId);
       if (!alreadyInHistory) {
         closedTradesHistory.push({
@@ -1965,12 +2099,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (tr) {
-        // Animation de sortie
         tr.style.opacity = '0';
         tr.style.transform = 'translateX(20px)';
         setTimeout(() => {
           tr.remove();
-          updateTotalStats();
+          updateTotalStats(); // Mise à jour après suppression
         }, 300);
       }
       return;
@@ -1983,17 +2116,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const formattedProfit = (isPositive ? "+" : "") + profitVal.toFixed(2);
 
     if (!tr) {
-      // 1. CRÉATION DE LA LIGNE
+      // 1. CRÉATION
       tr = document.createElement("tr");
       tr.id = `row-${contractId}`;
       tr.dataset.contract = contractId;
       tr.style.transition = "all 0.3s ease";
 
-      // On utilise votre fonction d'injection (assurez-vous qu'elle gère l'ID du profit)
       if (typeof injectRowHTML === 'function') {
         injectRowHTML(tr, c, profitClass, c.contract_type, formattedProfit);
       } else {
-        // Fallback si injectRowHTML n'est pas dispo
         tr.innerHTML = `
                 <td><input type="checkbox" class="rowSelect" value="${contractId}"></td>
                 <td>${new Date().toLocaleTimeString()}</td>
@@ -2011,72 +2142,114 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       autoTradeBody.prepend(tr);
     } else {
-      // 2. MISE À JOUR CIBLÉE DU PROFIT (Performance)
-      const profitCell = document.getElementById(`profit-${contractId}`) || tr.cells[10];
+      // 2. MISE À JOUR
+      const profitCell = document.getElementById(`profit-${contractId}`);
       if (profitCell && profitCell.textContent !== formattedProfit) {
         profitCell.textContent = formattedProfit;
         profitCell.className = profitClass;
       }
     }
 
-    // Mise à jour des compteurs globaux
+    // --- TRÈS IMPORTANT : On rafraîchit les stats et les cercles à chaque tic ---
     updateTotalStats();
   }
 
   /**
- * Calcule et met à jour les statistiques globales du portfolio en temps réel
+ * Envoie un ordre de vente pour un contrat spécifique
+ * @param {string|number} contractId - L'ID du contrat à clôturer
+ */
+  function closeSingleContract(contractId) {
+    if (!contractId) return;
+
+    // Confirmation visuelle optionnelle (décommentez si vous voulez une alerte)
+    // if (!confirm(`Voulez-vous vraiment fermer le contrat ${contractId} ?`)) return;
+
+    // Récupération du bouton pour montrer un état de chargement
+    const row = document.getElementById(`row-${contractId}`);
+    const btn = row ? row.querySelector('.btn-close-row') : null;
+
+    if (btn) {
+      btn.innerHTML = "⏳"; // Sablier pendant le traitement
+      btn.disabled = true;
+    }
+
+    // Envoi de la requête Sell à l'API (via votre WebSocket existant)
+    // Note: Assurez-vous que wsOpenLines ou votre WebSocket principal est utilisé ici
+    const request = {
+      sell: contractId,
+      price: 0 // 0 signifie "vendre au prix du marché"
+    };
+
+    if (wsOpenLines && wsOpenLines.readyState === WebSocket.OPEN) {
+      wsOpenLines.send(JSON.stringify(request));
+      console.log(`📤 Requête de vente envoyée pour le contrat : ${contractId}`);
+    } else {
+      alert("Erreur : Connexion WebSocket perdue. Impossible de fermer le contrat.");
+      if (btn) {
+        btn.innerHTML = "✖";
+        btn.disabled = false;
+      }
+    }
+  }
+
+  /**
+ * Calcule les statistiques globales en scannant le tableau et déclenche la mise à jour des graphiques
  */
   function updateTotalStats() {
-    // 1. Récupération des éléments du DOM
-    const autoTradeBody = document.getElementById("autoTradeBody");
+    const rows = document.querySelectorAll("#autoTradeBody tr");
     const totalProfitSpan = document.getElementById("totalFloatingProfit");
     const totalCountSpan = document.getElementById("totalOpenContracts");
 
-    if (!autoTradeBody || !totalProfitSpan || !totalCountSpan) return;
-
-    const rows = autoTradeBody.querySelectorAll("tr");
     let totalProfit = 0;
-    let count = rows.length;
+    const count = rows.length;
 
-    // 2. Boucle sur chaque ligne pour additionner les profits
+    // 1. Parcours des lignes pour calculer le profit flottant total
     rows.forEach(row => {
-      // Le profit est dans la 11ème colonne (index 10)
-      // On nettoie le texte (on enlève le '+' et les espaces éventuels)
-      const profitText = row.cells[10].textContent.replace('+', '').trim();
-      const profitVal = parseFloat(profitText);
-
-      if (!isNaN(profitVal)) {
-        totalProfit += profitVal;
+      const pCell = row.querySelector('[id^="profit-"]');
+      if (pCell) {
+        // Nettoyage précis : on ne garde que le signe moins, les chiffres et le point décimal
+        const val = parseFloat(pCell.textContent.replace(/[^-0-9.]/g, '')) || 0;
+        totalProfit += val;
       }
     });
 
-    // 3. Mise à jour du compteur de positions
-    totalCountSpan.textContent = count;
-
-    // 4. Mise à jour de l'affichage du Profit Total (P/L)
-    const formattedTotal = (totalProfit >= 0 ? "+" : "") + totalProfit.toFixed(2);
-    totalProfitSpan.textContent = `${formattedTotal} ${CURRENCY}`;
-
-    // 5. Gestion dynamique des couleurs (Style Moderne)
-    if (totalProfit > 0) {
-      totalProfitSpan.className = "total-pos"; // Vert
-    } else if (totalProfit < 0) {
-      totalProfitSpan.className = "total-neg"; // Rouge
-    } else {
-      totalProfitSpan.className = "total-neutral"; // Gris/Noir si 0
+    // 2. Mise à jour du compteur de contrats ouverts
+    if (totalCountSpan) {
+      totalCountSpan.textContent = count;
     }
 
-    // 6. Synchronisation avec les graphiques circulaires (Donuts)
-    // Cette fonction mettra à jour les cercles SVG avec ces nouvelles valeurs
-    if (typeof updateCircularCharts === "function") {
+    // 3. Mise à jour de l'affichage du profit total
+    if (totalProfitSpan) {
+      const currency = typeof CURRENCY !== 'undefined' ? CURRENCY : 'USD';
+      const sign = totalProfit >= 0 ? "+" : "";
+
+      // Injection du texte avec mise en forme
+      totalProfitSpan.textContent = `${sign}${totalProfit.toFixed(2)} ${currency}`;
+
+      // Gestion dynamique des classes CSS pour les couleurs
+      // On retire les anciennes classes pour éviter les conflits
+      totalProfitSpan.classList.remove('total-pos', 'total-neg', 'total-neutral');
+
+      if (totalProfit > 0) {
+        totalProfitSpan.classList.add('total-pos');
+      } else if (totalProfit < 0) {
+        totalProfitSpan.classList.add('total-neg');
+      } else {
+        totalProfitSpan.classList.add('total-neutral');
+      }
+    }
+
+    // 4. SYNCHRONISATION : On appelle les graphiques circulaires pour qu'ils s'ajustent
+    if (typeof updateCircularCharts === 'function') {
       updateCircularCharts();
     }
   }
 
   /**
- * Synchronise les graphiques circulaires SVG avec les données du tableau
- */
+  * Synchronise les graphiques circulaires SVG avec les données réelles du tableau
+  */
   function updateCircularCharts() {
+    // 1. Sélection des lignes du corps du tableau uniquement
     const rows = document.querySelectorAll("#autoTradeBody tr");
 
     let countProfit = 0;
@@ -2084,77 +2257,88 @@ document.addEventListener("DOMContentLoaded", () => {
     let totalProfitVal = 0;
     let totalLossVal = 0;
 
-    // 1. Analyse des lignes du tableau
+    // 2. Analyse des lignes pour extraire les données
     rows.forEach(row => {
-      const val = parseFloat(row.cells[10].textContent.replace('+', '').trim());
-      if (!isNaN(val)) {
-        if (val >= 0) {
-          countProfit++;
-          totalProfitVal += val;
-        } else {
-          countLoss++;
-          totalLossVal += Math.abs(val);
+      // On cherche la cellule de profit via son ID (format : profit-12345)
+      const profitCell = row.querySelector('[id^="profit-"]');
+
+      if (profitCell) {
+        // Nettoyage robuste du texte (garde uniquement chiffres, points et signes moins)
+        const rawText = profitCell.textContent.replace(/[^+-.0-9]/g, '');
+        const val = parseFloat(rawText);
+
+        if (!isNaN(val)) { 
+          if (val >= 0) {
+            countProfit++;
+            totalProfitVal += val;
+          } else {
+            countLoss++;
+            totalLossVal += Math.abs(val); // On stocke la perte en valeur absolue
+          }
         }
       }
     });
 
     const totalTrades = countProfit + countLoss;
 
-    // 2. Calcul des pourcentages (0 à 100)
+    // 3. Calcul des taux (Win Rate / Loss Rate)
     const winRate = totalTrades > 0 ? (countProfit / totalTrades) * 100 : 0;
     const lossRate = totalTrades > 0 ? (countLoss / totalTrades) * 100 : 0;
+    const currency = typeof CURRENCY !== 'undefined' ? CURRENCY : 'USD';
 
-    // 3. Mise à jour visuelle des cercles (SVG Path et Texte)
+    // 4. Mise à jour visuelle des éléments
 
-    // --- Cercle PROFIT (Bleu) ---
+    // --- Jauge PROFIT ---
     updateCircleElement('circle-profit-path', 'profit-percent-text', winRate);
-    const profitValElem = document.getElementById('profitvalue');
-    if (profitValElem) profitValElem.innerHTML = `${totalProfitVal.toFixed(2)} <span class="currency">${CURRENCY}</span>`;
+    const pValElem = document.getElementById('profitvalue');
+    if (pValElem) {
+      pValElem.innerHTML = `${totalProfitVal.toFixed(2)} <span class="currency">${currency}</span>`;
+    }
 
-    // --- Cercle LOSS (Rouge) ---
+    // --- Jauge LOSS ---
     updateCircleElement('circle-loss-path', 'loss-percent-text', lossRate);
-    const lossValElem = document.getElementById('lossvalue');
-    if (lossValElem) lossValElem.innerHTML = `${totalLossVal.toFixed(2)} <span class="currency">U${CURRENCY}/span>`;
+    const lValElem = document.getElementById('lossvalue');
+    if (lValElem) {
+      lValElem.innerHTML = `${totalLossVal.toFixed(2)} <span class="currency">${currency}</span>`;
+    }
 
-    // --- Cercle GLOBAL P/L (Mixte) ---
-    // On utilise souvent le Win Rate pour la jauge globale
+    // --- Jauge GLOBAL P/L (Net) ---
+    // On utilise le Win Rate pour animer le cercle global
     updateCircleElement('circle-pl-path', 'pl-percent-text', winRate);
+
     const netPL = totalProfitVal - totalLossVal;
     const plValElem = document.getElementById('plvalue');
     if (plValElem) {
-      plValElem.innerHTML = `${(netPL >= 0 ? "+" : "") + netPL.toFixed(2)} <span class="currency">${CURRENCY}</span>`;
-      plValElem.style.color = netPL >= 0 ? "#10b981" : "#ef4444";
+      const color = netPL >= 0 ? "#10b981" : "#ef4444";
+      const sign = netPL >= 0 ? "+" : "";
+      plValElem.innerHTML = `${sign}${netPL.toFixed(2)} <span class="currency">${currency}</span>`;
+      plValElem.style.color = color;
     }
   }
 
   /**
-   * Utilitaire pour modifier les attributs SVG (Animation du tracé)
-   */
+ * Anime un arc de cercle SVG et met à jour son texte central
+ */
   function updateCircleElement(pathId, textId, percentage) {
     const path = document.getElementById(pathId);
     const text = document.getElementById(textId);
 
+    // 1. Sécurité : On vérifie si le pourcentage est un nombre valide
+    const validPercent = isNaN(percentage) ? 0 : percentage;
+
     if (path) {
-      // stroke-dasharray: [longueur du trait, longueur du vide]
-      // Le cercle total fait 100 unités dans notre configuration SVG
-      path.setAttribute('stroke-dasharray', `${percentage.toFixed(1)}, 100`);
+      // Bloque entre 0 et 100 pour éviter les bugs d'affichage SVG (ex: traits qui dépassent)
+      const safePercent = Math.min(Math.max(validPercent, 0), 100);
+
+      // Mise à jour de l'attribut stroke-dasharray
+      // Le format est : "longueur_du_trait, longueur_du_vide"
+      // On utilise toFixed(1) pour une précision visuelle fluide sans surcharger le DOM
+      path.setAttribute('stroke-dasharray', `${safePercent.toFixed(1)}, 100`);
     }
 
     if (text) {
-      text.textContent = `${percentage.toFixed(0)}%`;
-    }
-  }
-
-  /**
- * ACTIONS DE FERMETURE EN MASSE
- */
-  function panicCloseAll() {
-    if (confirm("🚨 ATTENTION: Voulez-vous fermer TOUTES les positions immédiatement ?")) {
-      const rows = document.querySelectorAll("#autoTradeBody tr");
-      rows.forEach(row => {
-        const id = row.dataset.contract;
-        closeContract(id);
-      });
+      // On utilise Math.round pour éviter d'afficher des décimales dans le petit texte central
+      text.textContent = `${Math.round(validPercent)}%`;
     }
   }
 
@@ -3635,6 +3819,7 @@ document.addEventListener("DOMContentLoaded", () => {
   displaySymbols(currentInterval, currentChartType);
   initChart(currentChartType);
   initTable();
+  setupToggleEvent();
   initHistoricalTable();
   inithistoricalchart();
 

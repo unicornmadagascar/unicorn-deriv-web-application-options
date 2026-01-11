@@ -592,8 +592,8 @@
       padding: 20px;
       margin-top: 12px;
     }
-  
-    #controlFormPanel.active { 
+
+    #controlFormPanel.active {
       opacity: 1;
       transform: translateY(0);
     }
@@ -612,9 +612,6 @@
     }
 
     #contractsPanel {
-      display: none !important;
-      /* Caché par défaut */
-      /* Masqué par défaut */
       width: 100%;
       overflow: hidden;
     }
@@ -622,22 +619,8 @@
     /* Force l'affichage quand la classe active est présente */
     #contractsPanel.active {
       display: block !important;
-      visibility: visible !important;
       opacity: 1 !important;
-      height: auto !important;
       animation: fadeInPanel 0.3s ease-out;
-    }
-
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
     }
 
     @keyframes fadeInPanel {
@@ -654,28 +637,24 @@
 
     /* --- 2. BOUTON DE CONTRÔLE PRINCIPAL --- */
     #contractsPanelToggle {
-      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      background: #3b82f6;
       color: white;
+      padding: 10px 20px;
       border: none;
-      padding: 12px 24px;
-      border-radius: 12px;
-      font-weight: 600;
+      border-radius: 8px;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 15px;
-      user-select: none;
-      z-index: 10;
-      position: relative;
+      font-weight: 600;
+      transition: all 0.2s ease;
     }
 
     #contractsPanelToggle:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
-      filter: brightness(1.1);
+      background: #2563eb;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    #contractsPanelToggle.btn-active {
+      background: #64748b;
+      /* Gris quand ouvert pour contraste */
     }
 
     /* --- 3. STRUCTURE DE LA TABLE (ISOLÉE) --- */
@@ -839,15 +818,80 @@
       transform: scale(1.2);
     }
 
-    @keyframes expandEffect {
+    /* Donut Charts Styles */
+    .donuts-wrapper {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 25px;
+    }
+
+    .donut-card {
+      text-align: center;
+      width: 120px;
+    }
+
+    .donut-svg {
+      width: 80px;
+      height: 80px;
+      transform: rotate(-90deg);
+    }
+
+    .donut-bg {
+      fill: none;
+      stroke: #f1f5f9;
+      stroke-width: 3;
+    }
+
+    .donut-path {
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+      transition: stroke-dasharray 0.5s ease;
+    }
+
+    .donut-path.profit {
+      stroke: #10b981;
+    }
+
+    .donut-path.loss {
+      stroke: #ef4444;
+    }
+
+    .donut-text {
+      font-size: 8px;
+      font-weight: bold;
+      text-anchor: middle;
+      transform: rotate(90deg);
+      transform-origin: center;
+      fill: #1e293b;
+    }
+
+    .donut-info {
+      font-size: 0.75rem;
+      margin-top: 8px;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .row-selected {
+      background-color: #f0f7ff !important;
+      /* Bleu très léger */
+    }
+
+    #selectAll {
+      cursor: pointer;
+      transform: scale(1.2);
+    }
+
+    @keyframes slideIn {
       from {
         opacity: 0;
-        max-height: 0;
+        transform: translateY(-10px);
       }
 
       to {
         opacity: 1;
-        max-height: 2000px;
+        transform: translateY(0);
       }
     }
 
@@ -881,6 +925,16 @@
       }
     }
 
+    /* Animation fluide du tracé du cercle */
+    .donut-path {
+      transition: stroke-dasharray 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Optionnel : couleur différente si le pourcentage est à 100% (Win Rate parfait) */
+    #circle-profit-path[stroke-dasharray^="100"] {
+      filter: drop-shadow(0 0 3px #10b981);
+    }
+
     .total-pos {
       color: #10b981 !important;
       /* Vert Emeraude */
@@ -896,6 +950,13 @@
     .total-neutral {
       color: #64748b !important;
       /* Gris ardoise */
+    }
+
+    /* Petit effet de transition pour que le chiffre ne "saute" pas */
+    #totalFloatingProfit {
+      transition: color 0.3s ease;
+      font-variant-numeric: tabular-nums;
+      /* Garde les chiffres alignés */
     }
 
     /* --- ACCOUNT MANAGEMENT CONTAINER STYLES --- */
@@ -2387,8 +2448,34 @@
     <button id="contractsPanelToggle">📄 Show Open Contracts</button>
 
     <div id="contractsPanel">
-      <div id="autoHistoryList">
+
+      <div class="donuts-wrapper">
+        <div class="donut-card">
+          <svg viewBox="0 0 36 36" class="donut-svg">
+            <path class="donut-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831">
+            </path>
+            <path id="circle-profit-path" class="donut-path profit"
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              stroke-dasharray="0, 100"></path>
+            <text x="18" y="20.35" class="donut-text" id="profit-percent-text">0%</text>
+          </svg>
+          <div class="donut-info">Profits: <span id="profitvalue">0.00</span></div>
+        </div>
+
+        <div class="donut-card">
+          <svg viewBox="0 0 36 36" class="donut-svg">
+            <path class="donut-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831">
+            </path>
+            <path id="circle-loss-path" class="donut-path loss"
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              stroke-dasharray="0, 100"></path>
+            <text x="18" y="20.35" class="donut-text" id="loss-percent-text">0%</text>
+          </svg>
+          <div class="donut-info">Loss: <span id="lossvalue">0.00</span></div>
+        </div>
       </div>
+
+      <div id="autoHistoryList"></div>
     </div>
   </div>
 
