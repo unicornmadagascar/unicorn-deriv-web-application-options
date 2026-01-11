@@ -2107,7 +2107,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${c.limit_order?.take_profit?.order_amount || '-'}</td>
                 <td>${c.limit_order?.stop_loss?.order_amount || '-'}</td>
                 <td id="profit-${contractId}" class="${profitClass}">${formattedProfit}</td>
-                <td><button onclick="closeSingleContract('${contractId}')" class="btn-close-row">✖</button></td>
+                <td><button class="btn-close action-close" data-contract-id="${contractId}">✖</button></td>
             `;
       }
       autoTradeBody.prepend(tr);
@@ -2150,8 +2150,8 @@ document.addEventListener("DOMContentLoaded", () => {
       price: 0 // 0 signifie "vendre au prix du marché"
     };
 
-    if (wsOpenLines && wsOpenLines.readyState === WebSocket.OPEN) {
-      wsOpenLines.send(JSON.stringify(request));
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(request));
       console.log(`📤 Requête de vente envoyée pour le contrat : ${contractId}`);
     } else {
       alert("Erreur : Connexion WebSocket perdue. Impossible de fermer le contrat.");
@@ -3736,7 +3736,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   stopbtn.onclick = () => {
-    stopControlPipeline();  
+    stopControlPipeline();
     shutdownAllPipelines();
   };
 
@@ -3744,7 +3744,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. On vérifie si l'élément cliqué est le bouton de bascule
     if (event.target && event.target.id === 'contractsPanelToggle') {
       const toggleBtn = event.target;
-      const panel = document.getElementById('contractsPanel');  
+      const panel = document.getElementById('contractsPanel');
 
       if (panel) {
         // Alterne la classe active
@@ -3763,6 +3763,18 @@ document.addEventListener("DOMContentLoaded", () => {
           toggleBtn.textContent = "📄 Show Open Contracts";
           toggleBtn.classList.remove('btn-active');
         }
+      }
+    }
+  });
+
+  document.addEventListener('click', (event) => {
+    // On cherche si le clic vient du bouton de fermeture
+    const closeBtn = event.target.closest('.action-close');
+
+    if (closeBtn) {
+      const id = closeBtn.getAttribute('data-contract-id');
+      if (typeof closeSingleContract === 'function') {
+        closeSingleContract(id);
       }
     }
   });
