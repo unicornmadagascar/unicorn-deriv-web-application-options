@@ -3774,7 +3774,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. On vérifie si l'élément cliqué est le bouton de bascule
     if (event.target && event.target.id === 'contractsPanelToggle') {
       const toggleBtn = event.target;
-      const panel = document.getElementById('contractsPanel');
+      const panel = document.getElementById('contractsPanel');  
 
       if (panel) {
         // Alterne la classe active
