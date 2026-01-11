@@ -1757,29 +1757,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (download) {
       download.addEventListener("click", downloadHistoryCSV);
     }
-  }
 
-  // Fonction pour initialiser la table et le bouton
-  function setupContractsPanel() {
-    // 1. Initialiser la structure de la table
-    initTable();
-
-    // 2. Gérer l'ouverture/fermeture du panneau
-    const toggleBtn = document.getElementById("contractsPanelToggle");
-    const panel = document.getElementById("contractsPanel");
-
-    if (toggleBtn && panel) {
-      toggleBtn.addEventListener("click", function () {
-        panel.classList.toggle("active");
-
-        // Optionnel : Changer le texte du bouton selon l'état
-        if (panel.classList.contains("active")) {
-          toggleBtn.innerHTML = "▼ Hide Open Contracts";
-        } else {
-          toggleBtn.innerHTML = "📄 Show Open Contracts";
-        }
+    const deletedSelected = document.getElementById('deleteSelected');
+    deletedSelected.addEventListener('click', () => {
+      document.querySelectorAll(".rowSelect:checked").forEach(cb => {
+        cb.closest("tr").remove();
       });
-    }
+      selectAll.checked = false;
+    });
   }
 
   // --- 💰 Ferme un contrat
@@ -2580,7 +2565,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function notifyNewTrade(trade) {  
+  function notifyNewTrade(trade) {
     const notifier = document.getElementById("tradeNotifier");
     const profit = (parseFloat(trade.sell_price) - parseFloat(trade.buy_price)).toFixed(2);
     const toast = document.createElement("div");
@@ -2591,7 +2576,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => toast.remove(), 4000);
   }
 
-  function fetchHistoricalData(from, to) {  
+  function fetchHistoricalData(from, to) {
     // 1. Fermer proprement l'ancienne connexion
     if (historicalConn) {
       historicalConn.onopen = null;
@@ -2604,7 +2589,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const APP_ID = '109310';
     const finalURL = `wss://ws.binaryws.com/websockets/v3?app_id=${APP_ID}`;
 
-    historicalConn = new WebSocket(finalURL);    
+    historicalConn = new WebSocket(finalURL);
 
     // 3. Gestionnaire d'erreur de connexion
     historicalConn.onerror = (error) => {
@@ -3453,7 +3438,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // === Automation Toggle ===
-  startbtn.onclick = () => {  
+  startbtn.onclick = () => {
     setTimeout(startMLCountdown, 7000);
     startSignalPipeline((data) => {
       console.log(
@@ -3517,12 +3502,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }, true);
 
   // startup
-  initTable();    
-  initDerivAccountManager();  
-  displaySymbols(currentInterval, currentChartType);  
+  initTable();
+  initDerivAccountManager();
+  displaySymbols(currentInterval, currentChartType);
   initChart(currentChartType);
   initHistoricalTable();
-  inithistoricalchart();  
+  inithistoricalchart();
 
   window.onload = async () => {
     if (!currentSymbol) return;
@@ -3544,15 +3529,15 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".rowSelect").forEach(cb => {
       cb.checked = selectAll.checked;
     });
-  }); */  
-   
+  }); */
+
   // Supprimer les lignes sélectionnées  
-  document.getElementById("deleteSelected").addEventListener("click", () => {
+  /* document.getElementById("deleteSelected").addEventListener("click", () => {
     document.querySelectorAll(".rowSelect:checked").forEach(cb => {
       cb.closest("tr").remove();
     });
     selectAll.checked = false;  
-  });
+  }); */
 
   // === Trade Evaluation Panel Toggle ===
   tradeEvalToggle.addEventListener("click", () => {
