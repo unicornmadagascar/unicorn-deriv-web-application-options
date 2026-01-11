@@ -3306,7 +3306,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3. Injection et Impression
     reportWindow.document.write(htmlContent);
     reportWindow.document.close();
-
+   
     // On attend un court instant pour que le rendu soit prêt
     setTimeout(() => {
       reportWindow.print();
@@ -3502,10 +3502,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }, true);
 
   // startup
-  initTable();
   initDerivAccountManager();
   displaySymbols(currentInterval, currentChartType);
   initChart(currentChartType);
+  initTable();
   initHistoricalTable();
   inithistoricalchart();
 
