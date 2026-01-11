@@ -3556,7 +3556,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initDerivAccountManager();
   displaySymbols(currentInterval, currentChartType);
   initChart(currentChartType);
-  initTable();
+  //initTable();
   // Appelez cette fonction au chargement de votre application
   setupContractsPanel();
   initHistoricalTable();
