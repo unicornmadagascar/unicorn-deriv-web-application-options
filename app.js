@@ -1751,6 +1751,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Fonction pour initialiser la table et le bouton
+  function setupContractsPanel() {
+    // 1. Initialiser la structure de la table
+    initTable();
+
+    // 2. Gérer l'ouverture/fermeture du panneau
+    const toggleBtn = document.getElementById("contractsPanelToggle");
+    const panel = document.getElementById("contractsPanel");
+
+    if (toggleBtn && panel) {
+      toggleBtn.addEventListener("click", function () {
+        panel.classList.toggle("active");
+
+        // Optionnel : Changer le texte du bouton selon l'état
+        if (panel.classList.contains("active")) {
+          toggleBtn.innerHTML = "▼ Hide Open Contracts";
+        } else {
+          toggleBtn.innerHTML = "📄 Show Open Contracts";
+        }
+      });
+    }
+  }
 
   // --- 💰 Ferme un contrat
   /**
@@ -3444,22 +3466,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  document.getElementById('tradeEvalToggle').addEventListener('click', function () {
-    const panel = document.getElementById('tradeEvalPanel');
+  document.getElementById('contractsPanelToggle').addEventListener('click', function () {
+    const panel = document.getElementById('contractsPanel');
     const isOpening = !panel.classList.contains('active');
 
     panel.classList.toggle('active');
 
     // Changer le texte du bouton
-    this.textContent = isOpening ? "📄 Hide Account Management" : "📄 Account Management";
+    this.textContent = isOpening ? "📄 Hide Contracts" : "📄 Show Open Contracts";
 
     // Si on ouvre, on demande un rafraîchissement des calculs pour forcer le rendu
     if (isOpening) {
       if (typeof updateTotalStats === 'function') {
-        updateTotalStats();  
+        updateTotalStats();
       }
     }
-  });  
+  });
 
   // === Automation Toggle ===
   startbtn.onclick = () => {
@@ -3530,6 +3552,8 @@ document.addEventListener("DOMContentLoaded", () => {
   displaySymbols(currentInterval, currentChartType);
   initChart(currentChartType);
   initTable();
+  // Appelez cette fonction au chargement de votre application
+  setupContractsPanel();
   initHistoricalTable();
   inithistoricalchart();
 
