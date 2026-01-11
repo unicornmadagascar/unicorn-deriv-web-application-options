@@ -583,7 +583,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         // 4️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
-        updateGlobalPnL();
+        updateGlobalPnL();  
         Openpositionlines(currentSeries);
       }
 
