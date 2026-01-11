@@ -3560,7 +3560,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.onload = async () => {
     if (!currentSymbol) return;
     if (currentChartType !== "candlestick") return;
-    await loadSymbol(currentSymbol, currentInterval, currentChartType);
+    await loadSymbol(currentSymbol, currentInterval, currentChartType);  
   };
 
   // Simulation : mise à jour toutes les 2 secondes
