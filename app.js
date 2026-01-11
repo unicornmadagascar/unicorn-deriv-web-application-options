@@ -3483,7 +3483,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Rafraîchissement des calculs
       if (isOpening && typeof updateTotalStats === 'function') {
-        updateTotalStats();
+        //updateTotalStats();
       }
     }
   });
