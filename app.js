@@ -594,7 +594,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (thisSessionId === currentSessionId) {
         setTimeout(() => loadSymbol(symbol, interval, chartType), 2000);
       }
-    };
+    };  
   }
 
   // === GESTION DES LIGNES ET DE LA TABLE DES CONTRATS ===
