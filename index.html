@@ -612,7 +612,8 @@
     }
 
     #contractsPanel {
-      display: none;
+      display: none !important;
+      /* Caché par défaut */
       /* Masqué par défaut */
       width: 100%;
       overflow: hidden;
@@ -627,8 +628,20 @@
       animation: fadeInPanel 0.3s ease-out;
     }
 
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     @keyframes fadeInPanel {
-      from {  
+      from {
         opacity: 0;
         transform: translateY(-5px);
       }
@@ -654,6 +667,9 @@
       align-items: center;
       gap: 8px;
       margin-bottom: 15px;
+      user-select: none;
+      z-index: 10;
+      position: relative;
     }
 
     #contractsPanelToggle:hover {
