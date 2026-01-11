@@ -1706,7 +1706,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span id="totalOpenContracts">0</span>
                 </div>
                 <div class="stats-item">
-                    <label>Floating P/L</label>
+                    <label>Floating P/L</label>  
                     <span id="totalFloatingProfit" class="total-neutral">0.00 USD</span>
                 </div>
             </div>
