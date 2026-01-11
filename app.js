@@ -3489,7 +3489,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // === Automation Toggle ===
-  startbtn.onclick = () => {
+  startbtn.onclick = () => {  
     setTimeout(startMLCountdown, 7000);
     startSignalPipeline((data) => {
       console.log(
