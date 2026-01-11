@@ -3466,18 +3466,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  document.getElementById('contractsPanelToggle').addEventListener('click', function () {
-    const panel = document.getElementById('contractsPanel');
-    const isOpening = !panel.classList.contains('active');
+  // On attache l'événement au PARENT qui est statique dans le HTML
+  document.getElementById('contractsPanelContainer').addEventListener('click', function (event) {
+    // On vérifie si l'élément cliqué est bien notre bouton Toggle
+    if (event.target && event.target.id === 'contractsPanelToggle') {
+      const btn = event.target;
+      const panel = document.getElementById('contractsPanel');
 
-    panel.classList.toggle('active');
+      if (!panel) return;
 
-    // Changer le texte du bouton
-    this.textContent = isOpening ? "📄 Hide Contracts" : "📄 Show Open Contracts";
+      const isOpening = !panel.classList.contains('active');
+      panel.classList.toggle('active');
 
-    // Si on ouvre, on demande un rafraîchissement des calculs pour forcer le rendu
-    if (isOpening) {
-      if (typeof updateTotalStats === 'function') {
+      // Changer le texte du bouton
+      btn.textContent = isOpening ? "📄 Hide Contracts" : "📄 Show Open Contracts";
+
+      // Rafraîchissement des calculs
+      if (isOpening && typeof updateTotalStats === 'function') {
         updateTotalStats();
       }
     }
@@ -3553,14 +3558,14 @@ document.addEventListener("DOMContentLoaded", () => {
   initChart(currentChartType);
   initTable();
   // Appelez cette fonction au chargement de votre application
-  setupContractsPanel();  
-  initHistoricalTable();      
+  setupContractsPanel();
+  initHistoricalTable();
   inithistoricalchart();
 
   window.onload = async () => {
     if (!currentSymbol) return;
     if (currentChartType !== "candlestick") return;
-    await loadSymbol(currentSymbol, currentInterval, currentChartType);  
+    await loadSymbol(currentSymbol, currentInterval, currentChartType);
   };
 
   // Simulation : mise à jour toutes les 2 secondes
