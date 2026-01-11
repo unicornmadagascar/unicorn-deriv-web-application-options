@@ -3486,7 +3486,7 @@ document.addEventListener("DOMContentLoaded", () => {
         //updateTotalStats();
       }
     }
-  });
+  });  
 
   // === Automation Toggle ===
   startbtn.onclick = () => {  
