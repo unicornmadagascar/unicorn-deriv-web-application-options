@@ -3776,7 +3776,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (typeof closeSingleContract === 'function') {
         closeSingleContract(id);
       }
-    }
+    }  
   });
 
   // --- TOGGLE PANEL ---
