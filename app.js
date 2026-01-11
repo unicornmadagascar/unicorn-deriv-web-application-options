@@ -600,22 +600,22 @@ document.addEventListener("DOMContentLoaded", () => {
   // === GESTION DES LIGNES ET DE LA TABLE DES CONTRATS ===
   function Openpositionlines(currentSeries) {
     // Éviter les connexions multiples
-    if (wsOpenLines && (wsOpenLines.readyState === WebSocket.OPEN || wsOpenLines.readyState === WebSocket.CONNECTING)) {
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
       return;
     }
 
-    wsOpenLines = new WebSocket(WS_URL);
+    ws = new WebSocket(WS_URL);
 
-    wsOpenLines.onopen = () => {
-      wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ authorize: TOKEN }));
     };
 
-    wsOpenLines.onmessage = (msg) => {
+    ws.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
 
       // 1. Authentification réussie -> Souscription
-      if (data.msg_type === "authorize") {
-        wsOpenLines.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
+      if (data.msg_type === "authorize") {  
+        ws.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
       }
 
       // 2. Réception des données du contrat
