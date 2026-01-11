@@ -614,14 +614,14 @@
     #contractsPanel {
       width: 100%;
       overflow: hidden;
-      display: none;
+      display: none !important;
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.3s ease;  
     }
 
     /* Force l'affichage quand la classe active est présente */
     #contractsPanel.active {
-      display: block;
+      display: block !important;
       opacity: 1;
       animation: fadeInPanel 0.3s ease-out;
     }
