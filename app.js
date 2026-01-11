@@ -581,44 +581,10 @@ document.addEventListener("DOMContentLoaded", () => {
           updateGlobalPnL();
           return;
         }
-
-        // 2️⃣ CAS DU CONTRAT OUVERT
-        activeContractsData[id] = c;
-        currentContractTypeGlobal = c.contract_type; // Indispensable pour le REVERSE
-
-        // 3️⃣ AFFICHAGE DE LA LIGNE (Si symbole correspond)
-        if (c.symbol === symbol) {
-          // Sécurité prix : on prend le premier disponible
-          const rawPrice = c.entry_tick_display_value || c.buy_price || c.current_spot_display_value;
-          const entryPrice = parseFloat(rawPrice);
-
-          if (!isNaN(entryPrice)) {
-            const pnl = parseFloat(c.profit || 0).toFixed(2);
-            const color = pnl >= 0 ? "#00ff80" : "#ff4d4d";
-            const title = `${c.contract_type} [${pnl}$]`;
-
-            if (!priceLines4openlines[id]) {
-              // Création de la ligne
-              priceLines4openlines[id] = currentSeries.createPriceLine({
-                price: entryPrice,
-                color: color,
-                lineWidth: 2,
-                lineStyle: 2, // Dashed
-                axisLabelVisible: true,
-                title: title,
-              });
-            } else {
-              // Mise à jour dynamique du titre et de la couleur
-              priceLines4openlines[id].applyOptions({
-                title: title,
-                color: color
-              });
-            }
-          }
-        }
-
+        
         // 4️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
         updateGlobalPnL();
+        Openpositionlines(currentSeries);
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
@@ -629,6 +595,138 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => loadSymbol(symbol, interval, chartType), 2000);
       }
     };
+  }
+
+  // === GESTION DES LIGNES ET DE LA TABLE DES CONTRATS ===
+  function Openpositionlines(currentSeries) {
+    // Éviter les connexions multiples
+    if (wsOpenLines && (wsOpenLines.readyState === WebSocket.OPEN || wsOpenLines.readyState === WebSocket.CONNECTING)) {
+      return;
+    }
+
+    wsOpenLines = new WebSocket(WS_URL);
+
+    wsOpenLines.onopen = () => {
+      wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));
+    };
+
+    wsOpenLines.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+
+      // 1. Authentification réussie -> Souscription
+      if (data.msg_type === "authorize") {
+        wsOpenLines.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
+      }
+
+      // 2. Réception des données du contrat
+      if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
+        const c = data.proposal_open_contract;
+        const id = c.contract_id;
+
+        // CAS A : Le contrat est terminé (vendu/clôturé)
+        if (c.status === "sold" || c.is_expired) {
+          // Supprimer la ligne sur le graphique
+          if (priceLines4openlines[id]) {
+            try { currentSeries.removePriceLine(priceLines4openlines[id]); } catch (e) { }
+            delete priceLines4openlines[id];
+          }
+          // Supprimer la ligne de la table HTML
+          const row = document.getElementById(`row-${id}`);
+          if (row) row.remove();
+
+          updateTotalStats(); // Rafraîchir les compteurs footer
+          return;
+        }
+
+        // CAS B : Le contrat est ouvert et actif
+        const entryPrice = parseFloat(c.entry_tick_display_value || c.buy_price);
+        if (!entryPrice || isNaN(entryPrice)) return;
+
+        // 1. Mise à jour ou création dans la TABLE HTML
+        const existingRow = document.getElementById(`row-${id}`);
+        if (!existingRow) {
+          // Si la fonction addContractToTable est celle définie plus haut :
+          addContractToTable({
+            id: id,
+            time: new Date(c.date_start * 1000).toLocaleTimeString(),
+            symbol: c.display_name,
+            type: c.contract_type,
+            stake: c.buy_price,
+            multiplier: c.multiplier || '-',
+            entry: entryPrice,
+            tp: c.limit_order?.take_profit?.order_amount || '-',
+            sl: c.limit_order?.stop_loss?.order_amount || '-'
+          });
+        } else {
+          // Mise à jour en temps réel du profit dans la table
+          const profitCell = document.getElementById(`profit-${id}`);
+          if (profitCell) {
+            const profit = parseFloat(c.profit);
+            profitCell.textContent = profit.toFixed(2);
+            profitCell.className = profit >= 0 ? "profit-positive" : "profit-negative";
+          }
+          updateTotalStats(); // Met à jour le Floating P/L global
+        }
+
+        // 2. Mise à jour ou création sur le GRAPHIQUE
+        if (!priceLines4openlines[id]) {
+          const color = c.contract_type.includes("MULTUP") || c.contract_type.includes("MULTDOWN") ? "#00ff80" : "#ff4d4d";
+          const line = currentSeries.createPriceLine({
+            price: entryPrice,
+            color: color,
+            lineWidth: 2,
+            lineStyle: LightweightCharts.LineStyle.Dashed,
+            axisLabelVisible: true,
+            title: `${c.contract_type} @ ${entryPrice.toFixed(2)}`,
+          });
+          priceLines4openlines[id] = line;
+          console.log(`📍 Ligne ajoutée pour ${type} @ ${entryPrice}`);
+        }
+      }
+    };
+
+    wsOpenLines.onerror = (e) => console.error("⚠️ WS error:", e);
+    wsOpenLines.onclose = () => {
+      console.log("❌ WS closed. Reconnecting...");
+      setTimeout(() => Openpositionlines(currentSeries), 3000); // Tentative de reconnexion
+    };
+  }
+
+  function addContractToTable(contract) {
+    const tbody = document.getElementById("autoTradeBody");
+    if (!tbody) return;
+
+    // Création de l'élément de ligne
+    const row = document.createElement("tr");
+    row.id = `row-${contract.id}`; // Très important pour le supprimer plus tard avec row.remove()
+
+    // Construction du contenu HTML de la ligne
+    row.innerHTML = `
+        <td><input type="checkbox" class="rowSelect" value="${contract.id}"></td>
+        <td>${contract.time}</td>
+        <td style="font-family: monospace; font-size: 0.75rem;">${contract.id}</td>
+        <td><strong>${contract.symbol}</strong></td>
+        <td><span class="badge-${contract.type.toLowerCase()}">${contract.type}</span></td>
+        <td>${parseFloat(contract.stake).toFixed(2)}</td>
+        <td>${contract.multiplier}</td>
+        <td>${parseFloat(contract.entry).toFixed(2)}</td>
+        <td style="color: #10b981;">${contract.tp}</td>
+        <td style="color: #ef4444;">${contract.sl}</td>
+        <td id="profit-${contract.id}" class="profit-neutral" style="font-weight: 800;">0.00</td>
+        <td>
+            <button onclick="closeSingleContract('${contract.id}')" class="btn-close-row" title="Clôturer ce contrat">
+                ✖
+            </button>
+        </td>
+    `;
+
+    // Ajout de la ligne au début de la table (pour voir les nouveaux en haut)
+    tbody.prepend(row);
+
+    // Mettre à jour les statistiques globales (Active Positions, etc.)
+    if (typeof updateTotalStats === 'function') {
+      updateTotalStats();
+    }
   }
 
   function updateGlobalPnL() {
@@ -1761,7 +1859,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const deletedSelected = document.getElementById('deleteSelected');
     deletedSelected.addEventListener('click', () => {
       document.querySelectorAll(".rowSelect:checked").forEach(cb => {
-        cb.closest("tr").remove();  
+        cb.closest("tr").remove();
       });
       selectAll.checked = false;
     });
@@ -3306,7 +3404,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3. Injection et Impression
     reportWindow.document.write(htmlContent);
     reportWindow.document.close();
-   
+
     // On attend un court instant pour que le rendu soit prêt
     setTimeout(() => {
       reportWindow.print();

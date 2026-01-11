@@ -834,6 +834,23 @@
       font-variant-numeric: tabular-nums;
     }
 
+    #contractsPanel .rowSelect {
+      cursor: pointer;
+      transform: scale(1.2);
+    }
+
+    @keyframes expandEffect {
+      from {
+        opacity: 0;
+        max-height: 0;
+      }
+
+      to {
+        opacity: 1;
+        max-height: 2000px;
+      }
+    }
+
     /* --- 7. ANIMATIONS --- */
     @keyframes pulse-green {
 
