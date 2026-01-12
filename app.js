@@ -2068,7 +2068,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- CAS B : CONTRAT OUVERT (CRÉATION OU MISE À JOUR) ---
     const profitVal = parseFloat(c.profit || 0);
     const isPositive = profitVal >= 0;
-    const profitClass = isPositive ? "profit-positive" : "profit-negative";
+    const profitClass = isPositive ? "profit-positive" : "profit-negative";  
     const formattedProfit = (isPositive ? "+" : "") + profitVal.toFixed(2);
 
     if (!tr) {
