@@ -1916,7 +1916,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const masterCb = document.getElementById('selectAll');
     if (masterCb) {
       masterCb.addEventListener('change', function () {
-        //toggleSelectAll(this); // "this" représente ici le masterCb
+        toggleSelectAll(this); // "this" représente ici le masterCb
       });  
     }
   }
@@ -2450,7 +2450,7 @@ document.addEventListener("DOMContentLoaded", () => {
         case "proposal_open_contract":
           // C'est ici que la table reçoit ses données en temps réel
           if (typeof handleContractDetails === 'function') {
-            //handleContractDetails(data);
+            handleContractDetails(data);
           }
           break;
 
