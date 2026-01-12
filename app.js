@@ -686,7 +686,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1️⃣ Visibilité
     if (activeIds.length === 0) {
       container.style.display = "none";
-      lastTotalPnL = 0;
+      lastTotalPnL = 0;  
       if (closeAllBtn) {
         closeAllBtn.style.animation = "none";
         closeAllBtn.innerText = "CLOSE ALL";
