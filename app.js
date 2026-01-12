@@ -1625,7 +1625,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log('✅ Contrat fermé:', data.sell.contract_id);
       }
     };
-  };
+  };   
 
   // --- INITIALISATION (À appeler une seule fois au chargement ou au 1er clic) ---
   function initMaSeries() {
