@@ -2024,6 +2024,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // --- 🔄 S’abonne aux détails d’un contrat
+  function subscribeContractDetails(contract_id) {
+     ws.send(JSON.stringify({ proposal_open_contract: 1, contract_id : contract_id, subscribe: 1 }));
+  }
+
   function handleContractDetails(data) {
     const c = data.proposal_open_contract;
     if (!c || !c.contract_id) return;
