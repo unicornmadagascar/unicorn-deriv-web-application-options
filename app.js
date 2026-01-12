@@ -735,7 +735,7 @@ document.addEventListener("DOMContentLoaded", () => {
         closeAllBtn.style.animation = "pulse-red 1s infinite";
         closeAllBtn.innerText = `Close All (${count})`;
       } else {  
-        closeAllBtn.style.animation = "none";
+        closeAllBtn.style.animation = "none";  
         closeAllBtn.innerText = "Close All";
       }
     }
