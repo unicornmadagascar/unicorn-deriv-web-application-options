@@ -621,7 +621,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
   function Openpositionlines(currentSeries) {
-
+  
     if (wsOpenLines === null) {
       wsOpenLines = new WebSocket(WS_URL);
       wsOpenLines.onopen = () => { wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
@@ -636,7 +636,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wsOpenLines.onopen = () => { wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    wsOpenLines.onmessage = (msg) => {
+    wsOpenLines.onmessage = (msg) => {  
       const data = JSON.parse(msg.data);  
 
       // Étape 1 : Authentification
