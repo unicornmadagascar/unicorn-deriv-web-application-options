@@ -670,7 +670,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const line = currentSeries.createPriceLine({
             price: entryPrice,
-            color,
+            color,   
             lineWidth: 2,
             lineStyle: LightweightCharts.LineStyle.Dashed,
             axisLabelVisible: true,
