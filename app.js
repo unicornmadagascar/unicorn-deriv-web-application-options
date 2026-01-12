@@ -579,11 +579,11 @@ document.addEventListener("DOMContentLoaded", () => {
         // 3️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
         updateGlobalPnL();
         updateTradeTable();
+        Openpositionlines(currentSeries);
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
 
-      Openpositionlines(currentSeries);
     };
 
     ws.onclose = () => {
