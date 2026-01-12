@@ -2547,7 +2547,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         case "proposal_open_contract":
           // C'est ici que la table reçoit ses données en temps réel
-          if (typeof updateTradeTable === 'function' && typeof updateDonutCharts === 'function' ||) {
+          if (typeof updateTradeTable === 'function' && typeof updateDonutCharts === 'function') {
             updateDonutCharts()
             updateTradeTable();
           }
