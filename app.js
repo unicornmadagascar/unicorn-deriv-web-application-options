@@ -747,7 +747,6 @@ document.addEventListener("DOMContentLoaded", () => {
     lastTotalPnL = currentTotal;
   }
   
-
   /**
  * Met à jour la source de données pour les indicateurs (ZigZag, MA)   
  */
