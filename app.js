@@ -2371,7 +2371,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wsplContracts.close(); // Déclenche onclose pour la reconnexion 
     };
 
-    Openpositionlines(currentSeries);
+    Openpositionlines(currentSeries); 
   }
 
   // 🔹 Fonction utilitaire : obtenir tous les comptes depuis l’URL (après authorization Deriv)
