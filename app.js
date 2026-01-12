@@ -447,7 +447,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     currentSessionId++;
     const thisSessionId = currentSessionId;
-    currentSymbol = symbol;
 
     // --- NETTOYAGE COMPLET ---
     if (ws) {
@@ -649,7 +648,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const lineStyle = isWin ? LightweightCharts.LineStyle.Solid : LightweightCharts.LineStyle.Dashed;
 
         // Label avec Bouton X simulé et Profit
-        const labelText = `✖ ${c.contract_type} | ${isWin ? '+' : ''}${profit.toFixed(2)} USD`;
+        const labelText = `${c.contract_type} | ${isWin ? '+' : ''}${profit.toFixed(2)} ${CURRENCY.toString()}`;
 
         if (!priceLines4openlines[id]) {
           // Création initiale
@@ -1329,61 +1328,76 @@ document.addEventListener("DOMContentLoaded", () => {
     reverseFunction();
   };
 
-  function reverseFunction() {
-    // 1. Vérification de la connexion
-    if (!ws || ws.readyState !== WebSocket.OPEN) {
-      alert("Connexion non disponible");
-      return;
-    }
+  function reversefunction() {
+    if (wsContracts_reverse) { wsContracts_reverse.close(); wsContracts_reverse = null; }
 
-    // 2. Récupérer les IDs des contrats actuellement affichés sur le graphique
-    const activeContractIds = Object.keys(priceLines4openlines);
+    console.log("Reversing positions...");
 
-    if (activeContractIds.length === 0) {
-      console.warn("Aucune position ouverte à inverser.");
-      return;
-    }
+    wsContracts_reverse = new WebSocket(WS_URL);
+    wsContracts_reverse.onopen = () => { wsContracts_reverse.send(JSON.stringify({ authorize: TOKEN })); };
 
-    // On récupère le type du premier contrat pour déterminer l'inversion
-    // (On suppose que l'utilisateur veut inverser la tendance actuelle)
-    // Note : Il est préférable de stocker le type dans l'objet priceLines4openlines lors de la création
+    wsContracts_reverse.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
 
-    let lastContractType = "";
-    // On récupère les infos du dernier contrat traité
-    // Si vous n'avez pas stocké le type, on peut utiliser une variable globale mise à jour par onmessage
-    lastContractType = currentContractTypeGlobal; // Assurez-vous de mettre à jour cette variable dans ws.onmessage
-
-    const oppositeType = (lastContractType === "MULTUP") ? "MULTDOWN" : "MULTUP";
-
-    // 3. Fermer tous les contrats actuels
-    activeContractIds.forEach(id => {
-      ws.send(JSON.stringify({ sell: id, price: 0 }));
-      console.log(`⛔ Fermeture contrat : ${id}`);
-    });
-
-    // 4. Ouvrir les nouvelles positions dans le sens opposé
-    const stake = parseFloat(stakeInput.value) || 1;
-    const multiplier = parseInt(multiplierInput.value) || 40;
-    const qty = (oppositeType === "MULTUP") ? (parseInt(buyNumber.value) || 1) : (parseInt(sellNumber.value) || 1);
-
-    const payload = {
-      buy: 1,
-      price: stake.toFixed(2),
-      parameters: {
-        contract_type: oppositeType,
-        symbol: currentSymbol,
-        currency: CURRENCY,
-        basis: "stake",
-        amount: stake.toFixed(2),
-        multiplier: multiplier
+      // 1. Authorization
+      if (data.msg_type === "authorize") {
+        wsContracts_reverse.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
+        wsContracts_reverse.send(JSON.stringify({ portfolio: 1 }));
+        return;
       }
+
+      // 2. Save contract info
+      if (data.msg_type === "proposal_open_contract") {
+        const poc = data.proposal_open_contract;
+        contracttype__ = poc.contract_type;
+        contractid__ = poc.contract_id;
+        return;
+      }
+
+      // 3. Portfolio received
+      if (data.msg_type !== "portfolio") return;
+
+      const contracts = data.portfolio.contracts;
+      console.log("📌 Contrats ouverts :", contracts);
+
+      if (!contracttype__) return;
+
+      // Determine opposite direction
+      const oppositeType = (contracttype__ === "MULTUP") ? "MULTDOWN" : "MULTUP";
+
+      // User inputs
+      const stake = parseFloat(stakeInput.value) || 1;
+      const multiplier = parseInt(multiplierInput.value) || 40;
+      const qty = (contracttype__ === "MULTUP")
+        ? (parseInt(sellNumber.value) || 1)
+        : (parseInt(buyNumber.value) || 1);
+
+      // 4. Close all matching contracts   
+      contracts
+        .filter(c => c.contract_type === contracttype__)
+        .forEach(c => {
+          wsContracts_reverse.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+          console.log("⛔ Fermeture demandée :", c.contract_id);
+        });
+
+      // 5. Open opposite direction
+      for (let i = 0; i < qty; i++) {
+        wsContracts_reverse.send(JSON.stringify({
+          buy: 1,
+          price: stake.toFixed(2),
+          parameters: {
+            contract_type: oppositeType,
+            symbol: currentSymbol,
+            currency: CURRENCY,
+            basis: "stake",
+            amount: stake.toFixed(2),
+            multiplier: multiplier
+          }
+        }));
+      }
+
+      console.log(`✔️ Reverse exécuté → ${oppositeType} x${qty}`);
     };
-
-    for (let i = 0; i < qty; i++) {
-      ws.send(JSON.stringify(payload));
-    }
-
-    console.log(`✅ Reverse terminé : Fermeture de ${activeContractIds.length} et ouverture de ${qty} ${oppositeType}`);
   }
 
   // Vos boutons restent les mêmes
@@ -1608,7 +1622,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log('✅ Contrat fermé:', data.sell.contract_id);
       }
     };
-  };   
+  };
 
   // --- INITIALISATION (À appeler une seule fois au chargement ou au 1er clic) ---
   function initMaSeries() {
@@ -4034,8 +4048,8 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll(".interval-btn").forEach(b => b.classList.remove("active"));
       // Ajoute la classe active au bouton cliqué    
       e.target.classList.add("active");
-    }); 
-  }); 
+    });
+  });
 
   // === Changement de symbole  ===  
   document.querySelectorAll(".symbol-item").forEach(btn => {
