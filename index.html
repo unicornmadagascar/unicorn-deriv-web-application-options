@@ -608,31 +608,27 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
       width: 100%;
       box-sizing: border-box;
-      margin-bottom: 20px;
+      max-height: 85vh;
+      overflow: hidden;
     }
 
     #contractsPanel {
-      width: 100%;
       display: none;
-      /* caché par défaut */
-      opacity: 0;
-      flex-direction: column;  
-      gap: 20px;
+      flex-direction: column;
+      gap: 24px;
+      height: 100%;
+      max-height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
       padding: 15px;
       box-sizing: border-box;
-      max-height: 80vh;
-      /* 🔥 LIMITE */
-      overflow-y: auto;  
-      /* 🔥 SCROLL */
-      overflow-x: hidden;
-      transition: opacity 0.3s ease;
     }
-  
-    /* Quand on active le panneau */  
+
+
+    /* Quand on active le panneau */
     #contractsPanel.active {
       display: flex;
       opacity: 1;
-      animation: fadeInPanel 0.3s ease-out;
     }
 
     .table-responsive {
@@ -664,12 +660,12 @@
 
     #autoHistoryList {
       width: 100%;
+
       flex-grow: 1;
       /* 🔥 */
-      min-height: 0;
-      /* 🔥 FIX flex overflow */
+      min-height: 300px;
+      /* 🔥 FORCE visibilité */
     }
-
 
     @keyframes fadeInPanel {
       from {
@@ -707,14 +703,10 @@
 
     /* --- 3. STRUCTURE DE LA TABLE (ISOLÉE) --- */
     .table-wrapper {
-      background: #ffffff;
-      padding: 10px;
-      width: 100%;
-      border-radius: 8px;
-
-      max-height: 55vh;
+      max-height: 50vh;
       /* 🔥 */
       overflow-y: auto;
+      overflow-x: auto;
     }
 
     #contractsPanel .trade-table {
@@ -867,12 +859,15 @@
     /* Donut Charts Styles */
     .donuts-wrapper {
       display: flex;
-      justify-content: space-around;
-      gap: 30px;
-      flex-shrink: 0;
-      /* 🔥 NE PAS ÉCRASER */
-    }
+      justify-content: center;
+      gap: 80px;
 
+      padding-top: 10px;
+      padding-bottom: 20px;
+
+      flex-shrink: 0;
+      /* 🔥 CRITIQUE */
+    }
 
     .donut-card {
       text-align: center;
