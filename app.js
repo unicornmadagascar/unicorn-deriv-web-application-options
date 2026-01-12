@@ -578,6 +578,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 3️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
         updateGlobalPnL();
+        updateDonutCharts();
         Openpositionlines(currentSeries);
       }
 
@@ -1921,6 +1922,53 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function updateDonutCharts() {
+    const profitPath = document.getElementById("circle-profit-path");
+    const lossPath = document.getElementById("circle-loss-path");
+    const profitText = document.getElementById("profit-percent-text");
+    const lossText = document.getElementById("loss-percent-text");
+    const profitValLabel = document.getElementById("profitvalue");
+    const lossValLabel = document.getElementById("lossvalue");
+
+    if (!profitPath || !lossPath) return;
+
+    let totalProfitSum = 0;
+    let totalLossSum = 0;
+
+    // 1. Calculer les sommes séparées
+    Object.values(activeContractsData).forEach(contract => {
+      const pnl = parseFloat(contract.profit || 0);
+      if (pnl > 0) {
+        totalProfitSum += pnl;
+      } else if (pnl < 0) {
+        totalLossSum += Math.abs(pnl); // On prend la valeur absolue pour le calcul
+      }
+    });
+
+    const combinedTotal = totalProfitSum + totalLossSum;
+
+    // 2. Calculer les pourcentages
+    let profitPercent = 0;
+    let lossPercent = 0;
+
+    if (combinedTotal > 0) {
+      profitPercent = Math.round((totalProfitSum / combinedTotal) * 100);
+      lossPercent = Math.round((totalLossSum / combinedTotal) * 100);
+    }
+
+    // 3. Mettre à jour les cercles (SVG stroke-dasharray)
+    // Format : "pourcentage, 100"
+    profitPath.setAttribute("stroke-dasharray", `${profitPercent}, 100`);
+    lossPath.setAttribute("stroke-dasharray", `${lossPercent}, 100`);
+
+    // 4. Mettre à jour les textes
+    profitText.textContent = `${profitPercent}%`;
+    lossText.textContent = `${lossPercent}%`;
+
+    profitValLabel.textContent = totalProfitSum.toFixed(2);
+    lossValLabel.textContent = totalLossSum.toFixed(2);
+  }
+
   function updateTradeTable() {
     const tbody = document.getElementById("autoTradeBody");
     const totalOpenSpan = document.getElementById("totalOpenContracts");
@@ -2499,10 +2547,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         case "proposal_open_contract":
           // C'est ici que la table reçoit ses données en temps réel
-          if (typeof updateTradeTable === 'function') {
-             updateTradeTable();
+          if (typeof updateTradeTable === 'function' && typeof updateDonutCharts === 'function' ||) {
+            updateDonutCharts()
+            updateTradeTable();
           }
-          break;
+          break;  
 
         case "portfolio":
           if (typeof handlePortfolio === 'function') {
@@ -2520,7 +2569,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       Openpositionlines(currentSeries);
-      updateGlobalPnL();
     };
 
     // --- ÉVÉNEMENT : FERMETURE ---
