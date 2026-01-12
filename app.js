@@ -2473,7 +2473,7 @@ document.addEventListener("DOMContentLoaded", () => {
         case "portfolio":
           if (typeof handlePortfolio === 'function') {
             handlePortfolio(data);  
-          }
+          }  
           break;
 
         case "sell":
