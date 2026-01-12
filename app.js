@@ -1934,15 +1934,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // On calcule le Win Rate (nombre de trades gagnants vs perdants)
     activeIds.forEach(id => {
-      const p = parseFloat(activeContracts[id].profit || 0);  
+      const p = parseFloat(activeContracts[id].profit || 0);
       if (p >= 0) countProfit++;
       else countLoss++;
     });
 
     const total = activeIds.length;
     const winRate = total > 0 ? (countProfit / total) * 100 : 0;
-    const lossRate = total > 0 ? (countLoss / total) * 100 : 0;  
-  
+    const lossRate = total > 0 ? (countLoss / total) * 100 : 0;
+
     // Mise à jour des cercles SVG
     profitPath.setAttribute("stroke-dasharray", `${winRate}, 100`);
     lossPath.setAttribute("stroke-dasharray", `${lossRate}, 100`);
@@ -1968,7 +1968,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (pElem) pElem.innerText = totalP.toFixed(2);
     if (lElem) lElem.innerText = totalL.toFixed(2);
   }
-  
+
   function updateTradeTable() {
     const tbody = document.getElementById("autoTradeBody");
     const totalOpenSpan = document.getElementById("totalOpenContracts");
@@ -2193,7 +2193,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wsplContracts.send(JSON.stringify({ proposal_open_contract: 1, contract_id: contract_id, subscribe: 1 }));
   }
 
-  function handleContractDetails(data) {
+  /* function handleContractDetails(data) {
     const c = data.proposal_open_contract;
     if (!c || !c.contract_id) return;
 
@@ -2268,6 +2268,70 @@ document.addEventListener("DOMContentLoaded", () => {
         profitCell.textContent = formattedProfit;
         profitCell.className = profitClass;
       }
+    }
+  } */
+
+  function handleContractDetails(data) {
+    const c = data.proposal_open_contract;
+    if (!c || !c.contract_id) return;
+
+    const autoTradeBody = document.getElementById("autoTradeBody");
+
+    // Supprime la ligne si le contrat est vendu
+    if (c.is_sold) {
+      const tr = autoTradeBody.querySelector(`[data-contract='${c.contract_id}']`);
+      if (tr) tr.remove();
+      console.log(`✅ Contract ${c.contract_id} closed.`);
+      return;
+    }
+
+    // Objet formaté pour ton tableau
+    const trade = {
+      time: new Date(c.date_start * 1000).toLocaleTimeString(),
+      contract_id: c.contract_id,
+      symbol: c.underlying || c.symbol,
+      type: c.contract_type === "MULTUP" ? "MULTUP" : "MULTDOWN",
+      stake: c.buy_price || 0,
+      multiplier: c.multiplier || "-",
+      entry_spot: c.entry_tick_display_value ?? "-",
+      tp: c.take_profit ?? "-",
+      sl: c.stop_loss ?? "-",
+      profit:
+        c.profit !== undefined
+          ? (c.profit >= 0 ? `+${c.profit.toFixed(2)}` : c.profit.toFixed(2))
+          : "-"
+    };
+
+    // Vérifie si déjà présent
+    let tr = autoTradeBody.querySelector(`[data-contract='${c.contract_id}']`);
+
+    if (!tr) {
+      // 🔹 Création d’une nouvelle ligne
+      tr = document.createElement("tr");
+      tr.dataset.contract = c.contract_id;
+      tr.innerHTML = `  
+        <td><input type="checkbox" class="rowSelect"></td>
+        <td>${trade.time}</td>
+        <td>${trade.contract_id}</td>
+        <td>${trade.symbol.toString()}</td>
+        <td class="${trade.type === "MULTUP" ? "MULTUP" : "MULTDOWN"}">${trade.type}</td>
+        <td>${Number(trade.stake).toFixed(2)}</td>
+        <td>${trade.multiplier}</td>
+        <td>${trade.entry_spot}</td>
+        <td>${trade.tp}</td>
+        <td>${trade.sl}</td>
+        <td style="color:${trade.profit >= 0 ? 'blue' : 'red'};">${(trade.profit > 0 ? "+" : "") + trade.profit}</td> 
+        <td>
+        <button class="deleteRowBtn"
+          style="background:#ef4444; border:none; color:white; border-radius:4px; padding:2px 6px; cursor:pointer;">
+          Close
+        </button>
+        </td>
+      `;
+      autoTradeBody.appendChild(tr);
+    } else {
+      // 🔄 Mise à jour en temps réel du profit
+      tr.cells[10].textContent = trade.profit;
     }
   }
 
@@ -2401,8 +2465,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         case "proposal_open_contract":
           // C'est ici que la table reçoit ses données en temps réel
-          if (typeof updateTradeTable === 'function') {
-            updateTradeTable();  
+          if (typeof handleContractDetails === 'function') {
+            handleContractDetails(data);
           }
           break;
 
@@ -4124,4 +4188,3 @@ document.addEventListener("DOMContentLoaded", () => {
   overlayCtx = createOverlayCanvas(chartInner, chart, () => drawEventLines(chart, overlayCtx, currentSeries));
 
 });
-  
