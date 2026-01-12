@@ -1873,7 +1873,7 @@ document.addEventListener("DOMContentLoaded", () => {
       selectedCheckboxes.forEach(cb => {
         const contractId = cb.value;
         // Appelle votre fonction de clôture individuelle
-        if (typeof closeSingleContract === 'function') {
+        if (typeof closeSingleContract === 'function') {  
           closeSingleContract(contractId);
         }
       });
