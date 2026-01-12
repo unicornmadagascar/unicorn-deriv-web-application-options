@@ -1941,8 +1941,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const total = activeIds.length;
     const winRate = total > 0 ? (countProfit / total) * 100 : 0;
-    const lossRate = total > 0 ? (countLoss / total) * 100 : 0;
-
+    const lossRate = total > 0 ? (countLoss / total) * 100 : 0;  
+  
     // Mise à jour des cercles SVG
     profitPath.setAttribute("stroke-dasharray", `${winRate}, 100`);
     lossPath.setAttribute("stroke-dasharray", `${lossRate}, 100`);
@@ -1958,7 +1958,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateDonutLabels() {
     let totalP = 0;
     let totalL = 0;
-    Object.values(activeContractsData || {}).forEach(c => {
+    Object.values(activeContracts || {}).forEach(c => {
       const val = parseFloat(c.profit || 0);
       if (val >= 0) totalP += val; else totalL += Math.abs(val);
     });
@@ -1981,11 +1981,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let totalProfit = 0;
     // On utilise activeContractsData (vérifiez bien le nom de votre objet global)
-    const activeIds = Object.keys(activeContractsData || {});
+    const activeIds = Object.keys(activeContracts || {});
 
     // 2. On génère les lignes
     activeIds.forEach(id => {
-      const contract = activeContractsData[id];
+      const contract = activeContracts[id];
       const profit = parseFloat(contract.profit || 0);
       totalProfit += profit;
 
