@@ -2464,7 +2464,7 @@ document.addEventListener("DOMContentLoaded", () => {
           break;  
 
         case "error":
-          console.error("❌ Erreur API :", data.error.message);     
+          console.error("❌ Erreur API :", data.error.message);       
           break;
       }
 
