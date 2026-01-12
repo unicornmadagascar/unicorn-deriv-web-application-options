@@ -595,7 +595,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
 
           updateGlobalPnL();
-          Openpositionlines(currentSeries);
           return;
         }
 
@@ -606,7 +605,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // 3️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
         // (Le calcul se basera sur les données mises à jour dans activeContractsData)
         updateGlobalPnL();
-        Openpositionlines(currentSeries);
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
@@ -2336,6 +2334,7 @@ document.addEventListener("DOMContentLoaded", () => {
           // C'est ici que la table reçoit ses données en temps réel
           if (typeof handleContractDetails === 'function') {
             handleContractDetails(data);
+
           }
           break;
 
@@ -2369,8 +2368,10 @@ document.addEventListener("DOMContentLoaded", () => {
     wsplContracts.onerror = (error) => {
       console.error("❌ Erreur WebSocket :", error);
       setUIStatus('offline');
-      wsplContracts.close(); // Déclenche onclose pour la reconnexion
+      wsplContracts.close(); // Déclenche onclose pour la reconnexion 
     };
+
+    Openpositionlines(currentSeries);
   }
 
   // 🔹 Fonction utilitaire : obtenir tous les comptes depuis l’URL (après authorization Deriv)
