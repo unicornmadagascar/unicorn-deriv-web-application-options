@@ -2472,7 +2472,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         case "portfolio":
           if (typeof handlePortfolio === 'function') {
-            handlePortfolio(data);
+            handlePortfolio(data);  
           }
           break;
 
