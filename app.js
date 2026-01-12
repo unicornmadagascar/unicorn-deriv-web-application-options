@@ -573,11 +573,12 @@ document.addEventListener("DOMContentLoaded", () => {
         } 
         // Contrat fermé → suppression
         else {
-            delete activeContracts[id];
+            delete activeContracts[id];  
         }
 
         // 3️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
         updateGlobalPnL();
+        Openpositionlines(currentSeries);
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
@@ -2454,9 +2455,9 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
 
         case "portfolio":
-          if (typeof handlePortfolio === 'function') {
-            handlePortfolio(data);
-          }
+          if (typeof handlePortfolio === 'function') {    
+            handlePortfolio(data);  
+          }    
           break;
 
         case "sell":
