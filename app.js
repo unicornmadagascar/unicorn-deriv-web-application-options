@@ -578,6 +578,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 3️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
         updateGlobalPnL();
+        updateTradeTable();
         updateDonutCharts();
         Openpositionlines(currentSeries);
       }
@@ -1936,7 +1937,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let totalLossSum = 0;
 
     // 1. Calculer les sommes séparées
-    Object.values(activeContractsData).forEach(contract => {
+    Object.values(activeContracts).forEach(contract => {
       const pnl = parseFloat(contract.profit || 0);
       if (pnl > 0) {
         totalProfitSum += pnl;
@@ -1980,11 +1981,11 @@ document.addEventListener("DOMContentLoaded", () => {
     tbody.innerHTML = "";
 
     let totalProfit = 0;
-    const activeIds = Object.keys(activeContractsData);
+    const activeIds = Object.keys(activeContracts);
 
     // 2. On boucle sur chaque contrat actif
     activeIds.forEach(id => {
-      const contract = activeContractsData[id];
+      const contract = activeContracts[id];
       const profit = parseFloat(contract.profit || 0);
       totalProfit += profit;
 
@@ -3941,17 +3942,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const panel = document.getElementById("contractsPanel");
 
     if (panel.style.display === "none" || panel.style.display === "") {
-      panel.style.display = "flex"; // Affiche le panneau
+      panel.style.display = "flex";
 
-      // IMPORTANT : On injecte le squelette de la table s'il n'existe pas
-      if (document.getElementById("autoHistoryList").innerHTML.trim() === "") {
-        initTable();
-      }
+      // On injecte la structure de la table
+      initTable();
 
-      // IMPORTANT : On remplit la table avec les données actuelles
+      // ON REMPLIT IMMÉDIATEMENT AVEC LES DONNÉES
       updateTradeTable();
+      updateDonutCharts();
 
-      this.innerText = "📄 Hide Open Contracts";  
+      this.innerText = "📄 Hide Open Contracts";
     } else {
       panel.style.display = "none";
       this.innerText = "📄 Show Open Contracts";
