@@ -3841,9 +3841,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (distance < threshold) {
         // Optionnel : confirmation avant fermeture  
-        if (confirm(`Voulez-vous fermer le contrat ${item.id} ?`)) {
+        if (confirm(`Voulez-vous fermer le contrat ${item.id} ?`)) {  
           closeSingleContract(item.id);
-        }
+        }   
       }     
     });
   });   
