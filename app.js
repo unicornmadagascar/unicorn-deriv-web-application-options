@@ -717,7 +717,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5️⃣ Flash visuel
     if (currentTotal !== lastTotalPnL) {
-      container.style.transition = "box-shadow 0.2s ease";
+      container.style.transition = "box-shadow 0.2s ease";  
       container.style.boxShadow =
         currentTotal > lastTotalPnL
           ? "0 0 15px rgba(0,255,163,0.5)"
