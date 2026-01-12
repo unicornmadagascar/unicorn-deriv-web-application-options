@@ -2368,7 +2368,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wsplContracts.onerror = (error) => {
       console.error("❌ Erreur WebSocket :", error);
       setUIStatus('offline');
-      wsplContracts.close(); // Déclenche onclose pour la reconnexion 
+      wsplContracts.close(); // Déclenche onclose pour la reconnexion   
     };
 
     Openpositionlines(currentSeries); 
