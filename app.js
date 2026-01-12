@@ -3840,7 +3840,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const threshold = (chart.priceScale('right').height() / 1000);
 
       if (distance < threshold) {
-        // Optionnel : confirmation avant fermeture
+        // Optionnel : confirmation avant fermeture  
         if (confirm(`Voulez-vous fermer le contrat ${item.id} ?`)) {
           closeSingleContract(item.id);
         }
