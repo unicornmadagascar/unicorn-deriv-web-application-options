@@ -3813,7 +3813,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Subscribing Tables  S
       connectDeriv_table();
     }
-  }, 300);
+  }, 300);  
 
   // Gestion du "Select All"    
   /* const selectAll = document.getElementById("selectAll");
