@@ -99,6 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let lastSeenTradeId = null;
   let historicalConn = null;
   let closedTradesHistory = [];
+  let activeContracts = {};
   // ================== x ==================
 
   let wsReady = false;
@@ -566,26 +567,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const c = data.proposal_open_contract;
         const id = c.contract_id;
 
-        // 1️⃣ CAS DU CONTRAT FERMÉ (Vendu / Expiré)
-        if (c.is_settled || c.status === "sold" || c.exit_tick) {
-          // Suppression des données du contrat actif
-          delete activeContractsData[id];
-
-          // Si plus aucun contrat, on reset le type global
-          if (Object.keys(activeContractsData).length === 0) {
-            currentContractTypeGlobal = null;
-          }
-
-          updateGlobalPnL();
-          return;
+        // Contrat encore ouvert
+        if (c.is_sold === 0) {
+            activeContracts[id] = Number(c.profit || 0);
+        } 
+        // Contrat fermé → suppression
+        else {
+            delete activeContracts[id];
         }
 
-        // 2️⃣ CAS DU CONTRAT OUVERT
-        activeContractsData[id] = c;
-        currentContractTypeGlobal = c.contract_type; // Indispensable pour le REVERSE
-
         // 3️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
-        // (Le calcul se basera sur les données mises à jour dans activeContractsData)
         updateGlobalPnL();
       }
 
@@ -688,15 +679,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const arrowSpan = document.getElementById("pnl-arrow");
     const closeAllBtn = document.getElementById("closeAll");
 
-    // Vérification de l'existence des éléments et des données
     if (!container || !pnlSpan || !arrowSpan) return;
 
-    // Vérifier si activeContractsData existe pour éviter les erreurs "undefined"
-    if (typeof activeContractsData === 'undefined') return;
+    const activeIds = Object.keys(activeContracts);
 
-    const activeIds = Object.keys(activeContractsData);
-
-    // 1. Gestion de la visibilité
+    // 1️⃣ Visibilité
     if (activeIds.length === 0) {
       container.style.display = "none";
       lastTotalPnL = 0;
@@ -706,17 +693,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       return;
     } else {
-      container.style.display = "flex"; // S'assure qu'il est visible
+      container.style.display = "flex";
     }
 
-    // 2. Calcul du profit total
+    // 2️⃣ Calcul PnL total
     let currentTotal = 0;
     activeIds.forEach(id => {
-      const val = activeContractsData[id].profit;
-      currentTotal += parseFloat(val || 0);
+      currentTotal += activeContracts[id];
     });
 
-    // 3. Déterminer la tendance (Flèche)
+    // 3️⃣ Flèche tendance
     if (currentTotal > lastTotalPnL) {
       arrowSpan.innerText = " ▲";
       arrowSpan.style.color = "#00ffa3";
@@ -725,24 +711,24 @@ document.addEventListener("DOMContentLoaded", () => {
       arrowSpan.style.color = "#ff3d60";
     }
 
-    // 4. Mise à jour du texte et de la couleur du PnL
+    // 4️⃣ Affichage PnL
     pnlSpan.innerText = currentTotal.toFixed(2);
     pnlSpan.style.color = currentTotal >= 0 ? "#00ffa3" : "#ff3d60";
 
-    // 5. Animation Flash du container
+    // 5️⃣ Flash visuel
     if (currentTotal !== lastTotalPnL) {
-      const isWinning = currentTotal > lastTotalPnL;
       container.style.transition = "box-shadow 0.2s ease";
-      container.style.boxShadow = isWinning
-        ? "0 0 15px rgba(0, 255, 163, 0.5)"
-        : "0 0 15px rgba(255, 61, 96, 0.5)";
+      container.style.boxShadow =
+        currentTotal > lastTotalPnL
+          ? "0 0 15px rgba(0,255,163,0.5)"
+          : "0 0 15px rgba(255,61,96,0.5)";
 
       setTimeout(() => {
         container.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
       }, 200);
     }
 
-    // 6. Animation du bouton Close All
+    // 6️⃣ Bouton Close All
     if (closeAllBtn) {
       const count = activeIds.length;
       if (count > 5) {
@@ -754,9 +740,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 7. Sauvegarder pour le prochain tick
+    // 7️⃣ Sauvegarde
     lastTotalPnL = currentTotal;
   }
+
 
   /**
  * Met à jour la source de données pour les indicateurs (ZigZag, MA)
