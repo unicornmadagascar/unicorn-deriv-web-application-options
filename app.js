@@ -578,6 +578,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 3️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
         updateGlobalPnL();
+        updateTotalStats();
         updateTradeTable();
         updateDonutCharts();
         Openpositionlines(currentSeries);
@@ -2439,7 +2440,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On utilise le Win Rate pour animer le cercle global
     updateCircleElement('circle-pl-path', 'pl-percent-text', winRate);
 
-    const netPL = totalProfitVal - totalLossVal;
+    const netPL = totalProfitVal - totalLossVal;   
     const plValElem = document.getElementById('plvalue');
     if (plValElem) {
       const color = netPL >= 0 ? "#10b981" : "#ef4444";
