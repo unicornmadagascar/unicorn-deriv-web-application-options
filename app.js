@@ -629,7 +629,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wsOpenLines = new WebSocket(WS_URL);
 
     wsOpenLines.onopen = () => {
-      wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));
+      wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));   
     };
 
     wsOpenLines.onmessage = (msg) => {
