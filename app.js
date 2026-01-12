@@ -3844,7 +3844,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (confirm(`Voulez-vous fermer le contrat ${item.id} ?`)) {  
           closeSingleContract(item.id);
         }   
-      }     
+      }      
     });
   });   
 
