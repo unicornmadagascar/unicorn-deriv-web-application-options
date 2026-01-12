@@ -3846,7 +3846,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     });
-  });
+  });   
 
   // Gestion du "Select All"    
   /* const selectAll = document.getElementById("selectAll");
