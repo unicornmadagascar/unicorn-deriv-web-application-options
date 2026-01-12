@@ -2317,7 +2317,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setUIStatus('online'); // La pastille passe au vert
 
       // Authentification immédiate
-      wsplContracts.send(JSON.stringify({ authorize: TOKEN }));
+      wsplContracts.send(JSON.stringify({ authorize: TOKEN }));  
     };
 
     // --- ÉVÉNEMENT : RÉCEPTION DES MESSAGES ---
