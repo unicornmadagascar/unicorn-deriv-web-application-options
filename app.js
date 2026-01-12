@@ -404,23 +404,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return style_type;
   }
 
-  function Payloadforsubscription(currentSymbol, currentInterval, currentChartType) {
-    if (!currentSymbol || currentSymbol === null) return;
-
-    const payload4subscription = {
-      ticks_history: currentSymbol,
-      adjust_start_time: 1,
-      style: styleType(currentChartType),
-      granularity: convertTF(currentInterval),
-      count: 750,
-      subscribe: 1,
-      end: "latest",
-      start: 1
-    }
-
-    return payload4subscription;
-  }
-
   function convertTF(currentInterval) {
     switch (currentInterval) {
       case "1m": return 60;
@@ -459,12 +442,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!symbol || !interval || !chartType) {
       throw new Error("Paramètres manquants pour loadSymbol");
+      return;
     }
 
     currentSessionId++;
     const thisSessionId = currentSessionId;
-
-    if (!symbol) return;
+    currentSymbol = symbol;
 
     // --- NETTOYAGE COMPLET ---
     if (ws) {
@@ -3912,29 +3895,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, 300);
 
-  chart.subscribeClick((param) => {
-    // On vérifie si l'utilisateur a cliqué sur l'échelle de prix (à droite)
-    if (!param.point || param.point.x === undefined) return;
-
-    // Seuil de détection (plus ou moins 5 pixels autour du prix de la ligne)
-    const coordinateToPrice = currentSeries.coordinateToPrice(param.point.y);
-
-    Object.values(priceLines4openlines).forEach(item => {
-      const distance = Math.abs(coordinateToPrice - item.entryPrice);
-
-      // Si le clic est très proche du prix d'une ligne active
-      // Nous calculons un seuil basé sur la volatilité visible
-      const threshold = (chart.priceScale('right').height() / 1000);
-
-      if (distance < threshold) {
-        // Optionnel : confirmation avant fermeture  
-        if (confirm(`Voulez-vous fermer le contrat ${item.id} ?`)) {
-          closeSingleContract(item.id);
-        }
-      }
-    });
-  });
-
   // Gestion du "Select All"    
   /* const selectAll = document.getElementById("selectAll");
   selectAll.addEventListener("change", () => {
@@ -4074,10 +4034,10 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll(".interval-btn").forEach(b => b.classList.remove("active"));
       // Ajoute la classe active au bouton cliqué    
       e.target.classList.add("active");
-    });
-  });
+    }); 
+  }); 
 
-  // === Changement de symbole  ===
+  // === Changement de symbole  ===  
   document.querySelectorAll(".symbol-item").forEach(btn => {
     btn.addEventListener("click", async (e) => {
       currentSymbol = e.target.dataset.symbol.trim();
