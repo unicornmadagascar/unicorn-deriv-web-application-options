@@ -719,7 +719,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentTotal !== lastTotalPnL) {
       container.style.transition = "box-shadow 0.2s ease";  
       container.style.boxShadow =
-        currentTotal > lastTotalPnL
+        currentTotal > lastTotalPnL  
           ? "0 0 15px rgba(0,255,163,0.5)"
           : "0 0 15px rgba(255,61,96,0.5)";
 
