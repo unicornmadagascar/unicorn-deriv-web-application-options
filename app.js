@@ -1916,8 +1916,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const masterCb = document.getElementById('selectAll');
     if (masterCb) {
       masterCb.addEventListener('change', function () {
-        toggleSelectAll(this); // "this" représente ici le masterCb
-      });
+        //toggleSelectAll(this); // "this" représente ici le masterCb
+      });  
     }
   }
 
