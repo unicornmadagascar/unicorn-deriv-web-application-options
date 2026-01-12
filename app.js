@@ -704,31 +704,34 @@ document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("pnl-container");
     const pnlSpan = document.getElementById("total-pnl");
     const arrowSpan = document.getElementById("pnl-arrow");
-    const closeAllBtn = document.getElementById("closeAll"); // Ajout de la référence au bouton
+    const closeAllBtn = document.getElementById("closeAll");
 
+    // Vérification de l'existence des éléments et des données
     if (!container || !pnlSpan || !arrowSpan) return;
+
+    // Vérifier si activeContractsData existe pour éviter les erreurs "undefined"
+    if (typeof activeContractsData === 'undefined') return;
 
     const activeIds = Object.keys(activeContractsData);
 
-    // 1. Gestion de la visibilité et Reset si 0 positions
+    // 1. Gestion de la visibilité
     if (activeIds.length === 0) {
       container.style.display = "none";
       lastTotalPnL = 0;
-
-      // Reset du bouton Close All quand tout est fermé
       if (closeAllBtn) {
         closeAllBtn.style.animation = "none";
         closeAllBtn.innerText = "CLOSE ALL";
       }
       return;
     } else {
-      container.style.display = "flex";
+      container.style.display = "flex"; // S'assure qu'il est visible
     }
 
     // 2. Calcul du profit total
     let currentTotal = 0;
     activeIds.forEach(id => {
-      currentTotal += parseFloat(activeContractsData[id].profit || 0);
+      const val = activeContractsData[id].profit;
+      currentTotal += parseFloat(val || 0);
     });
 
     // 3. Déterminer la tendance (Flèche)
@@ -757,7 +760,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 200);
     }
 
-    // 6. NOUVEAU : Animation du bouton Close All
+    // 6. Animation du bouton Close All
     if (closeAllBtn) {
       const count = activeIds.length;
       if (count > 5) {
@@ -1873,7 +1876,7 @@ document.addEventListener("DOMContentLoaded", () => {
       selectedCheckboxes.forEach(cb => {
         const contractId = cb.value;
         // Appelle votre fonction de clôture individuelle
-        if (typeof closeSingleContract === 'function') {  
+        if (typeof closeSingleContract === 'function') {
           closeSingleContract(contractId);
         }
       });
