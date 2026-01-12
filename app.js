@@ -637,7 +637,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     wsOpenLines.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
+      const data = JSON.parse(msg.data);  
 
       // Étape 1 : Authentification
       if (data.msg_type === "authorize") {
