@@ -2554,7 +2554,7 @@ document.addEventListener("DOMContentLoaded", () => {
           break;  
 
         case "portfolio":
-          if (typeof handlePortfolio === 'function') {
+          if (typeof handlePortfolio === 'function') {  
             handlePortfolio(data);
           }
           break;
