@@ -2321,7 +2321,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateCircleElement('circle-pl-path', 'pl-percent-text', winRate);
 
     const netPL = totalProfitVal - totalLossVal;
-    const plValElem = document.getElementById('plvalue');
+    const plValElem = document.getElementById('plvalue');  
     if (plValElem) {
       const color = netPL >= 0 ? "#10b981" : "#ef4444";
       const sign = netPL >= 0 ? "+" : "";
