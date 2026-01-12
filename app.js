@@ -671,7 +671,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const line = currentSeries.createPriceLine({
             price: entryPrice,
             color,   
-            lineWidth: 2,
+            lineWidth: 2,  
             lineStyle: LightweightCharts.LineStyle.Dashed,
             axisLabelVisible: true,
             title: `${type} @ ${entryPrice.toFixed(2)}`,
