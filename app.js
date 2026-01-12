@@ -689,7 +689,7 @@ document.addEventListener("DOMContentLoaded", () => {
       lastTotalPnL = 0;  
       if (closeAllBtn) {
         closeAllBtn.style.animation = "none";
-        closeAllBtn.innerText = "CLOSE ALL";
+        closeAllBtn.innerText = "Close All";
       }
       return;
     } else {
@@ -733,10 +733,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const count = activeIds.length;
       if (count > 5) {
         closeAllBtn.style.animation = "pulse-red 1s infinite";
-        closeAllBtn.innerText = `CLOSE ALL (${count})`;
-      } else {
+        closeAllBtn.innerText = `Close All (${count})`;
+      } else {  
         closeAllBtn.style.animation = "none";
-        closeAllBtn.innerText = "CLOSE ALL";
+        closeAllBtn.innerText = "Close All";
       }
     }
 
