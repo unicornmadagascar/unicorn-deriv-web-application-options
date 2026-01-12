@@ -578,10 +578,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 3️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
         updateGlobalPnL();
-        updateTotalStats();
         updateTradeTable();
-        updateDonutCharts();
-        Openpositionlines(currentSeries);
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
@@ -747,7 +744,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 7️⃣ Sauvegarde
     lastTotalPnL = currentTotal;
   }
-  
+
   /**
  * Met à jour la source de données pour les indicateurs (ZigZag, MA)   
  */
@@ -1928,48 +1925,50 @@ document.addEventListener("DOMContentLoaded", () => {
     const lossPath = document.getElementById("circle-loss-path");
     const profitText = document.getElementById("profit-percent-text");
     const lossText = document.getElementById("loss-percent-text");
-    const profitValLabel = document.getElementById("profitvalue");
-    const lossValLabel = document.getElementById("lossvalue");
 
     if (!profitPath || !lossPath) return;
 
-    let totalProfitSum = 0;
-    let totalLossSum = 0;
+    let countProfit = 0;
+    let countLoss = 0;
+    const activeIds = Object.keys(activeContracts || {});
 
-    // 1. Calculer les sommes séparées
-    Object.values(activeContracts).forEach(contract => {
-      const pnl = parseFloat(contract.profit || 0);
-      if (pnl > 0) {
-        totalProfitSum += pnl;
-      } else if (pnl < 0) {
-        totalLossSum += Math.abs(pnl); // On prend la valeur absolue pour le calcul
-      }
+    // On calcule le Win Rate (nombre de trades gagnants vs perdants)
+    activeIds.forEach(id => {
+      const p = parseFloat(activeContracts[id].profit || 0);
+      if (p >= 0) countProfit++;
+      else countLoss++;
     });
 
-    const combinedTotal = totalProfitSum + totalLossSum;
+    const total = activeIds.length;
+    const winRate = total > 0 ? (countProfit / total) * 100 : 0;
+    const lossRate = total > 0 ? (countLoss / total) * 100 : 0;
 
-    // 2. Calculer les pourcentages
-    let profitPercent = 0;
-    let lossPercent = 0;
+    // Mise à jour des cercles SVG
+    profitPath.setAttribute("stroke-dasharray", `${winRate}, 100`);
+    lossPath.setAttribute("stroke-dasharray", `${lossRate}, 100`);
 
-    if (combinedTotal > 0) {
-      profitPercent = Math.round((totalProfitSum / combinedTotal) * 100);
-      lossPercent = Math.round((totalLossSum / combinedTotal) * 100);
-    }
+    // Mise à jour des pourcentages au centre
+    if (profitText) profitText.textContent = `${Math.round(winRate)}%`;
+    if (lossText) lossText.textContent = `${Math.round(lossRate)}%`;
 
-    // 3. Mettre à jour les cercles (SVG stroke-dasharray)
-    // Format : "pourcentage, 100"
-    profitPath.setAttribute("stroke-dasharray", `${profitPercent}, 100`);
-    lossPath.setAttribute("stroke-dasharray", `${lossPercent}, 100`);
-
-    // 4. Mettre à jour les textes²
-    profitText.textContent = `${profitPercent}%`;
-    lossText.textContent = `${lossPercent}%`;
-
-    profitValLabel.textContent = totalProfitSum.toFixed(2);
-    lossValLabel.textContent = totalLossSum.toFixed(2);
+    // Mise à jour des valeurs en monnaie sous les cercles
+    updateDonutLabels();
   }
 
+  function updateDonutLabels() {
+    let totalP = 0;
+    let totalL = 0;
+    Object.values(activeContractsData || {}).forEach(c => {
+      const val = parseFloat(c.profit || 0);
+      if (val >= 0) totalP += val; else totalL += Math.abs(val);
+    });
+
+    const pElem = document.getElementById("profitvalue");
+    const lElem = document.getElementById("lossvalue");
+    if (pElem) pElem.innerText = totalP.toFixed(2);
+    if (lElem) lElem.innerText = totalL.toFixed(2);
+  }
+  
   function updateTradeTable() {
     const tbody = document.getElementById("autoTradeBody");
     const totalOpenSpan = document.getElementById("totalOpenContracts");
@@ -1977,25 +1976,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!tbody) return;
 
-    // 1. On vide le tableau avant de le reconstruire
+    // 1. On vide le tableau
     tbody.innerHTML = "";
 
     let totalProfit = 0;
-    const activeIds = Object.keys(activeContracts);
+    // On utilise activeContractsData (vérifiez bien le nom de votre objet global)
+    const activeIds = Object.keys(activeContractsData || {});
 
-    // 2. On boucle sur chaque contrat actif
+    // 2. On génère les lignes
     activeIds.forEach(id => {
-      const contract = activeContracts[id];
+      const contract = activeContractsData[id];
       const profit = parseFloat(contract.profit || 0);
       totalProfit += profit;
 
-      // Définition des classes de couleur
       const profitClass = profit >= 0 ? "text-success" : "text-danger";
-      const typeClass = contract.type.toLowerCase().includes('buy') ||
-        contract.type.toLowerCase().includes('long') ||
-        contract.type.toLowerCase().includes('call') ? "type-buy" : "type-sell";
+      const typeClass = contract.type.toLowerCase().match(/buy|long|call/) ? "type-buy" : "type-sell";
 
-      // 3. Création de la ligne (Notez l'ID row-${id})
       const row = document.createElement("tr");
       row.id = `row-${id}`;
 
@@ -2010,9 +2006,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${parseFloat(contract.entry || 0).toFixed(5)}</td>
             <td style="color: #10b981;">${contract.tp || '-'}</td>
             <td style="color: #ef4444;">${contract.sl || '-'}</td>
-            <td class="${profitClass}" style="font-weight: 800; font-size: 0.95rem;">
-                ${profit.toFixed(2)}
-            </td>
+            <td class="${profitClass}" style="font-weight: 800; font-size: 0.95rem;">${profit.toFixed(2)}</td>
             <td>
                 <button class="action-close" data-contract-id="${id}" title="Fermer la position">✖</button>
             </td>
@@ -2021,25 +2015,15 @@ document.addEventListener("DOMContentLoaded", () => {
       tbody.appendChild(row);
     });
 
-    // 4. Mise à jour des compteurs du pied de tableau
-    if (totalOpenSpan) {
-      totalOpenSpan.innerText = activeIds.length;
-    }
-
+    // 3. Mise à jour des stats du footer
+    if (totalOpenSpan) totalOpenSpan.innerText = activeIds.length;
     if (totalFloatingSpan) {
-      totalFloatingSpan.innerText = `${totalProfit.toFixed(2)} USD`;
-
-      // Change la couleur du total global
-      if (totalProfit > 0) {
-        totalFloatingSpan.className = "total-positive"; // Vert
-      } else if (totalProfit < 0) {
-        totalFloatingSpan.className = "total-negative"; // Rouge
-      } else {
-        totalFloatingSpan.className = "total-neutral";  // Gris
-      }
+      totalFloatingSpan.innerText = `${totalProfit >= 0 ? "+" : ""}${totalProfit.toFixed(2)} USD`;
+      totalFloatingSpan.className = totalProfit > 0 ? "total-positive" : (totalProfit < 0 ? "total-negative" : "total-neutral");
     }
 
-    updateTotalStats();
+    // 4. Lancement automatique de la mise à jour des cercles
+    updateDonutCharts();
   }
 
   // DELETE SELECTED ROWS
@@ -2285,9 +2269,6 @@ document.addEventListener("DOMContentLoaded", () => {
         profitCell.className = profitClass;
       }
     }
-
-    // --- TRÈS IMPORTANT : On rafraîchit les stats et les cercles à chaque tic ---
-    updateTotalStats();
   }
 
   /**
@@ -2325,156 +2306,6 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.disabled = false;
         btn.style.opacity = "1";
       }
-    }
-  }
-
-  /**
- * Calcule les statistiques globales en scannant le tableau et déclenche la mise à jour des graphiques
- */
-  function updateTotalStats() {
-    const rows = document.querySelectorAll("#autoTradeBody tr");
-    const totalProfitSpan = document.getElementById("totalFloatingProfit");
-    const totalCountSpan = document.getElementById("totalOpenContracts");
-
-    let totalProfit = 0;
-    const count = rows.length;
-
-    // 1. Parcours des lignes pour calculer le profit flottant total
-    rows.forEach(row => {
-      const pCell = row.querySelector('[id^="profit-"]');
-      if (pCell) {
-        // Nettoyage précis : on ne garde que le signe moins, les chiffres et le point décimal
-        const val = parseFloat(pCell.textContent.replace(/[^-0-9.]/g, '')) || 0;
-        totalProfit += val;
-      }
-    });
-
-    // 2. Mise à jour du compteur de contrats ouverts
-    if (totalCountSpan) {
-      totalCountSpan.textContent = count;
-    }
-
-    // 3. Mise à jour de l'affichage du profit total
-    if (totalProfitSpan) {
-      const currency = typeof CURRENCY !== 'undefined' ? CURRENCY : 'USD';
-      const sign = totalProfit >= 0 ? "+" : "";
-
-      // Injection du texte avec mise en forme
-      totalProfitSpan.textContent = `${sign}${totalProfit.toFixed(2)} ${currency}`;
-
-      // Gestion dynamique des classes CSS pour les couleurs
-      // On retire les anciennes classes pour éviter les conflits
-      totalProfitSpan.classList.remove('total-pos', 'total-neg', 'total-neutral');
-
-      if (totalProfit > 0) {
-        totalProfitSpan.classList.add('total-pos');
-      } else if (totalProfit < 0) {
-        totalProfitSpan.classList.add('total-neg');
-      } else {
-        totalProfitSpan.classList.add('total-neutral');
-      }
-    }
-
-    // 4. SYNCHRONISATION : On appelle les graphiques circulaires pour qu'ils s'ajustent
-    if (typeof updateCircularCharts === 'function') {
-      updateCircularCharts();
-    }
-  }
-
-  /**
-  * Synchronise les graphiques circulaires SVG avec les données réelles du tableau
-  */
-  function updateCircularCharts() {
-    // 1. Sélection des lignes du corps du tableau uniquement
-    const rows = document.querySelectorAll("#autoTradeBody tr");
-
-    let countProfit = 0;
-    let countLoss = 0;
-    let totalProfitVal = 0;
-    let totalLossVal = 0;  
-
-    // 2. Analyse des lignes pour extraire les données
-    rows.forEach(row => {
-      // On cherche la cellule de profit via son ID (format : profit-12345)
-      const profitCell = row.querySelector('[id^="profit-"]');
-
-      if (profitCell) {
-        // Nettoyage robuste du texte (garde uniquement chiffres, points et signes moins)
-        const rawText = profitCell.textContent.replace(/[^+-.0-9]/g, '');
-        const val = parseFloat(rawText);
-
-        if (!isNaN(val)) {
-          if (val >= 0) {
-            countProfit++;
-            totalProfitVal += val;
-          } else {
-            countLoss++;
-            totalLossVal += Math.abs(val); // On stocke la perte en valeur absolue
-          }
-        }
-      }
-    });
-
-    const totalTrades = countProfit + countLoss;
-
-    // 3. Calcul des taux (Win Rate / Loss Rate)
-    const winRate = totalTrades > 0 ? (countProfit / totalTrades) * 100 : 0;
-    const lossRate = totalTrades > 0 ? (countLoss / totalTrades) * 100 : 0;
-    const currency = typeof CURRENCY !== 'undefined' ? CURRENCY : 'USD';
-
-    // 4. Mise à jour visuelle des éléments
-
-    // --- Jauge PROFIT ---
-    updateCircleElement('circle-profit-path', 'profit-percent-text', winRate);
-    const pValElem = document.getElementById('profitvalue');
-    if (pValElem) {
-      pValElem.innerHTML = `${totalProfitVal.toFixed(2)} <span class="currency">${currency}</span>`;
-    }
-
-    // --- Jauge LOSS ---
-    updateCircleElement('circle-loss-path', 'loss-percent-text', lossRate);
-    const lValElem = document.getElementById('lossvalue');
-    if (lValElem) {
-      lValElem.innerHTML = `${totalLossVal.toFixed(2)} <span class="currency">${currency}</span>`;
-    }
-
-    // --- Jauge GLOBAL P/L (Net) ---
-    // On utilise le Win Rate pour animer le cercle global
-    updateCircleElement('circle-pl-path', 'pl-percent-text', winRate);
-
-    const netPL = totalProfitVal - totalLossVal;   
-    const plValElem = document.getElementById('plvalue');
-    if (plValElem) {
-      const color = netPL >= 0 ? "#10b981" : "#ef4444";
-      const sign = netPL >= 0 ? "+" : "";
-      plValElem.innerHTML = `${sign}${netPL.toFixed(2)} <span class="currency">${currency}</span>`;
-      plValElem.style.color = color;
-    }
-  }
-
-  /**
- * Anime un arc de cercle SVG et met à jour son texte central
- */
-  function updateCircleElement(pathId, textId, percentage) {
-    const path = document.getElementById(pathId);
-    const text = document.getElementById(textId);
-
-    // 1. Sécurité : On vérifie si le pourcentage est un nombre valide
-    const validPercent = isNaN(percentage) ? 0 : percentage;
-
-    if (path) {
-      // Bloque entre 0 et 100 pour éviter les bugs d'affichage SVG (ex: traits qui dépassent)
-      const safePercent = Math.min(Math.max(validPercent, 0), 100);
-
-      // Mise à jour de l'attribut stroke-dasharray
-      // Le format est : "longueur_du_trait, longueur_du_vide"
-      // On utilise toFixed(1) pour une précision visuelle fluide sans surcharger le DOM
-      path.setAttribute('stroke-dasharray', `${safePercent.toFixed(1)}, 100`);
-    }
-
-    if (text) {
-      // On utilise Math.round pour éviter d'afficher des décimales dans le petit texte central
-      text.textContent = `${Math.round(validPercent)}%`;
     }
   }
 
@@ -2570,8 +2401,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         case "proposal_open_contract":
           // C'est ici que la table reçoit ses données en temps réel
-          if (typeof updateTradeTable === 'function' && typeof updateDonutCharts === 'function') {
-            updateDonutCharts()
+          if (typeof updateTradeTable === 'function') {
             updateTradeTable();
           }
           break;
