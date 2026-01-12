@@ -1887,7 +1887,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    const panicBtn = document.getElementById("panicCloseAll");
+    const panicBtn = document.getElementById("panicCloseAll");  
     if (panicBtn) {
       panicBtn.addEventListener("click", panicCloseAll);
     }
