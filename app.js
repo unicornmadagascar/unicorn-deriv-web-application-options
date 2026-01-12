@@ -749,7 +749,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /**
- * Met à jour la source de données pour les indicateurs (ZigZag, MA)
+ * Met à jour la source de données pour les indicateurs (ZigZag, MA)   
  */
   function updateIndicatorData(time, bar) {
     if (!bar || isNaN(bar.close)) return; // Sécurité : évite d'ajouter des données corrompues
