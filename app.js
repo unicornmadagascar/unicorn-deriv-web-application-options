@@ -569,11 +569,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Contrat encore ouvert
         if (c.is_sold === 0) {
-            activeContracts[id] = Number(c.profit || 0);
-        } 
+          activeContracts[id] = Number(c.profit || 0);
+        }
         // Contrat fermé → suppression
         else {
-            delete activeContracts[id];  
+          delete activeContracts[id];
         }
 
         // 3️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
@@ -687,7 +687,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1️⃣ Visibilité
     if (activeIds.length === 0) {
       container.style.display = "none";
-      lastTotalPnL = 0;  
+      lastTotalPnL = 0;
       if (closeAllBtn) {
         closeAllBtn.style.animation = "none";
         closeAllBtn.innerText = "Close All";
@@ -717,10 +717,10 @@ document.addEventListener("DOMContentLoaded", () => {
     pnlSpan.style.color = currentTotal >= 0 ? "#00ffa3" : "#ff3d60";
 
     // 5️⃣ Flash visuel
-    if (currentTotal !== lastTotalPnL) {  
-      container.style.transition = "box-shadow 0.2s ease";  
+    if (currentTotal !== lastTotalPnL) {
+      container.style.transition = "box-shadow 0.2s ease";
       container.style.boxShadow =
-        currentTotal > lastTotalPnL  
+        currentTotal > lastTotalPnL
           ? "0 0 15px rgba(0,255,163,0.5)"
           : "0 0 15px rgba(255,61,96,0.5)";
 
@@ -735,8 +735,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (count > 5) {
         closeAllBtn.style.animation = "pulse-red 1s infinite";
         closeAllBtn.innerText = `Close All (${count})`;
-      } else {  
-        closeAllBtn.style.animation = "none";  
+      } else {
+        closeAllBtn.style.animation = "none";
         closeAllBtn.innerText = "Close All";
       }
     }
@@ -1917,7 +1917,57 @@ document.addEventListener("DOMContentLoaded", () => {
     if (masterCb) {
       masterCb.addEventListener('change', function () {
         toggleSelectAll(this); // "this" représente ici le masterCb
-      });  
+      });
+    }
+  }
+
+  function updateTradeTable() {
+    const tbody = document.getElementById("autoTradeBody");
+    const totalOpenSpan = document.getElementById("totalOpenContracts");
+    const totalFloatingSpan = document.getElementById("totalFloatingProfit");
+
+    if (!tbody) return;
+
+    // 1. On vide la table actuelle
+    tbody.innerHTML = "";
+
+    let totalProfit = 0;
+    const activeIds = Object.keys(activeContracts);
+
+    // 2. On génère chaque ligne
+    activeIds.forEach(id => {
+      const contract = activeContracts[id];
+      const profit = parseFloat(contract.profit || 0);
+      totalProfit += profit;
+
+      const profitClass = profit >= 0 ? "text-success" : "text-danger"; // Assurez-vous d'avoir ces classes CSS
+      const typeClass = contract.type.toLowerCase().includes('buy') || contract.type.toLowerCase().includes('long') ? "type-buy" : "type-sell";
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+            <td><input type="checkbox" class="row-checkbox" data-id="${id}"></td>
+            <td>${contract.time || '--:--'}</td>
+            <td style="font-family: monospace; font-size: 0.85rem;">#${id.slice(-6)}</td>
+            <td><strong>${contract.symbol}</strong></td>
+            <td><span class="badge ${typeClass}">${contract.type}</span></td>
+            <td>${parseFloat(contract.stake).toFixed(2)}</td>
+            <td>x${contract.multiplier || '1'}</td>
+            <td>${parseFloat(contract.entry).toFixed(2)}</td>
+            <td>${contract.tp || '-'}</td>
+            <td>${contract.sl || '-'}</td>
+            <td class="${profitClass}" style="font-weight: bold;">${profit.toFixed(2)}</td>
+            <td>
+                <button onclick="closeContract('${id}')" class="btn-close-single">✕</button>
+            </td>
+        `;
+      tbody.appendChild(row);
+    });
+
+    // 3. Mise à jour des compteurs du bas
+    if (totalOpenSpan) totalOpenSpan.innerText = activeIds.length;
+    if (totalFloatingSpan) {
+      totalFloatingSpan.innerText = `${totalProfit.toFixed(2)} USD`;
+      totalFloatingSpan.className = totalProfit >= 0 ? "total-positive" : "total-negative";
     }
   }
 
@@ -2322,7 +2372,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateCircleElement('circle-pl-path', 'pl-percent-text', winRate);
 
     const netPL = totalProfitVal - totalLossVal;
-    const plValElem = document.getElementById('plvalue');  
+    const plValElem = document.getElementById('plvalue');
     if (plValElem) {
       const color = netPL >= 0 ? "#10b981" : "#ef4444";
       const sign = netPL >= 0 ? "+" : "";
@@ -2449,23 +2499,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
         case "proposal_open_contract":
           // C'est ici que la table reçoit ses données en temps réel
-          if (typeof handleContractDetails === 'function') {
-            handleContractDetails(data); 
+          if (typeof updateTradeTable === 'function') {
+             updateTradeTable();
           }
           break;
 
         case "portfolio":
-          if (typeof handlePortfolio === 'function') {    
-            handlePortfolio(data);  
-          }      
+          if (typeof handlePortfolio === 'function') {
+            handlePortfolio(data);
+          }
           break;
 
         case "sell":
           console.log("💰 Confirmation de vente reçue pour le contrat :", data.sell.contract_id);
-          break;  
+          break;
 
         case "error":
-          console.error("❌ Erreur API :", data.error.message);       
+          console.error("❌ Erreur API :", data.error.message);
           break;
       }
 
