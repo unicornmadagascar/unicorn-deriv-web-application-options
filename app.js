@@ -3779,10 +3779,6 @@ document.addEventListener("DOMContentLoaded", () => {
       // On injecte la structure de la table
       initTable();
 
-      // ON REMPLIT IMMÉDIATEMENT AVEC LES DONNÉES
-      updateTradeTable();
-      updateDonutCharts();
-
       this.innerText = "📄 Hide Open Contracts";
     } else {
       panel.style.display = "none";
@@ -4128,3 +4124,4 @@ document.addEventListener("DOMContentLoaded", () => {
   overlayCtx = createOverlayCanvas(chartInner, chart, () => drawEventLines(chart, overlayCtx, currentSeries));
 
 });
+  
