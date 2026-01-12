@@ -1934,7 +1934,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // On calcule le Win Rate (nombre de trades gagnants vs perdants)
     activeIds.forEach(id => {
-      const p = parseFloat(activeContracts[id].profit || 0);
+      const p = parseFloat(activeContracts[id].profit || 0);  
       if (p >= 0) countProfit++;
       else countLoss++;
     });
