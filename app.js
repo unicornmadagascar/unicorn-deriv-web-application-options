@@ -2449,7 +2449,7 @@ document.addEventListener("DOMContentLoaded", () => {
         case "proposal_open_contract":
           // C'est ici que la table reçoit ses données en temps réel
           if (typeof handleContractDetails === 'function') {
-            handleContractDetails(data);
+            //handleContractDetails(data);
           }
           break;
 
