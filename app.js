@@ -2243,7 +2243,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- CAS B : CONTRAT OUVERT (CRÉATION OU MISE À JOUR) ---
-    const profitVal = parseFloat(c.profit || 0);  
+    const profitVal = parseFloat(c.profit || 0);
     const isPositive = profitVal >= 0;
     const profitClass = isPositive ? "profit-positive" : "profit-negative";
     const formattedProfit = (isPositive ? "+" : "") + profitVal.toFixed(2);
@@ -3910,7 +3910,7 @@ document.addEventListener("DOMContentLoaded", () => {
     shutdownAllPipelines();
   };
 
-  contractsPanelToggle.addEventListener('click', (event) => {
+  /* contractsPanelToggle.addEventListener('click', (event) => {
     // 1. On vérifie si l'élément cliqué est le bouton de bascule
     if (event.target && event.target.id === 'contractsPanelToggle') {
       const toggleBtn = event.target;
@@ -3934,6 +3934,27 @@ document.addEventListener("DOMContentLoaded", () => {
           toggleBtn.classList.remove('btn-active');
         }
       }
+    }
+  }); */
+
+  document.getElementById("contractsPanelToggle").addEventListener("click", function () {
+    const panel = document.getElementById("contractsPanel");
+
+    if (panel.style.display === "none" || panel.style.display === "") {
+      panel.style.display = "flex"; // Affiche le panneau
+
+      // IMPORTANT : On injecte le squelette de la table s'il n'existe pas
+      if (document.getElementById("autoHistoryList").innerHTML.trim() === "") {
+        initTable();
+      }
+
+      // IMPORTANT : On remplit la table avec les données actuelles
+      updateTradeTable();
+
+      this.innerText = "📄 Hide Open Contracts";  
+    } else {
+      panel.style.display = "none";
+      this.innerText = "📄 Show Open Contracts";
     }
   });
 
