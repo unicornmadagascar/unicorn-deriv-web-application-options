@@ -1384,7 +1384,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const qty = (oppositeType === "MULTUP") ? (parseInt(buyNumber.value) || 1) : (parseInt(sellNumber.value) || 1);
 
     const payload = {
-      buy: "1",
+      buy: 1,
       price: stake.toFixed(2),
       parameters: {
         contract_type: oppositeType,
@@ -1415,6 +1415,9 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    multiplier = parseInt(Number(document.getElementById("multiplierSelect").value)) || 40;
+    stake = parseFloat(Number(document.getElementById("stakeInput").value)) || 1.0;
+
     // 2. Préparation du payload
     // Note : On utilise 'stake' (global) et 'multiplier' (global)
     const payload = {
@@ -1423,7 +1426,7 @@ document.addEventListener("DOMContentLoaded", () => {
       parameters: {
         contract_type: type === "BUY" ? "MULTUP" : "MULTDOWN",
         symbol: currentSymbol,
-        currency: CURRENCY,
+        currency: CURRENCY.toString(),
         basis: "stake",
         amount: stake.toFixed(2),
         multiplier: multiplier,
@@ -1451,106 +1454,177 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Événement du bouton
   closewinning.onclick = () => {
-    const btn = document.getElementById("closewinning");
-    console.log("💰 Analyse des positions gagnantes...");
+    if (wsContracts_winning) { wsContracts_winning.close(); wsContracts_winning = null; }
 
-    // On lance la fonction qui renvoie 'true' si elle a trouvé des gagnants
-    const hasClosed = closeProfitableTrades();
+    console.log("Closing all profitable trades...");
 
-    if (hasClosed) {
-      // Effet visuel de succès
-      btn.classList.add("btn-success-flash");
-      setTimeout(() => btn.classList.remove("btn-success-flash"), 600);
-    }
-  };
+    wsContracts_winning = new WebSocket(WS_URL);
+    wsContracts_winning.onopen = () => { wsContracts_winning.send(JSON.stringify({ authorize: TOKEN })); };
+    wsContracts_winning.onerror = (e) => {
+      console.log("❌ WS Error: " + JSON.stringify(e));
+    };
 
-  function closeProfitableTrades() {
-    if (!ws || ws.readyState !== WebSocket.OPEN) return false;
+    wsContracts_winning.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
 
-    let foundWinning = false;
-    const contractIds = Object.keys(activeContractsData);
-
-    contractIds.forEach((id) => {
-      const contractData = activeContractsData[id];
-      const profit = parseFloat(contractData.profit || 0);
-
-      if (profit > 0) {
-        foundWinning = true;
-        ws.send(JSON.stringify({
-          sell: id,
-          price: 0
-        }));
+      // Authorization successful
+      if (data.msg_type === "authorize") {
+        console.log("✅ Authorized successfully. Fetching portfolio...");
+        wsContracts_winning.send(JSON.stringify({ portfolio: 1 }));
       }
-    });
 
-    return foundWinning; // On retourne le résultat pour le flash
-  }
+      // Portfolio received
+      if (data.msg_type === "portfolio" && data.portfolio?.contracts?.length > 0) {
+        const contracts = data.portfolio.contracts || [];
+        console.log("📊 Found " + contracts.length + " active contracts.");
+
+        contracts.forEach((contract, i) => {
+          setTimeout(() => {
+            wsContracts_winning.send(
+              JSON.stringify({
+                proposal_open_contract: 1,
+                contract_id: contract.contract_id,
+              })
+            );
+          }, i * 200); // Délai de 500ms entre chaque demande
+        });
+      }
+
+      // Proposal open contract (detail for each active trade)
+      if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
+        const poc = data.proposal_open_contract;
+        const profit = parseFloat(poc.profit);
+
+        if (profit > 0) {
+          console.log(
+            `💰 Closing profitable trade ${poc.contract_id} with profit ${profit.toFixed(2)}`
+          );
+
+          wsContracts_winning.send(
+            JSON.stringify({
+              sell: poc.contract_id,
+              price: 0, // 0 = sell at market price
+            })
+          );
+        }
+      }
+
+      // Sell confirmation
+      if (data.msg_type === "sell") {
+        const profit = parseFloat(data.sell.profit);
+        console.log(`✅ Trade ${data.sell.contract_id} closed with profit: ${profit.toFixed(2)}`);
+      }
+
+      // No open contracts
+      if (data.msg_type === "portfolio" && (!data.portfolio || !data.portfolio.contracts.length)) {
+        console.log("⚠️ No active contracts found.");
+      }
+    };
+  };
 
   closelosing.onclick = () => {
-    const btn = document.getElementById("closelosing");
-    console.log("🔴 Analyse des positions perdantes...");
+    if (wsContracts_losing) { wsContracts_losing.close(); wsContracts_losing = null; }
 
-    // On lance la fonction qui renvoie 'true' si elle a trouvé des pertes
-    const hasClosed = closeLosingTrades();
+    console.log("Closing all profitable trades...");
 
-    if (hasClosed) {
-      // Effet visuel de flash rouge
-      btn.classList.add("btn-danger-flash");
-      setTimeout(() => btn.classList.remove("btn-danger-flash"), 600);
-    }
+    wsContracts_losing = new WebSocket(WS_URL);
+    wsContracts_losing.onopen = () => { wsContracts_losing.send(JSON.stringify({ authorize: TOKEN })); };
+    wsContracts_losing.onerror = (e) => {
+      console.log("❌ WS Error: " + JSON.stringify(e));
+    };
+
+    wsContracts_losing.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+
+      // Authorization successful
+      if (data.msg_type === "authorize") {
+        console.log("✅ Authorized successfully. Fetching portfolio...");
+        wsContracts_losing.send(JSON.stringify({ portfolio: 1 }));
+      }
+
+      // Portfolio received
+      if (data.msg_type === "portfolio" && data.portfolio?.contracts?.length > 0) {
+        const contracts = data.portfolio.contracts || [];
+        console.log("📊 Found " + contracts.length + " active contracts.");
+
+        contracts.forEach((contract, i) => {
+          setTimeout(() => {
+            wsContracts_losing.send(
+              JSON.stringify({
+                proposal_open_contract: 1,
+                contract_id: contract.contract_id,
+              })
+            );
+          }, i * 200); // Délai de 500ms entre chaque demande
+        });
+      }
+
+      // Proposal open contract (detail for each active trade)
+      if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
+        const poc = data.proposal_open_contract;
+        const profit = parseFloat(poc.profit);
+
+        if (profit < 0) {
+          console.log(
+            `💰 Closing profitable trade ${poc.contract_id} with profit ${profit.toFixed(2)}`
+          );
+
+          wsContracts_losing.send(
+            JSON.stringify({
+              sell: poc.contract_id,
+              price: 0, // 0 = sell at market price
+            })
+          );
+        }
+      }
+
+      // Sell confirmation
+      if (data.msg_type === "sell") {
+        const profit = parseFloat(data.sell.profit);
+        console.log(`✅ Trade ${data.sell.contract_id} closed with profit: ${profit.toFixed(2)}`);
+      }
+
+      // No open contracts
+      if (data.msg_type === "portfolio" && (!data.portfolio || !data.portfolio.contracts.length)) {
+        console.log("⚠️ No active contracts found.");
+      }
+    };
   };
 
-  function closeLosingTrades() {
-    if (!ws || ws.readyState !== WebSocket.OPEN) return false;
-
-    let foundLosing = false;
-    // On utilise la source de données globale pour être sûr de ne rien rater
-    const contractIds = Object.keys(activeContractsData);
-
-    contractIds.forEach((id) => {
-      const contractData = activeContractsData[id];
-      const profit = parseFloat(contractData.profit || 0);
-
-      // Condition : Profit strictement inférieur à 0
-      if (profit < 0) {
-        foundLosing = true;
-        console.log(`📉 Fermeture contrat perdant ${id} | PnL: ${profit}$`);
-
-        ws.send(JSON.stringify({
-          sell: id,
-          price: 0
-        }));
-      }
-    });
-
-    return foundLosing;
-  }
-
   closeAll.onclick = () => {
-    console.log("🛑 PANIC MODE : Fermeture de TOUTES les positions...");
+    if (wsContracts__close) { wsContracts__close.close(); wsContracts__close = null; }
 
-    // 1. Sécurité : vérifier la connexion
-    if (!ws || ws.readyState !== WebSocket.OPEN) {
-      console.error("WebSocket non connecté");
-      return;
-    }
+    console.log("Closing all trades...");
 
-    // 2. Récupérer tous les IDs des contrats actuellement suivis
-    const allIds = Object.keys(activeContractsData);
+    wsContracts__close = new WebSocket(WS_URL);
+    wsContracts__close.onopen = () => { wsContracts__close.send(JSON.stringify({ authorize: TOKEN })); };
+    wsContracts__close.onclose = () => { console.log("Disconnected"); console.log("WS closed"); };
+    wsContracts__close.onerror = e => { console.log("WS error " + JSON.stringify(e)); };
+    wsContracts__close.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
 
-    if (allIds.length === 0) {
-      console.log("ℹ️ Aucune position ouverte à fermer.");
-      return;
-    }
+      // 2️⃣ Quand autorisé, on demande le portefeuille
+      if (data.msg_type === 'authorize') {
+        wsContracts__close.send(JSON.stringify({ portfolio: 1 }));
+      }
 
-    // 3. Envoyer l'ordre de vente pour chaque contrat instantanément
-    allIds.forEach(id => {
-      ws.send(JSON.stringify({
-        sell: id,
-        price: 0
-      }));
-      console.log(`⛔ Requête de vente envoyée pour : ${id}`);
-    });
+      // 3️⃣ Quand on reçoit les contrats ouverts
+      if (data.msg_type === 'portfolio') {
+        const contracts = data.portfolio.contracts || [];
+        console.log('Contrats ouverts:', contracts);
+
+        // 4️⃣ Fermer chaque contrat
+        contracts.forEach(c => {
+          wsContracts__close.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+          console.log(`⛔ Fermeture du contrat ${c.contract_id} demandée`);
+        });
+      }
+
+      // 5️⃣ Confirmation de fermeture
+      if (data.msg_type === 'sell') {
+        console.log('✅ Contrat fermé:', data.sell.contract_id);
+      }
+    };
   };
 
   // --- INITIALISATION (À appeler une seule fois au chargement ou au 1er clic) ---
@@ -2026,7 +2100,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- 🔄 S’abonne aux détails d’un contrat
   function subscribeContractDetails(contract_id) {
-     ws.send(JSON.stringify({ proposal_open_contract: 1, contract_id : contract_id, subscribe: 1 }));
+    wsplContracts.send(JSON.stringify({ proposal_open_contract: 1, contract_id: contract_id, subscribe: 1 }));
   }
 
   function handleContractDetails(data) {
@@ -2068,7 +2142,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- CAS B : CONTRAT OUVERT (CRÉATION OU MISE À JOUR) ---
     const profitVal = parseFloat(c.profit || 0);
     const isPositive = profitVal >= 0;
-    const profitClass = isPositive ? "profit-positive" : "profit-negative";  
+    const profitClass = isPositive ? "profit-positive" : "profit-negative";
     const formattedProfit = (isPositive ? "+" : "") + profitVal.toFixed(2);
 
     if (!tr) {
@@ -3625,6 +3699,10 @@ document.addEventListener("DOMContentLoaded", () => {
           const user = data.get_settings;
           const fullname = " " + data.get_settings.first_name + " " + data.get_settings.last_name;
           accountHolder.textContent = fullname.toString();
+        }
+
+        if (data.ping && data.msg_type === "ping") {
+          connection.send(JSON.stringify({ ping: 1 }));
         }
       };
     }
