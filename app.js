@@ -620,7 +620,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
-  function Openpositionlines(currentSeries) {  
+  function Openpositionlines(currentSeries) {
     // Éviter les doublons de connexion
     if (wsOpenLines && (wsOpenLines.readyState === WebSocket.OPEN || wsOpenLines.readyState === WebSocket.CONNECTING)) {
       return;
@@ -629,7 +629,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wsOpenLines = new WebSocket(WS_URL);
 
     wsOpenLines.onopen = () => {
-      wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));   
+      wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));
     };
 
     wsOpenLines.onmessage = (msg) => {
@@ -1818,6 +1818,45 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
     </div>
     `;
+
+    // Dans votre fonction initTable()
+    const selectAllElement = document.getElementById('selectAll');
+    if (selectAllElement) {
+      selectAllElement.addEventListener('change', function () {
+        const checkboxes = document.querySelectorAll('.rowSelect');
+        checkboxes.forEach(cb => {
+          cb.checked = this.checked;
+
+          // OPTIONNEL : Mise à jour visuelle de la ligne (couleur de fond)
+          const row = cb.closest('tr');
+          if (row) {
+            row.style.backgroundColor = this.checked ? "#f0f7ff" : "";
+          }
+        });
+      });
+    }
+
+    const panicBtn = document.getElementById("panicCloseAll");
+    if (panicBtn) {
+      panicBtn.addEventListener("click", panicCloseAll);
+    }
+
+    const download = document.getElementById("exportCSV");
+    if (download) {
+      download.addEventListener("click", downloadHistoryCSV);
+    }
+
+    const deleteSelectedBtn = document.getElementById("panicCloseAll");
+    if (deleteSelectedBtn) {
+      deleteSelectedBtn.addEventListener("click", deleteSelectedRows);
+    }
+
+    const masterCb = document.getElementById('selectAll');
+    if (masterCb) {
+      masterCb.addEventListener('change', function () {
+        toggleSelectAll(this); // "this" représente ici le masterCb
+      });
+    }
   }
 
   // DELETE SELECTED ROWS
@@ -2364,6 +2403,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       Openpositionlines(currentSeries);
+      updateGlobalPnL();
     };
 
     // --- ÉVÉNEMENT : FERMETURE ---
@@ -3681,45 +3721,6 @@ document.addEventListener("DOMContentLoaded", () => {
     shutdownAllPipelines();
   };
 
-  // Dans votre fonction initTable()
-  const selectAllElement = document.getElementById('selectAll');
-  if (selectAllElement) {
-    selectAllElement.addEventListener('change', function () {
-      const checkboxes = document.querySelectorAll('.rowSelect');
-      checkboxes.forEach(cb => {
-        cb.checked = this.checked;
-
-        // OPTIONNEL : Mise à jour visuelle de la ligne (couleur de fond)
-        const row = cb.closest('tr');
-        if (row) {
-          row.style.backgroundColor = this.checked ? "#f0f7ff" : "";
-        }
-      });
-    });
-  }
-
-  const panicBtn = document.getElementById("panicCloseAll");
-  if (panicBtn) {
-    panicBtn.addEventListener("click", panicCloseAll);
-  }
-
-  const download = document.getElementById("exportCSV");
-  if (download) {
-    download.addEventListener("click", downloadHistoryCSV);
-  }
-
-  const deleteSelectedBtn = document.getElementById("panicCloseAll");
-  if (deleteSelectedBtn) {
-    deleteSelectedBtn.addEventListener("click", deleteSelectedRows);
-  }
-
-  const masterCb = document.getElementById('selectAll');
-  if (masterCb) {
-    masterCb.addEventListener('change', function () {
-      toggleSelectAll(this); // "this" représente ici le masterCb
-    });
-  }
-
   contractsPanelToggle.addEventListener('click', (event) => {
     // 1. On vérifie si l'élément cliqué est le bouton de bascule
     if (event.target && event.target.id === 'contractsPanelToggle') {
@@ -3841,12 +3842,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (distance < threshold) {
         // Optionnel : confirmation avant fermeture  
-        if (confirm(`Voulez-vous fermer le contrat ${item.id} ?`)) {  
+        if (confirm(`Voulez-vous fermer le contrat ${item.id} ?`)) {
           closeSingleContract(item.id);
-        }   
-      }      
+        }
+      }
     });
-  });   
+  });
 
   // Gestion du "Select All"    
   /* const selectAll = document.getElementById("selectAll");
