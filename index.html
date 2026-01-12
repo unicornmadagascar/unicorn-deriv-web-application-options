@@ -614,16 +614,13 @@
     /* Le panneau qui contient tout */
     #contractsPanel {
       display: none;
-      /* Caché par défaut */
       flex-direction: column;
-      /* FORCE l'empilement vertical : Cercles en haut, Table en bas */
-      gap: 20px;
-      padding: 15px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
+      /* Force la table à aller SOUS les cercles */
       width: 100%;
-      box-sizing: border-box;
+      min-height: 200px;
+      /* Donne une hauteur minimum pour le test */
+      background: white;
+      padding: 20px;
     }
 
     /* Quand on active le panneau */
@@ -637,6 +634,7 @@
     .table-responsive {
       width: 100%;
       overflow-x: auto;
+      /* Permet le scroll si la table est large */
     }
 
     /* Fixer l'en-tête pendant le scroll vertical */
@@ -656,10 +654,12 @@
 
     /* Zone de la table */
     #autoHistoryList {
+      display: block !important;
+      /* Force l'affichage */
       width: 100%;
-      margin-top: 10px;
-      border-top: 1px solid #eee;
-      padding-top: 15px;
+      margin-top: 20px;
+      clear: both;
+      /* Sécurité si vous utilisez des floats */
     }
 
 
