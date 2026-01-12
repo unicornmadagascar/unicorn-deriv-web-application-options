@@ -620,7 +620,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
-  function Openpositionlines(currentSeries) {
+  function Openpositionlines(currentSeries) {  
     // Éviter les doublons de connexion
     if (wsOpenLines && (wsOpenLines.readyState === WebSocket.OPEN || wsOpenLines.readyState === WebSocket.CONNECTING)) {
       return;
@@ -3698,29 +3698,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  chart.subscribeClick((param) => {
-    // On vérifie si l'utilisateur a cliqué sur l'échelle de prix (à droite)
-    if (!param.point || param.point.x === undefined) return;
-
-    // Seuil de détection (plus ou moins 5 pixels autour du prix de la ligne)
-    const coordinateToPrice = currentSeries.coordinateToPrice(param.point.y);
-
-    Object.values(priceLines4openlines).forEach(item => {
-      const distance = Math.abs(coordinateToPrice - item.entryPrice);
-
-      // Si le clic est très proche du prix d'une ligne active
-      // Nous calculons un seuil basé sur la volatilité visible
-      const threshold = (chart.priceScale('right').height() / 1000);
-
-      if (distance < threshold) {
-        // Optionnel : confirmation avant fermeture
-        if (confirm(`Voulez-vous fermer le contrat ${item.id} ?`)) {
-          closeSingleContract(item.id);
-        }
-      }
-    });
-  });
-
   const panicBtn = document.getElementById("panicCloseAll");
   if (panicBtn) {
     panicBtn.addEventListener("click", panicCloseAll);
@@ -3847,6 +3824,29 @@ document.addEventListener("DOMContentLoaded", () => {
       connectDeriv_table();
     }
   }, 300);
+
+  chart.subscribeClick((param) => {
+    // On vérifie si l'utilisateur a cliqué sur l'échelle de prix (à droite)
+    if (!param.point || param.point.x === undefined) return;
+
+    // Seuil de détection (plus ou moins 5 pixels autour du prix de la ligne)
+    const coordinateToPrice = currentSeries.coordinateToPrice(param.point.y);
+
+    Object.values(priceLines4openlines).forEach(item => {
+      const distance = Math.abs(coordinateToPrice - item.entryPrice);
+
+      // Si le clic est très proche du prix d'une ligne active
+      // Nous calculons un seuil basé sur la volatilité visible
+      const threshold = (chart.priceScale('right').height() / 1000);
+
+      if (distance < threshold) {
+        // Optionnel : confirmation avant fermeture
+        if (confirm(`Voulez-vous fermer le contrat ${item.id} ?`)) {
+          closeSingleContract(item.id);
+        }
+      }
+    });
+  });
 
   // Gestion du "Select All"    
   /* const selectAll = document.getElementById("selectAll");
