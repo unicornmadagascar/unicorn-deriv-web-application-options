@@ -1962,7 +1962,7 @@ document.addEventListener("DOMContentLoaded", () => {
     profitPath.setAttribute("stroke-dasharray", `${profitPercent}, 100`);
     lossPath.setAttribute("stroke-dasharray", `${lossPercent}, 100`);
 
-    // 4. Mettre à jour les textes
+    // 4. Mettre à jour les textes²
     profitText.textContent = `${profitPercent}%`;
     lossText.textContent = `${lossPercent}%`;
 
@@ -2038,6 +2038,8 @@ document.addEventListener("DOMContentLoaded", () => {
         totalFloatingSpan.className = "total-neutral";  // Gris
       }
     }
+
+    updateTotalStats();
   }
 
   // DELETE SELECTED ROWS
@@ -2389,7 +2391,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let countProfit = 0;
     let countLoss = 0;
     let totalProfitVal = 0;
-    let totalLossVal = 0;
+    let totalLossVal = 0;  
 
     // 2. Analyse des lignes pour extraire les données
     rows.forEach(row => {
