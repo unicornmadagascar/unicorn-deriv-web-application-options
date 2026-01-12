@@ -621,74 +621,83 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
   function Openpositionlines(currentSeries) {
-  
-    if (wsOpenLines === null) {  
-      wsOpenLines = new WebSocket(WS_URL);
-      wsOpenLines.onopen = () => { wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
-    }
-
+    // Éviter les doublons de connexion
     if (wsOpenLines && (wsOpenLines.readyState === WebSocket.OPEN || wsOpenLines.readyState === WebSocket.CONNECTING)) {
-      wsOpenLines.onopen = () => { wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
+      return;
     }
 
-    if (wsOpenLines && (wsOpenLines.readyState === WebSocket.CLOSED || wsOpenLines.readyState === WebSocket.CLOSING)) {
-      wsOpenLines = new WebSocket(WS_URL);
-      wsOpenLines.onopen = () => { wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
-    }
+    wsOpenLines = new WebSocket(WS_URL);
 
-    wsOpenLines.onmessage = (msg) => {  
-      const data = JSON.parse(msg.data);  
+    wsOpenLines.onopen = () => {
+      wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));
+    };
 
-      // Étape 1 : Authentification
+    wsOpenLines.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+
+      // 1. Authentification
       if (data.msg_type === "authorize") {
         wsOpenLines.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
+        return;
       }
 
-      // Étape 2 : Réception d’un contrat
+      // 2. Gestion des contrats
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
         const c = data.proposal_open_contract;
+        const id = c.contract_id;
 
-        // Si le contrat est clos → supprimer la ligne
-        if (c.status === "sold") {
-          const id = c.contract_id;
+        // --- CAS : CONTRAT CLOS ---
+        if (c.status === "sold" || !!c.is_sold) {
           if (priceLines4openlines[id]) {
-            try { currentSeries.removePriceLine(priceLines4openlines[id]); } catch { }
+            currentSeries.removePriceLine(priceLines4openlines[id].line);
             delete priceLines4openlines[id];
-            console.log(`❌ Ligne supprimée pour contrat ${id}`);
           }
           return;
         }
 
-        // Si c’est un nouveau contrat ouvert
-        const id = c.contract_id;
+        // --- CAS : CONTRAT ACTIF ---
+        const entryPrice = parseFloat(c.entry_tick_display_value || c.buy_price);
+        const profit = parseFloat(c.profit || 0);
+        if (isNaN(entryPrice)) return;
+
+        // Style dynamique selon le profit
+        const isWin = profit >= 0;
+        const color = isWin ? "#00ff80" : "#ff4d4d";
+        const lineStyle = isWin ? LightweightCharts.LineStyle.Solid : LightweightCharts.LineStyle.Dashed;
+
+        // Label avec Bouton X simulé et Profit
+        const labelText = `✖ ${c.contract_type} | ${isWin ? '+' : ''}${profit.toFixed(2)} USD`;
+
         if (!priceLines4openlines[id]) {
-          const entryPrice = parseFloat(c.entry_tick_display_value);              // || c.buy_price
-          if (!entryPrice || isNaN(entryPrice)) return;
-
-          const type = c.contract_type;
-          const color = type === "MULTUP" ? "#00ff80" : "#ff4d4d";
-
+          // Création initiale
           const line = currentSeries.createPriceLine({
             price: entryPrice,
-            color,   
-            lineWidth: 2,  
-            lineStyle: LightweightCharts.LineStyle.Dashed,
+            color: color,
+            lineWidth: 2,
+            lineStyle: lineStyle,
             axisLabelVisible: true,
-            title: `${type} @ ${entryPrice.toFixed(2)}`,
+            title: labelText,
           });
-
-          priceLines4openlines[id] = line;
-          console.log(`📍 Ligne ajoutée pour ${type} @ ${entryPrice}`);
+          // On stocke la ligne, le prix et l'ID pour le clic
+          priceLines4openlines[id] = { line, entryPrice, id };
+        } else {
+          // Mise à jour en temps réel (Fluide)
+          priceLines4openlines[id].line.applyOptions({
+            title: labelText,
+            color: color,
+            lineStyle: lineStyle,
+          });
         }
       }
 
-      if (data.ping && data.msg_type === "ping") {
-        wsOpenLines.send(JSON.stringify({ ping: 1 }));
-      }
+      // Heartbeat
+      if (data.msg_type === "ping") wsOpenLines.send(JSON.stringify({ ping: 1 }));
     };
 
-    wsOpenLines.onerror = (e) => console.log("⚠️ WS error:", e);
-    wsOpenLines.onclose = () => console.log("❌ WS closed for open lines");
+    wsOpenLines.onerror = (e) => console.error("⚠️ WS Open Lines Error:", e);
+    wsOpenLines.onclose = () => {
+      setTimeout(() => Openpositionlines(currentSeries), 5000);
+    };
   }
 
   function updateGlobalPnL() {
@@ -2317,7 +2326,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setUIStatus('online'); // La pastille passe au vert
 
       // Authentification immédiate
-      wsplContracts.send(JSON.stringify({ authorize: TOKEN }));   
+      wsplContracts.send(JSON.stringify({ authorize: TOKEN }));
     };
 
     // --- ÉVÉNEMENT : RÉCEPTION DES MESSAGES ---
@@ -3689,6 +3698,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  chart.subscribeClick((param) => {
+    // On vérifie si l'utilisateur a cliqué sur l'échelle de prix (à droite)
+    if (!param.point || param.point.x === undefined) return;
+
+    // Seuil de détection (plus ou moins 5 pixels autour du prix de la ligne)
+    const coordinateToPrice = currentSeries.coordinateToPrice(param.point.y);
+
+    Object.values(priceLines4openlines).forEach(item => {
+      const distance = Math.abs(coordinateToPrice - item.entryPrice);
+
+      // Si le clic est très proche du prix d'une ligne active
+      // Nous calculons un seuil basé sur la volatilité visible
+      const threshold = (chart.priceScale('right').height() / 1000);
+
+      if (distance < threshold) {
+        // Optionnel : confirmation avant fermeture
+        if (confirm(`Voulez-vous fermer le contrat ${item.id} ?`)) {
+          closeSingleContract(item.id);
+        }
+      }
+    });
+  });
+
   const panicBtn = document.getElementById("panicCloseAll");
   if (panicBtn) {
     panicBtn.addEventListener("click", panicCloseAll);
@@ -3814,7 +3846,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Subscribing Tables  S
       connectDeriv_table();
     }
-  }, 300);  
+  }, 300);
 
   // Gestion du "Select All"    
   /* const selectAll = document.getElementById("selectAll");
