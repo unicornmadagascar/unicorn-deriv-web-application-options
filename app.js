@@ -1949,7 +1949,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${contract.time || '--:--'}</td>
             <td style="font-family: monospace; font-size: 0.85rem;">#${id.slice(-6)}</td>
             <td><strong>${contract.symbol}</strong></td>
-            <td><span class="badge ${typeClass}">${contract.type}</span></td>
+            <td><span class="badge ${typeClass}">${contract.type}</span></td>  
             <td>${parseFloat(contract.stake).toFixed(2)}</td>
             <td>x${contract.multiplier || '1'}</td>
             <td>${parseFloat(contract.entry).toFixed(2)}</td>
