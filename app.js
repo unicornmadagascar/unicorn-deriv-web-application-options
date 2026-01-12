@@ -398,7 +398,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function styleType(currentChartType) {
     if (!currentChartType || currentChartType === null) return;
 
-    if ((currentChartType === "candlestick" || currentChartType === "hollow" || currentChartType === "ohlc")) { style_type = "candles"; }
+    if (currentChartType === "candlestick") { style_type = "candles"; }
     else { style_type = "ticks"; }
 
     return style_type;
@@ -580,19 +580,13 @@ document.addEventListener("DOMContentLoaded", () => {
         // Note: handleTickData doit appeler renderIndicators() en interne
       }
 
-      // 4. Gestion des Positions Ouvertes (Lignes de prix + PnL)
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
         const c = data.proposal_open_contract;
         const id = c.contract_id;
 
         // 1️⃣ CAS DU CONTRAT FERMÉ (Vendu / Expiré)
         if (c.is_settled || c.status === "sold" || c.exit_tick) {
-          if (priceLines4openlines[id]) {
-            try {
-              currentSeries.removePriceLine(priceLines4openlines[id]);
-            } catch (e) { }
-            delete priceLines4openlines[id];
-          }
+          // Suppression des données du contrat actif
           delete activeContractsData[id];
 
           // Si plus aucun contrat, on reset le type global
@@ -601,10 +595,16 @@ document.addEventListener("DOMContentLoaded", () => {
           }
 
           updateGlobalPnL();
+          Openpositionlines(currentSeries);
           return;
         }
 
-        // 4️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
+        // 2️⃣ CAS DU CONTRAT OUVERT
+        activeContractsData[id] = c;
+        currentContractTypeGlobal = c.contract_type; // Indispensable pour le REVERSE
+
+        // 3️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
+        // (Le calcul se basera sur les données mises à jour dans activeContractsData)
         updateGlobalPnL();
         Openpositionlines(currentSeries);
       }
@@ -619,136 +619,76 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // === GESTION DES LIGNES ET DE LA TABLE DES CONTRATS ===
+  // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
   function Openpositionlines(currentSeries) {
-    // Éviter les connexions multiples
-    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-      return;
+
+    if (wsOpenLines === null) {
+      wsOpenLines = new WebSocket(WS_URL);
+      wsOpenLines.onopen = () => { wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    ws = new WebSocket(WS_URL);
+    if (wsOpenLines && (wsOpenLines.readyState === WebSocket.OPEN || wsOpenLines.readyState === WebSocket.CONNECTING)) {
+      wsOpenLines.onopen = () => { wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
+    }
 
-    ws.onopen = () => {
-      ws.send(JSON.stringify({ authorize: TOKEN }));
-    };
+    if (wsOpenLines && (wsOpenLines.readyState === WebSocket.CLOSED || wsOpenLines.readyState === WebSocket.CLOSING)) {
+      wsOpenLines = new WebSocket(WS_URL);
+      wsOpenLines.onopen = () => { wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
+    }
 
-    ws.onmessage = (msg) => {
+    wsOpenLines.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
 
-      // 1. Authentification réussie -> Souscription
+      // Étape 1 : Authentification
       if (data.msg_type === "authorize") {
-        ws.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
+        wsOpenLines.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
       }
 
-      // 2. Réception des données du contrat
+      // Étape 2 : Réception d’un contrat
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
         const c = data.proposal_open_contract;
-        const id = c.contract_id;
 
-        // CAS A : Le contrat est terminé (vendu/clôturé)
-        if (c.status === "sold" || c.is_expired) {
-          // Supprimer la ligne sur le graphique
+        // Si le contrat est clos → supprimer la ligne
+        if (c.status === "sold") {
+          const id = c.contract_id;
           if (priceLines4openlines[id]) {
-            try { currentSeries.removePriceLine(priceLines4openlines[id]); } catch (e) { }
+            try { currentSeries.removePriceLine(priceLines4openlines[id]); } catch { }
             delete priceLines4openlines[id];
+            console.log(`❌ Ligne supprimée pour contrat ${id}`);
           }
-          // Supprimer la ligne de la table HTML
-          const row = document.getElementById(`row-${id}`);
-          if (row) row.remove();
-
-          updateTotalStats(); // Rafraîchir les compteurs footer
           return;
         }
 
-        // CAS B : Le contrat est ouvert et actif
-        const entryPrice = parseFloat(c.entry_tick_display_value || c.buy_price);
-        if (!entryPrice || isNaN(entryPrice)) return;
-
-        // 1. Mise à jour ou création dans la TABLE HTML
-        const existingRow = document.getElementById(`row-${id}`);
-        if (!existingRow) {
-          // Si la fonction addContractToTable est celle définie plus haut :
-          addContractToTable({
-            id: id,
-            time: new Date(c.date_start * 1000).toLocaleTimeString(),
-            symbol: c.display_name,
-            type: c.contract_type,
-            stake: c.buy_price,
-            multiplier: c.multiplier || '-',
-            entry: entryPrice,
-            tp: c.limit_order?.take_profit?.order_amount || '-',
-            sl: c.limit_order?.stop_loss?.order_amount || '-'
-          });
-        } else {
-          // Mise à jour en temps réel du profit dans la table
-          const profitCell = document.getElementById(`profit-${id}`);
-          if (profitCell) {
-            const profit = parseFloat(c.profit);
-            profitCell.textContent = profit.toFixed(2);
-            profitCell.className = profit >= 0 ? "profit-positive" : "profit-negative";
-          }
-          updateTotalStats(); // Met à jour le Floating P/L global
-        }
-
-        // 2. Mise à jour ou création sur le GRAPHIQUE
+        // Si c’est un nouveau contrat ouvert
+        const id = c.contract_id;
         if (!priceLines4openlines[id]) {
-          const color = c.contract_type.includes("MULTUP") || c.contract_type.includes("MULTDOWN") ? "#00ff80" : "#ff4d4d";
+          const entryPrice = parseFloat(c.entry_tick_display_value);              // || c.buy_price
+          if (!entryPrice || isNaN(entryPrice)) return;
+
+          const type = c.contract_type;
+          const color = type === "MULTUP" ? "#00ff80" : "#ff4d4d";
+
           const line = currentSeries.createPriceLine({
             price: entryPrice,
-            color: color,
+            color,
             lineWidth: 2,
             lineStyle: LightweightCharts.LineStyle.Dashed,
             axisLabelVisible: true,
-            title: `${c.contract_type} @ ${entryPrice.toFixed(2)}`,
+            title: `${type} @ ${entryPrice.toFixed(2)}`,
           });
+
           priceLines4openlines[id] = line;
           console.log(`📍 Ligne ajoutée pour ${type} @ ${entryPrice}`);
         }
       }
+
+      if (data.ping && data.msg_type === "ping") {
+        wsOpenLines.send(JSON.stringify({ ping: 1 }));
+      }
     };
 
-    wsOpenLines.onerror = (e) => console.error("⚠️ WS error:", e);
-    wsOpenLines.onclose = () => {
-      console.log("❌ WS closed. Reconnecting...");
-      setTimeout(() => Openpositionlines(currentSeries), 3000); // Tentative de reconnexion
-    };
-  }
-
-  function addContractToTable(contract) {
-    const tbody = document.getElementById("autoTradeBody");
-    if (!tbody) return;
-
-    // Création de l'élément de ligne
-    const row = document.createElement("tr");
-    row.id = `row-${contract.id}`; // Très important pour le supprimer plus tard avec row.remove()
-
-    // Construction du contenu HTML de la ligne
-    row.innerHTML = `
-        <td><input type="checkbox" class="rowSelect" value="${contract.id}"></td>
-        <td>${contract.time}</td>
-        <td style="font-family: monospace; font-size: 0.75rem;">${contract.id}</td>
-        <td><strong>${contract.symbol}</strong></td>
-        <td><span class="badge-${contract.type.toLowerCase()}">${contract.type}</span></td>
-        <td>${parseFloat(contract.stake).toFixed(2)}</td>
-        <td>${contract.multiplier}</td>
-        <td>${parseFloat(contract.entry).toFixed(2)}</td>
-        <td style="color: #10b981;">${contract.tp}</td>
-        <td style="color: #ef4444;">${contract.sl}</td>
-        <td id="profit-${contract.id}" class="profit-neutral" style="font-weight: 800;">0.00</td>
-        <td>
-            <button onclick="closeSingleContract('${contract.id}')" class="btn-close-row" title="Clôturer ce contrat">
-                ✖
-            </button>
-        </td>
-    `;
-
-    // Ajout de la ligne au début de la table (pour voir les nouveaux en haut)
-    tbody.prepend(row);
-
-    // Mettre à jour les statistiques globales (Active Positions, etc.)
-    if (typeof updateTotalStats === 'function') {
-      updateTotalStats();
-    }
+    wsOpenLines.onerror = (e) => console.log("⚠️ WS error:", e);
+    wsOpenLines.onclose = () => console.log("❌ WS closed for open lines");
   }
 
   function updateGlobalPnL() {
@@ -1666,7 +1606,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return ema;
   }
 
-  function renderIndicators() {   
+  function renderIndicators() {
     // 1. Sécurités de base
     if (!isWsInitialized || priceDataZZ.length < 2) return;
 
@@ -1869,45 +1809,6 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
     </div>
     `;
-    
-    // Dans votre fonction initTable()
-    const selectAllElement = document.getElementById('selectAll');
-    if (selectAllElement) {
-      selectAllElement.addEventListener('change', function () {
-        const checkboxes = document.querySelectorAll('.rowSelect');
-        checkboxes.forEach(cb => {
-          cb.checked = this.checked;
-
-          // OPTIONNEL : Mise à jour visuelle de la ligne (couleur de fond)
-          const row = cb.closest('tr');
-          if (row) {
-            row.style.backgroundColor = this.checked ? "#f0f7ff" : "";
-          }
-        });
-      });
-    }
-
-    const panicBtn = document.getElementById("panicCloseAll");  
-    if (panicBtn) {
-      panicBtn.addEventListener("click", panicCloseAll);
-    }
-
-    const download = document.getElementById("exportCSV");
-    if (download) {
-      download.addEventListener("click", downloadHistoryCSV);
-    }
-
-    const deleteSelectedBtn = document.getElementById("panicCloseAll");
-    if (deleteSelectedBtn) {
-      deleteSelectedBtn.addEventListener("click", deleteSelectedRows);
-    }
-
-    const masterCb = document.getElementById('selectAll');
-    if (masterCb) {
-      masterCb.addEventListener('change', function () {
-        toggleSelectAll(this); // "this" représente ici le masterCb
-      });
-    }
   }
 
   // DELETE SELECTED ROWS
@@ -3768,6 +3669,45 @@ document.addEventListener("DOMContentLoaded", () => {
     stopControlPipeline();
     shutdownAllPipelines();
   };
+
+  // Dans votre fonction initTable()
+  const selectAllElement = document.getElementById('selectAll');
+  if (selectAllElement) {
+    selectAllElement.addEventListener('change', function () {
+      const checkboxes = document.querySelectorAll('.rowSelect');
+      checkboxes.forEach(cb => {
+        cb.checked = this.checked;
+
+        // OPTIONNEL : Mise à jour visuelle de la ligne (couleur de fond)
+        const row = cb.closest('tr');
+        if (row) {
+          row.style.backgroundColor = this.checked ? "#f0f7ff" : "";
+        }
+      });
+    });
+  }
+
+  const panicBtn = document.getElementById("panicCloseAll");
+  if (panicBtn) {
+    panicBtn.addEventListener("click", panicCloseAll);
+  }
+
+  const download = document.getElementById("exportCSV");
+  if (download) {
+    download.addEventListener("click", downloadHistoryCSV);
+  }
+
+  const deleteSelectedBtn = document.getElementById("panicCloseAll");
+  if (deleteSelectedBtn) {
+    deleteSelectedBtn.addEventListener("click", deleteSelectedRows);
+  }
+
+  const masterCb = document.getElementById('selectAll');
+  if (masterCb) {
+    masterCb.addEventListener('change', function () {
+      toggleSelectAll(this); // "this" représente ici le masterCb
+    });
+  }
 
   contractsPanelToggle.addEventListener('click', (event) => {
     // 1. On vérifie si l'élément cliqué est le bouton de bascule
