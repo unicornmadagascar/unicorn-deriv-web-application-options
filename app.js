@@ -2461,10 +2461,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         case "sell":
           console.log("💰 Confirmation de vente reçue pour le contrat :", data.sell.contract_id);
-          break;
+          break;  
 
         case "error":
-          console.error("❌ Erreur API :", data.error.message);
+          console.error("❌ Erreur API :", data.error.message);     
           break;
       }
 
