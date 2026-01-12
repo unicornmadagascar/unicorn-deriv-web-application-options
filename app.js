@@ -1976,46 +1976,66 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!tbody) return;
 
-    // 1. On vide la table actuelle
+    // 1. On vide le tableau avant de le reconstruire
     tbody.innerHTML = "";
 
     let totalProfit = 0;
-    const activeIds = Object.keys(activeContracts);
+    const activeIds = Object.keys(activeContractsData);
 
-    // 2. On génère chaque ligne
+    // 2. On boucle sur chaque contrat actif
     activeIds.forEach(id => {
-      const contract = activeContracts[id];
+      const contract = activeContractsData[id];
       const profit = parseFloat(contract.profit || 0);
       totalProfit += profit;
 
-      const profitClass = profit >= 0 ? "text-success" : "text-danger"; // Assurez-vous d'avoir ces classes CSS
-      const typeClass = contract.type.toLowerCase().includes('buy') || contract.type.toLowerCase().includes('long') ? "type-buy" : "type-sell";
+      // Définition des classes de couleur
+      const profitClass = profit >= 0 ? "text-success" : "text-danger";
+      const typeClass = contract.type.toLowerCase().includes('buy') ||
+        contract.type.toLowerCase().includes('long') ||
+        contract.type.toLowerCase().includes('call') ? "type-buy" : "type-sell";
 
+      // 3. Création de la ligne (Notez l'ID row-${id})
       const row = document.createElement("tr");
+      row.id = `row-${id}`;
+
       row.innerHTML = `
             <td><input type="checkbox" class="row-checkbox" data-id="${id}"></td>
             <td>${contract.time || '--:--'}</td>
-            <td style="font-family: monospace; font-size: 0.85rem;">#${id.slice(-6)}</td>
+            <td style="font-family: monospace; font-size: 0.8rem; color: #64748b;">#${id.slice(-6)}</td>
             <td><strong>${contract.symbol}</strong></td>
-            <td><span class="badge ${typeClass}">${contract.type}</span></td>  
-            <td>${parseFloat(contract.stake).toFixed(2)}</td>
-            <td>x${contract.multiplier || '1'}</td>
-            <td>${parseFloat(contract.entry).toFixed(2)}</td>
-            <td>${contract.tp || '-'}</td>
-            <td>${contract.sl || '-'}</td>
-            <td class="${profitClass}" style="font-weight: bold;">${profit.toFixed(2)}</td>
+            <td><span class="badge ${typeClass}">${contract.type}</span></td>
+            <td>${parseFloat(contract.stake || 0).toFixed(2)}</td>
+            <td>${contract.multiplier ? 'x' + contract.multiplier : '-'}</td>
+            <td>${parseFloat(contract.entry || 0).toFixed(5)}</td>
+            <td style="color: #10b981;">${contract.tp || '-'}</td>
+            <td style="color: #ef4444;">${contract.sl || '-'}</td>
+            <td class="${profitClass}" style="font-weight: 800; font-size: 0.95rem;">
+                ${profit.toFixed(2)}
+            </td>
             <td>
-                <button onclick="closeContract('${id}')" class="btn-close-single">✕</button>
+                <button class="action-close" data-contract-id="${id}" title="Fermer la position">✖</button>
             </td>
         `;
+
       tbody.appendChild(row);
     });
 
-    // 3. Mise à jour des compteurs du bas
-    if (totalOpenSpan) totalOpenSpan.innerText = activeIds.length;
+    // 4. Mise à jour des compteurs du pied de tableau
+    if (totalOpenSpan) {
+      totalOpenSpan.innerText = activeIds.length;
+    }
+
     if (totalFloatingSpan) {
       totalFloatingSpan.innerText = `${totalProfit.toFixed(2)} USD`;
-      totalFloatingSpan.className = totalProfit >= 0 ? "total-positive" : "total-negative";
+
+      // Change la couleur du total global
+      if (totalProfit > 0) {
+        totalFloatingSpan.className = "total-positive"; // Vert
+      } else if (totalProfit < 0) {
+        totalFloatingSpan.className = "total-negative"; // Rouge
+      } else {
+        totalFloatingSpan.className = "total-neutral";  // Gris
+      }
     }
   }
 
@@ -2223,7 +2243,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- CAS B : CONTRAT OUVERT (CRÉATION OU MISE À JOUR) ---
-    const profitVal = parseFloat(c.profit || 0);
+    const profitVal = parseFloat(c.profit || 0);  
     const isPositive = profitVal >= 0;
     const profitClass = isPositive ? "profit-positive" : "profit-negative";
     const formattedProfit = (isPositive ? "+" : "") + profitVal.toFixed(2);
@@ -2274,33 +2294,33 @@ document.addEventListener("DOMContentLoaded", () => {
   function closeSingleContract(contractId) {
     if (!contractId) return;
 
-    // Confirmation visuelle optionnelle (décommentez si vous voulez une alerte)
-    // if (!confirm(`Voulez-vous vraiment fermer le contrat ${contractId} ?`)) return;
-
-    // Récupération du bouton pour montrer un état de chargement
+    // 1. Récupération de la ligne et du bouton
     const row = document.getElementById(`row-${contractId}`);
-    const btn = row ? row.querySelector('.btn-close-row') : null;
+    // On utilise '.action-close' pour être cohérent avec votre listener
+    const btn = row ? row.querySelector('.action-close') : null;
 
     if (btn) {
-      btn.innerHTML = "⏳"; // Sablier pendant le traitement
+      btn.innerHTML = "⏳";
       btn.disabled = true;
+      btn.style.opacity = "0.5";
     }
 
-    // Envoi de la requête Sell à l'API (via votre WebSocket existant)
-    // Note: Assurez-vous que wsOpenLines ou votre WebSocket principal est utilisé ici
+    // 2. Préparation de la requête (Format standard API Trading)
     const request = {
       sell: contractId,
-      price: 0 // 0 signifie "vendre au prix du marché"
+      price: 0 // Marché
     };
 
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(request));
-      console.log(`📤 Requête de vente envoyée pour le contrat : ${contractId}`);
+    // 3. Envoi via WebSocket
+    if (window.ws && window.ws.readyState === WebSocket.OPEN) {
+      window.ws.send(JSON.stringify(request));
+      console.log(`📤 Requête envoyée pour : ${contractId}`);
     } else {
-      alert("Erreur : Connexion WebSocket perdue. Impossible de fermer le contrat.");
+      alert("Erreur : Connexion perdue.");
       if (btn) {
         btn.innerHTML = "✖";
         btn.disabled = false;
+        btn.style.opacity = "1";
       }
     }
   }
@@ -2551,10 +2571,10 @@ document.addEventListener("DOMContentLoaded", () => {
             updateDonutCharts()
             updateTradeTable();
           }
-          break;  
+          break;
 
         case "portfolio":
-          if (typeof handlePortfolio === 'function') {  
+          if (typeof handlePortfolio === 'function') {
             handlePortfolio(data);
           }
           break;
@@ -3917,10 +3937,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  document.addEventListener('click', (event) => {
-    // On cherche si le clic vient du bouton de fermeture  
+  // Plus spécifique, donc légèrement plus performant
+  document.getElementById("contractsPanel").addEventListener('click', (event) => {
     const closeBtn = event.target.closest('.action-close');
-
     if (closeBtn) {
       const id = closeBtn.getAttribute('data-contract-id');
       if (typeof closeSingleContract === 'function') {
