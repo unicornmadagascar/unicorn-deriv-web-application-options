@@ -2463,7 +2463,7 @@ document.addEventListener("DOMContentLoaded", () => {
           wsplContracts.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
           break;
 
-        case "proposal_open_contract":
+        case "proposal_open_contract":  
           // C'est ici que la table reçoit ses données en temps réel
           if (typeof handleContractDetails === 'function') {
             handleContractDetails(data);
