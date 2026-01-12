@@ -608,6 +608,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
+
+      Openpositionlines(currentSeries);
     };
 
     ws.onclose = () => {
@@ -2334,7 +2336,6 @@ document.addEventListener("DOMContentLoaded", () => {
           // C'est ici que la table reçoit ses données en temps réel
           if (typeof handleContractDetails === 'function') {
             handleContractDetails(data);
-
           }
           break;
 
@@ -2352,6 +2353,8 @@ document.addEventListener("DOMContentLoaded", () => {
           console.error("❌ Erreur API :", data.error.message);
           break;
       }
+
+      Openpositionlines(currentSeries);
     };
 
     // --- ÉVÉNEMENT : FERMETURE ---
@@ -2370,8 +2373,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setUIStatus('offline');
       wsplContracts.close(); // Déclenche onclose pour la reconnexion   
     };
-
-    Openpositionlines(currentSeries); 
   }
 
   // 🔹 Fonction utilitaire : obtenir tous les comptes depuis l’URL (après authorization Deriv)
