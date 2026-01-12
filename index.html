@@ -611,40 +611,32 @@
       margin-bottom: 20px;
     }
 
+    /* Le panneau qui contient tout */
     #contractsPanel {
-      width: 100%;
       display: none;
-      /* caché par défaut */
-      opacity: 0;
+      /* Caché par défaut */
       flex-direction: column;
+      /* FORCE l'empilement vertical : Cercles en haut, Table en bas */
       gap: 20px;
       padding: 15px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      width: 100%;
       box-sizing: border-box;
-      max-height: 80vh;
-      /* 🔥 LIMITE */
-      overflow-y: auto;
-      /* 🔥 SCROLL */
-      overflow-x: hidden;
-      transition: opacity 0.3s ease;
     }
-  
-    /* Quand on active le panneau */  
+
+    /* Quand on active le panneau */
     #contractsPanel.active {
       display: flex;
       opacity: 1;
       animation: fadeInPanel 0.3s ease-out;
     }
 
+    /* Ajustement pour que la table ne déborde pas */
     .table-responsive {
       width: 100%;
-      max-height: 400px;
-      overflow-y: auto;
       overflow-x: auto;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding-bottom: 10px;
-      /* Important pour fixer le scroll sur certains navigateurs */
-      position: relative;
     }
 
     /* Fixer l'en-tête pendant le scroll vertical */
@@ -662,12 +654,12 @@
       transition: background-color 0.2s ease;
     }
 
+    /* Zone de la table */
     #autoHistoryList {
       width: 100%;
-      flex-grow: 1;
-      /* 🔥 */
-      min-height: 0;
-      /* 🔥 FIX flex overflow */
+      margin-top: 10px;
+      border-top: 1px solid #eee;
+      padding-top: 15px;
     }
 
 
@@ -700,7 +692,7 @@
       box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
     }
 
-    #contractsPanelToggle.btn-active {   
+    #contractsPanelToggle.btn-active {
       background: #64748b;
       /* Gris quand ouvert pour contraste */
     }
@@ -723,7 +715,7 @@
       border-collapse: separate;
       border-spacing: 0 8px;
       table-layout: auto;
-    }  
+    }
 
     #contractsPanel .trade-table th {
       color: #94a3b8;
@@ -864,15 +856,16 @@
       transform: scale(1.2);
     }
 
-    /* Donut Charts Styles */
+    /* Alignement des cercles (Donuts) */
     .donuts-wrapper {
       display: flex;
       justify-content: space-around;
-      gap: 30px;
-      flex-shrink: 0;
-      /* 🔥 NE PAS ÉCRASER */
+      /* Met les deux cercles côte à côte */
+      align-items: center;
+      flex-wrap: wrap;
+      /* Permet de passer à la ligne sur mobile */
+      width: 100%;
     }
-
 
     .donut-card {
       text-align: center;
@@ -1006,6 +999,47 @@
       transition: color 0.3s ease;
       font-variant-numeric: tabular-nums;
       /* Garde les chiffres alignés */
+    }
+
+    /* Classes de couleurs pour la table */
+    .text-success {
+      color: #10b981;
+    }
+
+    .text-danger {
+      color: #ef4444;
+    }
+
+    .badge {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .type-buy {
+      background: rgba(16, 185, 129, 0.1);
+      color: #10b981;
+    }
+
+    .type-sell {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+
+    /* Bouton de fermeture sur chaque ligne */
+    .btn-close-single {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: color 0.2s;
+    }
+
+    .btn-close-single:hover {
+      color: #ef4444;
     }
 
     /* --- ACCOUNT MANAGEMENT CONTAINER STYLES --- */
