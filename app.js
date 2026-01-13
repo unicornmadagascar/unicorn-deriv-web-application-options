@@ -448,6 +448,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     currentSessionId++;
     const thisSessionId = currentSessionId;
+    currentSymbol = symbol;
 
     // --- NETTOYAGE COMPLET ---
     if (ws) {
@@ -3825,7 +3826,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.onload = async () => {
     if (!currentSymbol) return;
-    if (currentChartType !== "candlestick") return;
     await loadSymbol(currentSymbol, currentInterval, currentChartType);
   };
 
@@ -3985,7 +3985,7 @@ document.addEventListener("DOMContentLoaded", () => {
       currentSymbol = e.target.dataset.symbol.trim();
       if (!currentSymbol) return;
       await loadSymbol(currentSymbol, currentInterval, currentChartType);
-      console.log("Current Symbol:", currentSymbol);
+      console.log("Current Symbol:", currentSymbol);   
     });
   });
 
