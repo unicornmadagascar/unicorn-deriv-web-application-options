@@ -631,7 +631,7 @@
     }
 
     /* Ajustement pour que la table ne déborde pas */
-    .table-responsive {
+    #contractsPanel .table-responsive {
       width: 100%;
       overflow-x: auto;
       /* Permet le scroll si la table est large */
@@ -647,9 +647,28 @@
       border-bottom: 2px solid #f1f5f9;
     }
 
-    /* Style pour la ligne sélectionnée via toggleSelectAll */
-    #autoTradeBody tr {
+    /* Style de base pour les lignes */
+    #contractsPanel #autoTradeBody tr {
       transition: background-color 0.2s ease;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    /* Effet au survol (Hover) pour aider la lecture */
+    #contractsPanel #autoTradeBody tr:hover {
+      background-color: #f8fafc;
+      /* Gris très léger */
+    }
+
+    /* Style pour la ligne quand elle est sélectionnée (via JS) */
+    #contractsPanel #autoTradeBody tr.selected-row {
+      background-color: #f0f7ff;
+      /* Bleu très pâle */
+    }
+
+    /* On change la couleur de la bordure gauche pour la ligne sélectionnée */
+    #contractsPanel #autoTradeBody tr.selected-row td:first-child {
+      border-left: 3px solid #3b82f6;
+      /* Petite barre bleue à gauche */
     }
 
     /* Zone de la table */
@@ -698,13 +717,12 @@
     }
 
     /* --- 3. STRUCTURE DE LA TABLE (ISOLÉE) --- */
-    .table-wrapper {
+    #contractsPanel .table-wrapper {
       background: #ffffff;
       padding: 10px;
       width: 100%;
       border-radius: 8px;
-
-      max-height: 55vh;
+      ² max-height: 55vh;
       /* 🔥 */
       overflow-y: auto;
     }
@@ -759,7 +777,7 @@
     }
 
     /* --- 4. BOUTONS D'ACTION DANS LA TABLE --- */
-    .table-wrapper #exportCSV {
+    #contractsPanel .table-wrapper #exportCSV {
       background: #f0f7ff;
       color: #2563eb;
       border: 1px solid #dbeafe;
@@ -769,14 +787,14 @@
       transition: all 0.2s ease;
     }
 
-    .table-wrapper #exportCSV:hover {
+    #contractsPanel .table-wrapper #exportCSV:hover {
       background: #2563eb;
       color: white;
       transform: translateY(-2px);
     }
 
     /* Style du bouton Panic */
-    .panic-btn {
+    #contractsPanel .panic-btn {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -798,21 +816,21 @@
     }
 
     /* Effet au survol (Hover) */
-    .panic-btn:hover {
+    #contractsPanel .panic-btn:hover {
       background-color: #ffffff;
       transform: translateY(1px);
       box-shadow: 0 3px 0px #b91c1c;
     }
 
     /* Effet au clic (Active) - Le bouton s'enfonce */
-    .panic-btn:active {
+    #contractsPanel .panic-btn:active {
       transform: translateY(4px);
       box-shadow: 0 0px 0px #b91c1c;
       background-color: #ffffff;
     }
 
     /* État désactivé (quand la fermeture est en cours) */
-    .panic-btn:disabled {
+    #contractsPanel .panic-btn:disabled {
       background-color: #cbd5e1;
       color: #64748b;
       box-shadow: none;
@@ -821,7 +839,7 @@
     }
 
     /* Animation de l'icône 🚨 */
-    .panic-btn:hover span {
+    #contractsPanel .panic-btn:hover span {
       animation: blink 0.5s infinite alternate;
     }
 
@@ -838,18 +856,18 @@
     }
 
     /* --- 5. INDICATEURS DE PROFIT & STATUT --- */
-    .profit-positive {
+    #contractsPanel .profit-positive {
       color: #10b981;
       font-weight: 800;
       animation: pulse-green 2s infinite;
     }
 
-    .profit-negative {
+    #contractsPanel .profit-negative {
       color: #ef4444;
       font-weight: 800;
     }
 
-    .status-dot {
+    #contractsPanel .status-dot {
       width: 10px;
       height: 10px;
       border-radius: 50%;
@@ -857,18 +875,18 @@
       margin-left: 8px;
     }
 
-    .status-online {
+    #contractsPanel .status-online {
       background: #10b981;
       box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
       animation: pulse-status 2s infinite;
     }
 
-    .status-offline {
+    #contractsPanel .status-offline {
       background: #cbd5e1;
     }
 
     /* --- 6. FOOTER STATISTIQUES --- */
-    .table-footer-stats {
+    #contractsPanel .table-footer-stats {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -881,7 +899,7 @@
       gap: 15px;
     }
 
-    .stats-item label {
+    #contractsPanel .stats-item label {
       font-size: 0.7rem;
       font-weight: 700;
       color: #64748b;
@@ -902,7 +920,7 @@
     }
 
     /* Alignement des cercles (Donuts) */
-    .donuts-wrapper {
+    #contractsPanel .donuts-wrapper {
       display: flex;
       justify-content: space-around;
       /* Met les deux cercles côte à côte */
@@ -912,46 +930,46 @@
       width: 100%;
     }
 
-    .donut-card {
+    #contractsPanel .donut-card {
       text-align: center;
       width: 120px;
     }
 
-    .donut-svg {
+    #contractsPanel .donut-svg {
       width: 100px;
       height: 100px;
     }
 
-    .donut-bg {
+    #contractsPanel .donut-bg {
       fill: none;
       stroke: #f1f5f9;
       /* Couleur du cercle de fond (gris clair) */
       stroke-width: 3;
     }
 
-    .donut-path {
+    #contractsPanel .donut-path {
       fill: none;
       stroke-width: 3;
       stroke-linecap: round;
       transition: stroke-dasharray 0.5s ease;
     }
 
-    .donut-path.profit {
+    #contractsPanel .donut-path.profit {
       stroke: #10b981;
     }
 
-    .donut-path.loss {
+    #contractsPanel .donut-path.loss {
       stroke: #ef4444;
     }
 
-    .donut-text {
+    #contractsPanel .donut-text {
       font-size: 8px;
       font-weight: bold;
       text-anchor: middle;
       fill: #1e293b;
     }
 
-    .donut-info {
+    #contractsPanel .donut-info {
       text-align: center;
       font-size: 14px;
       font-weight: 600;
