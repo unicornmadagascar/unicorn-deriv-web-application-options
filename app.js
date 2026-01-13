@@ -2007,7 +2007,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    const totalTrades = rows.length;   
+    const totalTrades = rows.length;     
 
     // 3. Calcul des pourcentages (Win Rate)
     const winRate = totalTrades > 0 ? (countProfit / totalTrades) * 100 : 0;     
