@@ -732,7 +732,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 7️⃣ Sauvegarde
-    lastTotalPnL = currentTotal;   
+    lastTotalPnL = currentTotal;     
   }
 
   /**
@@ -743,9 +743,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const lastIdx = priceDataZZ.length - 1;
 
-    // Vérifie si on travaille sur la même bougie (temps identique)
+    // Vérifie si on travaille sur la même bougie (temps identique)  
     if (lastIdx >= 0 && priceDataZZ[lastIdx].time === time) {
-      // Mise à jour de la bougie en cours (le prix bouge encore)
+      // Mise à jour de la bougie en cours (le prix bouge encore)  
       priceDataZZ[lastIdx] = bar;
     } else {
       // C'est une nouvelle bougie (ou la première du flux)
