@@ -656,7 +656,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      if (data.ping && data.msg_type === "ping") {
+      if (data.ping && data.msg_type === "ping") {   
         wsOpenLines.send(JSON.stringify({ ping: 1 }));
       }
     };
