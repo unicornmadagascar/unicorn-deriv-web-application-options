@@ -1534,40 +1534,6 @@
       font-size: 1.1rem;
     }
 
-    /* Titre */
-    #forex-screener-section .widget-title {
-      font-size: 17px;
-      font-weight: 600;
-      color: #333;
-      border-bottom: 1px solid #f0f0f0;
-      padding-bottom: 8px;
-    }
-
-    /* SECTION */
-    #forex-screener-section {
-      background: #ffffff;
-      border-radius: 14px;
-      padding-top: 20px;
-      min-height: 770px !important;
-      height: 850px !important;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
-      border: 1px solid #e8e8e8;
-      margin-top: 17px;
-    }
-
-    /* LE CONTENEUR DOIT PRENDRE LA HAUTEUR */
-    #forex-screener-container {
-      height: 700px !important;
-      min-height: 550px !important;
-      background: #fafafa;
-      border-radius: 10px;
-      border: 1px solid #efefef;
-      overflow: hidden;
-      margin-top: 20px;
-      margin-left: 25px;
-      margin-right: 10px;
-    }
-
 
     /* SYMBOL INFO */
     #gold-info-section {
@@ -2633,11 +2599,6 @@
     </div>
   </div>
 
-  <section class="widget-section full-width" id="forex-screener-section">
-    <div class="widget-title">Forex Screener</div>
-    <div id="forex-screener-container" class="tradingview-widget-container"></div>
-  </section>
-
   <!-- =======================
      POPUP CASHIER (Glass)
      ======================= -->
@@ -2753,23 +2714,6 @@
         "locale": "en",
         "width": "100%"
       }
-    );
-
-    // --- 4) Forex Screener ---
-    createTradingViewEmbed('forex-screener-container',
-      'https://s3.tradingview.com/external-embedding/embed-widget-screener.js',
-      {
-        "market": "forex",
-        "showToolbar": true,
-        "defaultColumn": "overview",
-        "defaultScreen": "general",
-        "isTransparent": false,
-        "locale": "en",
-        "colorTheme": "light",
-        "width": "100%",
-        "height": "100%"
-      },
-      '<a href="https://www.tradingview.com/markets/currencies/" target="_blank">Forex Screener</a>'
     );
 
     // Toggle panel
