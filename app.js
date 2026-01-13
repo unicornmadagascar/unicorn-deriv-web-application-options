@@ -249,14 +249,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- SYMBOLS ---
   function displaySymbols(currentInterval, currentChartType) {
     const symbolList = document.getElementById("symbolList");
-    if (!symbolList) return;
-    symbolList.innerHTML = "";
-
+    if (!symbolList) return;       
+    symbolList.innerHTML = "";      
+         
     SYMBOLS.forEach(s => {
-      const el = document.createElement("div");
-      el.className = "symbol-item";
-      el.textContent = s.name;
-      el.dataset.symbol = s.symbol;
+      const el = document.createElement("div");  
+      el.className = "symbol-item";  
+      el.textContent = s.name;   
+      el.dataset.symbol = s.symbol;   
 
       // On enlève le async ici car loadSymbol gère ses propres asynchronicités (WS)
       el.addEventListener("click", () => {
