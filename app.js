@@ -578,7 +578,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 3️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
         updateGlobalPnL();
-        updateTradeTable();
         Openpositionlines(currentSeries);
       }
 
@@ -812,6 +811,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Rafraîchit les indicateurs (MA, ZigZag) sur le nouveau point
       renderIndicators();
+      Openpositionlines(currentSeries);²
     }
   }
 
@@ -2224,7 +2224,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /**
  * Envoie un ordre de vente pour un contrat spécifique
  * @param {string|number} contractId - L'ID du contrat à clôturer
- */
+ */  
   function closeSingleContract(contractId) {
     if (!contractId) return;
 
