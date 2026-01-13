@@ -569,20 +569,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Contrat encore ouvert
         if (c.is_sold === 0) {
-          activeContracts[id] = Number(c.profit || 0);   
+          activeContracts[id] = Number(c.profit || 0);
         }
         // Contrat fermé → suppression
         else {
           delete activeContracts[id];
         }
-
-        // 3️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
-        updateGlobalPnL();   
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
-      
-      Openpositionlines(currentSeries);  
+
+      updateGlobalPnL();
+      Openpositionlines(currentSeries);
     };
 
     ws.onclose = () => {
@@ -595,7 +593,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
   function Openpositionlines(currentSeries) {
 
-    if (wsOpenLines === null) {     
+    if (wsOpenLines === null) {
       wsOpenLines = new WebSocket(WS_URL);
       wsOpenLines.onopen = () => { wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
     }
@@ -654,14 +652,14 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log(`📍 Ligne ajoutée pour ${type} @ ${entryPrice}`);
         }
       }
-   
-      if (data.ping && data.msg_type === "ping") {   
+
+      if (data.ping && data.msg_type === "ping") {
         wsOpenLines.send(JSON.stringify({ ping: 1 }));
       }
     };
 
-    wsOpenLines.onerror = (e) => {setTimeout(Openpositionlines,500); wsOpenLines.close(); wsOpenLines = null;};
-    wsOpenLines.onclose = () => {setTimeout(Openpositionlines,500);};
+    wsOpenLines.onerror = (e) => { setTimeout(Openpositionlines, 500); wsOpenLines.close(); wsOpenLines = null; };
+    wsOpenLines.onclose = () => { setTimeout(Openpositionlines, 500); };
   }
 
   function updateGlobalPnL() {
@@ -2156,16 +2154,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Supprime la ligne si le contrat est vendu
     if (c.is_sold) {
       const tr = autoTradeBody.querySelector(`[data-contract='${c.contract_id}']`);
-      if (tr) {
-        tr.remove();
-        //updateDonutCharts();      // 🟢 Appel ici après suppression
-      }
+      if (tr) tr.remove();
       console.log(`✅ Contract ${c.contract_id} closed.`);
       return;
     }
 
     // Objet formaté pour ton tableau
-    const trade = {  
+    const trade = {
       time: new Date(c.date_start * 1000).toLocaleTimeString(),
       contract_id: c.contract_id,
       symbol: c.underlying || c.symbol,
@@ -2189,7 +2184,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tr = document.createElement("tr");
       tr.dataset.contract = c.contract_id;
       tr.innerHTML = `  
-        <td><input type="checkbox" class="rowSelect"></td>
+        <td><input type="checkbox" class="rowSelect"></td>   
         <td>${trade.time}</td>
         <td>${trade.contract_id}</td>
         <td>${trade.symbol.toString()}</td>
@@ -2199,7 +2194,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${trade.entry_spot}</td>
         <td>${trade.tp}</td>
         <td>${trade.sl}</td>
-        <td style="color:${profitColor}; font-weight: bold;">${trade.profit}</td>
+        <td style="color:${trade.profit >= 0 ? 'blue' : 'red'};">${(trade.profit > 0 ? "+" : "") + trade.profit}</td> 
         <td>
         <button class="deleteRowBtn"
           style="background:#ef4444; border:none; color:white; border-radius:4px; padding:2px 6px; cursor:pointer;">
@@ -2211,55 +2206,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       // 🔄 Mise à jour en temps réel du profit
       tr.cells[10].textContent = trade.profit;
-      // 🎨 Mise à jour dynamique de la couleur
-      const currentVal = parseFloat(c.profit || 0);
-      tr.cells[10].style.color = currentVal >= 0 ? 'blue' : 'red';
-    }
-
-    // 🟢 Toujours mettre à jour les donuts à la fin de chaque message
-    //updateDonutCharts();
-    Openpositionlines(currentSeries);
-  }
-  
-  /**
- * Envoie un ordre de vente pour un contrat spécifique
- * @param {string|number} contractId - L'ID du contrat à clôturer
- */  
-  function closeSingleContract(contractId) {
-    if (!contractId) return;  
-
-    // 1. Récupération de la ligne via l'attribut data-contract
-    const row = document.querySelector(`tr[data-contract='${contractId}']`);
-
-    // On cherche le bouton à l'intérieur de cette ligne spécifique
-    // Votre bouton actuel a la classe 'deleteRowBtn'
-    const btn = row ? row.querySelector('.deleteRowBtn') : null;
-
-    if (btn) {
-      btn.innerHTML = "⏳"; // Sablier
-      btn.disabled = true;
-      btn.style.opacity = "0.5";
-      btn.style.cursor = "not-allowed";
-    }
-
-    // 2. Préparation de la requête pour le WebSocket
-    const request = {
-      sell: contractId,
-      price: 0 // Prix du marché
-    };
-
-    // 3. Envoi via le WebSocket global (ws)
-    if (typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(request));
-      console.log(`📤 Requête de vente envoyée pour le contrat : ${contractId}`);
-    } else {
-      alert("Erreur : La connexion WebSocket est fermée.");
-      if (btn) {
-        btn.innerHTML = "Close";
-        btn.disabled = false;
-        btn.style.opacity = "1";
-        btn.style.cursor = "pointer";
-      }
     }
   }
 
@@ -2384,6 +2330,7 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
       }
 
+      updateGlobalPnL();
       Openpositionlines(currentSeries);
     };
 
