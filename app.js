@@ -2104,7 +2104,7 @@ document.addEventListener("DOMContentLoaded", () => {
         panicBtn.innerHTML = "🚨 Emergency Close All";
         panicBtn.style.backgroundColor = ""; // Reprend le style CSS
       }
-    }, 5000);
+    }, 5000); 
   }  
 
   // --- 🧠 Gère les réponses Deriv
