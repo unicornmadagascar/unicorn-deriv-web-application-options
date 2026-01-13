@@ -732,7 +732,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 7️⃣ Sauvegarde
-    lastTotalPnL = currentTotal;
+    lastTotalPnL = currentTotal;   
   }
 
   /**
