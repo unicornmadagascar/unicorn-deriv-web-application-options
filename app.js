@@ -596,7 +596,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
   function Openpositionlines(currentSeries) {
 
-    if (wsOpenLines === null) {
+    if (wsOpenLines === null) {     
       wsOpenLines = new WebSocket(WS_URL);
       wsOpenLines.onopen = () => { wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
     }
