@@ -1988,7 +1988,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!tbody || !profitPath || !lossPath) return;
 
     const rows = tbody.querySelectorAll("tr");  
-    let countProfit = 0;
+    let countProfit = 0;  
     let countLoss = 0;
     let totalProfitVal = 0;
     let totalLossVal = 0;
