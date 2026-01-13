@@ -2105,7 +2105,7 @@ document.addEventListener("DOMContentLoaded", () => {
         panicBtn.style.backgroundColor = ""; // Reprend le style CSS
       }
     }, 5000);
-  }
+  }  
 
   // --- 🧠 Gère les réponses Deriv
   function handlePortfolio(data) {
