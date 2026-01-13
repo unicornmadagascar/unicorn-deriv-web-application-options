@@ -251,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const symbolList = document.getElementById("symbolList");
     if (!symbolList) return;       
     symbolList.innerHTML = "";      
-         
+        
     SYMBOLS.forEach(s => {
       const el = document.createElement("div");  
       el.className = "symbol-item";  
@@ -279,6 +279,8 @@ document.addEventListener("DOMContentLoaded", () => {
           .catch(error => {
             console.error("Erreur critique lors du basculement :", error);
           });
+
+          currentSymbol = s.symbol; 
       });
 
       symbolList.appendChild(el);
@@ -380,6 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 1. Réinitialisation de la mémoire des contrats
     activeContractsData = {};
+    activeContracts = {};
     lastTotalPnL = 0; // On remet aussi la mémoire de tendance à zéro
 
     // 2. Réinitialisation visuelle du compteur PnL
@@ -418,7 +421,7 @@ document.addEventListener("DOMContentLoaded", () => {
       case "2h": return 7200;
       case "4h": return 14400;
       case "8h": return 2880;
-      default: return 86400;
+      case "1d": return 86400;
     }
   }
 
@@ -448,7 +451,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     currentSessionId++;
     const thisSessionId = currentSessionId;
-    currentSymbol = symbol;
 
     // --- NETTOYAGE COMPLET ---
     if (ws) {
@@ -484,6 +486,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Payload Marché (Candles ou Ticks)
         const marketPayload = (chartType === "candlestick") ? {
           ticks_history: symbol,
+          adjust_start_time: 1,
           subscribe: 1,
           end: "latest",
           count: 1000,
@@ -491,6 +494,7 @@ document.addEventListener("DOMContentLoaded", () => {
           style: "candles"
         } : {
           ticks_history: symbol,
+          adjust_start_time: 1,
           subscribe: 1,
           end: "latest",
           count: 300,
