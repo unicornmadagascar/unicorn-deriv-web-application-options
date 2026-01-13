@@ -3985,7 +3985,7 @@ document.addEventListener("DOMContentLoaded", () => {
       currentSymbol = e.target.dataset.symbol.trim();
       if (!currentSymbol) return;
       await loadSymbol(currentSymbol, currentInterval, currentChartType);
-      console.log("Current Symbol:", currentSymbol);   
+      console.log("Current Symbol:", currentSymbol);    
     });
   });
 
