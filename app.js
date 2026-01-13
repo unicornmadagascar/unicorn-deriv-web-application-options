@@ -2245,7 +2245,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const tr = autoTradeBody.querySelector(`[data-contract='${c.contract_id}']`);
       if (tr) {
         tr.remove();
-        updateDonutCharts();      // 🟢 Appel ici après suppression
+        //updateDonutCharts();      // 🟢 Appel ici après suppression
       }
       console.log(`✅ Contract ${c.contract_id} closed.`);
       return;
@@ -2304,7 +2304,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 🟢 Toujours mettre à jour les donuts à la fin de chaque message
-    updateDonutCharts();
+    //updateDonutCharts();
   }
 
   /**
