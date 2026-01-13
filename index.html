@@ -2343,6 +2343,44 @@
         transform: scale(1);
       }
     }
+
+    #toast-container {
+      position: fixed;
+      /* Positionnement en bas à droite */
+      bottom: 25px;
+      right: 25px;
+      /* Largeur maximale pour ne pas encombrer l'écran */
+      width: 320px;
+      /* Z-index très élevé pour passer devant le contractsPanel et les graphiques */
+      z-index: 10000;
+
+      /* Flexbox pour empiler les notifications de bas en haut */
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 12px;
+
+      /* Empêche de bloquer les clics sur les éléments en dessous si vide */
+      pointer-events: none;
+    }
+
+    /* On réactive les clics uniquement sur les toasts eux-mêmes */
+    .toast {
+      pointer-events: auto;
+
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      /* Effet de flou moderne */
+      border-radius: 10px;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+        0 8px 10px -6px rgba(0, 0, 0, 0.1);
+
+      /* Animation fluide */
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
   </style>
 </head>
 
@@ -2444,6 +2482,8 @@
 
   <div id="container__">
     <div id="chartArea">
+
+      <div id="toast-container"></div>
 
       <div id="pnl-container">
         <span class="pnl-label">PnL Global:</span>
