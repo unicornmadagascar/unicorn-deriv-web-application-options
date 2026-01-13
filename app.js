@@ -675,7 +675,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wsOpenLines.onclose = () => {
       setTimeout(() => Openpositionlines(currentSeries), 5000);
     };
-  }
+  }  
   
   function updateGlobalPnL() {  
     const container = document.getElementById("pnl-container");
@@ -699,7 +699,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       container.style.display = "flex";
     }
-
+   
     // 2️⃣ Calcul PnL total
     let currentTotal = 0;
     activeIds.forEach(id => {
