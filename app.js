@@ -655,7 +655,7 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log(`📍 Ligne ajoutée pour ${type} @ ${entryPrice}`);
         }
       }
-
+   
       if (data.ping && data.msg_type === "ping") {   
         wsOpenLines.send(JSON.stringify({ ping: 1 }));
       }
