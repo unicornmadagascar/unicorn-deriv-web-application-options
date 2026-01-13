@@ -676,7 +676,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => Openpositionlines(currentSeries), 5000);
     };
   }
-
+  
   function updateGlobalPnL() {  
     const container = document.getElementById("pnl-container");
     const pnlSpan = document.getElementById("total-pnl");
