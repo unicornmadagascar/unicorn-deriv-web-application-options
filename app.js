@@ -577,12 +577,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // 3️⃣ MISE À JOUR DU COMPTEUR PNL GLOBAL
-        updateGlobalPnL();  
+        updateGlobalPnL();   
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
       
-      Openpositionlines(currentSeries);
+      Openpositionlines(currentSeries);  
     };
 
     ws.onclose = () => {
