@@ -1987,7 +1987,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const tbody = document.getElementById("autoTradeBody");
     if (!tbody || !profitPath || !lossPath) return;
 
-    const rows = tbody.querySelectorAll("tr");
+    const rows = tbody.querySelectorAll("tr");  
     let countProfit = 0;
     let countLoss = 0;
     let totalProfitVal = 0;
