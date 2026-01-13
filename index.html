@@ -639,7 +639,7 @@
 
     /* Fixer l'en-tête pendant le scroll vertical */
     #contractsPanel .trade-table thead th {
-      position: sticky;  
+      position: sticky;
       top: 0;
       background: #ffffff;
       /* Couleur de fond pour ne pas voir les lignes passer dessous */
@@ -862,7 +862,7 @@
       justify-content: space-around;
       /* Met les deux cercles côte à côte */
       align-items: center;
-      flex-wrap: wrap;   
+      flex-wrap: wrap;
       /* Permet de passer à la ligne sur mobile */
       width: 100%;
     }
@@ -1063,6 +1063,54 @@
     .action-close:hover {
       background: #fee2e2;
       color: #ef4444;
+      transform: scale(1.1);
+    }
+
+    /* Style du bouton Delete Selected */
+    .btn-delete-light {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #ffffff;
+      color: #ef4444;
+      /* Rouge corail */
+      border: 1.5px solid #fee2e2;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Effet au survol (Hover) */
+    .btn-delete-light:hover {
+      background-color: #fef2f2;
+      border-color: #ef4444;
+      color: #dc2626;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Effet au clic (Active) */
+    .btn-delete-light:active {
+      transform: translateY(0);
+      background-color: #fee2e2;
+    }
+
+    /* Style si le bouton est désactivé */
+    .btn-delete-light:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background-color: #f1f5f9;
+      border-color: #e2e8f0;
+      color: #94a3b8;
+    }
+
+    /* Animation de l'icône poubelle au survol */
+    .btn-delete-light:hover i,
+    .btn-delete-light:hover span {
       transform: scale(1.1);
     }
 
