@@ -776,20 +776,37 @@
     }
 
     .panic-btn {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
+      background-color: #ef4444;
+      /* Rouge vif */
       color: white;
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-weight: 600;
       border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 0px #b91c1c;
+      /* Effet 3D */
     }
 
     .panic-btn:hover {
-      filter: brightness(1.1);
-      transform: scale(1.02);
+      background-color: #dc2626;
+      transform: translateY(1px);
+      box-shadow: 0 2px 0px #b91c1c;
+    }
+
+    .panic-btn:active {
+      transform: translateY(4px);
+      box-shadow: none;
+    }
+
+    .panic-btn:disabled {
+      background-color: #cbd5e1;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
     }
 
     /* --- 5. INDICATEURS DE PROFIT & STATUT --- */

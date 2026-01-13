@@ -2094,7 +2094,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const confirmPanic = confirm(`🚨 ALERTE URGENCE 🚨\nVoulez-vous fermer immédiatement les ${rows.length} positions ouvertes ?`);
     if (!confirmPanic) return;
 
-    console.warn("--- DÉCLENCHEMENT PANIC CLOSE ---");  
+    console.warn("--- DÉCLENCHEMENT PANIC CLOSE ---");
 
     // 2. Vérification de la connexion WebSocket avant de boucler
     if (!window.ws || window.ws.readyState !== WebSocket.OPEN) {
@@ -2353,40 +2353,49 @@ document.addEventListener("DOMContentLoaded", () => {
  * Action pour le bouton Export CSV
  */
   function downloadHistoryCSV() {
-    // 1. Récupérer toutes les lignes du tableau (header + corps)
     const table = document.getElementById("autoTradeTable");
     if (!table) return alert("Tableau introuvable.");
 
     const rows = Array.from(table.querySelectorAll("tr"));
 
-    // 2. Transformer les lignes en format CSV
+    // 1. Définition du séparateur (le point-virgule est le plus fiable pour Excel FR)
+    const separator = ";";
+
     const csvContent = rows.map(row => {
       const cells = Array.from(row.querySelectorAll("th, td"));
-      return cells.map(cell => {
-        // Nettoyage : on enlève les sauts de ligne et on gère les virgules
+
+      // On ignore la 1ère (checkbox) et la dernière colonne (bouton)
+      return cells.slice(1, -1).map(cell => {
+        // On récupère le texte, on enlève les retours à la ligne
         let data = cell.innerText.replace(/\n/g, ' ').trim();
-        // Si la donnée contient une virgule, on l'entoure de guillemets
-        return data.includes(',') ? `"${data}"` : data;
-      }).join(",");
+
+        // Si la donnée contient le séparateur, on l'entoure de guillemets
+        // On remplace les guillemets simples par des doubles pour ne pas casser le CSV
+        if (data.includes(separator) || data.includes('"')) {
+          data = `"${data.replace(/"/g, '""')}"`;
+        }
+        return data;
+      }).join(separator); // Utilisation du point-virgule
     }).join("\n");
 
-    // 3. Créer le Blob (le fichier virtuel)
+    // 2. Création du BLOB avec le BOM UTF-8 (indispensable pour Excel)
+    // Le code \ufeff indique à Excel : "Ceci est de l'UTF-8, traite les colonnes correctement"
     const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
 
-    // 4. Créer un lien invisible pour déclencher le téléchargement
+    // 3. Procédure de téléchargement
     const link = document.createElement("a");
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const timestamp = new Date().toLocaleDateString().replace(/\//g, '-') + "_" + new Date().getHours() + "h" + new Date().getMinutes();
 
     link.setAttribute("href", url);
-    link.setAttribute("download", `trading_report_${timestamp}.csv`);
+    link.setAttribute("download", `Rapport_Trading_${timestamp}.csv`);  
     link.style.visibility = 'hidden';
 
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    console.log("📊 Rapport CSV exporté avec succès.");
+    console.log("✅ Fichier Excel (CSV) généré avec séparation par colonnes.");
   }
 
   function setUIStatus(state) {
