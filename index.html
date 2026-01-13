@@ -780,9 +780,9 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background-color: #ffffff;   
+      background-color: #ffffff;
       /* Rouge Alerte */
-      color: #f00606;  
+      color: #f00606;
       border: none;
       padding: 10px 20px;
       border-radius: 8px;
@@ -792,7 +792,7 @@
       letter-spacing: 0.5px;
       cursor: pointer;
       transition: all 0.1s ease;
-      box-shadow: 0 4px 0px #b91c1c;  
+      box-shadow: 0 4px 0px #b91c1c;
       /* Ombre foncée pour l'effet 3D */
       margin-left: 10px;
     }
@@ -822,7 +822,7 @@
 
     /* Animation de l'icône 🚨 */
     .panic-btn:hover span {
-      animation: blink 0.5s infinite alternate;  
+      animation: blink 0.5s infinite alternate;
     }
 
     @keyframes blink {
@@ -1157,6 +1157,26 @@
     .btn-delete-light:hover i,
     .btn-delete-light:hover span {
       transform: scale(1.1);
+    }
+
+    .stats-item {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .stats-item label {
+      font-size: 12px;
+      color: #64748b;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .stats-item span {
+      font-size: 1.2rem;
+      font-weight: 800;
+      font-family: 'Monaco', monospace;
     }
 
     /* --- ACCOUNT MANAGEMENT CONTAINER STYLES --- */

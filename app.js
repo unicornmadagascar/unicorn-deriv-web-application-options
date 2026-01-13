@@ -720,7 +720,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 6️⃣ Bouton Close All
-    if (closeAllBtn) {
+    if (closeAllBtn) {  
       const count = activeIds.length;
       if (count > 5) {
         closeAllBtn.style.animation = "pulse-red 1s infinite";
@@ -1912,6 +1912,52 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function updateTotalStats() {
+    const tbody = document.getElementById("autoTradeBody");
+    const totalOpenSpan = document.getElementById("totalOpenContracts");
+    const totalFloatingSpan = document.getElementById("totalFloatingProfit");
+
+    if (!tbody) return;
+
+    const rows = tbody.querySelectorAll("tr");
+    let totalProfit = 0;
+
+    // 1. Mise à jour du nombre de positions
+    if (totalOpenSpan) {
+      totalOpenSpan.textContent = rows.length;
+    }
+
+    // 2. Calcul du Profit Global (Floating P/L)
+    rows.forEach(row => {
+      // Le profit est dans la 11ème cellule (index 10)
+      const profitCell = row.cells[10];
+      if (profitCell) {
+        // On extrait le nombre (enlève le +, le USD, etc.)
+        const val = parseFloat(profitCell.textContent.replace(/[^+-.0-9]/g, '')) || 0;
+        totalProfit += val;
+      }
+    });  
+
+    // 3. Mise à jour de l'affichage du Profit Total
+    if (totalFloatingSpan) {
+      const sign = totalProfit > 0 ? "+" : "";
+      totalFloatingSpan.textContent = `${sign}${totalProfit.toFixed(2)} USD`;
+
+      // Gestion des couleurs
+      totalFloatingSpan.classList.remove('total-positive', 'total-negative', 'total-neutral');
+      if (totalProfit > 0) {
+        totalFloatingSpan.style.color = "#10b981"; // Vert
+        totalFloatingSpan.classList.add('total-positive');
+      } else if (totalProfit < 0) {
+        totalFloatingSpan.style.color = "#ef4444"; // Rouge
+        totalFloatingSpan.classList.add('total-negative');
+      } else {
+        totalFloatingSpan.style.color = "#64748b"; // Gris
+        totalFloatingSpan.classList.add('total-neutral');
+      }
+    }
+  }
+
   function updateDonutCharts() {
     const profitPath = document.getElementById("circle-profit-path");
     const lossPath = document.getElementById("circle-loss-path");
@@ -1981,7 +2027,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // 3. Appel de votre fonction de clôture individuelle
           if (contractId && typeof closeContract === 'function') {
-            closeContract(contractId);  
+            closeContract(contractId);
           }
         }
       });
@@ -2094,7 +2140,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // On applique un style visuel "en cours" sur chaque ligne
         row.style.opacity = "0.4";
         row.style.pointerEvents = "none";
-  
+
         // Appel de votre fonction de clôture individuelle
         closeContract(contractId);
       }
@@ -2107,8 +2153,8 @@ document.addEventListener("DOMContentLoaded", () => {
         panicBtn.innerHTML = "🚨 Emergency Close All";
         panicBtn.style.backgroundColor = ""; // Reprend le style CSS
       }
-    }, 5000); 
-  }  
+    }, 5000);
+  }
 
   // --- 🧠 Gère les réponses Deriv
   function handlePortfolio(data) {
@@ -2146,7 +2192,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log(`✅ Contract ${c.contract_id} closed.`);
       return;
     }
-   
+
     // Objet formaté pour ton tableau
     const trade = {
       time: new Date(c.date_start * 1000).toLocaleTimeString(),
@@ -2195,8 +2241,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // 🔄 Mise à jour en temps réel du profit
       tr.cells[10].textContent = trade.profit;
     }
-    
+
     updateGlobalPnL();
+    updateTotalStats();
     updateDonutCharts();
     Openpositionlines(currentSeries);
   }
@@ -3673,12 +3720,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }); */
 
   // === 🧹 ÉVÉNEMENTS SUR LES BOUTONS DELETE === 
-  document.addEventListener("click", (e) => { 
+  document.addEventListener("click", (e) => {
     // Si l’utilisateur clique sur un bouton Close
-    if (e.target.classList.contains("deleteRowBtn")) { 
+    if (e.target.classList.contains("deleteRowBtn")) {
       const tr = e.target.closest("tr");
       const checkbox = tr.querySelector(".rowSelect");
-      const contract_id = tr.dataset.contract; 
+      const contract_id = tr.dataset.contract;
 
       // On ne ferme que si la case est cochée
       if (checkbox && checkbox.checked) {
