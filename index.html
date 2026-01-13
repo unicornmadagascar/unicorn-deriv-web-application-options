@@ -672,7 +672,7 @@
     }
 
     /* Zone de la table */
-    #autoHistoryList {
+    #contractsPanel #autoHistoryList {
       display: block !important;
       /* Force l'affichage */
       width: 100%;
@@ -722,7 +722,7 @@
       padding: 10px;
       width: 100%;
       border-radius: 8px;
-      ² max-height: 55vh;
+      max-height: 55vh;
       /* 🔥 */
       overflow-y: auto;
     }
@@ -976,12 +976,12 @@
       margin-top: 5px;
     }
 
-    .row-selected {
+    #contractsPanel .row-selected {
       background-color: #f0f7ff !important;
       /* Bleu très léger */
     }
 
-    #selectAll {
+    #contractsPanel #selectAll {
       cursor: pointer;
       transform: scale(1.2);
     }
@@ -1029,32 +1029,32 @@
     }
 
     /* Animation fluide du tracé du cercle */
-    .donut-path {
+    #contractsPanel .donut-path {
       transition: stroke-dasharray 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     /* Optionnel : couleur différente si le pourcentage est à 100% (Win Rate parfait) */
-    #circle-profit-path[stroke-dasharray^="100"] {
+    #contractsPanel #circle-profit-path[stroke-dasharray^="100"] {
       filter: drop-shadow(0 0 3px #10b981);
     }
 
     /* Petit effet de transition pour que le chiffre ne "saute" pas */
-    #totalFloatingProfit {
+    #contractsPanel #totalFloatingProfit {
       transition: color 0.3s ease;
       font-variant-numeric: tabular-nums;
       /* Garde les chiffres alignés */
     }
 
     /* Classes de couleurs pour la table */
-    .text-success {
+    #contractsPanel .text-success {
       color: #10b981;
     }
 
-    .text-danger {
+    #contractsPanel .text-danger {
       color: #ef4444;
     }
 
-    .badge {
+    #contractsPanel .badge {
       padding: 2px 6px;
       border-radius: 4px;
       font-size: 0.7rem;
@@ -1062,39 +1062,39 @@
       text-transform: uppercase;
     }
 
-    .total-positive {
+    #contractsPanel .total-positive {
       color: #10b981;
       font-weight: bold;
     }
 
-    .total-negative {
+    #contractsPanel .total-negative {
       color: #ef4444;
       font-weight: bold;
     }
 
-    .total-neutral {
+    #contractsPanel .total-neutral {
       color: #64748b;
       font-weight: bold;
     }
 
-    .badge {
+    #contractsPanel .badge {
       padding: 4px 8px;
       border-radius: 4px;
       font-size: 0.7rem;
     }
 
-    .type-buy {
+    #contractsPanel .type-buy {
       background: rgba(16, 185, 129, 0.1);
       color: #10b981;
     }
 
-    .type-sell {
+    #contractsPanel .type-sell {
       background: rgba(239, 68, 68, 0.1);
       color: #ef4444;
     }
 
     /* Bouton de fermeture sur chaque ligne */
-    .btn-close-single {
+    #contractsPanel .btn-close-single {
       background: none;
       border: none;
       color: #94a3b8;
@@ -1103,11 +1103,11 @@
       transition: color 0.2s;
     }
 
-    .btn-close-single:hover {
+    #contractsPanel .btn-close-single:hover {
       color: #ef4444;
     }
 
-    .action-close {
+    #contractsPanel .action-close {
       background: #f1f5f9;
       border: none;
       color: #64748b;
@@ -1121,14 +1121,14 @@
       justify-content: center;
     }
 
-    .action-close:hover {
+    #contractsPanel .action-close:hover {
       background: #fee2e2;
       color: #ef4444;
       transform: scale(1.1);
     }
 
     /* Style du bouton Delete Selected */
-    .btn-delete-light {
+    #contractsPanel .btn-delete-light {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -1146,7 +1146,7 @@
     }
 
     /* Effet au survol (Hover) */
-    .btn-delete-light:hover {
+    #contractsPanel .btn-delete-light:hover {
       background-color: #fef2f2;
       border-color: #ef4444;
       color: #dc2626;
@@ -1155,13 +1155,13 @@
     }
 
     /* Effet au clic (Active) */
-    .btn-delete-light:active {
+    #contractsPanel .btn-delete-light:active {
       transform: translateY(0);
       background-color: #fee2e2;
     }
 
     /* Style si le bouton est désactivé */
-    .btn-delete-light:disabled {
+    #contractsPanel .btn-delete-light:disabled {
       opacity: 0.5;
       cursor: not-allowed;
       background-color: #f1f5f9;
@@ -1170,18 +1170,18 @@
     }
 
     /* Animation de l'icône poubelle au survol */
-    .btn-delete-light:hover i,
+    #contractsPanel .btn-delete-light:hover i,
     .btn-delete-light:hover span {
       transform: scale(1.1);
     }
 
-    .stats-item {
+    #contractsPanel .stats-item {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
     }
 
-    .stats-item label {
+    #contractsPanel .stats-item label {
       font-size: 12px;
       color: #64748b;
       text-transform: uppercase;
@@ -1189,13 +1189,13 @@
       margin-bottom: 4px;
     }
 
-    .stats-item span {
+    #contractsPanel .stats-item span {
       font-size: 1.2rem;
       font-weight: 800;
       font-family: 'Monaco', monospace;
     }
 
-    /* --- ACCOUNT MANAGEMENT CONTAINER STYLES --- */
+    /* --- ACCOUNT MANAGEMENT CONTAINER STYLES --- */  
     #tradeEvaluationContainer {
       background: var(--bg-card);
       border-radius: 20px;
