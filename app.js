@@ -811,7 +811,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Rafraîchit les indicateurs (MA, ZigZag) sur le nouveau point
       renderIndicators();
-      Openpositionlines(currentSeries);²
+      Openpositionlines(currentSeries);
     }
   }
 
@@ -2220,7 +2220,7 @@ document.addEventListener("DOMContentLoaded", () => {
     //updateDonutCharts();
     Openpositionlines(currentSeries);
   }
-
+  
   /**
  * Envoie un ordre de vente pour un contrat spécifique
  * @param {string|number} contractId - L'ID du contrat à clôturer
