@@ -577,11 +577,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         updateGlobalPnL();
+        updateDonutCharts();
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
 
-      updateDonutCharts();
       Openpositionlines(currentSeries);
     };
 
