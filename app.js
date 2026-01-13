@@ -355,7 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
         bottomColor: "rgba(189, 6, 221, 0.0)",
       });
     } else if (currentChartType === "candlestick") {
-      currentSeries = chart.addCandlestickSeries({
+      currentSeries = chart.addCandlestickSeries({ 
         upColor: "#26a69a", borderUpColor: "#26a69a", wickUpColor: "#26a69a",
         downColor: "#ef5350", borderDownColor: "#ef5350", wickDownColor: "#ef5350",
       });
@@ -437,7 +437,7 @@ document.addEventListener("DOMContentLoaded", () => {
       time: Math.floor(timestamp / (timestamp > 1e12 ? 1000 : 1)),
       open: Number(c.open),
       high: Number(c.high),
-      low: Number(c.low),
+      low: Number(c.low),  
       close: Number(c.close)
     };
   }
