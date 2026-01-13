@@ -1894,9 +1894,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const download = document.getElementById("exportCSV");
     if (download) {
       download.addEventListener("click", downloadHistoryCSV);
-    }
+    }  
 
-    const deleteSelectedBtn = document.getElementById("panicCloseAll");
+    const deleteSelectedBtn = document.getElementById("deleteSelected");
     if (deleteSelectedBtn) {
       deleteSelectedBtn.addEventListener("click", deleteSelectedRows);
     }
@@ -1953,9 +1953,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const pElem = document.getElementById("profitvalue");  
-    const lElem = document.getElementById("lossvalue");  
-    if (pElem) pElem.innerText = totalP.toFixed(2);  
-    if (lElem) lElem.innerText = totalL.toFixed(2);  
+    const lElem = document.getElementById("lossvalue");    
+    if (pElem) pElem.innerText = totalP.toFixed(2);         
+    if (lElem) lElem.innerText = totalL.toFixed(2);         
   }
 
   // DELETE SELECTED ROWS
