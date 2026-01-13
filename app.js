@@ -2074,7 +2074,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.warn("--- DÉCLENCHEMENT PANIC CLOSE ---");
 
     // 2. Vérification de la connexion WebSocket avant de boucler
-    if (!window.ws || window.ws.readyState !== WebSocket.OPEN) {
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
       alert("Erreur critique : La connexion au serveur est perdue. Impossible de fermer les positions.");
       return;
     }
