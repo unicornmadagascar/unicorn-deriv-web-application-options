@@ -249,14 +249,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- SYMBOLS ---
   function displaySymbols(currentInterval, currentChartType) {
     const symbolList = document.getElementById("symbolList");
-    if (!symbolList) return;       
-    symbolList.innerHTML = "";      
-        
+    if (!symbolList) return;
+    symbolList.innerHTML = "";
+
     SYMBOLS.forEach(s => {
-      const el = document.createElement("div");  
-      el.className = "symbol-item";  
-      el.textContent = s.name;   
-      el.dataset.symbol = s.symbol;   
+      const el = document.createElement("div");
+      el.className = "symbol-item";
+      el.textContent = s.name;
+      el.dataset.symbol = s.symbol;
 
       // On enlève le async ici car loadSymbol gère ses propres asynchronicités (WS)
       el.addEventListener("click", () => {
@@ -280,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Erreur critique lors du basculement :", error);
           });
 
-          currentSymbol = s.symbol; 
+        currentSymbol = s.symbol;
       });
 
       symbolList.appendChild(el);
@@ -355,7 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
         bottomColor: "rgba(189, 6, 221, 0.0)",
       });
     } else if (currentChartType === "candlestick") {
-      currentSeries = chart.addCandlestickSeries({ 
+      currentSeries = chart.addCandlestickSeries({
         upColor: "#26a69a", borderUpColor: "#26a69a", wickUpColor: "#26a69a",
         downColor: "#ef5350", borderDownColor: "#ef5350", wickDownColor: "#ef5350",
       });
@@ -437,7 +437,7 @@ document.addEventListener("DOMContentLoaded", () => {
       time: Math.floor(timestamp / (timestamp > 1e12 ? 1000 : 1)),
       open: Number(c.open),
       high: Number(c.high),
-      low: Number(c.low),  
+      low: Number(c.low),
       close: Number(c.close)
     };
   }
@@ -647,11 +647,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const lineStyle = isWin ? LightweightCharts.LineStyle.Solid : LightweightCharts.LineStyle.Dashed;
 
         // Label avec Bouton X simulé et Profit
-        const labelText = `${c.contract_type} at @${entryPrice} | ${isWin ? '+' : ''}${profit.toFixed(2)} ${CURRENCY.toString()}`; 
+        const labelText = `${c.contract_type} at @${entryPrice} | ${isWin ? '+' : ''}${profit.toFixed(2)} ${CURRENCY.toString()}`;
 
         if (!priceLines4openlines[id]) {
           // Création initiale
-          const line = currentSeries.createPriceLine({ 
+          const line = currentSeries.createPriceLine({
             price: entryPrice,
             color: color,
             lineWidth: 2,
@@ -831,6 +831,45 @@ document.addEventListener("DOMContentLoaded", () => {
       updateGlobalPnL();
       Openpositionlines(currentSeries);
     }
+  }
+
+  function showToast(message, type = 'info') {
+    let container = document.getElementById('toast-container');
+
+    // Sécurité : au cas où le HTML n'est pas présent
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toast-container';
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+
+    // Attribution des icônes
+    const icons = {
+      success: '🟢',
+      error: '🔴',
+      info: '🔵',
+      warning: '⚠️'
+    };
+
+    toast.innerHTML = `
+        <span style="font-size: 1.2rem;">${icons[type] || '🔔'}</span>
+        <div style="flex-grow: 1;">
+            <div style="font-size: 0.85rem; opacity: 0.8;">Notification</div>
+            <div style="font-size: 0.95rem; font-weight: 600;">${message}</div>
+        </div>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto-destruction après 4 secondes
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(50px)';
+      setTimeout(() => toast.remove(), 500);
+    }, 10000);
   }
 
   // --- CONNECT DERIV ---
@@ -1393,6 +1432,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       console.log(`✔️ Reverse exécuté → ${oppositeType} x${qty}`);
+      showToast(`✔️ Reverse executed → ${oppositeType} x${qty}`, 'info');
     };
   }
 
@@ -1443,6 +1483,8 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let i = 0; i < count; i++) {
       ws.send(JSON.stringify(payload));
     }
+
+    showToast(`Placing ${count} ${type} orders: ${currentSymbol}`, 'info');
   }
 
   // Événement du bouton
@@ -1506,6 +1548,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.msg_type === "sell") {
         const profit = parseFloat(data.sell.profit);
         console.log(`✅ Trade ${data.sell.contract_id} closed with profit: ${profit.toFixed(2)}`);
+        showToast(`Trade ${data.sell.contract_id} closed with profit: ${profit.toFixed(2)}`, 'success');
       }
 
       // No open contracts
@@ -1574,7 +1617,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // Sell confirmation
       if (data.msg_type === "sell") {
         const profit = parseFloat(data.sell.profit);
-        console.log(`✅ Trade ${data.sell.contract_id} closed with profit: ${profit.toFixed(2)}`);
+        console.log(`✅ Trade ${data.sell.contract_id} closed with loss: ${profit.toFixed(2)}`);
+        showToast(`Trade ${data.sell.contract_id} closed with loss: ${profit.toFixed(2)}`, 'error');
       }
 
       // No open contracts
@@ -1616,6 +1660,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 5️⃣ Confirmation de fermeture
       if (data.msg_type === 'sell') {
         console.log('✅ Contrat fermé:', data.sell.contract_id);
+         showToast(`Trade ${data.sell.contract_id} closed`, 'info');
       }
     };
   };
@@ -1642,9 +1687,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const index = activePeriods.indexOf(period);
-    const className = `active-${period}`;
+    const className = `active-${period}`; 
 
-    if (index === -1) {
+    if (index === -1) {  
       activePeriods.push(period);
       button.classList.add(className);
       button.innerText = `MA ${period} : ON`;
@@ -1987,8 +2032,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const tbody = document.getElementById("autoTradeBody");
     if (!tbody || !profitPath || !lossPath) return;
 
-    const rows = tbody.querySelectorAll("tr");   
-    let countProfit = 0;  
+    const rows = tbody.querySelectorAll("tr");
+    let countProfit = 0;
     let countLoss = 0;
     let totalProfitVal = 0;
     let totalLossVal = 0;
@@ -2011,11 +2056,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    const totalTrades = rows.length;     
+    const totalTrades = rows.length;
 
     // 3. Calcul des pourcentages (Win Rate)
-    const winRate = totalTrades > 0 ? (countProfit / totalTrades) * 100 : 0;     
-    const lossRate = totalTrades > 0 ? (countLoss / totalTrades) * 100 : 0;    
+    const winRate = totalTrades > 0 ? (countProfit / totalTrades) * 100 : 0;
+    const lossRate = totalTrades > 0 ? (countLoss / totalTrades) * 100 : 0;
 
     // 4. Animation des cercles (SVG dasharray)
     // Format: "pourcentage, reste"
@@ -2024,7 +2069,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5. Mise à jour des textes
     if (profitText) profitText.textContent = `${Math.round(winRate)}%`;
-    if (lossText) lossText.textContent = `${Math.round(lossRate)}%`;  
+    if (lossText) lossText.textContent = `${Math.round(lossRate)}%`;
 
     if (pValueElem) pValueElem.textContent = totalProfitVal.toFixed(2);
     if (lValueElem) lValueElem.textContent = totalLossVal.toFixed(2);
@@ -2267,7 +2312,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     updateGlobalPnL();
     updateTotalStats();
-    updateDonutCharts(); 
+    updateDonutCharts();
     Openpositionlines(currentSeries);
   }
 
@@ -3989,7 +4034,7 @@ document.addEventListener("DOMContentLoaded", () => {
       currentSymbol = e.target.dataset.symbol.trim();
       if (!currentSymbol) return;
       await loadSymbol(currentSymbol, currentInterval, currentChartType);
-      console.log("Current Symbol:", currentSymbol);    
+      console.log("Current Symbol:", currentSymbol);
     });
   });
 
