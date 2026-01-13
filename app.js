@@ -2226,7 +2226,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * @param {string|number} contractId - L'ID du contrat à clôturer
  */  
   function closeSingleContract(contractId) {
-    if (!contractId) return;
+    if (!contractId) return;  
 
     // 1. Récupération de la ligne via l'attribut data-contract
     const row = document.querySelector(`tr[data-contract='${contractId}']`);
