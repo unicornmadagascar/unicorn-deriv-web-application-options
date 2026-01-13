@@ -2019,7 +2019,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5. Mise à jour des textes
     if (profitText) profitText.textContent = `${Math.round(winRate)}%`;
-    if (lossText) lossText.textContent = `${Math.round(lossRate)}%`;
+    if (lossText) lossText.textContent = `${Math.round(lossRate)}%`;  
 
     if (pValueElem) pValueElem.textContent = totalProfitVal.toFixed(2);
     if (lValueElem) lValueElem.textContent = totalLossVal.toFixed(2);
