@@ -647,11 +647,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const lineStyle = isWin ? LightweightCharts.LineStyle.Solid : LightweightCharts.LineStyle.Dashed;
 
         // Label avec Bouton X simulé et Profit
-        const labelText = `${c.contract_type} at @${entryPrice} | ${isWin ? '+' : ''}${profit.toFixed(2)} ${CURRENCY.toString()}`;
+        const labelText = `${c.contract_type} at @${entryPrice} | ${isWin ? '+' : ''}${profit.toFixed(2)} ${CURRENCY.toString()}`; 
 
         if (!priceLines4openlines[id]) {
           // Création initiale
-          const line = currentSeries.createPriceLine({
+          const line = currentSeries.createPriceLine({  
             price: entryPrice,
             color: color,
             lineWidth: 2,
