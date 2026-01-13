@@ -2091,7 +2091,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // On applique un style visuel "en cours" sur chaque ligne
         row.style.opacity = "0.4";
         row.style.pointerEvents = "none";
-
+  
         // Appel de votre fonction de clôture individuelle
         closeContract(contractId);
       }
