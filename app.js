@@ -2156,7 +2156,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const tr = autoTradeBody.querySelector(`[data-contract='${c.contract_id}']`);
       if (tr) tr.remove();
       console.log(`✅ Contract ${c.contract_id} closed.`);
-      return;
+      return;    
     }
 
     // Objet formaté pour ton tableau
