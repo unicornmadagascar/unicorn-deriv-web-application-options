@@ -2393,9 +2393,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    document.body.removeChild(link);  
 
-    console.log("✅ Fichier Excel (CSV) généré avec séparation par colonnes.");
+    console.log("✅ Fichier Excel (CSV) généré avec séparation par colonnes.");  
   }
 
   function setUIStatus(state) {

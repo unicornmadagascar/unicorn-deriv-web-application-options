@@ -775,38 +775,67 @@
       transform: translateY(-2px);
     }
 
+    /* Style du bouton Panic */
     .panic-btn {
-      background-color: #ef4444;
-      /* Rouge vif */
-      color: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #ffffff;
+      /* Rouge Alerte */
+      color: #f00606;
       border: none;
       padding: 10px 20px;
       border-radius: 8px;
+      font-size: 14px;
       font-weight: 800;
+      /* Texte bien gras */
       text-transform: uppercase;
       letter-spacing: 0.5px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.1s ease;
       box-shadow: 0 4px 0px #b91c1c;
-      /* Effet 3D */
+      /* Ombre foncée pour l'effet 3D */
+      margin-left: 10px;
     }
 
+    /* Effet au survol (Hover) */
     .panic-btn:hover {
-      background-color: #dc2626;
+      background-color: #ffffff;
       transform: translateY(1px);
-      box-shadow: 0 2px 0px #b91c1c;
+      box-shadow: 0 3px 0px #b91c1c;
     }
 
+    /* Effet au clic (Active) - Le bouton s'enfonce */
     .panic-btn:active {
       transform: translateY(4px);
-      box-shadow: none;
+      box-shadow: 0 0px 0px #b91c1c;
+      background-color: #ffffff;
     }
 
+    /* État désactivé (quand la fermeture est en cours) */
     .panic-btn:disabled {
       background-color: #cbd5e1;
+      color: #64748b;
       box-shadow: none;
       cursor: not-allowed;
       transform: none;
+    }
+
+    /* Animation de l'icône 🚨 */
+    .panic-btn:hover span {
+      animation: blink 0.5s infinite alternate;  
+    }
+
+    @keyframes blink {
+      from {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      to {
+        opacity: 0.7;
+        transform: scale(1.2);
+      }
     }
 
     /* --- 5. INDICATEURS DE PROFIT & STATUT --- */
