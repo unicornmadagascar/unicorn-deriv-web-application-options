@@ -1977,12 +1977,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateDonutCharts() {
     // 1. Cible les éléments de vos cercles
-    const profitPath = document.getElementById("circle-profit-path");
-    const lossPath = document.getElementById("circle-loss-path");
-    const profitText = document.getElementById("profit-percent-text");
-    const lossText = document.getElementById("loss-percent-text");
-    const pValueElem = document.getElementById("profitvalue");
-    const lValueElem = document.getElementById("lossvalue");
+    const profitPath = document.getElementById("panel-circle-profit-path");
+    const lossPath = document.getElementById("panel-circle-loss-path");
+    const profitText = document.getElementById("panel-profit-percent-text");
+    const lossText = document.getElementById("panel-loss-percent-text");
+    const pValueElem = document.getElementById("panel-profitvalue");
+    const lValueElem = document.getElementById("panel-lossvalue");
 
     const tbody = document.getElementById("autoTradeBody");
     if (!tbody || !profitPath || !lossPath) return;

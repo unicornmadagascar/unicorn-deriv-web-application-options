@@ -1034,7 +1034,7 @@
     }
 
     /* Optionnel : couleur différente si le pourcentage est à 100% (Win Rate parfait) */
-    #contractsPanel #circle-profit-path[stroke-dasharray^="100"] {
+    #contractsPanel #panel-circle-profit-path[stroke-dasharray^="100"] {
       filter: drop-shadow(0 0 3px #10b981);
     }
 
@@ -1075,12 +1075,6 @@
     #contractsPanel .total-neutral {
       color: #64748b;
       font-weight: bold;
-    }
-
-    #contractsPanel .badge {
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 0.7rem;
     }
 
     #contractsPanel .type-buy {
@@ -1196,11 +1190,11 @@
     }
 
     /* Optionnel : mettre les valeurs en couleur */
-    #contractsPanel #profitvalue {
+    #contractsPanel #panel-profitvalue {
       color: #10b981;
     }
 
-    #contractsPanel #lossvalue {
+    #contractsPanel #panel-lossvalue {
       color: #ef4444;
     }
 
@@ -2665,24 +2659,24 @@
           <svg viewBox="0 0 36 36" class="donut-svg">
             <path class="donut-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831">
             </path>
-            <path id="circle-profit-path" class="donut-path profit"
+            <path id="panel-circle-profit-path" class="donut-path profit"
               d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               stroke-dasharray="0, 100"></path>
-            <text x="18" y="20.35" class="donut-text" id="profit-percent-text">0%</text>
+            <text x="18" y="20.35" class="donut-text" id="panel-profit-percent-text">0%</text>
           </svg>
-          <div class="donut-info">Profits: <span id="profitvalue">0.00</span></div>
+          <div class="donut-info">Profits: <span id="panel-profitvalue">0.00</span></div>
         </div>
 
         <div class="donut-card">
           <svg viewBox="0 0 36 36" class="donut-svg">
             <path class="donut-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831">
             </path>
-            <path id="circle-loss-path" class="donut-path loss"
+            <path id="panel-circle-loss-path" class="donut-path loss"
               d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               stroke-dasharray="0, 100"></path>
-            <text x="18" y="20.35" class="donut-text" id="loss-percent-text">0%</text>
+            <text x="18" y="20.35" class="donut-text" id="panel-loss-percent-text">0%</text>
           </svg>
-          <div class="donut-info">Loss: <span id="lossvalue">0.00</span></div>
+          <div class="donut-info">Loss: <span id="panel-lossvalue">0.00</span></div>
         </div>
       </div>
 
