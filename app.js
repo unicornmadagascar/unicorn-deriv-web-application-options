@@ -595,84 +595,76 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // === LIGNES DES CONTRATS OUVERTS (avec proposal_open_contract) ===
   function Openpositionlines(currentSeries) {
-    // Éviter les doublons de connexion
-    if (wsOpenLines && (wsOpenLines.readyState === WebSocket.OPEN || wsOpenLines.readyState === WebSocket.CONNECTING)) {
-      return;
+
+    if (wsOpenLines === null) {
+      wsOpenLines = new WebSocket(WS_URL);
+      wsOpenLines.onopen = () => { wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    wsOpenLines = new WebSocket(WS_URL);
+    if (wsOpenLines && (wsOpenLines.readyState === WebSocket.OPEN || wsOpenLines.readyState === WebSocket.CONNECTING)) {
+      wsOpenLines.onopen = () => { wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
+    }
 
-    wsOpenLines.onopen = () => {
-      wsOpenLines.send(JSON.stringify({ authorize: TOKEN }));
-    };
+    if (wsOpenLines && (wsOpenLines.readyState === WebSocket.CLOSED || wsOpenLines.readyState === WebSocket.CLOSING)) {
+      wsOpenLines = new WebSocket(WS_URL);
+      wsOpenLines.onopen = () => { wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
+    }
 
     wsOpenLines.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
 
-      // 1. Authentification
+      // Étape 1 : Authentification
       if (data.msg_type === "authorize") {
         wsOpenLines.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
-        return;
       }
 
-      // 2. Gestion des contrats
+      // Étape 2 : Réception d’un contrat
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
         const c = data.proposal_open_contract;
-        const id = c.contract_id;
 
-        // --- CAS : CONTRAT CLOS ---
-        if (c.status === "sold" || !!c.is_sold) {
+        // Si le contrat est clos → supprimer la ligne
+        if (c.status === "sold") {
+          const id = c.contract_id;
           if (priceLines4openlines[id]) {
-            currentSeries.removePriceLine(priceLines4openlines[id].line);
+            try { currentSeries.removePriceLine(priceLines4openlines[id]); } catch { }
             delete priceLines4openlines[id];
+            console.log(`❌ Ligne supprimée pour contrat ${id}`);
           }
           return;
         }
 
-        // --- CAS : CONTRAT ACTIF ---
-        const entryPrice = parseFloat(c.entry_tick_display_value || c.buy_price);
-        const profit = parseFloat(c.profit || 0);
-        if (isNaN(entryPrice)) return;
-
-        // Style dynamique selon le profit
-        const isWin = profit >= 0;
-        const color = isWin ? "#00ff80" : "#ff4d4d";
-        const lineStyle = isWin ? LightweightCharts.LineStyle.Solid : LightweightCharts.LineStyle.Dashed;
-
-        // Label avec Bouton X simulé et Profit
-        const labelText = `${c.contract_type} | ${isWin ? '+' : ''}${profit.toFixed(2)} ${CURRENCY.toString()}`;
-
+        // Si c’est un nouveau contrat ouvert
+        const id = c.contract_id;
         if (!priceLines4openlines[id]) {
-          // Création initiale
+          const entryPrice = parseFloat(c.entry_tick_display_value);              // || c.buy_price
+          if (!entryPrice || isNaN(entryPrice)) return;
+
+          const type = c.contract_type;
+          const color = type === "MULTUP" ? "#00ff80" : "#ff4d4d";
+
           const line = currentSeries.createPriceLine({
             price: entryPrice,
-            color: color,
+            color,
             lineWidth: 2,
-            lineStyle: lineStyle,
+            lineStyle: LightweightCharts.LineStyle.Dashed,
             axisLabelVisible: true,
-            title: labelText,
+            title: `${type} @ ${entryPrice.toFixed(2)}`,
           });
-          // On stocke la ligne, le prix et l'ID pour le clic
-          priceLines4openlines[id] = { line, entryPrice, id };
-        } else {
-          // Mise à jour en temps réel (Fluide)
-          priceLines4openlines[id].line.applyOptions({
-            title: labelText,
-            color: color,
-            lineStyle: lineStyle,
-          });
+
+          priceLines4openlines[id] = line;
+          console.log(`📍 Ligne ajoutée pour ${type} @ ${entryPrice}`);
         }
       }
 
-      // Heartbeat
-      if (data.msg_type === "ping") wsOpenLines.send(JSON.stringify({ ping: 1 }));
+      if (data.ping && data.msg_type === "ping") {
+        wsOpenLines.send(JSON.stringify({ ping: 1 }));
+      }
     };
 
-    wsOpenLines.onerror = (e) => console.error("⚠️ WS Open Lines Error:", e);
-    wsOpenLines.onclose = () => {
-      setTimeout(() => Openpositionlines(currentSeries), 5000);
-    };
+    wsOpenLines.onerror = (e) => {setTimeout(Openpositionlines,500); wsOpenLines.close(); wsOpenLines = null;};
+    wsOpenLines.onclose = () => {setTimeout(Openpositionlines,500);};
   }
+
 
   function updateGlobalPnL() {
     const container = document.getElementById("pnl-container");
@@ -2244,12 +2236,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (c.is_sold) {
       const tr = autoTradeBody.querySelector(`[data-contract='${c.contract_id}']`);
       if (tr) {
-        tr.remove();  
+        tr.remove();
         //updateDonutCharts();      // 🟢 Appel ici après suppression
       }
       console.log(`✅ Contract ${c.contract_id} closed.`);
-      return;  
-    }  
+      return;
+    }
 
     // Objet formaté pour ton tableau
     const trade = {
@@ -2305,6 +2297,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 🟢 Toujours mettre à jour les donuts à la fin de chaque message
     //updateDonutCharts();
+    Openpositionlines(currentSeries);
   }
 
   /**
@@ -2384,18 +2377,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const url = window.URL.createObjectURL(blob);
 
     // 3. Procédure de téléchargement
-    const link = document.createElement("a");   
+    const link = document.createElement("a");
     const timestamp = new Date().toLocaleDateString().replace(/\//g, '-') + "_" + new Date().getHours() + "h" + new Date().getMinutes();
 
     link.setAttribute("href", url);
-    link.setAttribute("download", `Rapport_Trading_${timestamp}.csv`);  
+    link.setAttribute("download", `Rapport_Trading_${timestamp}.csv`);
     link.style.visibility = 'hidden';
 
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);  
+    document.body.removeChild(link);
 
-    console.log("✅ Fichier Excel (CSV) généré avec séparation par colonnes.");  
+    console.log("✅ Fichier Excel (CSV) généré avec séparation par colonnes.");
   }
 
   function setUIStatus(state) {
