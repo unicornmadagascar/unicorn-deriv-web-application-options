@@ -2263,7 +2263,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     updateGlobalPnL();
     updateTotalStats();
-    updateDonutCharts();
+    updateDonutCharts(); 
     Openpositionlines(currentSeries);
   }
 
