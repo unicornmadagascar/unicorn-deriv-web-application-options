@@ -2165,7 +2165,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Objet formaté pour ton tableau
-    const trade = {
+    const trade = {  
       time: new Date(c.date_start * 1000).toLocaleTimeString(),
       contract_id: c.contract_id,
       symbol: c.underlying || c.symbol,
