@@ -681,7 +681,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("pnl-container");
     const pnlSpan = document.getElementById("total-pnl");
     const arrowSpan = document.getElementById("pnl-arrow");
-    const closeAllBtn = document.getElementById("closeAll");
+    const closeAllBtn = document.getElementById("closeAll");  
 
     if (!container || !pnlSpan || !arrowSpan) return;
 
