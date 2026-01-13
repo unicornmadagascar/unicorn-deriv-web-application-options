@@ -1894,7 +1894,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const download = document.getElementById("exportCSV");
     if (download) {
       download.addEventListener("click", downloadHistoryCSV);
-    }  
+    }
 
     const deleteSelectedBtn = document.getElementById("deleteSelected");
     if (deleteSelectedBtn) {
@@ -1952,22 +1952,22 @@ document.addEventListener("DOMContentLoaded", () => {
       if (val >= 0) totalP += val; else totalL += Math.abs(val);
     });
 
-    const pElem = document.getElementById("profitvalue");  
-    const lElem = document.getElementById("lossvalue");    
-    if (pElem) pElem.innerText = totalP.toFixed(2);         
-    if (lElem) lElem.innerText = totalL.toFixed(2);         
+    const pElem = document.getElementById("profitvalue");
+    const lElem = document.getElementById("lossvalue");
+    if (pElem) pElem.innerText = totalP.toFixed(2);
+    if (lElem) lElem.innerText = totalL.toFixed(2);
   }
 
   // DELETE SELECTED ROWS
-  function deleteSelectedRows() {  
+  function deleteSelectedRows() {
     // 1. On récupère toutes les checkboxes cochées
     const selectedCheckboxes = document.querySelectorAll('.rowSelect:checked');
 
-    if (selectedCheckboxes.length === 0) {   
+    if (selectedCheckboxes.length === 0) {
       alert("Aucun contrat sélectionné.");
       return;
     }
-    
+
     const confirmMsg = `Êtes-vous sûr de vouloir clôturer ces ${selectedCheckboxes.length} positions ?`;
     if (confirm(confirmMsg)) {
       selectedCheckboxes.forEach(cb => {
@@ -1977,8 +1977,8 @@ document.addEventListener("DOMContentLoaded", () => {
           const contractId = row.dataset.contract;
 
           // 3. Appel de votre fonction de clôture individuelle
-          if (contractId && typeof closeSingleContract === 'function') {
-            closeSingleContract(contractId);
+          if (contractId && typeof closeContract === 'function') {
+            closeContract(contractId);  
           }
         }
       });
@@ -2035,25 +2035,10 @@ document.addEventListener("DOMContentLoaded", () => {
         sell: id,
         price: 0 // "0" force la vente immédiate au prix du marché
       };
-      
+
       // Envoi de la requête
       wsplContracts.send(JSON.stringify(sellRequest));
-
       console.log(`%c 📤 Ordre de vente envoyé pour le contrat : ${id}`, "color: #3b82f6; font-weight: bold;");
-      
-      // 3. Feedback visuel immédiat sur la ligne du tableau
-      const tr = document.querySelector(`tr[data-contract="${id}"]`);
-      if (tr) {
-        const btn = tr.querySelector('.close-btn');
-        if (btn) {
-          btn.disabled = true;
-          btn.innerHTML = `<span class="spinner"></span> Closing...`;
-          btn.style.opacity = "0.6";
-        }
-        // On ajoute une classe pour griser légèrement la ligne en attendant la confirmation
-        tr.style.backgroundColor = "rgba(241, 245, 249, 0.5)";
-      }
-
     } else {
       // 4. Gestion de l'erreur de connexion
       console.error("❌ Impossible de fermer le contrat : WebSocket déconnecté.");
@@ -2156,8 +2141,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const tr = autoTradeBody.querySelector(`[data-contract='${c.contract_id}']`);
       if (tr) tr.remove();
       console.log(`✅ Contract ${c.contract_id} closed.`);
-      return;    
-    } 
+      return;
+    }
 
     // Objet formaté pour ton tableau
     const trade = {
@@ -2196,7 +2181,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${trade.sl}</td>
         <td style="color:${trade.profit >= 0 ? 'blue' : 'red'};">${(trade.profit > 0 ? "+" : "") + trade.profit}</td> 
         <td>
-        <button class="deleteRowBtn"
+        <button class="deleteRowBtn" 
           style="background:#ef4444; border:none; color:white; border-radius:4px; padding:2px 6px; cursor:pointer;">
           Close
         </button>
@@ -2207,7 +2192,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 🔄 Mise à jour en temps réel du profit
       tr.cells[10].textContent = trade.profit;
     }
-    
+
     updateDonutCharts();
     Openpositionlines(currentSeries);
   }
@@ -3683,6 +3668,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }); */
 
+  // === 🧹 ÉVÉNEMENTS SUR LES BOUTONS DELETE === 
+  document.addEventListener("click", (e) => { 
+    // Si l’utilisateur clique sur un bouton Close
+    if (e.target.classList.contains("deleteRowBtn")) { 
+      const tr = e.target.closest("tr");
+      const checkbox = tr.querySelector(".rowSelect");
+      const contract_id = tr.dataset.contract; 
+
+      // On ne ferme que si la case est cochée
+      if (checkbox && checkbox.checked) {
+        closeContract(contract_id);
+        tr.remove(); // suppression immédiate de la ligne
+      } else {
+        alert("☑️ Please check the box before closing this contract.");
+      }
+    }
+  });
+
   document.getElementById("contractsPanelToggle").addEventListener("click", function () {
     const panel = document.getElementById("contractsPanel");
 
@@ -3696,17 +3699,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       panel.style.display = "none";
       this.innerText = "📄 Show Open Contracts";
-    }
-  });
-
-  // Plus spécifique, donc légèrement plus performant
-  document.getElementById("contractsPanel").addEventListener('click', (event) => {
-    const closeBtn = event.target.closest('.action-close');
-    if (closeBtn) {
-      const id = closeBtn.getAttribute('data-contract-id');
-      if (typeof closeSingleContract === 'function') {
-        closeSingleContract(id);
-      }
     }
   });
 
