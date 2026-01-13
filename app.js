@@ -592,8 +592,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-
-  function Openpositionlines(currentSeries) { 
+  function Openpositionlines(currentSeries) {
     // Éviter les doublons de connexion
     if (wsOpenLines === null) {
       wsOpenLines = new WebSocket(WS_URL);
@@ -675,13 +674,13 @@ document.addEventListener("DOMContentLoaded", () => {
     wsOpenLines.onclose = () => {
       setTimeout(() => Openpositionlines(currentSeries), 5000);
     };
-  }  
-  
-  function updateGlobalPnL() {  
+  }
+
+  function updateGlobalPnL() {
     const container = document.getElementById("pnl-container");
     const pnlSpan = document.getElementById("total-pnl");
-    const arrowSpan = document.getElementById("pnl-arrow");  
-    const closeAllBtn = document.getElementById("closeAll");  
+    const arrowSpan = document.getElementById("pnl-arrow");
+    const closeAllBtn = document.getElementById("closeAll");
 
     if (!container || !pnlSpan || !arrowSpan) return;
 
@@ -699,7 +698,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       container.style.display = "flex";
     }
-   
+
     // 2️⃣ Calcul PnL total
     let currentTotal = 0;
     activeIds.forEach(id => {
@@ -1972,52 +1971,58 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateDonutCharts() {
+    // 1. Cible les éléments de vos cercles
     const profitPath = document.getElementById("circle-profit-path");
     const lossPath = document.getElementById("circle-loss-path");
     const profitText = document.getElementById("profit-percent-text");
     const lossText = document.getElementById("loss-percent-text");
+    const pValueElem = document.getElementById("profitvalue");
+    const lValueElem = document.getElementById("lossvalue");
 
-    if (!profitPath || !lossPath) return;
+    const tbody = document.getElementById("autoTradeBody");
+    if (!tbody || !profitPath || !lossPath) return;
 
+    const rows = tbody.querySelectorAll("tr");
     let countProfit = 0;
     let countLoss = 0;
-    const activeIds = Object.keys(activeContracts || {});
+    let totalProfitVal = 0;
+    let totalLossVal = 0;
 
-    // On calcule le Win Rate (nombre de trades gagnants vs perdants)
-    activeIds.forEach(id => {
-      const p = parseFloat(activeContracts[id].profit || 0);
-      if (p >= 0) countProfit++;
-      else countLoss++;
+    // 2. Analyse des données dans le tableau
+    rows.forEach(row => {
+      // Index 10 = 11ème colonne (Profit)
+      const cell = row.cells[10];
+      if (cell) {
+        // Nettoyage : on enlève tout sauf chiffres, points et signes
+        const val = parseFloat(cell.textContent.replace(/[^+-.0-9]/g, '')) || 0;
+
+        if (val >= 0) {
+          countProfit++;
+          totalProfitVal += val;
+        } else {
+          countLoss++;
+          totalLossVal += Math.abs(val);
+        }
+      }
     });
 
-    const total = activeIds.length;
-    const winRate = total > 0 ? (countProfit / total) * 100 : 0;
-    const lossRate = total > 0 ? (countLoss / total) * 100 : 0;
+    const totalTrades = rows.length;   
 
-    // Mise à jour des cercles SVG
+    // 3. Calcul des pourcentages (Win Rate)
+    const winRate = totalTrades > 0 ? (countProfit / totalTrades) * 100 : 0;
+    const lossRate = totalTrades > 0 ? (countLoss / totalTrades) * 100 : 0;
+
+    // 4. Animation des cercles (SVG dasharray)
+    // Format: "pourcentage, reste"
     profitPath.setAttribute("stroke-dasharray", `${winRate}, 100`);
     lossPath.setAttribute("stroke-dasharray", `${lossRate}, 100`);
 
-    // Mise à jour des pourcentages au centre
+    // 5. Mise à jour des textes
     if (profitText) profitText.textContent = `${Math.round(winRate)}%`;
     if (lossText) lossText.textContent = `${Math.round(lossRate)}%`;
 
-    // Mise à jour des valeurs en monnaie sous les cercles
-    updateDonutLabels();
-  }
-
-  function updateDonutLabels() {
-    let totalP = 0;
-    let totalL = 0;
-    Object.values(activeContracts || {}).forEach(c => {
-      const val = parseFloat(c.profit || 0);
-      if (val >= 0) totalP += val; else totalL += Math.abs(val);
-    });
-
-    const pElem = document.getElementById("profitvalue");
-    const lElem = document.getElementById("lossvalue");
-    if (pElem) pElem.innerText = totalP.toFixed(2);
-    if (lElem) lElem.innerText = totalL.toFixed(2);
+    if (pValueElem) pValueElem.textContent = totalProfitVal.toFixed(2);
+    if (lValueElem) lValueElem.textContent = totalLossVal.toFixed(2);
   }
 
   // DELETE SELECTED ROWS
