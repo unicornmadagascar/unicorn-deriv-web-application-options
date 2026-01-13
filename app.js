@@ -575,11 +575,13 @@ document.addEventListener("DOMContentLoaded", () => {
         else {
           delete activeContracts[id];
         }
+
+        updateGlobalPnL();
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
 
-      updateGlobalPnL();
+      updateDonutCharts();
       Openpositionlines(currentSeries);
     };
 
@@ -809,6 +811,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Rafraîchit les indicateurs (MA, ZigZag) sur le nouveau point
       renderIndicators();
+      updateGlobalPnL();
       Openpositionlines(currentSeries);
     }
   }
@@ -1301,7 +1304,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   reverseBtn.onclick = () => {
     console.log("🔄 Exécution du Reverse...");
-    reverseFunction();
+    reversefunction();
   };
 
   function reversefunction() {
@@ -2192,7 +2195,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // 🔄 Mise à jour en temps réel du profit
       tr.cells[10].textContent = trade.profit;
     }
-
+    
+    updateGlobalPnL();
     updateDonutCharts();
     Openpositionlines(currentSeries);
   }
