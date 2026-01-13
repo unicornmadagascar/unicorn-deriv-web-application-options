@@ -1952,22 +1952,22 @@ document.addEventListener("DOMContentLoaded", () => {
       if (val >= 0) totalP += val; else totalL += Math.abs(val);
     });
 
-    const pElem = document.getElementById("profitvalue");
-    const lElem = document.getElementById("lossvalue");
-    if (pElem) pElem.innerText = totalP.toFixed(2);
-    if (lElem) lElem.innerText = totalL.toFixed(2);
+    const pElem = document.getElementById("profitvalue");  
+    const lElem = document.getElementById("lossvalue");  
+    if (pElem) pElem.innerText = totalP.toFixed(2);  
+    if (lElem) lElem.innerText = totalL.toFixed(2);  
   }
 
   // DELETE SELECTED ROWS
-  function deleteSelectedRows() {
+  function deleteSelectedRows() {  
     // 1. On récupère toutes les checkboxes cochées
     const selectedCheckboxes = document.querySelectorAll('.rowSelect:checked');
 
-    if (selectedCheckboxes.length === 0) {
+    if (selectedCheckboxes.length === 0) {   
       alert("Aucun contrat sélectionné.");
       return;
     }
-
+    
     const confirmMsg = `Êtes-vous sûr de vouloir clôturer ces ${selectedCheckboxes.length} positions ?`;
     if (confirm(confirmMsg)) {
       selectedCheckboxes.forEach(cb => {
@@ -2035,12 +2035,12 @@ document.addEventListener("DOMContentLoaded", () => {
         sell: id,
         price: 0 // "0" force la vente immédiate au prix du marché
       };
-
+      
       // Envoi de la requête
       wsplContracts.send(JSON.stringify(sellRequest));
 
       console.log(`%c 📤 Ordre de vente envoyé pour le contrat : ${id}`, "color: #3b82f6; font-weight: bold;");
-
+      
       // 3. Feedback visuel immédiat sur la ligne du tableau
       const tr = document.querySelector(`tr[data-contract="${id}"]`);
       if (tr) {
@@ -2108,7 +2108,7 @@ document.addEventListener("DOMContentLoaded", () => {
         row.style.pointerEvents = "none";
 
         // Appel de votre fonction de clôture individuelle
-        closeSingleContract(contractId);
+        closeContract(contractId);
       }
     });
 
@@ -2157,7 +2157,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (tr) tr.remove();
       console.log(`✅ Contract ${c.contract_id} closed.`);
       return;    
-    }
+    } 
 
     // Objet formaté pour ton tableau
     const trade = {
@@ -2207,6 +2207,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // 🔄 Mise à jour en temps réel du profit
       tr.cells[10].textContent = trade.profit;
     }
+    
+    updateDonutCharts();
+    Openpositionlines(currentSeries);
   }
 
   /**
