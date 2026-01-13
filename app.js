@@ -2248,7 +2248,7 @@ document.addEventListener("DOMContentLoaded", () => {
         //updateDonutCharts();      // 🟢 Appel ici après suppression
       }
       console.log(`✅ Contract ${c.contract_id} closed.`);
-      return;
+      return;  
     }  
 
     // Objet formaté pour ton tableau
