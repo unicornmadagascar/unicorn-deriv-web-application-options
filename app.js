@@ -647,7 +647,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const lineStyle = isWin ? LightweightCharts.LineStyle.Solid : LightweightCharts.LineStyle.Dashed;
 
         // Label avec Bouton X simulé et Profit
-        const labelText = `${c.contract_type} at @${entryPrice} | ${isWin ? '+' : ''}${profit.toFixed(2)} ${CURRENCY.ToString()}`;
+        const labelText = `${c.contract_type} at @${entryPrice} | ${isWin ? '+' : ''}${profit.toFixed(2)} ${CURRENCY.toString()}`;
 
         if (!priceLines4openlines[id]) {
           // Création initiale
@@ -1886,7 +1886,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <button id="panicCloseAll" class="panic-btn" onclick="panicCloseAll()">🚨 Emergency Close All</button>
             </div>
         </div>
-    </div>
+    </div>  
     `;
 
     // Dans votre fonction initTable()
