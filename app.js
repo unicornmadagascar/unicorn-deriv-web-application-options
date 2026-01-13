@@ -2009,8 +2009,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalTrades = rows.length;   
 
     // 3. Calcul des pourcentages (Win Rate)
-    const winRate = totalTrades > 0 ? (countProfit / totalTrades) * 100 : 0;
-    const lossRate = totalTrades > 0 ? (countLoss / totalTrades) * 100 : 0;
+    const winRate = totalTrades > 0 ? (countProfit / totalTrades) * 100 : 0;   
+    const lossRate = totalTrades > 0 ? (countLoss / totalTrades) * 100 : 0;  
 
     // 4. Animation des cercles (SVG dasharray)
     // Format: "pourcentage, reste"
