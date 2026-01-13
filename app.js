@@ -2384,7 +2384,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const url = window.URL.createObjectURL(blob);
 
     // 3. Procédure de téléchargement
-    const link = document.createElement("a");
+    const link = document.createElement("a");   
     const timestamp = new Date().toLocaleDateString().replace(/\//g, '-') + "_" + new Date().getHours() + "h" + new Date().getMinutes();
 
     link.setAttribute("href", url);
