@@ -2143,7 +2143,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log(`✅ Contract ${c.contract_id} closed.`);
       return;
     }
-
+   
     // Objet formaté pour ton tableau
     const trade = {
       time: new Date(c.date_start * 1000).toLocaleTimeString(),
