@@ -569,7 +569,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Contrat encore ouvert
         if (c.is_sold === 0) {
-          activeContracts[id] = Number(c.profit || 0);
+          activeContracts[id] = Number(c.profit || 0);   
         }
         // Contrat fermé → suppression
         else {
