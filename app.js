@@ -3411,7 +3411,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. Ajout de "sep=;" pour forcer Excel à ouvrir les colonnes correctement
     // 2. Utilisation du point-virgule comme séparateur (standard européen)
     let csvContent = "sep=;\n";
-    csvContent += "Date;Currency;Event;Impact;Actual;Previous;Forecast\n";
+    csvContent += "Date;Currency;Event;Impact;Actual;Previous;Forecast\n";  
 
     selectedRows.forEach(row => {
       const columns = row.querySelectorAll("td");
