@@ -3590,7 +3590,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (start) {
             const startDate = new Date(start);
             startDate.setHours(0, 0, 0, 0);
-            if (eventDate < startDate) matchDate = false;
+            if (eventDate < startDate) matchDate = false;  
           }
           if (end) {
             const endDate = new Date(end);
