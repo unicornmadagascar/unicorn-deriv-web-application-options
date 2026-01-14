@@ -3057,7 +3057,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <td colspan="13">
             <div class="no-data-content">
                <span class="icon">📅</span>
-               <p>No economic events loaded.</p>
+               <p>No economic events loaded.</p>  
             </div>
           </td>
         </tr>  
