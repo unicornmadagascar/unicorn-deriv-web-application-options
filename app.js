@@ -3562,7 +3562,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 3. Filtrage Date  
       let matchDate = true;
-      if (start || end) {
+      if (start || end) {  
         // Conversion sécurisée du timestamp
         const ts = Number(e.date || e.time || 0) * 1000;
         if (ts > 0) {
