@@ -3683,6 +3683,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 3. Mise à jour de l'interface
     displayedEvents = filteredEvents; // Mise à jour de la liste pour le tri (sorting)
+
+    console.log("Données reçues pour le tableau (Filtre) :", edisplayedEvents);
     updateCalendarTable(filteredEvents); // Re-génération du HTML des lignes  
 
     // 4. Mise à jour du compteur de statut
