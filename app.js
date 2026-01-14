@@ -3212,6 +3212,8 @@ document.addEventListener("DOMContentLoaded", () => {
     displayedEvents = events; // Stockage global pour l'accès via le graphique
     let rows = "";
 
+    console.log("Données reçues pour le tableau :", events);
+
     events.forEach((e) => {
       // 1. Extraction sécurisée des données
       const actual = e.actual?.display_value || "-";
