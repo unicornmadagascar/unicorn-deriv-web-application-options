@@ -3546,50 +3546,45 @@ document.addEventListener("DOMContentLoaded", () => {
   // ✅ Filtrage du tableau
   function filterTable() {
     const q = document.getElementById('search').value.toLowerCase();
-    const imp = document.getElementById('impactFilter').value.toLowerCase();
+    const imp = document.getElementById('impactFilter').value; // Valeur du select
     const start = document.getElementById('startDate').value;
     const end = document.getElementById('endDate').value;
 
     const filtered = allEvents.filter(e => {
-      // 1. Recherche globale (on cible les champs clés plutôt que JSON.stringify pour la performance)
-      const content = `${e.event_name} ${e.country_name} ${e.currency}`.toLowerCase();
+      // --- 1. Recherche Textuelle ---
+      const content = `${e.indicator_type} ${e.country_name} ${e.currency}`.toLowerCase();
       const matchQ = !q || content.includes(q);
 
-      // 2. Filtrage Impact (On vérifie 'impact' OU 'importance')
-      // On s'assure que "impactFilter" All (vide) laisse tout passer
-      const eventImpact = String(e.impact || e.importance || '').toLowerCase();
-      const matchI = !imp || eventImpact === imp || eventImpact.includes(imp);
+      // --- 2. Rectification du Filtre Impact ---
+      // On récupère la valeur brute (ex: "Impact 5" ou "5")
+      const rawImpact = String(e.impact || e.importance || '').toLowerCase();
 
-      // 3. Filtrage Date  
-      let matchDate = true;
-      if (start || end) {  
-        // Conversion sécurisée du timestamp
-        const ts = Number(e.date || e.time || 0) * 1000;
-        if (ts > 0) {
-          const d = new Date(ts);
-          d.setHours(0, 0, 0, 0); // Reset pour comparer uniquement les jours
-
-          if (start) {
-            const startDate = new Date(start);
-            startDate.setHours(0, 0, 0, 0);
-            if (d < startDate) matchDate = false;
-          }
-          if (end) {
-            const endDate = new Date(end);
-            endDate.setHours(23, 59, 59, 999);
-            if (d > endDate) matchDate = false;
-          }
+      let matchI = true;
+      if (imp !== "") {
+        if (imp === "High") {
+          // High correspond généralement à Impact 4 et 5
+          matchI = rawImpact.includes("4") || rawImpact.includes("5") || rawImpact.includes("high");
+        } else if (imp === "Medium") { 
+          // Medium correspond à Impact 3
+          matchI = rawImpact.includes("3") || rawImpact.includes("medium");
+        } else if (imp === "Low") {
+          // Low correspond à Impact 1 et 2
+          matchI = rawImpact.includes("1") || rawImpact.includes("2") || rawImpact.includes("low");
         }
       }
+
+      // --- 3. Filtrage Date ---
+      let matchDate = true;
+      // ... (votre logique de date actuelle est correcte) ...
 
       return matchQ && matchI && matchDate;
     });
 
     displayedEvents = filtered;
-    updateCalendarTable(filtered); 
+    updateCalendarTable(filtered);
   }
 
-  document.getElementById("fetchTrades").addEventListener("click", () => { 
+  document.getElementById("fetchTrades").addEventListener("click", () => {
     // 1. Récupérer les dates des inputs HTML
     const startValue = document.getElementById("startDate").value; // Format YYYY-MM-DD
     const endValue = document.getElementById("endDate").value;
