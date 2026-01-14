@@ -3233,7 +3233,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const impactClass = `imp-${Math.min(Math.max(impactValue, 1), 5)}`;
       const impactLabel = impactValue >= 4 ? "HIGH" : (impactValue >= 3 ? "MED" : "LOW");
 
-      // Couleur du texte de l'impact pour plus de clarté
+      // Couleur du texte de l'impact pour plus de clarté  
       let impactTextColor = "#64748b"; // Gris par défaut
       if (impactValue >= 4) impactTextColor = "#ef4444"; // Rouge
       else if (impactValue >= 2) impactTextColor = "#f59e0b"; // Orange
