@@ -3550,7 +3550,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const start = document.getElementById('startDate').value;
     const end = document.getElementById('endDate').value;
 
-    const filtered = allEvents.filter(e => {
+    const filtered = allEvents.filter(e => {  
       // --- 1. Recherche Textuelle ---
       const content = `${e.indicator_type} ${e.country_name} ${e.currency}`.toLowerCase();
       const matchQ = !q || content.includes(q);
