@@ -66,52 +66,43 @@
 
     /* --- Global Panel Styling --- */
     #panel {
-      background: #1e222d;
-      /* Fond sombre typique TradingView */
-      color: #d1d4dc;
+      background: #ffffff;
+      /* Fond blanc pur */
+      color: #333333;
+      /* Texte gris foncé pour le confort visuel */
       padding: 24px;
       border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      font-family: 'Inter', -apple-system, sans-serif;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      /* Ombre plus douce */
+      font-family: 'Inter', sans-serif;
+      border: 1px solid #e0e3eb;
     }
 
     #panel h1 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 20px;
-      color: #ffffff;
-      border-left: 4px solid #3b82f6;
-      padding-left: 15px;
+      color: #1e222d;
+      border-left: 4px solid #2563eb;
+      /* Bleu vif pour le contraste */
     }
 
-    /* --- Toolbar Styling (Modern Inputs) --- */
+    /* Barre d'outils plus claire */
     .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 12px;
-      background: rgba(255, 255, 255, 0.03);
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: #f8f9fc;
+      border: 1px solid #eef0f7;
+      color: #444444;
     }
 
     .toolbar input,
     .toolbar select {
-      background: #2a2e39;
-      border: 1px solid #363a45;
-      color: #d1d4dc;
-      padding: 8px 12px;
-      border-radius: 6px;
-      outline: none;
-      transition: all 0.2s;
+      background: #ffffff;
+      border: 1px solid #d1d4dc;
+      color: #333333;
     }
 
     .toolbar input:focus,
     .toolbar select:focus {
-      border-color: #3b82f6;
-      background: #2f333e;
+      border-color: #2563eb;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
     /* --- Buttons --- */
@@ -217,24 +208,15 @@
 
     /* Style général de la table */
     .modern-calendar {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      background: #1e222d;
-      color: #d1d4dc;
+      background: #ffffff;
+      color: #333333;
     }
 
-    /* En-têtes fixes et stylisés */
+    /* En-tête de table */
     .modern-calendar th {
-      position: sticky;
-      top: 0;
-      background: #2a2e39;
-      padding: 12px 8px;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      color: #848e9c;
-      border-bottom: 1px solid #363a45;
-      white-space: nowrap;
+      background: #f1f3f7;
+      color: #6a6d78;
+      border-bottom: 2px solid #e0e3eb;
     }
 
     .modern-calendar th.sortable {
@@ -243,8 +225,8 @@
     }
 
     .modern-calendar th.sortable:hover {
-      color: #3b82f6;
-      background: #2f333e;
+      background: #e8ebf2;
+      color: #2563eb;
     }
 
     .sort-icon {
@@ -275,19 +257,20 @@
       margin-bottom: 10px;
     }
 
-    /* Lignes de données */
-    #calendarBody tr {
-      transition: background 0.15s;
+    /* Lignes du corps de la table */
+    #calendarBody td {
+      border-bottom: 1px solid #f0f0f0;
+      color: #444444;
     }
 
     #calendarBody tr:hover {
-      background: #2a2e39;
+      background: #fdfdfd;
+      /* Très léger changement au survol */
     }
 
-    #calendarBody td {
-      padding: 10px 8px;
-      border-bottom: 1px solid #2a2e39;
-      font-size: 0.85rem;
+    /* Ligne sélectionnée (si vous utilisez cette fonction) */
+    .selected-row {
+      background: #eef4ff !important;
     }
 
     /* Alignements spécifiques */
@@ -305,10 +288,32 @@
       font-weight: bold;
     }
 
-    /* Couleurs basées sur les chiffres de votre image */
-    .imp-5, .imp-4 { color: #ff4444; font-weight: bold; } /* Rouge pour High */
-    .imp-3 { color: #ffbb33; font-weight: bold; }        /* Orange pour Medium */
-    .imp-2, .imp-1 { color: #00C851; }                   /* Vert pour Low */
+    /* Couleurs adaptées au fond blanc */
+    .imp-5,
+    .imp-4 {
+      color: #cc0000;
+      /* Rouge plus profond */
+      background: #fff0f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .imp-3 {
+      color: #855600;
+      /* Orange/Marron */
+      background: #fff8e1;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .imp-2,
+    .imp-1 {
+      color: #1b5e20;
+      /* Vert forêt */
+      background: #e8f5e9;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
 
     /* Rouge - très fort */
 
