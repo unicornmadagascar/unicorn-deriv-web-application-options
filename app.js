@@ -4327,10 +4327,4 @@ document.addEventListener("DOMContentLoaded", () => {
   overlaygemini.addEventListener("click", (e) => {
     if (e.target === overlaygemini) closePopup();
   });
-
-  // ================================
-  // INITIALISATION DE L’OVERLAY (À APPELER UNE FOIS)
-  // ================================  
-  overlayCtx = createOverlayCanvas(chartInner, chart, () => drawEventLines(chart, overlayCtx, currentSeries));
-
 });
