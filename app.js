@@ -3180,7 +3180,7 @@ document.addEventListener("DOMContentLoaded", () => {
         allEvents = data.economic_calendar.events;
         console.log("Données reçues pour le tableau (fetchEconomicCalendar) :", allEvents);
         filterTable(allEvents);
-        statusEl.textContent = allEvents.length + ' événements chargés';     
+        statusEl.textContent = allEvents.length + ' événements chargés';
       }
     };
 
@@ -3408,37 +3408,41 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // En-têtes du CSV
-    let csvContent = "Date,Currency,Event,Impact,Actual,Previous,Forecast\n";
+    // 1. Ajout de "sep=;" pour forcer Excel à ouvrir les colonnes correctement
+    // 2. Utilisation du point-virgule comme séparateur (standard européen)
+    let csvContent = "sep=;\n";
+    csvContent += "Date;Currency;Event;Impact;Actual;Previous;Forecast\n";
 
     selectedRows.forEach(row => {
       const columns = row.querySelectorAll("td");
 
-      // Extraction propre des données (on saute la checkbox et les drapeaux)
-      const date = columns[1].textContent.trim();
-      const eventName = columns[4].textContent.trim(); // Contient "HIGH: Name"
-      const currency = columns[6].textContent.trim();
-      const impact = columns[8].textContent.trim();
-      const actual = columns[9].textContent.trim();
-      const previous = columns[10].textContent.trim();
-      const forecast = columns[11].textContent.trim();
+      // Extraction en s'assurant que les colonnes existent
+      const date = columns[1]?.textContent.trim() || "";
+      const eventName = columns[4]?.textContent.trim() || "";
+      const currency = columns[6]?.textContent.trim() || "";
+      const impact = columns[8]?.textContent.trim() || "";
+      const actual = columns[9]?.textContent.trim() || "";
+      const previous = columns[10]?.textContent.trim() || "";
+      const forecast = columns[11]?.textContent.trim() || "";
 
-      // Nettoyage des virgules pour éviter de casser le format CSV
+      // On remplace les points-virgules internes par des espaces pour ne pas casser le CSV
+      const clean = (txt) => txt.replace(/;/g, " ").replace(/"/g, '""');
+
       const line = [
-        `"${date}"`,
-        `"${currency}"`,
-        `"${eventName.replace(/"/g, '""')}"`,
-        `"${impact}"`,
-        `"${actual}"`,
-        `"${previous}"`,
-        `"${forecast}"`
-      ].join(",");
+        `"${clean(date)}"`,
+        `"${clean(currency)}"`,
+        `"${clean(eventName)}"`,
+        `"${clean(impact)}"`,
+        `"${clean(actual)}"`,
+        `"${clean(previous)}"`,
+        `"${clean(forecast)}"`
+      ].join(";"); // On joint avec un point-virgule
 
       csvContent += line + "\n";
     });
 
-    // Création du lien de téléchargement
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Utilisation de l'encodage UTF-8 avec BOM (Byte Order Mark) pour les accents
+    const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
 
@@ -3450,7 +3454,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }
+  };
 
   function GetCountryname(currency) {
     for (let i = 0; i < 9; i++) {
@@ -4061,7 +4065,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.onload = async () => {
     if (!currentSymbol) return;
     await loadSymbol(currentSymbol, currentInterval, currentChartType);
-    setupChartInteractions(chart);  
+    setupChartInteractions(chart);
   };
 
   // Simulation : mise à jour toutes les 2 secondes
