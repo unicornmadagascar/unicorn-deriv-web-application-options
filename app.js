@@ -3252,7 +3252,7 @@ document.addEventListener("DOMContentLoaded", () => {
                    </div>
                 </td>
                 <td class="text-center">-</td>
-                <td class="text-center"><b>${currency}</b></td>
+                <td class="text-center"><b>${currency}</b></td>  
                 <td>
                     <span class="${impactClass}" style="padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">
                        ${impactValue ? `Impact ${impactValue}` : "N/A"}
