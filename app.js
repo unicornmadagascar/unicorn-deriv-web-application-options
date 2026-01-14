@@ -4087,7 +4087,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     }
-  });
+  });  
 
   // === Trade Evaluation Panel Toggle ===
   tradeEvalToggle.addEventListener("click", () => {
