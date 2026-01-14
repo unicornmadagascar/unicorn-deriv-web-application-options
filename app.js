@@ -3394,8 +3394,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     markers.sort((a, b) => a.time - b.time);
 
-    if (window.currentSeries) {
-      window.currentSeries.setMarkers(markers);
+    if (currentSeries) {
+      currentSeries.setMarkers(markers);
     }
   }
 
