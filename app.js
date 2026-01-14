@@ -3181,7 +3181,7 @@ document.addEventListener("DOMContentLoaded", () => {
         filterTable();
         statusEl.textContent = allEvents.length + ' événements chargés';
       }
-    };
+    };  
 
     ws_calendar.onerror = (e) => { statusEl.textContent = 'Erreur WebSocket'; console.error(e); };
     ws_calendar.onclose = () => { statusEl.textContent = 'Connexion closed'; };
@@ -3684,7 +3684,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3. Mise à jour de l'interface
     displayedEvents = filteredEvents; // Mise à jour de la liste pour le tri (sorting)
 
-    console.log("Données reçues pour le tableau (Filtre) :", edisplayedEvents);
+    console.log("Données reçues pour le tableau (Filtre) :", displayedEvents);
     updateCalendarTable(filteredEvents); // Re-génération du HTML des lignes  
 
     // 4. Mise à jour du compteur de statut
