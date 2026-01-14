@@ -3305,7 +3305,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? param.point.x - tooltipWidth - 20
           : param.point.x + 20;
 
-        tooltip.style.left = `${xPos}px`;   
+        tooltip.style.left = `${xPos}px`; 
         tooltip.style.top = `${param.point.y + 20}px`;
 
         // Remplissage avec la valeur Previous
@@ -4055,7 +4055,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initTable();
   initHistoricalTable();
   inithistoricalchart();
-  initCalendarTable();
 
   window.onload = async () => {
     if (!currentSymbol) return;
@@ -4071,7 +4070,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, 300);
 
-  // À placer dans votre bloc d'initialisation (window.onload)
+   // À placer dans votre bloc d'initialisation (window.onload)
   document.getElementById("calendarBody").addEventListener("change", (e) => {
     if (e.target.type === 'checkbox') {
       // 1. Mettre à jour les marqueurs sur le graphique
@@ -4081,13 +4080,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const row = e.target.closest('tr');
       if (row) {
         if (e.target.checked) {
-          row.classList.add('selected-row-active');  
+          row.classList.add('selected-row-active');
         } else {
-          row.classList.remove('selected-row-active');    
+          row.classList.remove('selected-row-active');
         }
       }
     }
-  });  
+  });
 
   // === Trade Evaluation Panel Toggle ===
   tradeEvalToggle.addEventListener("click", () => {
@@ -4148,6 +4147,8 @@ document.addEventListener("DOMContentLoaded", () => {
       tokencalendar.value = TOKEN;
     }
   });
+
+  initCalendarTable();
 
   document.getElementById('fetchCalendar').addEventListener('click', fetchEconomicCalendar);
   document.getElementById('refresh').addEventListener('click', () => {
