@@ -3544,7 +3544,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   // ✅ Filtrage du tableau
-  function filterTable() {
+  function filterTable() { 
     const q = document.getElementById('search').value.toLowerCase();  
     const imp = document.getElementById('impactFilter').value; // Valeur du select
     const start = document.getElementById('startDate').value;
