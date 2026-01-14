@@ -3245,13 +3245,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 </td>
                 <td data-sort="${timestamp}" style="font-size: 0.85rem; color: #64748b;">${releaseDate}</td>
                 <td>${GetCountrycode(currency)}</td>
-                <td>${GetCountryname(currency)}</td>   
+                <td>${GetCountryname(currency)}</td>     
                 <td>
-                   <div class="impact-badge ${impactClass}">
+                   <div class="impact-badge ${impactClass}">  
                          ${impactLabel}: ${indicator}
                    </div>
                 </td>
-                <td class="text-center">-</td>
+                <td class="text-center">-</td>  
                 <td class="text-center"><b>${currency}</b></td>  
                 <td>
                     <span class="${impactClass}" style="padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">
