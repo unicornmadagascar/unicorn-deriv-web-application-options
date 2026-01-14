@@ -3631,7 +3631,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const searchableContent = `
             ${event.indicator_type || ''} 
             ${event.country_name || ''}   
-            ${event.currency || ''} 
+            ${event.currency || ''}   
             ${event.sector || ''} 
             ${event.event_name || ''}
         `.toLowerCase();
