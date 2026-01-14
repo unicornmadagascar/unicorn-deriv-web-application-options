@@ -3178,6 +3178,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (data.economic_calendar && Array.isArray(data.economic_calendar.events)) {
         allEvents = data.economic_calendar.events;
+        console.log("Données reçues pour le tableau (fetchEconomicCalendar) :", allEvents);
         filterTable();
         statusEl.textContent = allEvents.length + ' événements chargés';
       }
@@ -3584,6 +3585,8 @@ document.addEventListener("DOMContentLoaded", () => {
         ? String(valA).localeCompare(String(valB))
         : String(valB).localeCompare(String(valA));
     });
+
+    console.log("Données reçues pour le tableau (sortCalendarTable) :", displayedEvents);
 
     updateCalendarTable(displayedEvents);
   }
