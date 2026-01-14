@@ -3544,44 +3544,72 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   // ✅ Filtrage du tableau
-  function filterTable() { 
-    const q = document.getElementById('search').value.toLowerCase();  
-    const imp = document.getElementById('impactFilter').value; // Valeur du select
+  function filterTable() {
+    // 1. Récupération des valeurs
+    const q = document.getElementById('search').value.trim().toLowerCase();
+    const imp = document.getElementById('impactFilter').value; // "High", "Medium", "Low"
     const start = document.getElementById('startDate').value;
     const end = document.getElementById('endDate').value;
 
-    const filtered = allEvents.filter(e => {  
-      // --- 1. Recherche Textuelle ---
-      const content = `${e.indicator_type} ${e.country_name} ${e.currency}`.toLowerCase();
+    const filtered = allEvents.filter(e => {
+      // --- 1. Recherche Textuelle (Multi-champs) ---
+      // On concatène tous les champs visibles pour que la recherche soit globale
+      const content = `
+            ${e.indicator_type || ''} 
+            ${e.country_name || ''} 
+            ${e.currency || ''} 
+            ${e.sector || ''} 
+            ${e.event_name || ''}
+        `.toLowerCase();
+
       const matchQ = !q || content.includes(q);
 
-      // --- 2. Rectification du Filtre Impact ---
-      // On récupère la valeur brute (ex: "Impact 5" ou "5")
-      const rawImpact = String(e.impact || e.importance || '').toLowerCase();  
+      // --- 2. Filtre Impact (Correction de la casse) ---
+      const rawImpact = String(e.impact || e.importance || '').toLowerCase();
 
       let matchI = true;
       if (imp !== "") {
+        // Note: On compare avec "High" tel qu'écrit dans le HTML <option>
         if (imp === "High") {
-          // High correspond généralement à Impact 4 et 5
           matchI = rawImpact.includes("4") || rawImpact.includes("5") || rawImpact.includes("high");
-        } else if (imp === "Medium") { 
-          // Medium correspond à Impact 3
+        } else if (imp === "Medium") {
           matchI = rawImpact.includes("3") || rawImpact.includes("medium");
         } else if (imp === "Low") {
-          // Low correspond à Impact 1 et 2
           matchI = rawImpact.includes("1") || rawImpact.includes("2") || rawImpact.includes("low");
         }
       }
 
-      // --- 3. Filtrage Date ---
+      // --- 3. Filtrage Date (Logique simplifiée) ---
       let matchDate = true;
-      // ... (votre logique de date actuelle est correcte) ...
+      if (start || end) {
+        const eventTimestamp = Number(e.date || e.time || 0) * 1000;
+        if (eventTimestamp > 0) {
+          const eventDate = new Date(eventTimestamp);
+          eventDate.setHours(0, 0, 0, 0); // On compare uniquement les jours
+
+          if (start) {
+            const startDate = new Date(start);
+            startDate.setHours(0, 0, 0, 0);
+            if (eventDate < startDate) matchDate = false;
+          }
+          if (end) {
+            const endDate = new Date(end);
+            endDate.setHours(0, 0, 0, 0);
+            if (eventDate > endDate) matchDate = false;
+          }
+        }
+      }
 
       return matchQ && matchI && matchDate;
     });
 
+    // Mise à jour de la table et du compteur
     displayedEvents = filtered;
     updateCalendarTable(filtered);
+
+    // Mise à jour du statut
+    const status = document.getElementById("status");
+    if (status) status.textContent = `${filtered.length} événements filtrés`;
   }
 
   document.getElementById("fetchTrades").addEventListener("click", () => {
