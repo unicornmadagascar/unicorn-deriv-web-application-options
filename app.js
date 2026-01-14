@@ -3221,7 +3221,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const forecast = e.forecast?.display_value || "-";
       const revision = e.revision?.display_value || "-";
       const impactValue = e.impact || 0;
-
+   
       // 2. Gestion du temps
       const timestamp = e.release_date || 0;
       const releaseDate = timestamp ? new Date(timestamp * 1000).toLocaleString() : "-";
