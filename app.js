@@ -4148,7 +4148,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  initCalendarTable();  
+  initCalendarTable();    
 
   document.getElementById('fetchCalendar').addEventListener('click', fetchEconomicCalendar);
   document.getElementById('refresh').addEventListener('click', () => {
