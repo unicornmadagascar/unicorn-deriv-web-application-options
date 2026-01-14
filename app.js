@@ -3545,7 +3545,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   // ✅ Filtrage du tableau
   function filterTable() {
-    const q = document.getElementById('search').value.toLowerCase();
+    const q = document.getElementById('search').value.toLowerCase();  
     const imp = document.getElementById('impactFilter').value; // Valeur du select
     const start = document.getElementById('startDate').value;
     const end = document.getElementById('endDate').value;
@@ -3557,7 +3557,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // --- 2. Rectification du Filtre Impact ---
       // On récupère la valeur brute (ex: "Impact 5" ou "5")
-      const rawImpact = String(e.impact || e.importance || '').toLowerCase();
+      const rawImpact = String(e.impact || e.importance || '').toLowerCase();  
 
       let matchI = true;
       if (imp !== "") {
