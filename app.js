@@ -3180,7 +3180,7 @@ document.addEventListener("DOMContentLoaded", () => {
         allEvents = data.economic_calendar.events;
         console.log("Données reçues pour le tableau (fetchEconomicCalendar) :", allEvents);
         filterTable(allEvents);
-        statusEl.textContent = allEvents.length + ' événements chargés';  
+        statusEl.textContent = allEvents.length + ' événements chargés';     
       }
     };
 
