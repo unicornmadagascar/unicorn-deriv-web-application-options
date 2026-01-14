@@ -3066,9 +3066,9 @@ document.addEventListener("DOMContentLoaded", () => {
   `;
 
     // 🧩 Gestion du tri avec feedback visuel
-    const headers = CalendarList.querySelectorAll("th.sortable");  
+    const headers = CalendarList.querySelectorAll("th.sortable");
     headers.forEach((th) => {
-      th.addEventListener("click", () => { 
+      th.addEventListener("click", () => {
         // Retirer la classe active des autres
         headers.forEach(h => h.classList.remove('active-sort'));
         th.classList.add('active-sort');
@@ -3179,10 +3179,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.economic_calendar && Array.isArray(data.economic_calendar.events)) {
         allEvents = data.economic_calendar.events;
         console.log("Données reçues pour le tableau (fetchEconomicCalendar) :", allEvents);
-        filterTable();
+        filterTable(allEvents);
         statusEl.textContent = allEvents.length + ' événements chargés';
       }
-    };  
+    };
 
     ws_calendar.onerror = (e) => { statusEl.textContent = 'Erreur WebSocket'; console.error(e); };
     ws_calendar.onclose = () => { statusEl.textContent = 'Connexion closed'; };
@@ -3221,8 +3221,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const previous = e.previous?.display_value || "-";
       const forecast = e.forecast?.display_value || "-";
       const revision = e.revision?.display_value || "-";
-      const impactValue = e.impact || 0;  
-   
+      const impactValue = e.impact || 0;
+
       // 2. Gestion du temps
       const timestamp = e.release_date || 0;
       const releaseDate = timestamp ? new Date(timestamp * 1000).toLocaleString() : "-";
@@ -3292,9 +3292,9 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll('.highlight-row').forEach(row => row.classList.remove('highlight-row'));
 
       if (!param.time || !param.point || param.point.x < 0) {
-        tooltip.style.display = 'none'; 
+        tooltip.style.display = 'none';
         return;
-      }    
+      }
 
       // Recherche de l'événement
       const event = displayedEvents.find(e => Math.floor(Number(e.release_date || e.time)) === param.time);
@@ -3308,7 +3308,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? param.point.x - tooltipWidth - 20
           : param.point.x + 20;
 
-        tooltip.style.left = `${xPos}px`; 
+        tooltip.style.left = `${xPos}px`;
         tooltip.style.top = `${param.point.y + 20}px`;
 
         // Remplissage avec la valeur Previous
@@ -3616,84 +3616,78 @@ document.addEventListener("DOMContentLoaded", () => {
  * Filtre global pour le calendrier économique
  * Gère : Mots-clés, Impact (Niveaux 1-5) et Dates (Début/Fin)
  */
-  function filterTable() {
-    // 1. Récupération des critères de filtrage
-    const searchQuery = document.getElementById('search').value.trim().toLowerCase();
-    const impactFilter = document.getElementById('impactFilter').value; // Attendu: "High", "Medium", "Low" ou ""
-    const startDateStr = document.getElementById('startDate').value;
-    const endDateStr = document.getElementById('endDate').value;
+  function filterTable(eventsList) {
+    // 1. Utilise la liste passée en paramètre ou la liste globale
+    const dataToFilter = eventsList || allEvents;
 
-    // 2. Application du filtre sur la liste complète des événements
-    const filteredEvents = allEvents.filter(event => {
+    if (!dataToFilter || !Array.isArray(dataToFilter)) {
+      console.warn("filterTable: Aucune donnée à filtrer");
+      return;
+    }
 
-      // --- A. FILTRE RECHERCHE (Mots-clés) ---
-      // On cherche dans les colonnes principales pour une recherche globale
+    // 2. Récupération sécurisée des critères (avec valeurs par défaut)
+    const searchQuery = document.getElementById('search')?.value.trim().toLowerCase() || "";
+    const impactFilter = document.getElementById('impactFilter')?.value || "";
+    const startDateStr = document.getElementById('startDate')?.value || "";
+    const endDateStr = document.getElementById('endDate')?.value || "";
+
+    // 3. Application du filtre
+    const filteredEvents = dataToFilter.filter(event => {
+
+      // --- A. FILTRE RECHERCHE ---
+      // Utilisation des vraies clés Deriv : event_name et currency
       const searchableContent = `
-            ${event.indicator_type || ''} 
-            ${event.country_name || ''}   
-            ${event.currency || ''}    
-            ${event.sector || ''} 
-            ${event.event_name || ''}
+            ${event.event_name || ''} 
+            ${event.currency || ''}
         `.toLowerCase();
       const matchSearch = !searchQuery || searchableContent.includes(searchQuery);
 
-      // --- B. FILTRE IMPACT (Mapping 1-5) ---
-      // On récupère la valeur brute (ex: "Impact 5" ou "5")
-      const rawImpact = String(event.impact || event.importance || '').toLowerCase();
+      // --- B. FILTRE IMPACT ---
+      const impactVal = Number(event.impact || 0);
       let matchImpact = true;
-
       if (impactFilter !== "") {
-        if (impactFilter === "High") {
-          // High = Impact 4 ou 5
-          matchImpact = rawImpact.includes("4") || rawImpact.includes("5") || rawImpact.includes("high");
-        } else if (impactFilter === "Medium") {
-          // Medium = Impact 3
-          matchImpact = rawImpact.includes("3") || rawImpact.includes("medium");
-        } else if (impactFilter === "Low") {
-          // Low = Impact 1 ou 2
-          matchImpact = rawImpact.includes("1") || rawImpact.includes("2") || rawImpact.includes("low");
-        }
+        if (impactFilter === "High") matchImpact = (impactVal >= 4);
+        if (impactFilter === "Medium") matchImpact = (impactVal === 3);
+        if (impactFilter === "Low") matchImpact = (impactVal >= 1 && impactVal <= 2);
       }
 
-      // --- C. FILTRE DATES (Start & End) ---
+      // --- C. FILTRE DATES ---
       let matchDate = true;
-      // Conversion du timestamp (secondes -> millisecondes)
-      const eventTimestamp = Number(event.date || event.time || 0) * 1000;
+      // Deriv utilise release_date (en secondes)
+      const timestamp = Number(event.release_date || 0);
 
-      if (eventTimestamp > 0) {
-        const eventDate = new Date(eventTimestamp);
-        eventDate.setHours(0, 0, 0, 0); // Reset heure pour comparaison de jour pur
+      if (timestamp > 0) {
+        const eventDate = new Date(timestamp * 1000);
+        eventDate.setHours(0, 0, 0, 0);
 
         if (startDateStr) {
           const startLimit = new Date(startDateStr);
           startLimit.setHours(0, 0, 0, 0);
           if (eventDate < startLimit) matchDate = false;
         }
-
         if (endDateStr) {
           const endLimit = new Date(endDateStr);
           endLimit.setHours(0, 0, 0, 0);
           if (eventDate > endLimit) matchDate = false;
         }
       } else if (startDateStr || endDateStr) {
-        // Si l'utilisateur filtre par date mais que l'événement n'a pas de timestamp
         matchDate = false;
       }
 
-      // Un événement est affiché seulement s'il remplit les 3 conditions
       return matchSearch && matchImpact && matchDate;
     });
 
-    // 3. Mise à jour de l'interface
-    displayedEvents = filteredEvents; // Mise à jour de la liste pour le tri (sorting)
+    // 4. Mise à jour de l'interface
+    displayedEvents = filteredEvents;
+    console.log(`Filtre appliqué : ${filteredEvents.length} événements conservés`);
 
-    console.log("Données reçues pour le tableau (Filtre) :", displayedEvents);
-    updateCalendarTable(filteredEvents); // Re-génération du HTML des lignes  
+    // Appel de l'affichage
+    updateCalendarTable(filteredEvents);
 
-    // 4. Mise à jour du compteur de statut
-    const statusElement = document.getElementById("status");
+    // 5. Mise à jour du compteur
+    const statusElement = document.getElementById("status") || document.getElementById("statusEl");
     if (statusElement) {
-      statusElement.textContent = `${filteredEvents.length} événements filtrés`;
+      statusElement.textContent = `${filteredEvents.length} événements chargés`;
     }
   }
 
@@ -4074,11 +4068,11 @@ document.addEventListener("DOMContentLoaded", () => {
   setInterval(() => {
     if (connectBtn.textContent !== "Connect") {
       // Subscribing Tables  S
-      connectDeriv_table();    
+      connectDeriv_table();
     }
   }, 300);
 
-   // À placer dans votre bloc d'initialisation (window.onload)
+  // À placer dans votre bloc d'initialisation (window.onload)
   document.getElementById("calendarBody").addEventListener("change", (e) => {
     if (e.target.type === 'checkbox') {
       // 1. Mettre à jour les marqueurs sur le graphique
@@ -4152,9 +4146,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (TOKEN) {
       // puis exécute l'autorisation Deriv
       console.log("USER TOKEN : " + TOKEN);
-      tokencalendar.value = TOKEN;  
+      tokencalendar.value = TOKEN;
     }
-  });    
+  });
 
   document.getElementById('fetchCalendar').addEventListener('click', fetchEconomicCalendar);
   document.getElementById('refresh').addEventListener('click', () => {
