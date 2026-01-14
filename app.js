@@ -100,6 +100,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let historicalConn = null;
   let closedTradesHistory = [];
   let activeContracts = {};
+  let currentSortCol = -1;
+  let isAscending = true;
   // ================== x ==================
 
   let wsReady = false;
@@ -1663,7 +1665,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 5️⃣ Confirmation de fermeture
       if (data.msg_type === 'sell') {
         console.log('✅ Contrat fermé:', data.sell.contract_id);
-         showToast(`Trade ${data.sell.contract_id} closed`, 'info');
+        showToast(`Trade ${data.sell.contract_id} closed`, 'info');
       }
     };
   };
@@ -1690,9 +1692,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const index = activePeriods.indexOf(period);
-    const className = `active-${period}`; 
+    const className = `active-${period}`;
 
-    if (index === -1) {  
+    if (index === -1) {
       activePeriods.push(period);
       button.classList.add(className);
       button.innerText = `MA ${period} : ON`;
@@ -1761,7 +1763,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // --- AUTRES INDICATEURS (Ex: RSI, Bollinger) ---
       // Vous pouvez ajouter d'autres conditions ici
-    });   
+    });
   }
 
   // --- ALGORITHME ZIGZAG AVEC MISE À JOUR DES EXTRÊMES ---
@@ -1968,7 +1970,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (deleteSelectedBtn) {
       deleteSelectedBtn.addEventListener("click", deleteSelectedRows);
     }
-  
+
     const masterCb = document.getElementById('selectAll');
     if (masterCb) {
       masterCb.addEventListener('change', function () {
@@ -2103,7 +2105,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
-      showToast(`${selectedCheckboxes.length} Contracts were closed`,'info');
+      showToast(`${selectedCheckboxes.length} Contracts were closed`, 'info');
 
       // 4. Reset de la case "Tout sélectionner"
       const selectAllCb = document.getElementById('selectAll');
@@ -2161,7 +2163,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Envoi de la requête
       wsplContracts.send(JSON.stringify(sellRequest));
       console.log(`%c 📤 Ordre de vente envoyé pour le contrat : ${id}`, "color: #3b82f6; font-weight: bold;");
-      showToast(`Trade ${id} closed`,'info');
+      showToast(`Trade ${id} closed`, 'info');
     } else {
       // 4. Gestion de l'erreur de connexion
       console.error("❌ Impossible de fermer le contrat : WebSocket déconnecté.");
@@ -2192,7 +2194,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!confirmPanic) return;
 
     console.warn("--- DÉCLENCHEMENT PANIC CLOSE ---");
-    showToast(`⚠️ PANIC CLOSE TRIGGERED`,'warn');
+    showToast(`⚠️ PANIC CLOSE TRIGGERED`, 'warn');
 
     // 2. Vérification de la connexion WebSocket avant de boucler  
     if (!ws || ws.readyState !== WebSocket.OPEN) {
@@ -3022,55 +3024,76 @@ document.addEventListener("DOMContentLoaded", () => {
     filterAndRender();
   }
 
-  // ✅ Initialisation du tableau HTML
   function initCalendarTable() {
     const CalendarList = document.getElementById("CalendarList");
 
-    // Construction du tableau HTML
+    // Construction du tableau avec des classes pour le style moderne
     CalendarList.innerHTML = `
-     <table id="calendarTable" class="calendar-table">
-       <thead>
-         <tr>
-           <th><input type="checkbox" id="selectAll__"></th>
-           <th>Time</th>
-           <th>Country Code</th>
-           <th>Country Name</th>
-           <th>Indicator Type</th>
-           <th>Sector</th>
-           <th>Currency</th>
-           <th>Importance</th>
-           <th>Impact</th>
-           <th>Actual</th>
-           <th>Previous</th>
-           <th>Forecast</th>
-           <th>Revision</th>
-         </tr>
-       </thead>
-       <tbody id="calendarBody">
-         <tr>
-          <td colspan="13" style="text-align:center; color:gray;">
-              No events loaded.
-           </td>
-         </tr>
-       </tbody>
-     </table>
-   `;
+    <table id="calendarTable" class="modern-calendar">
+      <thead>
+        <tr>
+          <th class="col-check">
+            <div class="custom-checkbox">
+              <input type="checkbox" id="selectAll__">
+              <label for="selectAll__"></label>
+            </div>
+          </th>
+          <th class="sortable">Time <span class="sort-icon">↕</span></th>
+          <th class="sortable">Code</th>
+          <th class="sortable">Country</th>
+          <th class="sortable">Indicator</th>
+          <th class="sortable">Sector</th>
+          <th class="sortable">Curr.</th>
+          <th class="sortable text-center">Imp.</th>
+          <th class="sortable">Impact</th>
+          <th>Actual</th>
+          <th>Previous</th>
+          <th>Forecast</th>
+          <th>Rev.</th>
+        </tr>
+      </thead>
+      <tbody id="calendarBody">
+        <tr class="empty-state">
+          <td colspan="13">
+            <div class="no-data-content">
+               <span class="icon">📅</span>
+               <p>No economic events loaded.</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  `;
 
-    // 🧩 Ajout des gestionnaires pour le tri si nécessaires
-    const headers = CalendarList.querySelectorAll("th");
-    headers.forEach((th, i) => {
-      th.addEventListener("click", () => sortCalendarTable(i));
+    // 🧩 Gestion du tri avec feedback visuel
+    const headers = CalendarList.querySelectorAll("th.sortable");
+    headers.forEach((th) => {
+      th.addEventListener("click", () => {
+        // Retirer la classe active des autres
+        headers.forEach(h => h.classList.remove('active-sort'));
+        th.classList.add('active-sort');
+
+        const index = Array.from(th.parentNode.children).indexOf(th);
+        sortCalendarTable(index);
+      });
     });
 
-    // 🧩 Bouton "Tout sélectionner"
+    // 🧩 Sélection globale améliorée
     const selectAll__ = document.getElementById("selectAll__");
     if (selectAll__) {
       selectAll__.addEventListener("change", e => {
-        const checkboxes__ = CalendarList.querySelectorAll("#calendarBody input[type='checkbox']");
-        checkboxes__.forEach(cb => cb.checked = e.target.checked);
+        const checkboxes = CalendarList.querySelectorAll("#calendarBody input[type='checkbox']");
+        checkboxes.forEach(cb => {
+          cb.checked = e.target.checked;
+          // Optionnel : ajouter une classe à la ligne pour le highlight
+          const row = cb.closest('tr');
+          if (row) row.classList.toggle('selected-row', e.target.checked);
+        });
       });
     }
   }
+
+  
 
   // ✅ Requête WS Deriv API
   function fetchEconomicCalendar() {

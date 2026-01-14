@@ -64,137 +64,240 @@
       color: #4d4747
     }
 
-    .panel {
-      height: var(--panel-height);
-      background: #ffffff;
-      border-radius: 10px;
-      padding: 12px;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      gap: 8px
+    /* --- Global Panel Styling --- */
+    #panel {
+      background: #1e222d;
+      /* Fond sombre typique TradingView */
+      color: #d1d4dc;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      font-family: 'Inter', -apple-system, sans-serif;
     }
 
+    #panel h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #ffffff;
+      border-left: 4px solid #3b82f6;
+      padding-left: 15px;
+    }
+
+    /* --- Toolbar Styling (Modern Inputs) --- */
     .toolbar {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      align-items: center
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .toolbar input,
     .toolbar select {
-      background: transparent;
-      border: 1px solid rgba(0, 0, 0, 0.2);
-      color: #0f1724;
-      padding: 6px 8px;
-      border-radius: 6px
-    }
-
-    .toolbar button {
+      background: #2a2e39;
+      border: 1px solid #363a45;
+      color: #d1d4dc;
       padding: 8px 12px;
-      border-radius: 8px;
-      border: 0;
-      background: #1f6feb;
-      color: white;
-      cursor: pointer
-    }
-
-    .toolbar button:hover {
-      background: #2c8eff
-    }
-
-    .table-wrap {
-      flex: 1;
-      overflow: auto;
       border-radius: 6px;
-      padding: 6px;
-      background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.1)
+      outline: none;
+      transition: all 0.2s;
     }
 
-    table {
+    .toolbar input:focus,
+    .toolbar select:focus {
+      border-color: #3b82f6;
+      background: #2f333e;
+    }
+
+    /* --- Buttons --- */
+    #fetchCalendar,
+    #refresh {
+      cursor: pointer;
+      font-weight: 600;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      transition: transform 0.1s, opacity 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #fetchCalendar {
+      background: #2563eb;
+      color: white;
+    }
+
+    #refresh {
+      background: #374151;
+      color: white;
+    }
+
+    #fetchCalendar:hover {
+      opacity: 0.9;
+    }
+
+    #refresh:hover {
+      background: #4b5563;
+    }
+
+    #fetchCalendar:active {
+      transform: scale(0.95);
+    }
+
+    /* --- Table Design --- */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid #363a45;
+    }
+
+    #CalendarList table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px
-    }
-
-    thead th {
-      position: sticky;
-      top: 0;
-      background: #f5f5f5;
-      z-index: 2;
-      padding: 8px;
       text-align: left;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-      cursor: pointer
+      font-size: 0.9rem;
     }
 
-    tbody td {
-      padding: 8px;
-      border-bottom: 1px dashed rgba(0, 0, 0, 0.05);
-      vertical-align: top
+    #CalendarList th {
+      background: #2a2e39;
+      color: #848e9c;
+      font-weight: 500;
+      padding: 12px 15px;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
     }
 
-    tbody tr:hover td {
-      background: rgba(0, 0, 0, 0.03)
+    #CalendarList td {
+      padding: 14px 15px;
+      border-bottom: 1px solid #2a2e39;
     }
 
-    .muted {
-      color: #94a3b8;
-      font-size: 13px
+    #CalendarList tr:hover {
+      background: rgba(59, 130, 246, 0.05);
     }
 
-    .small {
-      font-size: 12px
-    }
-
+    /* --- Dynamic Impact Badges --- */
+    /* Ces classes devront être ajoutées par votre JS lors de la génération des lignes */
     .impact-high {
-      color: #ff4444;
-      font-weight: bold
+      color: #ff4d4d;
+      background: rgba(255, 77, 77, 0.1);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
     }
 
     .impact-medium {
-      color: #ffaa00;
-      font-weight: bold
+      color: #ffa500;
+      background: rgba(255, 165, 0, 0.1);
+      padding: 4px 8px;
+      border-radius: 4px;
     }
 
     .impact-low {
-      color: #44ff44;
-      font-weight: bold
-    }
-
-    .importance-box {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
+      color: #00c805;
+      background: rgba(0, 200, 5, 0.1);
+      padding: 4px 8px;
       border-radius: 4px;
-      margin-right: 6px;
-      vertical-align: middle;
     }
 
-    .impact-1 {
-      background-color: #4caf50;
+    /* Status text */
+    #status {
+      padding: 4px 10px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 20px;
+      font-style: italic;
     }
 
-    /* Vert clair - faible */
-    .impact-2 {
-      background-color: #8bc34a;
+    /* Style général de la table */
+    .modern-calendar {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: #1e222d;
+      color: #d1d4dc;
     }
 
-    /* Vert moyen */
-    .impact-3 {
-      background-color: #ffeb3b;
+    /* En-têtes fixes et stylisés */
+    .modern-calendar th {
+      position: sticky;
+      top: 0;
+      background: #2a2e39;
+      padding: 12px 8px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: #848e9c;
+      border-bottom: 1px solid #363a45;
+      white-space: nowrap;
     }
 
-    /* Jaune - modéré */
-    .impact-4 {
-      background-color: #ff9800;
+    .modern-calendar th.sortable {
+      cursor: pointer;
+      transition: color 0.2s;
     }
 
-    /* Orange - fort */
-    .impact-5 {
-      background-color: #f44336;
+    .modern-calendar th.sortable:hover {
+      color: #3b82f6;
+      background: #2f333e;
+    }
+
+    .sort-icon {
+      font-size: 10px;
+      opacity: 0.3;
+      margin-left: 4px;
+    }
+
+    .active-sort {
+      color: #3b82f6 !important;
+    }
+
+    /* État vide moderne */
+    .empty-state td {
+      padding: 60px 0 !important;
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .no-data-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0.5;
+    }
+
+    .no-data-content .icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    /* Lignes de données */
+    #calendarBody tr {
+      transition: background 0.15s;
+    }
+
+    #calendarBody tr:hover {
+      background: #2a2e39;
+    }
+
+    #calendarBody td {
+      padding: 10px 8px;
+      border-bottom: 1px solid #2a2e39;
+      font-size: 0.85rem;
+    }
+
+    /* Alignements spécifiques */
+    .text-center {
+      text-align: center;
+    }
+
+    .col-check {
+      width: 40px;
+      text-align: center;
     }
 
     /* Rouge - très fort */
