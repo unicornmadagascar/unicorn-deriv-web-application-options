@@ -3060,7 +3060,7 @@ document.addEventListener("DOMContentLoaded", () => {
                <p>No economic events loaded.</p>
             </div>
           </td>
-        </tr>
+        </tr>  
       </tbody>
     </table>
   `;
