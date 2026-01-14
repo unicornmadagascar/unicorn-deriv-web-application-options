@@ -4083,7 +4083,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (e.target.checked) {
           row.classList.add('selected-row-active');
         } else {
-          row.classList.remove('selected-row-active');
+          row.classList.remove('selected-row-active');  
         }
       }
     }
