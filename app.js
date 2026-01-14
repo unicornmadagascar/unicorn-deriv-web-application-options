@@ -4081,9 +4081,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const row = e.target.closest('tr');
       if (row) {
         if (e.target.checked) {
-          row.classList.add('selected-row-active');
+          row.classList.add('selected-row-active');  
         } else {
-          row.classList.remove('selected-row-active');  
+          row.classList.remove('selected-row-active');    
         }
       }
     }
