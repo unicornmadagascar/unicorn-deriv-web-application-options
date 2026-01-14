@@ -3202,58 +3202,6 @@ document.addEventListener("DOMContentLoaded", () => {
     statusEl.textContent = 'statut: Resquest sent...';
   }
 
-  // ✅ Met à jour les lignes du tableau
-  // ================================
-  // FONCTION POUR INITIER L’OVERLAY
-  // ================================
-  function createOverlayCanvas(chartContainer, chart, drawCallback) {
-    const overlayCanvas = document.createElement('canvas');
-    overlayCanvas.style.position = 'absolute';
-    overlayCanvas.style.top = '0';
-    overlayCanvas.style.left = '0';
-    overlayCanvas.style.pointerEvents = 'none';
-    overlayCanvas.width = chartContainer.offsetWidth;
-    overlayCanvas.height = chartContainer.offsetHeight;
-    chartContainer.appendChild(overlayCanvas);
-
-    const ctx = overlayCanvas.getContext('2d');
-
-    chart.subscribeVisibleTimeRangeChange(() => {
-      overlayCanvas.width = chartContainer.offsetWidth;
-      overlayCanvas.height = chartContainer.offsetHeight;
-      drawCallback();
-    });
-
-    chart.subscribeCrosshairMove(() => drawCallback());
-
-    return ctx;
-  }
-
-  // ================================
-  // FONCTION POUR DESSINER LES LIGNES VERTICALES
-  // ================================
-  function drawEventLines(chart, overlayCtx, currentSeries) {
-    if (!overlayCtx || !currentSeries) return;
-    overlayCtx.clearRect(0, 0, overlayCtx.canvas.width, overlayCtx.canvas.height);
-
-    const timeScale = chart.timeScale();
-
-    economicEventLines.forEach(line => {
-      const x = timeScale.timeToCoordinate(line.time);
-      if (x === null) return;
-
-      overlayCtx.beginPath();
-      overlayCtx.strokeStyle = line.color;
-      overlayCtx.lineWidth = 2;
-      overlayCtx.setLineDash([4, 4]);
-      overlayCtx.moveTo(x, 0);
-      overlayCtx.lineTo(x, overlayCtx.canvas.height);
-      overlayCtx.stroke();
-    });
-
-    overlayCtx.setLineDash([]);
-  }
-
   // ================================
   // FONCTION POUR METTRE À JOUR LE TABLEAU
   // ================================
@@ -3261,129 +3209,244 @@ document.addEventListener("DOMContentLoaded", () => {
     const body = document.getElementById("calendarBody");
     if (!body) return;
 
-    displayedEvents = events;
+    displayedEvents = events; // Stockage global pour l'accès via le graphique
     let rows = "";
 
-    events.forEach((e, index) => {
+    events.forEach((e) => {
+      // 1. Extraction sécurisée des données
       const actual = e.actual?.display_value || "-";
       const previous = e.previous?.display_value || "-";
       const forecast = e.forecast?.display_value || "-";
       const revision = e.revision?.display_value || "-";
-      const impactValue = e.impact ?? "-";
-      const releaseDate = e.release_date
-        ? new Date(e.release_date * 1000).toLocaleString()
-        : "-";
+      const impactValue = e.impact || 0;
+
+      // 2. Gestion du temps
+      const timestamp = e.release_date || 0;
+      const releaseDate = timestamp ? new Date(timestamp * 1000).toLocaleString() : "-";
+
       const currency = e.currency || "-";
       const indicator = e.event_name || "-";
 
-      let impactColor = "gray";
-      if (impactValue >= 4) impactColor = "#ff4444";
-      else if (impactValue >= 2) impactColor = "#ffaa00";
-      else if (impactValue > 0) impactColor = "#22cc22";
-      const impactClass = `impact-${Math.min(Math.max(impactValue, 1), 5)}`;
+      // 3. Style d'impact (Badge dynamique)
+      const impactClass = `imp-${Math.min(Math.max(impactValue, 1), 5)}`;
+      const impactLabel = impactValue >= 4 ? "HIGH" : (impactValue >= 3 ? "MED" : "LOW");
+
+      // Couleur du texte de l'impact pour plus de clarté
+      let impactTextColor = "#64748b"; // Gris par défaut
+      if (impactValue >= 4) impactTextColor = "#ef4444"; // Rouge
+      else if (impactValue >= 2) impactTextColor = "#f59e0b"; // Orange
 
       rows += `
-          <tr data-rowid="${index}">
-            <td><input type="checkbox" class="calendar-checkbox"></td>
-            <td data-sort="${e.release_date || 0}">${releaseDate}</td>
-            <td>${GetCountrycode(currency)}</td>
-            <td>${GetCountryname(currency)}</td>   
-            <td>${indicator}</td>
-            <td>-</td>
-            <td>${currency}</td>
-            <td>
-              <span class="importance-box ${impactClass}"></span>  
-              ${impactValue ? `Impact ${impactValue}` : ""}
-            </td>
-            <td style="color:${impactColor}; font-weight:bold;" data-sort="${impactValue}">
-              ${impactValue}
-            </td>
-            <td>${actual}</td>
-            <td>${previous}</td>
-            <td>${forecast}</td>
-            <td>${revision}</td>
-          </tr>
+            <tr id="row_${timestamp}" data-timestamp="${timestamp}">
+                <td class="text-center">
+                    <input type="checkbox" class="calendar-checkbox">
+                </td>
+                <td data-sort="${timestamp}" style="font-size: 0.85rem; color: #64748b;">${releaseDate}</td>
+                <td>${GetCountrycode(currency)}</td>
+                <td>${GetCountryname(currency)}</td>   
+                <td>
+                   <div class="impact-badge ${impactClass}">
+                         ${impactLabel}: ${indicator}
+                   </div>
+                </td>
+                <td class="text-center">-</td>
+                <td class="text-center"><b>${currency}</b></td>
+                <td>
+                    <span class="${impactClass}" style="padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">
+                       ${impactValue ? `Impact ${impactValue}` : "N/A"}
+                    </span>
+                </td>
+                <td class="text-center" style="font-weight:bold; color: ${impactTextColor};" data-sort="${impactValue}">
+                    ${impactValue}
+                </td>
+                <td style="font-weight: 700; color: #1e222d;">${actual}</td>
+                <td style="color: #64748b;">${previous}</td>
+                <td style="color: #64748b;">${forecast}</td>
+                <td style="color: #94a3b8; font-size: 0.8rem;">${revision}</td>
+            </tr>
         `;
     });
 
-    body.innerHTML =
-      rows ||
-      `<tr><td colspan="13" style="text-align:center; color:gray;">
-            No events found for this period.
-         </td></tr>`;
-
-    attachSortHandlers();
-    attachCheckboxListener();
+    body.innerHTML = rows || `
+        <tr>
+            <td colspan="13" style="text-align:center; padding: 40px; color:gray;">
+                <div class="no-data-content" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <span style="font-size: 2rem;">🔍</span>
+                    <span>Aucun événement trouvé pour cette période.</span>
+                </div>
+            </td>
+        </tr>`;
   }
 
-  // ================================
-  // FONCTION POUR LES CHECKBOX
-  // ================================
-  function attachCheckboxListener() {
-    const checkboxes = document.querySelectorAll(".calendar-checkbox");
+  /**
+  * Gère l'interaction entre le graphique et le tableau au survol de la souris.
+  */
+  function setupChartInteractions(chart) {
+    const tooltip = document.getElementById('chart-tooltip');
 
-    checkboxes.forEach((cb, idx) => {
-      cb.addEventListener("change", () => {
-        const row = cb.closest("tr");
-        const index = parseInt(row.dataset.rowid);
-        const eventData = displayedEvents[index];
-        if (!eventData) return;
+    chart.subscribeCrosshairMove(param => {
+      // Nettoyage des surbrillances dans le tableau
+      document.querySelectorAll('.highlight-row').forEach(row => row.classList.remove('highlight-row'));
 
-        if (cb.checked) {
-          addEconomicMarker(eventData, index);
-        } else {
-          removeEconomicMarker(eventData, index);
+      if (!param.time || !param.point || param.point.x < 0) {
+        tooltip.style.display = 'none'; 
+        return;
+      }    
+
+      // Recherche de l'événement
+      const event = displayedEvents.find(e => Math.floor(Number(e.release_date || e.time)) === param.time);
+
+      if (event) {
+        tooltip.style.display = 'block';
+
+        // Calcul de position
+        const tooltipWidth = 200;
+        const xPos = (param.point.x + tooltipWidth > document.body.clientWidth)
+          ? param.point.x - tooltipWidth - 20
+          : param.point.x + 20;
+
+        tooltip.style.left = `${xPos}px`;
+        tooltip.style.top = `${param.point.y + 20}px`;
+
+        // Remplissage avec la valeur Previous
+        tooltip.innerHTML = `
+                <div style="border-bottom: 1px solid #eee; margin-bottom: 8px; padding-bottom: 4px;">
+                    <strong style="color: #2563eb; font-size: 13px;">${event.event_name || 'Event'}</strong>
+                </div>
+                <div style="display: grid; gap: 4px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                        <span style="color: #64748b;">Actual:</span>
+                        <span style="font-weight: 700; color: #1e222d;">${event.actual?.display_value || '-'}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                        <span style="color: #64748b;">Forecast:</span>
+                        <span style="font-weight: 600; color: #1e222d;">${event.forecast?.display_value || '-'}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; border-top: 1px dashed #eee; pt: 2px;">
+                        <span style="color: #64748b;">Previous:</span>
+                        <span style="font-weight: 600; color: #64748b;">${event.previous?.display_value || '-'}</span>
+                    </div>
+                </div>
+            `;
+
+        // Mise en surbrillance de la ligne du tableau
+        const rowId = `row_${event.release_date || event.time}`;
+        const row = document.getElementById(rowId);
+        if (row) {
+          row.classList.add('highlight-row');
+          row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-      });
+      } else {
+        tooltip.style.display = 'none';
+      }
     });
   }
 
-  // ================================
-  // AJOUT D’UN MARKER + LIGNE
-  // ================================
-  function addEconomicMarker(eventData, index) {
-    if (!currentSeries || !eventData) return;
+  function updateChartMarkers() {
+    const tbody = document.getElementById("calendarBody");
+    if (!tbody) return;
 
-    const t = Math.floor(eventData.release_date);
+    const selectedRows = tbody.querySelectorAll("tr:has(input[type='checkbox']:checked)");
+    const markers = [];
 
-    const color =
-      eventData.impact >= 4 ? "#484141ff" :
-        eventData.impact >= 2 ? "#484141ff" :
-          "#484141ff";
+    selectedRows.forEach(row => {
+      const timestamp = Math.floor(Number(row.getAttribute('data-timestamp')));
 
-    // Marker classique
-    const marker = {
-      time: t,
-      position: "aboveBar",
-      color: color,
-      shape: "circle",
-      text: `@${eventData.currency} - ${eventData.event_name}\nImpact ${eventData.impact}`
-    };
-    const prevMarkers = currentSeries._economicMarkers || [];
-    currentSeries._economicMarkers = [...prevMarkers, marker];
-    currentSeries.setMarkers(currentSeries._economicMarkers);
-    economicMarkers[index] = { marker };
+      // On récupère le nom de l'indicateur
+      // Si vous avez mis le badge dans la cellule 5 (index 4), on nettoie le texte
+      const indicatorText = row.cells[4].textContent.trim();
+      const impactValue = parseInt(row.cells[8].textContent) || 0;
 
-    // Ligne verticale
-    economicEventLines.push({ time: t, color: color });
-    drawEventLines(chart, overlayCtx, currentSeries);
+      // 1. Détermination du label et de l'icône (Identique au tableau)
+      let impactLabel = "LOW";
+      let icon = "🔵";
+      let color = "#3b82f6";
+      let size = 1;
+
+      if (impactValue >= 4) {
+        impactLabel = "HIGH";
+        icon = "🔴";
+        color = "#ef4444";
+        size = 2;
+      } else if (impactValue >= 3) {
+        impactLabel = "MED";
+        icon = "🟠";
+        color = "#f59e0b";
+        size = 1.5;
+      }
+
+      // 2. Création du texte complet pour le graphique
+      // Format : "🔴 HIGH: Nom de l'indicateur"
+      const fullText = `${icon} ${impactLabel}: ${indicatorText.split(':').pop().trim()}`;
+
+      markers.push({
+        time: timestamp,
+        position: 'aboveBar',
+        color: color,
+        shape: impactValue >= 4 ? 'arrowUp' : 'circle',
+        text: fullText,
+        size: size
+      });
+    });
+
+    markers.sort((a, b) => a.time - b.time);
+
+    if (window.currentSeries) {
+      window.currentSeries.setMarkers(markers);
+    }
   }
 
-  // ================================
-  // SUPPRESSION D’UN MARKER + LIGNE
-  // ================================
-  function removeEconomicMarker(eventData, index) {
-    if (!currentSeries || !currentSeries._economicMarkers) return;
+  window.exportSelectedToCSV = function () {
+    const tbody = document.getElementById("calendarBody");
+    const selectedRows = tbody.querySelectorAll("tr:has(input[type='checkbox']:checked)");
 
-    const t = Math.floor(eventData.release_date);
+    if (selectedRows.length === 0) {
+      alert("Veuillez sélectionner au moins un événement à exporter.");
+      return;
+    }
 
-    currentSeries._economicMarkers = currentSeries._economicMarkers.filter(m => m.time !== t);
-    currentSeries.setMarkers(currentSeries._economicMarkers);
+    // En-têtes du CSV
+    let csvContent = "Date,Currency,Event,Impact,Actual,Previous,Forecast\n";
 
-    economicEventLines = economicEventLines.filter(line => line.time !== t);
-    drawEventLines(chart, overlayCtx, currentSeries);
+    selectedRows.forEach(row => {
+      const columns = row.querySelectorAll("td");
 
-    delete economicMarkers[index];
+      // Extraction propre des données (on saute la checkbox et les drapeaux)
+      const date = columns[1].textContent.trim();
+      const eventName = columns[4].textContent.trim(); // Contient "HIGH: Name"
+      const currency = columns[6].textContent.trim();
+      const impact = columns[8].textContent.trim();
+      const actual = columns[9].textContent.trim();
+      const previous = columns[10].textContent.trim();
+      const forecast = columns[11].textContent.trim();
+
+      // Nettoyage des virgules pour éviter de casser le format CSV
+      const line = [
+        `"${date}"`,
+        `"${currency}"`,
+        `"${eventName.replace(/"/g, '""')}"`,
+        `"${impact}"`,
+        `"${actual}"`,
+        `"${previous}"`,
+        `"${forecast}"`
+      ].join(",");
+
+      csvContent += line + "\n";
+    });
+
+    // Création du lien de téléchargement
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    const fileName = `economic_export_${new Date().toISOString().slice(0, 10)}.csv`;
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   function GetCountryname(currency) {
@@ -3627,7 +3690,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  document.getElementById("fetchTrades").addEventListener("click", () => {  
+  document.getElementById("fetchTrades").addEventListener("click", () => {
     // 1. Récupérer les dates des inputs HTML
     const startValue = document.getElementById("startDate").value; // Format YYYY-MM-DD
     const endValue = document.getElementById("endDate").value;
@@ -3905,32 +3968,23 @@ document.addEventListener("DOMContentLoaded", () => {
     shutdownAllPipelines();
   };
 
-  /* contractsPanelToggle.addEventListener('click', (event) => {
-    // 1. On vérifie si l'élément cliqué est le bouton de bascule
-    if (event.target && event.target.id === 'contractsPanelToggle') {
-      const toggleBtn = event.target;
-      const panel = document.getElementById('contractsPanel');
+  // À placer dans votre bloc d'initialisation (window.onload)
+  document.getElementById("calendarBody").addEventListener("change", (e) => {
+    if (e.target.type === 'checkbox') {
+      // 1. Mettre à jour les marqueurs sur le graphique
+      updateChartMarkers();
 
-      if (panel) {
-        // Alterne la classe active
-        const isActive = panel.classList.toggle('active');
-
-        // Mise à jour du texte et du style du bouton
-        if (isActive) {
-          toggleBtn.textContent = "🔼 Hide Open Contracts";
-          toggleBtn.classList.add('btn-active');
-
-          // Calcul immédiat des statistiques à l'ouverture
-          if (typeof updateTotalStats === 'function') {
-            updateTotalStats();
-          }
+      // 2. Gérer le style visuel de la ligne sélectionnée
+      const row = e.target.closest('tr');
+      if (row) {
+        if (e.target.checked) {
+          row.classList.add('selected-row-active');
         } else {
-          toggleBtn.textContent = "📄 Show Open Contracts";
-          toggleBtn.classList.remove('btn-active');
+          row.classList.remove('selected-row-active');
         }
       }
     }
-  }); */
+  });
 
   // === 🧹 ÉVÉNEMENTS SUR LES BOUTONS DELETE === 
   document.addEventListener("click", (e) => {

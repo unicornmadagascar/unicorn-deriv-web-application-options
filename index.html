@@ -273,9 +273,17 @@
     }
 
     /* Style général de la table */
-    .modern-calendar {
-      background: #ffffff;
-      color: #333333;
+    .modal-calendar {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      z-index: 1000;
+      /* Toujours au-dessus du chart */
+      overflow: hidden;
     }
 
     /* En-tête de table */
@@ -352,6 +360,15 @@
     /* Ligne sélectionnée (si vous utilisez cette fonction) */
     .selected-row {
       background: #eef4ff !important;
+      border-left: 3px solid #2563eb;
+    }
+
+    /* Style pour les lignes dont la checkbox est cochée */
+    .selected-row-active {
+      background-color: rgba(59, 130, 246, 0.05) !important;
+      /* Bleu très léger */
+      border-left: 4px solid #3b82f6 !important;
+      /* Rappel de la couleur du marqueur */
     }
 
     /* Alignements spécifiques */
@@ -369,34 +386,147 @@
       font-weight: bold;
     }
 
-    /* Couleurs adaptées au fond blanc */
+    /* Conteneur de base du badge */
+    .impact-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 14px;
+      border-radius: 50px;
+      font-size: 11px;
+      font-weight: 800;
+      color: white !important;
+      min-width: 120px;
+    }
+
+    .impact-badge::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      background: white;
+      border-radius: 50%;
+    }
+
+    /* Vos couleurs pleines */
     .imp-5,
     .imp-4 {
-      color: #cc0000;
-      /* Rouge plus profond */
-      background: #fff0f0;  
-      padding: 2px 6px;
-      border-radius: 4px;
+      background: #ef4444 !important;
     }
 
     .imp-3 {
-      color: #855600;
-      /* Orange/Marron */
-      background: #fff8e1;
-      padding: 2px 6px;
-      border-radius: 4px;
+      background: #f59e0b !important;
     }
 
     .imp-2,
     .imp-1 {
-      color: #1b5e20;
-      /* Vert forêt */
-      background: #e8f5e9;
-      padding: 2px 6px;
-      border-radius: 4px;
+      background: #3b82f6 !important;
     }
 
-    /* BODY */
+    /* Animation douce pour la ligne sélectionnée sur le chart */
+    .highlight-row {
+      background-color: rgba(37, 99, 235, 0.1) !important;
+      border-left: 4px solid #2563eb !important;
+      transition: all 0.3s ease;
+    }
+
+    /* Style de la popup */
+    #chart-tooltip strong {
+      color: #2563eb;
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    #chart-tooltip .details {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    #chart-tooltip .label {
+      color: #64748b;
+    }
+
+    #chart-tooltip .val {
+      font-weight: 600;
+      color: #1e222d;
+    }
+
+    /* Animation de clignotement pour la table */
+    @keyframes blink {
+      0% {
+        background-color: transparent;
+      }
+
+      50% {
+        background-color: rgba(37, 99, 235, 0.2);
+      }
+
+      100% {
+        background-color: transparent;
+      }
+    }
+
+    /* Animation de flash bleu doux */
+    @keyframes flashBlue {
+      0% {
+        background-color: rgba(37, 99, 235, 0);
+      }
+
+      50% {
+        background-color: rgba(37, 99, 235, 0.25);
+      }
+
+      100% {
+        background-color: rgba(37, 99, 235, 0.1);
+      }
+    }
+
+    /* Classe appliquée dynamiquement par setupChartInteractions */
+    .highlight-row {
+      animation: flashBlue 0.6s ease-out forwards;
+      border-left: 4px solid #2563eb !important;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Tooltip flottant */
+    #chart-tooltip {
+      pointer-events: none;
+      transition: opacity 0.2s;
+      /* ... (les autres styles vus précédemment) ... */
+    }
+
+    .btn-export {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #ffffff;
+      color: #374151;
+      border: 1px solid #e5e7eb;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-export:hover {
+      background-color: #f9fafb;
+      border-color: #d1d5db;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-export:active {
+      transform: translateY(0);
+    }
+
+
+    /* --------------- BODY --------------- */
     body {
       font-family: Arial, sans-serif;
       margin: 0;
@@ -878,7 +1008,6 @@
       clear: both;
       /* Sécurité si vous utilisez des floats */
     }
-
 
     @keyframes fadeInPanel {
       from {
@@ -2958,6 +3087,9 @@
         </select>
         <button id="fetchCalendar">📅 Load</button>
         <button id="refresh">🔁 Refresh</button>
+        <button onclick="exportSelectedToCSV()" class="btn-export">
+          <span class="icon">📥</span> Export CSV
+        </button>
         <div style="flex:1"></div>
         <span id="status" class="muted small">statut: ready</span>
       </div>
@@ -2967,6 +3099,22 @@
       </div>
 
     </div>
+  </div>
+
+  <div id="chart-tooltip" style="
+    display: none; 
+    position: absolute; 
+    z-index: 9999; 
+    background: rgba(255, 255, 255, 0.96); 
+    backdrop-filter: blur(4px);
+    padding: 12px; 
+    border-radius: 10px; 
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15); 
+    border: 1px solid #e0e3eb;
+    pointer-events: none;
+    font-family: 'Inter', sans-serif;
+    min-width: 180px;
+    color: #1e222d;">
   </div>
 
   <!-- =======================
