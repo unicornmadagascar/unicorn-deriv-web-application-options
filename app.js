@@ -3560,7 +3560,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ${e.currency || ''} 
             ${e.sector || ''} 
             ${e.event_name || ''}
-        `.toLowerCase();
+        `.toLowerCase();  
 
       const matchQ = !q || content.includes(q);
 
