@@ -3220,7 +3220,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const previous = e.previous?.display_value || "-";
       const forecast = e.forecast?.display_value || "-";
       const revision = e.revision?.display_value || "-";
-      const impactValue = e.impact || 0;
+      const impactValue = e.impact || 0;  
    
       // 2. Gestion du temps
       const timestamp = e.release_date || 0;
