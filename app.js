@@ -1758,7 +1758,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // --- AUTRES INDICATEURS (Ex: RSI, Bollinger) ---
       // Vous pouvez ajouter d'autres conditions ici
-    });  
+    });   
   }
 
   // --- ALGORITHME ZIGZAG AVEC MISE À JOUR DES EXTRÊMES ---
