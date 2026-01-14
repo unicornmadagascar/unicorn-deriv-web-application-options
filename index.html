@@ -86,9 +86,20 @@
 
     /* Barre d'outils plus claire */
     .toolbar {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      /* Empêche le passage à la ligne */
+      align-items: center;
+      /* Aligne verticalement au centre */
+      gap: 10px;
       background: #f8f9fc;
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
       border: 1px solid #eef0f7;
-      color: #444444;
+      overflow-x: auto;
+      /* Ajoute un scroll horizontal si l'écran est trop petit au lieu de casser */
     }
 
     .toolbar input,
@@ -98,6 +109,18 @@
       color: #333333;
     }
 
+    /* --- Unifier la hauteur des inputs, select et boutons --- */
+    .toolbar input,
+    .toolbar select,
+    .toolbar button,
+    #fetchCalendar,
+    #refresh {
+      height: 38px;
+      /* Hauteur standard moderne */
+      box-sizing: border-box;
+      font-size: 0.9rem;
+    }
+
     .toolbar input:focus,
     .toolbar select:focus {
       border-color: #2563eb;
@@ -105,18 +128,47 @@
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
-    /* --- Buttons --- */
+    .toolbar label {
+      white-space: nowrap;
+      /* Empêche le texte des labels de se couper */
+      font-weight: 500;
+      color: #64748b;
+    }
+
+    /* --- Ajustements spécifiques des champs --- */
+    .toolbar input[type="text"],
+    .toolbar input[type="date"],
+    .toolbar select {
+      background: #ffffff;
+      border: 1px solid #d1d4dc;
+      color: #333333;
+      padding: 0 10px;
+      border-radius: 6px;
+      outline: none;
+      min-width: 120px;
+      /* Évite que les champs ne deviennent trop petits */
+    }
+
+    /* Largeur spécifique pour la recherche */
+    #search {
+      flex: 2;
+      /* Permet au champ de recherche de prendre l'espace disponible */
+      min-width: 180px;
+    }
+
+    /* --- Boutons rectifiés --- */
     #fetchCalendar,
     #refresh {
-      cursor: pointer;
-      font-weight: 600;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      transition: transform 0.1s, opacity 0.2s;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      padding: 0 15px;
+      margin: 0;
+      white-space: nowrap;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+      font-weight: 600;
     }
 
     #fetchCalendar {
@@ -200,10 +252,24 @@
 
     /* Status text */
     #status {
-      padding: 4px 10px;
-      background: rgba(0, 0, 0, 0.2);
+      margin-left: auto;
+      /* Pousse le statut tout à fait à droite */
+      padding: 4px 12px;
+      background: #e2e8f0;
+      /* Gris clair pour mode blanc */
+      color: #475569;
       border-radius: 20px;
-      font-style: italic;
+      font-size: 0.8rem;
+      font-style: normal;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid #e0e3eb;
+      /* Bordure claire */
     }
 
     /* Style général de la table */
@@ -257,10 +323,25 @@
       margin-bottom: 10px;
     }
 
-    /* Lignes du corps de la table */
-    #calendarBody td {
-      border-bottom: 1px solid #f0f0f0;
-      color: #444444;
+    #CalendarList table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+    }
+
+    #CalendarList th {
+      background: #f8f9fc;
+      /* En-tête légèrement grisé */
+      color: #475569;
+      font-weight: 600;
+      border-bottom: 2px solid #e2e8f0;
+      padding: 12px 15px;
+    }
+
+    #CalendarList td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
     }
 
     #calendarBody tr:hover {
@@ -299,11 +380,11 @@
     }
 
     .imp-3 {
-      color: #855600;  
+      color: #855600;
       /* Orange/Marron */
       background: #fff8e1;
       padding: 2px 6px;
-      border-radius: 4px;  
+      border-radius: 4px;
     }
 
     .imp-2,
@@ -315,8 +396,7 @@
       border-radius: 4px;
     }
 
-    /* Rouge - très fort */
-
+    /* BODY */
     body {
       font-family: Arial, sans-serif;
       margin: 0;
