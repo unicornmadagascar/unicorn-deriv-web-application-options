@@ -3419,8 +3419,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // Extraction en s'assurant que les colonnes existent
       const date = columns[1]?.textContent.trim() || "";
       const eventName = columns[4]?.textContent.trim() || "";
-      const currency = columns[6]?.textContent.trim() || "";
-      const impact = columns[8]?.textContent.trim() || "";    
+      const currency = columns[6]?.textContent.trim() || "";  
+      const impact = columns[8]?.textContent.trim() || "";     
       const actual = columns[9]?.textContent.trim() || "";
       const previous = columns[10]?.textContent.trim() || "";
       const forecast = columns[11]?.textContent.trim() || "";
