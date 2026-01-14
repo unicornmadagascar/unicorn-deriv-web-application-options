@@ -3066,9 +3066,9 @@ document.addEventListener("DOMContentLoaded", () => {
   `;
 
     // 🧩 Gestion du tri avec feedback visuel
-    const headers = CalendarList.querySelectorAll("th.sortable");
+    const headers = CalendarList.querySelectorAll("th.sortable");  
     headers.forEach((th) => {
-      th.addEventListener("click", () => {
+      th.addEventListener("click", () => { 
         // Retirer la classe active des autres
         headers.forEach(h => h.classList.remove('active-sort'));
         th.classList.add('active-sort');
