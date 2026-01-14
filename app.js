@@ -4073,10 +4073,12 @@ document.addEventListener("DOMContentLoaded", () => {
   initTable();
   initHistoricalTable();
   inithistoricalchart();
+  initCalendarTable();
 
   window.onload = async () => {
     if (!currentSymbol) return;
     await loadSymbol(currentSymbol, currentInterval, currentChartType);
+    setupChartInteractions(chart);
   };
 
   // Simulation : mise à jour toutes les 2 secondes
@@ -4146,9 +4148,6 @@ document.addEventListener("DOMContentLoaded", () => {
       tokencalendar.value = TOKEN;
     }
   });
-
-  // ✅ Initialisation du tableau à la création
-  initCalendarTable();
 
   document.getElementById('fetchCalendar').addEventListener('click', fetchEconomicCalendar);
   document.getElementById('refresh').addEventListener('click', () => {
