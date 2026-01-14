@@ -3544,72 +3544,87 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   // ✅ Filtrage du tableau
+  /**
+ * Filtre global pour le calendrier économique
+ * Gère : Mots-clés, Impact (Niveaux 1-5) et Dates (Début/Fin)
+ */
   function filterTable() {
-    // 1. Récupération des valeurs
-    const q = document.getElementById('search').value.trim().toLowerCase();
-    const imp = document.getElementById('impactFilter').value; // "High", "Medium", "Low"
-    const start = document.getElementById('startDate').value;
-    const end = document.getElementById('endDate').value;
+    // 1. Récupération des critères de filtrage
+    const searchQuery = document.getElementById('search').value.trim().toLowerCase();
+    const impactFilter = document.getElementById('impactFilter').value; // Attendu: "High", "Medium", "Low" ou ""
+    const startDateStr = document.getElementById('startDate').value;
+    const endDateStr = document.getElementById('endDate').value;
 
-    const filtered = allEvents.filter(e => {
-      // --- 1. Recherche Textuelle (Multi-champs) ---
-      // On concatène tous les champs visibles pour que la recherche soit globale
-      const content = `
-            ${e.indicator_type || ''} 
-            ${e.country_name || ''} 
-            ${e.currency || ''} 
-            ${e.sector || ''} 
-            ${e.event_name || ''}
-        `.toLowerCase();  
+    // 2. Application du filtre sur la liste complète des événements
+    const filteredEvents = allEvents.filter(event => {
 
-      const matchQ = !q || content.includes(q);
+      // --- A. FILTRE RECHERCHE (Mots-clés) ---
+      // On cherche dans les colonnes principales pour une recherche globale
+      const searchableContent = `
+            ${event.indicator_type || ''} 
+            ${event.country_name || ''} 
+            ${event.currency || ''} 
+            ${event.sector || ''} 
+            ${event.event_name || ''}
+        `.toLowerCase();
+      const matchSearch = !searchQuery || searchableContent.includes(searchQuery);
 
-      // --- 2. Filtre Impact (Correction de la casse) ---
-      const rawImpact = String(e.impact || e.importance || '').toLowerCase();
+      // --- B. FILTRE IMPACT (Mapping 1-5) ---
+      // On récupère la valeur brute (ex: "Impact 5" ou "5")
+      const rawImpact = String(event.impact || event.importance || '').toLowerCase();
+      let matchImpact = true;
 
-      let matchI = true;
-      if (imp !== "") {
-        // Note: On compare avec "High" tel qu'écrit dans le HTML <option>
-        if (imp === "High") {
-          matchI = rawImpact.includes("4") || rawImpact.includes("5") || rawImpact.includes("high");
-        } else if (imp === "Medium") {
-          matchI = rawImpact.includes("3") || rawImpact.includes("medium");
-        } else if (imp === "Low") {
-          matchI = rawImpact.includes("1") || rawImpact.includes("2") || rawImpact.includes("low");
+      if (impactFilter !== "") {
+        if (impactFilter === "High") {
+          // High = Impact 4 ou 5
+          matchImpact = rawImpact.includes("4") || rawImpact.includes("5") || rawImpact.includes("high");
+        } else if (impactFilter === "Medium") {
+          // Medium = Impact 3
+          matchImpact = rawImpact.includes("3") || rawImpact.includes("medium");
+        } else if (impactFilter === "Low") {
+          // Low = Impact 1 ou 2
+          matchImpact = rawImpact.includes("1") || rawImpact.includes("2") || rawImpact.includes("low");
         }
       }
 
-      // --- 3. Filtrage Date (Logique simplifiée) ---
+      // --- C. FILTRE DATES (Start & End) ---
       let matchDate = true;
-      if (start || end) {
-        const eventTimestamp = Number(e.date || e.time || 0) * 1000;
-        if (eventTimestamp > 0) {
-          const eventDate = new Date(eventTimestamp);
-          eventDate.setHours(0, 0, 0, 0); // On compare uniquement les jours
+      // Conversion du timestamp (secondes -> millisecondes)
+      const eventTimestamp = Number(event.date || event.time || 0) * 1000;
 
-          if (start) {
-            const startDate = new Date(start);
-            startDate.setHours(0, 0, 0, 0);
-            if (eventDate < startDate) matchDate = false;  
-          }
-          if (end) {
-            const endDate = new Date(end);
-            endDate.setHours(0, 0, 0, 0);
-            if (eventDate > endDate) matchDate = false;
-          }
+      if (eventTimestamp > 0) {
+        const eventDate = new Date(eventTimestamp);
+        eventDate.setHours(0, 0, 0, 0); // Reset heure pour comparaison de jour pur
+
+        if (startDateStr) {
+          const startLimit = new Date(startDateStr);
+          startLimit.setHours(0, 0, 0, 0);
+          if (eventDate < startLimit) matchDate = false;
         }
+
+        if (endDateStr) {
+          const endLimit = new Date(endDateStr);
+          endLimit.setHours(0, 0, 0, 0);
+          if (eventDate > endLimit) matchDate = false;
+        }
+      } else if (startDateStr || endDateStr) {
+        // Si l'utilisateur filtre par date mais que l'événement n'a pas de timestamp
+        matchDate = false;
       }
 
-      return matchQ && matchI && matchDate;
+      // Un événement est affiché seulement s'il remplit les 3 conditions
+      return matchSearch && matchImpact && matchDate;
     });
 
-    // Mise à jour de la table et du compteur
-    displayedEvents = filtered;
-    updateCalendarTable(filtered);
+    // 3. Mise à jour de l'interface
+    displayedEvents = filteredEvents; // Mise à jour de la liste pour le tri (sorting)
+    updateCalendarTable(filteredEvents); // Re-génération du HTML des lignes  
 
-    // Mise à jour du statut
-    const status = document.getElementById("status");
-    if (status) status.textContent = `${filtered.length} événements filtrés`;
+    // 4. Mise à jour du compteur de statut
+    const statusElement = document.getElementById("status");
+    if (statusElement) {
+      statusElement.textContent = `${filteredEvents.length} événements filtrés`;
+    }
   }
 
   document.getElementById("fetchTrades").addEventListener("click", () => {
