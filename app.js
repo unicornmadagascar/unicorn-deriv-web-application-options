@@ -3305,7 +3305,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? param.point.x - tooltipWidth - 20
           : param.point.x + 20;
 
-        tooltip.style.left = `${xPos}px`;
+        tooltip.style.left = `${xPos}px`;   
         tooltip.style.top = `${param.point.y + 20}px`;
 
         // Remplissage avec la valeur Previous
