@@ -4067,7 +4067,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setInterval(() => {
     if (connectBtn.textContent !== "Connect") {
       // Subscribing Tables  S
-      connectDeriv_table();  
+      connectDeriv_table();    
     }
   }, 300);
 
