@@ -3560,7 +3560,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const eventImpact = String(e.impact || e.importance || '').toLowerCase();
       const matchI = !imp || eventImpact === imp || eventImpact.includes(imp);
 
-      // 3. Filtrage Date
+      // 3. Filtrage Date  
       let matchDate = true;
       if (start || end) {
         // Conversion sécurisée du timestamp
