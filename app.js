@@ -268,6 +268,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!s.symbol) return;
 
         console.log(`Tentative de basculement vers : ${s.name}`);
+        showToast(`Attempting to switch to: ${s.name}`, 'error');
 
         // 2. Appel de loadSymbol
         // On ne met pas "await" devant loadSymbol car c'est une fonction de flux (WS)
@@ -275,9 +276,11 @@ document.addEventListener("DOMContentLoaded", () => {
         loadSymbol(s.symbol, currentInterval, currentChartType)
           .then(() => {
             console.log(`Commande de chargement envoyée pour ${s.symbol}`);
+            showToast(`Loading command sent for ${s.symbol}`, 'info');
           })
           .catch(error => {
             console.error("Erreur critique lors du basculement :", error);
+            showToast(`Critical error during switch: ${err.message}`, 'error');
           });
 
         currentSymbol = s.symbol;
@@ -1965,7 +1968,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (deleteSelectedBtn) {
       deleteSelectedBtn.addEventListener("click", deleteSelectedRows);
     }
-
+  
     const masterCb = document.getElementById('selectAll');
     if (masterCb) {
       masterCb.addEventListener('change', function () {
@@ -2100,6 +2103,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
+      showToast(`${selectedCheckboxes.length} Contracts were closed`,'info');
+
       // 4. Reset de la case "Tout sélectionner"
       const selectAllCb = document.getElementById('selectAll');
       if (selectAllCb) selectAllCb.checked = false;
@@ -2156,6 +2161,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Envoi de la requête
       wsplContracts.send(JSON.stringify(sellRequest));
       console.log(`%c 📤 Ordre de vente envoyé pour le contrat : ${id}`, "color: #3b82f6; font-weight: bold;");
+      showToast(`Trade ${id} closed`,'info');
     } else {
       // 4. Gestion de l'erreur de connexion
       console.error("❌ Impossible de fermer le contrat : WebSocket déconnecté.");
@@ -2186,8 +2192,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!confirmPanic) return;
 
     console.warn("--- DÉCLENCHEMENT PANIC CLOSE ---");
+    showToast(`⚠️ PANIC CLOSE TRIGGERED`,'warn');
 
-    // 2. Vérification de la connexion WebSocket avant de boucler
+    // 2. Vérification de la connexion WebSocket avant de boucler  
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       alert("Erreur critique : La connexion au serveur est perdue. Impossible de fermer les positions.");
       return;
@@ -3799,8 +3806,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (checkbox && checkbox.checked) {
         closeContract(contract_id);
         tr.remove(); // suppression immédiate de la ligne
+        showToast(`Trade ${contract_id} closed`, 'info');
       } else {
         alert("☑️ Please check the box before closing this contract.");
+        showToast(`Please check the box before closing this contract`, 'error');
       }
     }
   });
@@ -3885,22 +3894,6 @@ document.addEventListener("DOMContentLoaded", () => {
       connectDeriv_table();
     }
   }, 300);
-
-  // Gestion du "Select All"    
-  /* const selectAll = document.getElementById("selectAll");
-  selectAll.addEventListener("change", () => {
-    document.querySelectorAll(".rowSelect").forEach(cb => {
-      cb.checked = selectAll.checked;
-    });
-  }); */
-
-  // Supprimer les lignes sélectionnées  
-  /* document.getElementById("deleteSelected").addEventListener("click", () => {
-    document.querySelectorAll(".rowSelect:checked").forEach(cb => {
-      cb.closest("tr").remove();
-    });
-    selectAll.checked = false;  
-  }); */
 
   // === Trade Evaluation Panel Toggle ===
   tradeEvalToggle.addEventListener("click", () => {
@@ -4008,7 +4001,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!currentSymbol) return;
       ws.send(JSON.stringify({ forget_all: ["candles", "ticks"] })); // oublie l'ancien symbole
       await loadSymbol(currentSymbol, currentInterval, currentChartType);
-
+      showToast(`Current Chart Type : ${currentChartType}`, 'info');
     });
   });
 
@@ -4021,6 +4014,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await loadSymbol(currentSymbol, currentInterval, currentChartType);
       console.log("⏱️ Current Interval:", currentInterval);
 
+      showToast(`Current Interval: ${currentInterval}`, 'info');
       // Supprime la classe active sur tous les boutons
       document.querySelectorAll(".interval-btn").forEach(b => b.classList.remove("active"));
       // Ajoute la classe active au bouton cliqué    
@@ -4035,6 +4029,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!currentSymbol) return;
       await loadSymbol(currentSymbol, currentInterval, currentChartType);
       console.log("Current Symbol:", currentSymbol);
+
+      showToast(`Current Symbol: ${currentSymbol}`, 'info');
     });
   });
 
