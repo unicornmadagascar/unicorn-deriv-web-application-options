@@ -3968,24 +3968,6 @@ document.addEventListener("DOMContentLoaded", () => {
     shutdownAllPipelines();
   };
 
-  // À placer dans votre bloc d'initialisation (window.onload)
-  document.getElementById("calendarBody").addEventListener("change", (e) => {
-    if (e.target.type === 'checkbox') {
-      // 1. Mettre à jour les marqueurs sur le graphique
-      updateChartMarkers();
-
-      // 2. Gérer le style visuel de la ligne sélectionnée
-      const row = e.target.closest('tr');
-      if (row) {
-        if (e.target.checked) {
-          row.classList.add('selected-row-active');
-        } else {
-          row.classList.remove('selected-row-active');
-        }
-      }
-    }
-  });
-
   // === 🧹 ÉVÉNEMENTS SUR LES BOUTONS DELETE === 
   document.addEventListener("click", (e) => {
     // Si l’utilisateur clique sur un bouton Close
@@ -4088,6 +4070,24 @@ document.addEventListener("DOMContentLoaded", () => {
       connectDeriv_table();
     }
   }, 300);
+
+  // À placer dans votre bloc d'initialisation (window.onload)
+  document.getElementById("calendarBody").addEventListener("change", (e) => {
+    if (e.target.type === 'checkbox') {
+      // 1. Mettre à jour les marqueurs sur le graphique
+      updateChartMarkers();
+
+      // 2. Gérer le style visuel de la ligne sélectionnée
+      const row = e.target.closest('tr');
+      if (row) {
+        if (e.target.checked) {
+          row.classList.add('selected-row-active');
+        } else {
+          row.classList.remove('selected-row-active');
+        }
+      }
+    }
+  });
 
   // === Trade Evaluation Panel Toggle ===
   tradeEvalToggle.addEventListener("click", () => {
