@@ -4053,6 +4053,7 @@ document.addEventListener("DOMContentLoaded", () => {
   displaySymbols(currentInterval, currentChartType);
   initChart(currentChartType);
   initTable();
+  initCalendarTable();
   initHistoricalTable();
   inithistoricalchart();
 
@@ -4146,9 +4147,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("USER TOKEN : " + TOKEN);
       tokencalendar.value = TOKEN;  
     }
-  });
-
-  initCalendarTable();    
+  });    
 
   document.getElementById('fetchCalendar').addEventListener('click', fetchEconomicCalendar);
   document.getElementById('refresh').addEventListener('click', () => {
