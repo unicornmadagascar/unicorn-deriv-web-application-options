@@ -3093,7 +3093,67 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  
+  function sortCalendarTable(colIndex) {
+    const table = document.getElementById("calendarTable");
+    const tbody = document.getElementById("calendarBody");
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+
+    // Ne pas trier s'il n'y a pas de données (ligne "No events")
+    if (rows.length === 1 && rows[0].classList.contains('empty-state')) return;
+
+    // Inverser l'ordre si on clique sur la même colonne
+    if (currentSortCol === colIndex) {
+      isAscending = !isAscending;
+    } else {
+      isAscending = true;
+      currentSortCol = colIndex;
+    }
+
+    // Tri des lignes
+    const sortedRows = rows.sort((a, b) => {
+      const valA = a.cells[colIndex].textContent.trim();
+      const valB = b.cells[colIndex].textContent.trim();
+
+      // 1. Détection numérique (ex: 1.5, -0.2, 50k)
+      const numA = parseFloat(valA.replace(/[^\d.-]/g, ''));
+      const numB = parseFloat(valB.replace(/[^\d.-]/g, ''));
+
+      if (!isNaN(numA) && !isNaN(numB)) {
+        return isAscending ? numA - numB : numB - numA;
+      }
+
+      // 2. Détection de date/heure (format HH:mm ou DD/MM)
+      // (Optionnel selon votre format de données)
+
+      // 3. Tri textuel par défaut
+      return isAscending
+        ? valA.localeCompare(valB)
+        : valB.localeCompare(valA);
+    });
+
+    // Ré-insertion des lignes triées dans le DOM
+    tbody.append(...sortedRows);
+
+    // Mise à jour visuelle des icônes de tri
+    updateSortIcons(colIndex, isAscending);
+  }
+
+  function updateSortIcons(activeIndex, ascending) {
+    const headers = document.querySelectorAll("#calendarTable th.sortable");
+    headers.forEach((th, idx) => {
+      const icon = th.querySelector(".sort-icon");
+      if (icon) {
+        // On ajuste l'icône selon l'état du tri (index + 1 car la checkbox est en 0)
+        if (idx + 1 === activeIndex) {
+          icon.textContent = ascending ? "🔼" : "🔽";
+          icon.style.opacity = "1";
+        } else {
+          icon.textContent = "↕";
+          icon.style.opacity = "0.3";
+        }
+      }
+    });
+  }
 
   // ✅ Requête WS Deriv API
   function fetchEconomicCalendar() {
@@ -3491,24 +3551,41 @@ document.addEventListener("DOMContentLoaded", () => {
     const end = document.getElementById('endDate').value;
 
     const filtered = allEvents.filter(e => {
-      const raw = JSON.stringify(e).toLowerCase();
-      const matchQ = !q || raw.includes(q);
-      const matchI = !imp || String(e.importance || '').toLowerCase().includes(imp);
+      // 1. Recherche globale (on cible les champs clés plutôt que JSON.stringify pour la performance)
+      const content = `${e.event_name} ${e.country_name} ${e.currency}`.toLowerCase();
+      const matchQ = !q || content.includes(q);
 
+      // 2. Filtrage Impact (On vérifie 'impact' OU 'importance')
+      // On s'assure que "impactFilter" All (vide) laisse tout passer
+      const eventImpact = String(e.impact || e.importance || '').toLowerCase();
+      const matchI = !imp || eventImpact === imp || eventImpact.includes(imp);
+
+      // 3. Filtrage Date
       let matchDate = true;
       if (start || end) {
+        // Conversion sécurisée du timestamp
         const ts = Number(e.date || e.time || 0) * 1000;
-        if (ts) {
+        if (ts > 0) {
           const d = new Date(ts);
-          if (start && d < new Date(start)) matchDate = false;
-          if (end && d > new Date(end)) matchDate = false;
+          d.setHours(0, 0, 0, 0); // Reset pour comparer uniquement les jours
+
+          if (start) {
+            const startDate = new Date(start);
+            startDate.setHours(0, 0, 0, 0);
+            if (d < startDate) matchDate = false;
+          }
+          if (end) {
+            const endDate = new Date(end);
+            endDate.setHours(23, 59, 59, 999);
+            if (d > endDate) matchDate = false;
+          }
         }
       }
 
       return matchQ && matchI && matchDate;
     });
 
-    displayedEvents = filtered; // garde la liste filtrée pour le tri
+    displayedEvents = filtered;
     updateCalendarTable(filtered);
   }
 
