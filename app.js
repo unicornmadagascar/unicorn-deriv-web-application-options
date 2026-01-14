@@ -4144,7 +4144,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (TOKEN) {
       // puis exécute l'autorisation Deriv
       console.log("USER TOKEN : " + TOKEN);
-      tokencalendar.value = TOKEN;
+      tokencalendar.value = TOKEN;  
     }
   });
 
