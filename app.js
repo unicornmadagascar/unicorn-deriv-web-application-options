@@ -3627,7 +3627,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  document.getElementById("fetchTrades").addEventListener("click", () => {
+  document.getElementById("fetchTrades").addEventListener("click", () => {  
     // 1. Récupérer les dates des inputs HTML
     const startValue = document.getElementById("startDate").value; // Format YYYY-MM-DD
     const endValue = document.getElementById("endDate").value;
