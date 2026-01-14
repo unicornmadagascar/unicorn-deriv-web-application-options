@@ -3630,7 +3630,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // On cherche dans les colonnes principales pour une recherche globale
       const searchableContent = `
             ${event.indicator_type || ''} 
-            ${event.country_name || ''} 
+            ${event.country_name || ''}   
             ${event.currency || ''} 
             ${event.sector || ''} 
             ${event.event_name || ''}
