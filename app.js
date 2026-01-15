@@ -4121,12 +4121,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("closeCashierBtn").onclick = () => {
-    document.getElementById("cashierModal").style.display = "none";  
+    document.getElementById("cashierModal").style.display = "none";    
     // Optionnel : DisconnectDeriv__();
-  };  
+  };   
   
   /* ================== POP UP FOR INDICATOR ================== */  
-  openBtngpt.onclick = () => overlaygemini.classList.remove("hidden");
+  openBtngpt.onclick = () => overlaygemini.classList.remove("hidden");  
 
   function closePopup() {
     overlaygemini.classList.add("hidden");
