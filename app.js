@@ -4118,7 +4118,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("openCashierBtn").addEventListener("click", () => { 
     document.getElementById("cashierModal").style.display = "flex";
     // connectDeriv__(); // Votre fonction de connexion existante
-  });
+  }); 
 
   document.getElementById("closeCashierBtn").onclick = () => {
     document.getElementById("cashierModal").style.display = "none";    
