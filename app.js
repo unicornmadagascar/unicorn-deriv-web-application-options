@@ -2445,7 +2445,6 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
       }
 
-      updateGlobalPnL();
       Openpositionlines(currentSeries);
     };
 
