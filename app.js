@@ -2445,7 +2445,7 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
       }
 
-      Openpositionlines(currentSeries);
+      Openpositionlines(currentSeries);  
     };
 
     // --- ÉVÉNEMENT : FERMETURE ---
