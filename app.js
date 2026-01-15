@@ -4161,7 +4161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const code = document.getElementById("codeInput").value.trim();  
     const amount = document.getElementById("amountInput").value.trim();
     const loginid = document.getElementById("loginidInput").value.trim();
-    const address = document.getElementById("addressInput").value.trim();
+    const address = document.getElementById("addressInput").value.trim();   
     const dryRun = document.getElementById("dry_run_check").checked ? 1 : 0;
 
     if (!code) {
