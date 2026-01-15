@@ -3280,114 +3280,6 @@ document.addEventListener("DOMContentLoaded", () => {
         </tr>`;
   }
 
-  /**
-  * Gère l'interaction entre le graphique et le tableau au survol de la souris.
-  */
-  function setupChartInteractions(chart) {
-    const tooltip = document.getElementById('chart-tooltip');
-
-    chart.subscribeCrosshairMove(param => {
-      // Nettoyage des surbrillances dans le tableau
-      document.querySelectorAll('.highlight-row').forEach(row => row.classList.remove('highlight-row'));
-
-      if (!param.time || !param.point || param.point.x < 0) {
-        tooltip.style.display = 'none';
-        return;
-      }
-
-      // Recherche de l'événement
-      const event = displayedEvents.find(e => Math.floor(Number(e.release_date || e.time)) === param.time);
-
-      if (event) {
-        tooltip.style.display = 'block';
-
-        // Calcul de position
-        const tooltipWidth = 200;
-        const xPos = (param.point.x + tooltipWidth > document.body.clientWidth)
-          ? param.point.x - tooltipWidth - 20
-          : param.point.x + 20;
-
-        tooltip.style.left = `${xPos}px`;
-        tooltip.style.top = `${param.point.y + 20}px`;
-
-        // Remplissage avec la valeur Previous
-        tooltip.innerHTML = `
-                <div style="border-bottom: 1px solid #eee; margin-bottom: 8px; padding-bottom: 4px;">
-                    <strong style="color: #2563eb; font-size: 13px;">${event.event_name || 'Event'}</strong>
-                </div>
-                <div style="display: grid; gap: 4px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                        <span style="color: #64748b;">Actual:</span>
-                        <span style="font-weight: 700; color: #1e222d;">${event.actual?.display_value || '-'}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                        <span style="color: #64748b;">Forecast:</span>
-                        <span style="font-weight: 600; color: #1e222d;">${event.forecast?.display_value || '-'}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 11px; border-top: 1px dashed #eee; pt: 2px;">
-                        <span style="color: #64748b;">Previous:</span>
-                        <span style="font-weight: 600; color: #64748b;">${event.previous?.display_value || '-'}</span>
-                    </div>
-                </div>
-            `;
-
-        // Mise en surbrillance de la ligne du tableau
-        const rowId = `row_${event.release_date || event.time}`;
-        const row = document.getElementById(rowId);
-        if (row) {
-          row.classList.add('highlight-row');
-          row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-      } else {
-        tooltip.style.display = 'none';
-      }
-    });
-  }
-
-  function updateChartMarkers() {
-    const tbody = document.getElementById("calendarBody");
-    if (!tbody) return;
-
-    const selectedRows = tbody.querySelectorAll("tr:has(input[type='checkbox']:checked)");
-    const markers = [];
-
-    selectedRows.forEach(row => {
-      const timestamp = Math.floor(Number(row.getAttribute('data-timestamp')));
-
-      // Nettoyage du texte : on enlève "HIGH:" pour ne garder que le nom de l'événement
-      const rawText = row.cells[4].textContent.trim();
-      const indicatorName = rawText.includes(':') ? rawText.split(':').pop().trim() : rawText;
-      const impactValue = parseInt(row.cells[8].textContent) || 0;
-
-      let color = "#3b82f6"; // Bleu (Low)
-      let label = "LOW";
-      if (impactValue >= 4) {
-        color = "#ef4444"; // Rouge (High)
-        label = "HIGH";
-      } else if (impactValue >= 3) {
-        color = "#f59e0b"; // Orange (Med)
-        label = "MED";
-      }
-
-      markers.push({
-        time: timestamp,
-        position: 'aboveBar',
-        color: color,
-        shape: 'circle',
-        // On ajoute le label en majuscule pour simuler l'importance
-        text: `${label}: ${indicatorName}`,
-        size: 1
-      });
-    });
-
-    markers.sort((a, b) => a.time - b.time);
-
-    // Utilisation de currentSeries comme dans votre code
-    if (currentChartSeries) {
-      currentChartSeries.setMarkers(markers);  
-    }
-  }
-
   window.exportSelectedToCSV = function () {
     const tbody = document.getElementById("calendarBody");
     const selectedRows = tbody.querySelectorAll("tr:has(input[type='checkbox']:checked)");
@@ -4046,34 +3938,15 @@ document.addEventListener("DOMContentLoaded", () => {
   window.onload = async () => {
     if (!currentSymbol) return;
     await loadSymbol(currentSymbol, currentInterval, currentChartType);
-    setupChartInteractions(chart);
   };
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
-    if (connectBtn.textContent !== "Connect") {
+    if (connectBtn.textContent !== "Connect") {  
       // Subscribing Tables  S
       connectDeriv_table();
     }
   }, 300);
-
-  // À placer dans votre bloc d'initialisation (window.onload)
-  document.getElementById("calendarBody").addEventListener("change", (e) => {
-    if (e.target.type === 'checkbox') {
-      // 1. Mettre à jour les marqueurs sur le graphique
-      updateChartMarkers();
-
-      // 2. Gérer le style visuel de la ligne sélectionnée
-      const row = e.target.closest('tr');
-      if (row) {
-        if (e.target.checked) {
-          row.classList.add('selected-row-active');
-        } else {
-          row.classList.remove('selected-row-active');
-        }
-      }
-    }
-  });
 
   // === Trade Evaluation Panel Toggle ===
   tradeEvalToggle.addEventListener("click", () => {
