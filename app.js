@@ -129,6 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsOpenLines = null;
   let wsplgauge = null;
   let currentSeries = null;
+  let currentChartSeries = null;
   let emaSeries = null;
   let closes = [];
   let wspl = null;
@@ -152,8 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentSort = { column: null, ascending: true };
   let displayedEvents = []; // Liste filtrée actuellement visible
   // Historique local des ticks
-  let closePrice;
-  let tickHistory4openpricelines = [];
   let priceLines4openlines = {}; // Stocke les lignes actives (clé = contract_id)
   let currentContractTypeGlobal = "";
   let activeContractsData = {}; // Stockage des infos détaillées (profit, etc.)
@@ -3355,47 +3354,37 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedRows.forEach(row => {
       const timestamp = Math.floor(Number(row.getAttribute('data-timestamp')));
 
-      // On récupère le nom de l'indicateur
-      // Si vous avez mis le badge dans la cellule 5 (index 4), on nettoie le texte
-      const indicatorText = row.cells[4].textContent.trim();
+      // Nettoyage du texte : on enlève "HIGH:" pour ne garder que le nom de l'événement
+      const rawText = row.cells[4].textContent.trim();
+      const indicatorName = rawText.includes(':') ? rawText.split(':').pop().trim() : rawText;
       const impactValue = parseInt(row.cells[8].textContent) || 0;
 
-      // 1. Détermination du label et de l'icône (Identique au tableau)
-      let impactLabel = "LOW";
-      let icon = "🔵";
-      let color = "#3b82f6";
-      let size = 1;
-
+      let color = "#3b82f6"; // Bleu (Low)
+      let label = "LOW";
       if (impactValue >= 4) {
-        impactLabel = "HIGH";
-        icon = "🔴";
-        color = "#ef4444";
-        size = 2;
+        color = "#ef4444"; // Rouge (High)
+        label = "HIGH";
       } else if (impactValue >= 3) {
-        impactLabel = "MED";
-        icon = "🟠";
-        color = "#f59e0b";
-        size = 1.5;
+        color = "#f59e0b"; // Orange (Med)
+        label = "MED";
       }
-
-      // 2. Création du texte complet pour le graphique
-      // Format : "🔴 HIGH: Nom de l'indicateur"
-      const fullText = `${icon} ${impactLabel}: ${indicatorText.split(':').pop().trim()}`;
 
       markers.push({
         time: timestamp,
         position: 'aboveBar',
         color: color,
-        shape: impactValue >= 4 ? 'arrowUp' : 'circle',
-        text: fullText,
-        size: size
+        shape: 'circle',
+        // On ajoute le label en majuscule pour simuler l'importance
+        text: `${label}: ${indicatorName}`,
+        size: 1
       });
     });
 
     markers.sort((a, b) => a.time - b.time);
 
-    if (currentSeries) {
-      currentSeries.setMarkers(markers);
+    // Utilisation de currentSeries comme dans votre code
+    if (currentChartSeries) {
+      currentChartSeries.setMarkers(markers);
     }
   }
 
@@ -3411,7 +3400,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. Ajout de "sep=;" pour forcer Excel à ouvrir les colonnes correctement
     // 2. Utilisation du point-virgule comme séparateur (standard européen)
     let csvContent = "sep=;\n";
-    csvContent += "Date;Currency;Event;Impact;Actual;Previous;Forecast\n";  
+    csvContent += "Date;Currency;Event;Impact;Actual;Previous;Forecast\n";
 
     selectedRows.forEach(row => {
       const columns = row.querySelectorAll("td");
@@ -3419,8 +3408,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // Extraction en s'assurant que les colonnes existent
       const date = columns[1]?.textContent.trim() || "";
       const eventName = columns[4]?.textContent.trim() || "";
-      const currency = columns[6]?.textContent.trim() || "";  
-      const impact = columns[8]?.textContent.trim() || "";     
+      const currency = columns[6]?.textContent.trim() || "";
+      const impact = columns[8]?.textContent.trim() || "";
       const actual = columns[9]?.textContent.trim() || "";
       const previous = columns[10]?.textContent.trim() || "";
       const forecast = columns[11]?.textContent.trim() || "";
@@ -3540,14 +3529,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     return (response);
-  }
-
-  function attachSortHandlers() {
-    const headers = document.querySelectorAll("#calendarTable thead th");
-    headers.forEach((th, index) => {
-      th.style.cursor = "pointer";
-      th.onclick = () => sortCalendarTable(index);
-    });
   }
 
   function sortCalendarTable(columnIndex) {

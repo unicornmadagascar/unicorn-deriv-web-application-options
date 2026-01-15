@@ -422,35 +422,51 @@
       background: #3b82f6 !important;
     }
 
-    /* Animation douce pour la ligne sélectionnée sur le chart */
-    .highlight-row {
-      background-color: rgba(37, 99, 235, 0.1) !important;
-      border-left: 4px solid #2563eb !important;
-      transition: all 0.3s ease;
+    /* Conteneur principal de l'infobulle */
+    #chart-tooltip {
+      display: none;
+      position: absolute;
+      padding: 10px 14px;
+      background-color: rgba(255, 255, 255, 0.98);
+      /* Fond blanc semi-transparent */
+      border-radius: 8px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+      z-index: 1000;
+      pointer-events: none;
+      font-family: 'Inter', sans-serif;
+      min-width: 180px;
     }
 
-    /* Style de la popup */
+    /* Titre (Nom de l'indicateur) */
     #chart-tooltip strong {
-      color: #2563eb;
       display: block;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
       font-size: 13px;
+      line-height: 1.2;
+      /* La couleur sera injectée dynamiquement par le JS */
     }
 
+    /* Ligne de détails (Actual, Forecast, etc.) */
     #chart-tooltip .details {
       display: flex;
       justify-content: space-between;
+      gap: 15px;
       font-size: 11px;
       margin-top: 4px;
+      padding-top: 4px;
+      border-top: 1px solid #f1f5f9;
     }
 
     #chart-tooltip .label {
       color: #64748b;
+      /* Gris pour les libellés */
     }
 
     #chart-tooltip .val {
       font-weight: 600;
-      color: #1e222d;
+      color: #1e293b;
+      /* Noir pour les valeurs */
     }
 
     /* Animation de clignotement pour la table */
@@ -488,14 +504,7 @@
       animation: flashBlue 0.6s ease-out forwards;
       border-left: 4px solid #2563eb !important;
       position: relative;
-      z-index: 1;
-    }
-
-    /* Tooltip flottant */
-    #chart-tooltip {
-      pointer-events: none;
-      transition: opacity 0.2s;
-      /* ... (les autres styles vus précédemment) ... */
+      z-index: 1000;
     }
 
     .btn-export {
