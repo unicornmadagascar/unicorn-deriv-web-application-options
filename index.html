@@ -1994,9 +1994,9 @@
    POPUP OVERLAY GLASS
 ===================================================== */
     /* Overlay & Panel */
-    .cashier-overlay {  
+    .cashier-overlay {
       position: fixed;
-      top: 0;    
+      top: 0;
       left: 0;
       width: 100%;
       height: 100%;
@@ -2014,8 +2014,9 @@
       width: 100%;
       max-width: 480px;
       border-radius: 20px;
+      border: 1px solid #f1f5f9; /* Bordure très claire */
       padding: 25px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); /* Ombre profonde pour décoller du fond */
       display: flex;
       flex-direction: column;
     }
@@ -2114,33 +2115,64 @@
       margin: 15px 0;
     }
 
-    /* Buttons */
+    /* Bouton Principal (Lancer la transaction) */
     .btn-main {
-      background: var(--primary-color);
-      color: white;
-      border: none;
+      background: #ffffff;
+      color: var(--primary-color);
+      /* Texte bleu pour le contraste */
+      border: 2px solid var(--primary-color);
       padding: 14px;
       border-radius: 12px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       width: 100%;
       margin-bottom: 10px;
-      transition: 0.3s;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
 
     .btn-main:hover {
-      background: #1d4ed8;
-      transform: translateY(-1px);
+      background: var(--primary-color);
+      color: #ffffff;
+      /* S'inverse au survol */
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px rgba(37, 99, 235, 0.2);
     }
 
-    .btn-close {
-      background: transparent;
+    /* Bouton Secondaire (Envoyer code/Vérifier) */
+    #sendEmailBtn {
+      background: #ffffff;
+      color: var(--text-dark);
       border: 1px solid var(--border-color);
-      color: var(--text-light);
+      padding: 0 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    #sendEmailBtn:hover {
+      background: #f8fafc;
+      border-color: var(--text-light);
+    }
+
+    /* Bouton Annuler / Fermer */
+    .btn-close {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      color: #94a3b8;
       width: 100%;
       padding: 10px;
       border-radius: 10px;
       cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .btn-close:hover {
+      color: var(--danger);
+      border-color: var(--danger);
+      background: #fff1f2;
     }
 
     /* Fee Indicator */
