@@ -2429,7 +2429,7 @@ document.addEventListener("DOMContentLoaded", () => {
             updateGlobalPnL();
           }
           break;
-  
+
         case "portfolio":
           if (typeof handlePortfolio === 'function') {
             handlePortfolio(data);
@@ -2445,7 +2445,7 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
       }
 
-      Openpositionlines(currentSeries);  
+      Openpositionlines(currentSeries);
     };
 
     // --- ÉVÉNEMENT : FERMETURE ---
@@ -3937,11 +3937,11 @@ document.addEventListener("DOMContentLoaded", () => {
   window.onload = async () => {
     if (!currentSymbol) return;
     await loadSymbol(currentSymbol, currentInterval, currentChartType);
-  };  
+  };
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
-    if (connectBtn.textContent !== "Connect") {  
+    if (connectBtn.textContent !== "Connect") {
       // Subscribing Tables  S
       connectDeriv_table();
     }
@@ -4110,70 +4110,21 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("settingsPopup").classList.remove("active");
     console.log("Paramètres sauvegardés !");
   };
+  /* ================== POP UP FOR CASHIER ================== */
 
-  // -------------------------------------------------------------
-  // 1. Quand on ouvre la fenêtre, on initialise le WS + authorize
-  // -------------------------------------------------------------
-  openCashierBtn.addEventListener("click", () => {
-    cashierModal.classList.add("active");
-    connectDeriv__();
+  /* =============================================================
+   1. GESTION DE L'OUVERTURE / FERMETURE
+   ============================================================= */
+  document.getElementById("openCashierBtn").addEventListener("click", () => {
+    document.getElementById("cashierModal").style.display = "flex";
+    connectDeriv__(); // Votre fonction de connexion existante
   });
 
-  closePopupBtn.onclick = () => {
-    DisconnectDeriv__();
-    cashierModal.classList.remove("active");
+  document.getElementById("closeCashierBtn").onclick = () => {
+    document.getElementById("cashierModal").style.display = "none";
+    // Optionnel : DisconnectDeriv__();
   };
-
-  /* ============================
-     SEND VERIFICATION EMAIL
-  ============================ */
-  document.getElementById("sendEmailBtn").onclick = () => {
-    const email = document.getElementById("emailInput").value.trim();
-
-    if (!email) {
-      showError("Email requis");
-      return;
-    }
-
-    wsTranscation.send(JSON.stringify({
-      verify_email: email,
-      type: "account_openning"
-    }));
-  };
-
-  /* ============================
-     GENERATE CASHIER URL
-  ============================ */
-  document.getElementById("validateCodeBtn").onclick = () => {
-    const action = document.getElementById("actionSelect").value;
-    const provider = document.getElementById("providerSelect").value;
-    const currency = document.getElementById("currencySelect").value.trim();
-    const code = document.getElementById("codeInput").value.trim();
-
-    if (!code) {
-      showError("Code email requis");
-      return;
-    }
-
-    const payload = {
-      cashier: action,           // deposit | withdrawal
-      verification_code: code,
-      provider: provider
-    };
-
-    if (currency) {
-      payload.currency = currency;
-    }
-
-    wsTranscation.send(JSON.stringify(payload));
-  };
-
-  document.getElementById("closeWebview").onclick = () => {
-    DisconnectDeriv__();
-    document.getElementById("webviewModal").style.display = "none";
-    document.getElementById("webviewFrame").src = "";
-  };
-
+  
   /* ================== POP UP FOR INDICATOR ================== */
   openBtngpt.onclick = () => overlaygemini.classList.remove("hidden");
 
