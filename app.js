@@ -4125,7 +4125,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Optionnel : DisconnectDeriv__();
   };
 
-  /* ================== POP UP FOR INDICATOR ================== */
+  /* ================== POP UP FOR INDICATOR ================== */  
   openBtngpt.onclick = () => overlaygemini.classList.remove("hidden");
 
   function closePopup() {
