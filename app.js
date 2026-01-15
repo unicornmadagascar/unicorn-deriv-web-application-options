@@ -3567,6 +3567,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+
+  /* --- Logique dynamique pour l'affichage Crypto --- */
+  const providerSelect = document.getElementById('providerSelect');
+
+  function updateCryptoVisibility() {
+    const isCrypto = providerSelect.value === 'crypto';
+    const cryptoFields = document.getElementById('cryptoFields');
+    const typeSelect = document.getElementById('typeSelect');
+    const currencySelect = document.getElementById('currencySelect');
+
+    if (cryptoFields) {
+      cryptoFields.style.display = isCrypto ? 'block' : 'none';
+    }
+
+    if (isCrypto) {
+      if (typeSelect) typeSelect.value = 'api';
+      if (currencySelect) currencySelect.placeholder = "BTC, ETH, USDT...";
+    } else {
+      if (currencySelect) currencySelect.placeholder = "USD, EUR...";
+    }
+  }
+
   document.getElementById("fetchTrades").addEventListener("click", () => {
     // 1. Récupérer les dates des inputs HTML
     const startValue = document.getElementById("startDate").value; // Format YYYY-MM-DD
@@ -4126,14 +4148,8 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   /* --- Logique dynamique pour l'affichage Crypto --- */
-  document.getElementById('providerSelect').addEventListener('change', (e) => {
-    const isCrypto = e.target.value === 'crypto';
-    document.getElementById('cryptoFields').style.display = isCrypto ? 'block' : 'none';
-    if (isCrypto) {
-      document.getElementById('typeSelect').value = 'api';
-      document.getElementById('currencySelect').placeholder = "BTC, ETH, USDT...";
-    }
-  });
+  providerSelect.addEventListener('change', updateCryptoVisibility);
+
 
   /* ============================
    3. GENERATE TRANSACTION (CASHIER)
