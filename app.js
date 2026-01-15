@@ -4111,7 +4111,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Paramètres sauvegardés !");
   };
   /* ================== POP UP FOR CASHIER ================== */
-
+  
   /* =============================================================
    1. GESTION DE L'OUVERTURE / FERMETURE
    ============================================================= */
@@ -4124,7 +4124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("cashierModal").style.display = "none";
     // Optionnel : DisconnectDeriv__();
   };
-  
+
   /* ================== POP UP FOR INDICATOR ================== */
   openBtngpt.onclick = () => overlaygemini.classList.remove("hidden");
 
