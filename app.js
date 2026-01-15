@@ -1207,11 +1207,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Événement : Connexion établie
     wsTranscation.onopen = () => {
-      console.log("✅ Connecté au serveur Deriv");
+      console.log("✅ Connecté au serveur Deriv");  
 
       // On lance immédiatement l'autorisation avec votre TOKEN
       authorize__(TOKEN.trim());
-    };
+    }; 
 
     // Événement : Réception d'un message (Le coeur du système)
     wsTranscation.onmessage = (msg) => {
