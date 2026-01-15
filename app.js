@@ -3384,7 +3384,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Utilisation de currentSeries comme dans votre code
     if (currentChartSeries) {
-      currentChartSeries.setMarkers(markers);
+      currentChartSeries.setMarkers(markers);  
     }
   }
 
