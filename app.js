@@ -2318,7 +2318,6 @@ document.addEventListener("DOMContentLoaded", () => {
       tr.cells[10].textContent = trade.profit;
     }
 
-    updateGlobalPnL();
     updateTotalStats();
     updateDonutCharts();
     Openpositionlines(currentSeries);
@@ -2425,8 +2424,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         case "proposal_open_contract":
           // C'est ici que la table reçoit ses données en temps réel
-          if (typeof handleContractDetails === 'function') {
+          if (typeof handleContractDetails === 'function' && typeof updateGlobalPnL === 'function') {
             handleContractDetails(data);
+            updateGlobalPnL();
           }
           break;
 
@@ -3938,7 +3938,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.onload = async () => {
     if (!currentSymbol) return;
     await loadSymbol(currentSymbol, currentInterval, currentChartType);
-  };
+  };  
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
