@@ -1192,59 +1192,53 @@ document.addEventListener("DOMContentLoaded", () => {
     return date.toLocaleTimeString(); // ou toLocaleString()
   }
 
-  /* ============================
-   INIT WEBSOCKET
-  ============================ */
+  /* CASHIER CONNECTION */
+  /* =============================================================
+   INITIALISATION ET CONNEXION WEBSOCKET
+   ============================================================= */
   function connectDeriv__() {
+    // On ferme l'ancienne connexion si elle existe encore
+    if (typeof wsTranscation !== 'undefined' && wsTranscation.readyState === WebSocket.OPEN) {
+      wsTranscation.close();
+    }
+
+    // Création de la connexion (Vérifiez que WS_URL contient votre AppID)
     wsTranscation = new WebSocket(WS_URL);
 
+    // Événement : Connexion établie
     wsTranscation.onopen = () => {
-      console.log("✅ Connecté à Deriv");
+      console.log("✅ Connecté au serveur Deriv");
+
+      // On lance immédiatement l'autorisation avec votre TOKEN
       authorize__(TOKEN.trim());
     };
 
+    // Événement : Réception d'un message (Le coeur du système)
     wsTranscation.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
+
+      // On envoie les données vers le gestionnaire central que nous avons organisé
       handleDerivMessage__(data);
     };
 
+    // Événement : Erreurs de réseau ou serveur
     wsTranscation.onerror = (err) => {
-      showError("Erreur connexion Deriv");
-      console.error(err);
+      showError("Impossible de joindre le serveur de transaction.");
+      console.error("WebSocket Error:", err);
+      wsTranscation.close();
+      setTimeout(connectDeriv__, 1000);
+    };
+
+    // Événement : Déconnexion
+    wsTranscation.onclose = (e) => {
+      console.log("🔌 Connexion Deriv fermée");
+      setTimeout(connectDeriv__, 1000);
     };
   }
 
   /* ============================
-     HANDLE MESSAGES
-  ============================ */
-  function handleDerivMessage__(data) {
-    if (data.error) {
-      showError(data.error.message);
-      return;
-    }
-
-    // Autorisation OK
-    if (data.authorize) {
-      console.log("🔐 Autorisé:", data.authorize.loginid);
-      return;
-    }
-
-    // Email envoyé
-    if (data.verify_email) {
-      alert("📧 Code envoyé à votre email Deriv");
-      return;
-    }
-
-    // URL Cashier générée
-    if (data.cashier) {
-      openWebview(data.cashier);
-      return;
-    }
-  }
-
-  /* ============================
-     AUTHORIZE
-  ============================ */
+   AUTHORIZE
+============================ */
   function authorize__(token) {
     authToken = token;
     wsTranscation.send(JSON.stringify({
@@ -1253,18 +1247,130 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ============================
-   OPEN WEBVIEW
+   HANDLE MESSAGES (Mise à jour)
 ============================ */
+  function handleDerivMessage__(data) {
+    const errorBox = document.getElementById("errorBox");
+
+    // 1. Gestion des erreurs globales
+    if (data.error) {
+      showError(data.error.message);
+      return;
+    }
+
+    // 2. Autorisation
+    if (data.msg_type === "authorize") {
+      console.log("🔐 Autorisé:", data.authorize.loginid);
+      return;
+    }
+
+    // 3. Email de vérification envoyé
+    if (data.msg_type === "verify_email") {
+      errorBox.style.color = "#10b981";
+      errorBox.textContent = "📧 Code envoyé ! Vérifiez vos emails.";
+      return;
+    }
+
+    // 4. RÉCEPTION DES FRAIS CRYPTO (NOUVEAU)
+    if (data.msg_type === "crypto_estimations") {
+      const estimations = data.crypto_estimations;
+      if (estimations) {
+        const firstEntry = Object.values(estimations)[0];
+        window.currentFeeId = firstEntry.unique_id; // Stockage pour le payload final
+        updateFeeUI(firstEntry, data.echo_req.currency_code); // Appel de la fonction graphique
+      }
+      return;
+    }
+
+    // 5. RÉSULTAT DU CASHIER (URL OU TRANSACTION)
+    if (data.msg_type === "cashier") {
+      const result = data.cashier;
+
+      // On vérifie si c'est une URL (String) ou un objet
+      const url = (typeof result === 'string') ? result : result.url;
+
+      if (url) {
+        // C'est un lien (Doughflow, etc.) -> Ouvrir l'Iframe
+        openWebview(url);
+        document.getElementById("cashierModal").style.display = "none";
+      } else {
+        // C'est une transaction directe (Crypto API) -> Succès textuel
+        errorBox.style.color = "#10b981";
+        errorBox.textContent = "✅ Transaction traitée avec succès !";
+        setTimeout(() => { document.getElementById("cashierModal").style.display = "none"; }, 2500);
+      }
+      return;
+    }
+  }
+
+  // Déclencheur pour les frais crypto
+  const triggerEstimation = () => {
+    // On s'assure que le socket est ouvert avant d'envoyer
+    if (!wsTranscation || wsTranscation.readyState !== WebSocket.OPEN) return;
+
+    const amount = document.getElementById('amountInput').value;
+    const currency = document.getElementById('currencySelect').value.trim();
+    const provider = document.getElementById('providerSelect').value;
+
+    // On ne lance l'appel que si les 3 conditions sont réunies
+    if (amount && currency && provider === 'crypto') {
+      console.log("🔄 Demande d'estimation des frais pour:", currency);
+      wsTranscation.send(JSON.stringify({
+        crypto_estimations: 1,
+        currency_code: currency
+      }));
+    }
+  };
+
+  /* =============================================================
+   MISE À JOUR VISUELLE DES FRAIS (UI)
+   ============================================================= */
+  function updateFeeUI(feeEntry, currencyCode) {
+    const feeIndicator = document.getElementById('feeIndicator');
+    const feeBadge = document.getElementById('feeBadge');
+    const feeBar = document.getElementById('feeBar');
+    const errorBox = document.getElementById('errorBox');
+
+    // Sécurité : on vérifie que les éléments existent
+    if (!feeIndicator || !feeEntry) return;
+
+    // 1. Afficher le bloc de priorité
+    feeIndicator.style.display = 'block';
+
+    // 2. Définir les niveaux de priorité et couleurs
+    // L'API Deriv renvoie généralement des frais optimisés.
+    // On simule ici une logique de seuils pour l'aspect visuel :
+    let priority = { label: "BAS", color: "#10b981", percent: "35%" }; // Vert
+
+    if (feeEntry.fee > 0.0005) {
+      priority = { label: "ÉLEVÉ", color: "#ef4444", percent: "100%" }; // Rouge
+    } else if (feeEntry.fee > 0.0001) {
+      priority = { label: "MOYEN", color: "#f59e0b", percent: "65%" };  // Orange
+    }
+
+    // 3. Appliquer les styles dynamiquement
+    feeBadge.textContent = priority.label;
+    feeBadge.style.backgroundColor = priority.color;
+
+    feeBar.style.backgroundColor = priority.color;
+    feeBar.style.width = priority.percent;
+
+    // 4. Afficher le montant exact des frais sous la barre
+    errorBox.style.color = "#64748b"; // Gris discret pour les frais
+    errorBox.innerHTML = `Frais estimés : <strong>${feeEntry.fee} ${currencyCode}</strong>`;
+  }
+
+  // Ouvre l'iframe
   function openWebview(url) {
     document.getElementById("webviewFrame").src = url;
     document.getElementById("webviewModal").style.display = "flex";
   }
 
-  /* ============================
-     UI HELPERS
-  ============================ */
+  // Affiche l'erreur dans l'errorBox
   function showError(msg) {
-    document.getElementById("errorBox").innerText = msg;
+    const eb = document.getElementById("errorBox");
+    eb.style.color = "#ef4444";
+    eb.textContent = msg;
   }
 
   function DisconnectDeriv__() {
@@ -1274,6 +1380,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // ML COMPUTING
   function startSignalPipeline(onMessageCallback) {
     if (wsSignal && wsSignal.readyState === WebSocket.OPEN) return;
 
@@ -4139,16 +4246,38 @@ document.addEventListener("DOMContentLoaded", () => {
    ============================================================= */
   document.getElementById("openCashierBtn").addEventListener("click", () => {
     document.getElementById("cashierModal").style.display = "flex";
-    // connectDeriv__(); // Votre fonction de connexion existante
+    connectDeriv__(); // Votre fonction de connexion existante
   });
 
   document.getElementById("closeCashierBtn").onclick = () => {
     document.getElementById("cashierModal").style.display = "none";
-    // Optionnel : DisconnectDeriv__();
+    DisconnectDeriv__();
   };
 
   /* --- Logique dynamique pour l'affichage Crypto --- */
   providerSelect.addEventListener('change', updateCryptoVisibility);
+
+  /* ============================
+   2. SEND VERIFICATION EMAIL
+   ============================ */
+  document.getElementById("sendEmailBtn").onclick = () => {
+    const email = document.getElementById("emailInput").value.trim();
+    const errorBox = document.getElementById("errorBox");
+
+    if (!email) {
+      showError("Veuillez entrer votre email");
+      return;
+    }
+
+    // Note : On utilise 'payment_withdraw' pour autoriser les transactions cashier
+    wsTranscation.send(JSON.stringify({
+      verify_email: email,
+      type: "payment_withdraw"
+    }));
+
+    errorBox.style.color = "#2563eb";
+    errorBox.textContent = "Demande envoyée...";
+  };
 
   /* ============================
    3. GENERATE TRANSACTION (CASHIER)
@@ -4158,10 +4287,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const provider = document.getElementById("providerSelect").value;
     const type = document.getElementById("typeSelect").value;
     const currency = document.getElementById("currencySelect").value.trim();
-    const code = document.getElementById("codeInput").value.trim();  
+    const code = document.getElementById("codeInput").value.trim();
     const amount = document.getElementById("amountInput").value.trim();
     const loginid = document.getElementById("loginidInput").value.trim();
-    const address = document.getElementById("addressInput").value.trim();   
+    const address = document.getElementById("addressInput").value.trim();
     const dryRun = document.getElementById("dry_run_check").checked ? 1 : 0;
 
     if (!code) {
@@ -4196,6 +4325,9 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Envoi Transaction:", payload);
     wsTranscation.send(JSON.stringify(payload));
   };
+
+  document.getElementById('amountInput').addEventListener('blur', triggerEstimation);
+  document.getElementById('currencySelect').addEventListener('blur', triggerEstimation);
 
   /* ============================
      4. GESTION DE LA WEBVIEW

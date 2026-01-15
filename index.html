@@ -2217,7 +2217,9 @@
     #feeBar {
       height: 100%;
       width: 0%;
-      transition: width 0.5s ease;
+      /* Commence à zéro */
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s;
+      border-radius: 10px;
     }
 
     /* Statuses */
@@ -2237,24 +2239,24 @@
     .checkbox-row input[type="checkbox"] {
       width: 18px;
       /* Taille fixe pour éviter qu'il ne s'étire */
-      height: 18px;    
-      margin: 0;  
-      /* Supprime les marges par défaut du navigateur */  
-      cursor: pointer;  
+      height: 18px;
+      margin: 0;
+      /* Supprime les marges par défaut du navigateur */
+      cursor: pointer;
     }
 
     .check-label {
-      font-size: 13px; 
-      color: var(--text-dark);  
+      font-size: 13px;
+      color: var(--text-dark);
       text-transform: none;
       /* Désactive les majuscules si vous en aviez mis */
-      font-weight: 500;   
-      cursor: pointer;   
-      margin: 0;   
+      font-weight: 500;
+      cursor: pointer;
+      margin: 0;
       /* Supprime toute marge qui pousserait le texte */
-      line-height: 1;   
+      line-height: 1;
       /* Aligne bien le texte avec le milieu de la checkbox */
-    }    
+    }
 
     #errorBox {
       font-size: 12px;
