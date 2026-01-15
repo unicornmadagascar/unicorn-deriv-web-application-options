@@ -4129,7 +4129,7 @@ document.addEventListener("DOMContentLoaded", () => {
   openBtngpt.onclick = () => overlaygemini.classList.remove("hidden");    
 
   function closePopup() {
-    overlaygemini.classList.add("hidden");  
+    overlaygemini.classList.add("hidden");   
   }
 
   // Fermer si clic hors popup
