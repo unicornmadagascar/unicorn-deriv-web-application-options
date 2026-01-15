@@ -46,6 +46,11 @@
       --primary-hover: #1d4ed8;
       --danger-hover: #dc2626;
       --bg-secondary: #f1f5f9;
+      /* Cashier */
+      --primary-color: #2563eb;
+      --text-dark: #1e293b;
+      --text-light: #64748b;
+      --border-color: #e2e8f0;
     }
 
     /* .container {
@@ -422,53 +427,6 @@
       background: #3b82f6 !important;
     }
 
-    /* Conteneur principal de l'infobulle */
-    #chart-tooltip {
-      display: none;
-      position: absolute;
-      padding: 10px 14px;
-      background-color: rgba(255, 255, 255, 0.98);
-      /* Fond blanc semi-transparent */
-      border-radius: 8px;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      border: 1px solid #e2e8f0;
-      z-index: 1000;
-      pointer-events: none;
-      font-family: 'Inter', sans-serif;
-      min-width: 180px;
-    }
-
-    /* Titre (Nom de l'indicateur) */
-    #chart-tooltip strong {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 13px;
-      line-height: 1.2;
-      /* La couleur sera injectée dynamiquement par le JS */
-    }
-
-    /* Ligne de détails (Actual, Forecast, etc.) */
-    #chart-tooltip .details {
-      display: flex;
-      justify-content: space-between;
-      gap: 15px;
-      font-size: 11px;
-      margin-top: 4px;
-      padding-top: 4px;
-      border-top: 1px solid #f1f5f9;
-    }
-
-    #chart-tooltip .label {
-      color: #64748b;
-      /* Gris pour les libellés */
-    }
-
-    #chart-tooltip .val {
-      font-weight: 600;
-      color: #1e293b;
-      /* Noir pour les valeurs */
-    }
-
     /* Animation de clignotement pour la table */
     @keyframes blink {
       0% {
@@ -497,14 +455,6 @@
       100% {
         background-color: rgba(37, 99, 235, 0.1);
       }
-    }
-
-    /* Classe appliquée dynamiquement par setupChartInteractions */
-    .highlight-row {
-      animation: flashBlue 0.6s ease-out forwards;
-      border-left: 4px solid #2563eb !important;
-      position: relative;
-      z-index: 1000;
     }
 
     .btn-export {
@@ -2043,231 +1993,256 @@
     /* =====================================================   
    POPUP OVERLAY GLASS
 ===================================================== */
-    .cashier-overlay,
-    .webview-popup {
+    /* Overlay & Panel */
+    .cashier-overlay {
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
       display: none;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.65);
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(5px);
       z-index: 9999;
+      font-family: 'Inter', sans-serif;
     }
 
-    .cashier-overlay.active,
-    .webview-popup.active {
-      display: flex;
-    }
-
-    /* =====================================================
-   CASHIER PANEL
-===================================================== */
     .cashier-panel {
-      width: 380px;
-      max-width: 90%;
       background: #ffffff;
-      border-radius: 18px;
-      padding: 28px 26px;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.12);
-      position: relative;
-      animation: slideIn 0.35s ease-out;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
       display: flex;
       flex-direction: column;
     }
 
-    .cashier-panel h2 {
-      text-align: center;
-      margin-bottom: 18px;
-      font-size: 1.45rem;
+    /* Headers */
+    .cashier-header h2 {
+      margin: 0;
+      color: var(--text-dark);
+      font-size: 22px;
+    }
+
+    .cashier-header p {
+      font-size: 13px;
+      color: var(--text-light);
+      margin-top: 5px;
+      margin-bottom: 20px;
+    }
+
+    /* Scroll Area */
+    .cashier-scroll-area {
+      max-height: 60vh;
+      overflow-y: auto;
+      padding-right: 10px;
+      margin-bottom: 20px;
+    }
+
+    .cashier-scroll-area::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .cashier-scroll-area::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    /* Inputs & Labels */
+    label {
+      display: block;
+      font-size: 11px;
       font-weight: 700;
-      color: #1a1a1a;
+      color: var(--text-light);
+      text-transform: uppercase;
+      margin-bottom: 6px;
     }
 
-    /* Labels */
-    .cashier-panel label {
-      margin-top: 14px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: #333;
-    }
-
-    /* Inputs + Selects */
-    .cashier-panel input,
-    .cashier-panel select {
+    input,
+    select {
       width: 100%;
-      padding: 10px 12px;
-      margin-top: 6px;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
       border-radius: 10px;
-      border: 1px solid #d0d0d0;
-      background: #fafafa;
-      font-size: 0.95rem;
-      transition: border 0.2s, box-shadow 0.2s;
+      font-size: 14px;
+      color: var(--text-dark);
+      transition: all 0.2s;
+      box-sizing: border-box;
     }
 
-    .cashier-panel input:focus,
-    .cashier-panel select:focus {
-      border-color: #2563eb;
-      box-shadow: 0 0 6px rgba(37, 99, 235, 0.35);
-      background: #fff;
+    input:focus,
+    select:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
-    /* Error box */
-    #errorBox {
-      margin-top: 12px;
-      padding: 10px;
-      background: #fee2e2;
-      border: 1px solid #fca5a5;
-      border-radius: 8px;
-      color: #b91c1c;
-      font-size: 0.85rem;
-      display: none;
+    /* Layout Grids */
+    .grid-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
     }
 
-    /* =====================================================
-   BUTTONS
-===================================================== */
-    .cashier-panel button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 16px;
+    .input-section {
+      margin-bottom: 15px;
+    }
+
+    .email-flex {
+      display: flex;
+      gap: 10px;
+    }
+
+    .email-flex button {
+      white-space: nowrap;
+      padding: 0 15px;
+      border-radius: 10px;
       border: none;
-      border-radius: 10px;
+      background: #f1f5f9;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .divider {
+      height: 1px;
+      background: #f1f5f9;
+      margin: 15px 0;
+    }
+
+    /* Buttons */
+    .btn-main {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
       font-weight: 600;
       cursor: pointer;
-      font-size: 1rem;
-      transition: background 0.25s, transform 0.1s;
+      width: 100%;
+      margin-bottom: 10px;
+      transition: 0.3s;
     }
 
-    .cashier-panel button:active {
-      transform: scale(0.97);
+    .btn-main:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
     }
 
-    /* Primary buttons */
-    #sendEmailBtn {
-      background: #2563eb;
+    .btn-close {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-light);
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    /* Fee Indicator */
+    .fee-container {
+      background: #f8fafc;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      border: 1px dashed var(--border-color);
+    }
+
+    .fee-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    #feeBadge {
+      padding: 2px 6px;
+      border-radius: 4px;
       color: white;
+      font-size: 9px;
     }
 
-    #sendEmailBtn:hover {
-      background: #1e40af;
+    .fee-progress-bg {
+      height: 5px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      margin-top: 6px;
+      overflow: hidden;
     }
 
-    #validateCodeBtn {
-      background: #10b981;
-      color: white;
+    #feeBar {
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s ease;
     }
 
-    #validateCodeBtn:hover {
-      background: #059669;
+    /* Statuses */
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 15px;
     }
 
-    /* Close */
-    #closeCashierBtn {
-      background: #ef4444;
-      color: white;
+    .check-label {
+      text-transform: none;
+      font-weight: 400;
+      margin-bottom: 0;
     }
 
-    #closeCashierBtn:hover {
-      background: #b91c1c;
+    #errorBox {
+      font-size: 12px;
+      text-align: center;
+      margin-top: 5px;
+      min-height: 15px;
     }
 
-    /* =====================================================
-   WEBVIEW POPUP
-===================================================== */
+    /* Webview Popup */
+    .webview-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+
     .webview-box {
-      width: 85%;
+      background: white;
+      width: 90%;
       max-width: 900px;
-      height: 85%;
-      background: #ffffff;
-      border-radius: 18px;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.12);
+      height: 85vh;
+      border-radius: 15px;
       display: flex;
       flex-direction: column;
-      animation: slideIn 0.35s ease-out;
+      overflow: hidden;
     }
 
     .webview-header {
-      padding: 14px 20px;
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #1a1a1a;
-      border-bottom: 1px solid #e5e5e5;
-    }
-
-    .webview-box iframe {
-      flex: 1;
-      border: none;
-      background: #f5f5f5;
-    }
-
-    /* Close webview button */
-    .webview-box .close-btn {
-      padding: 14px;
-      background: #ef4444;
-      border: none;
+      background: #1e222d;
       color: white;
-      cursor: pointer;
-      font-weight: 600;
-      transition: 0.25s;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .webview-box .close-btn:hover {
-      background: #b91c1c;
-    }
-
-    /* =====================================================
-   ANIMATIONS
-===================================================== */
-    @keyframes slideIn {
-      0% {
-        transform: translateY(-40px);
-        opacity: 0;
-      }
-
-      100% {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    /* =====================================================
-   RESPONSIVE (Mobile)
-===================================================== */
-    @media (max-width: 600px) {
-      .cashier-panel {
-        width: 92%;
-        padding: 20px;
-      }
-
-      .webview-box {
-        width: 96%;
-        height: 92%;
-      }
-    }
-
-    /* Centrage horizontal uniquement des champs */
-    .cashier-panel input {
-      align-self: center;
-      /* Centre l'élément dans le flex-column */
-      width: 93%;
-      /* Garde le style mais réduit légèrement la largeur */
-    }
-
-    .cashier-panel select {
-      align-self: center;
-      /* Centre l'élément dans le flex-column */
+    #webviewFrame {
+      flex-grow: 1;
+      border: none;
       width: 100%;
-      /* Garde le style mais réduit légèrement la largeur */
     }
 
-    .cashier-panel button {
-      align-self: center;
-      /* Centre l'élément dans le flex-column */
-      width: 100%;
-      /* Garde le style mais réduit légèrement la largeur */
-    }
-
+    /* ML */
     #overlayML {
       position: fixed;
       top: 0;
@@ -3110,72 +3085,113 @@
     </div>
   </div>
 
-  <div id="chart-tooltip" style="
-    display: none; 
-    position: absolute; 
-    z-index: 9999; 
-    background: rgba(255, 255, 255, 0.96); 
-    backdrop-filter: blur(4px);
-    padding: 12px; 
-    border-radius: 10px; 
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15); 
-    border: 1px solid #e0e3eb;
-    pointer-events: none;
-    font-family: 'Inter', sans-serif;
-    min-width: 180px;
-    color: #1e222d;">
-  </div>
-
   <!-- =======================
      POPUP CASHIER (Glass)
      ======================= -->
   <div class="cashier-overlay" id="cashierModal">
-
     <div class="cashier-panel">
-      <h2>Deriv Cashier</h2>
+      <div class="cashier-header">
+        <h2>Deriv Cashier</h2>
+        <p>Effectuez vos transactions en toute sécurité via l'API officielle.</p>
+      </div>
 
-      <label>Email Deriv</label>
-      <input id="emailInput" placeholder="entrer votre email" />
+      <div class="cashier-scroll-area">
+        <div class="input-section">
+          <label>Email du compte Deriv</label>
+          <div class="email-flex">
+            <input type="email" id="emailInput" placeholder="exemple@mail.com" />
+            <button id="sendEmailBtn">Vérifier</button>
+          </div>
+          <small class="helper-text">Obligatoire pour les retraits.</small>
+        </div>
 
-      <button id="sendEmailBtn">Envoyer email de vérification</button>
+        <div class="divider"></div>
 
-      <label>Type d'opération</label>
-      <select id="actionSelect">
-        <option value="deposit">Dépôt</option>
-        <option value="withdrawal">Retrait</option>
-      </select>
+        <div class="grid-inputs">
+          <div class="input-group">
+            <label>Login ID</label>
+            <input type="text" id="loginidInput" placeholder="ex: CR123456" />
+          </div>
+          <div class="input-group">
+            <label>Opération</label>
+            <select id="actionSelect">
+              <option value="deposit">Dépôt</option>
+              <option value="withdraw">Retrait</option>
+            </select>
+          </div>
+        </div>
 
-      <label>Provider</label>
-      <select id="providerSelect">
-        <option value="cashier">cashier</option>
-        <option value="doughflow">doughflow</option>
-        <option value="crypto">crypto (USDT / BTC / ...)</option>
-      </select>
+        <div class="grid-inputs">
+          <div class="input-group">
+            <label>Provider</label>
+            <select id="providerSelect">
+              <option value="doughflow">Doughflow (Fiat)</option>
+              <option value="crypto">Crypto (Direct)</option>
+              <option value="cashier">Cashier</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Type d'Interface</label>
+            <select id="typeSelect">
+              <option value="url">Lien URL</option>
+              <option value="api">API Directe</option>
+            </select>
+          </div>
+        </div>
 
-      <label>Devise (optionnel)</label>
-      <input id="currencySelect" placeholder="USD, USDT..." />
+        <div class="grid-inputs">
+          <div class="input-group">
+            <label>Montant (Amount)</label>
+            <input type="number" id="amountInput" placeholder="0.00" step="0.01" />
+          </div>
+          <div class="input-group">
+            <label>Devise (Currency)</label>
+            <input type="text" id="currencySelect" placeholder="USD, USDT, BTC..." />
+          </div>
+        </div>
 
-      <label>Code reçu par email</label>
-      <input id="codeInput" placeholder="123456" />
+        <div class="input-section" id="cryptoFields" style="display:none;">
+          <label>Adresse Wallet de destination</label>
+          <input type="text" id="addressInput" placeholder="Adresse blockchain (ex: 1A1z...)" />
+        </div>
 
-      <button id="validateCodeBtn">Générer l'URL</button>
+        <div class="input-section">
+          <label>Code reçu par email</label>
+          <input type="text" id="codeInput" placeholder="Code de vérification" />
+        </div>
 
-      <div id="errorBox"></div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="dry_run_check">
+          <label for="dry_run_check" class="check-label">Exécuter en mode Test (Dry Run)</label>
+        </div>
 
-      <button id="closeCashierBtn" class="close-popup-btn">Fermer</button>
+        <div id="feeIndicator" class="fee-container" style="display:none;">
+          <div class="fee-header">
+            <span>Priorité Réseau</span>
+            <span id="feeBadge">BAS</span>
+          </div>
+          <div class="fee-progress-bg">
+            <div id="feeBar"></div>
+          </div>
+        </div>
+
+        <div id="errorBox"></div>
+      </div>
+
+      <div class="cashier-footer">
+        <button id="validateCodeBtn" class="btn-main">Générer la transaction</button>
+        <button id="closeCashierBtn" class="btn-close">Annuler</button>
+      </div>
     </div>
   </div>
 
-  <!-- =======================
-     POPUP WEBVIEW
-     ======================= -->
   <div class="webview-popup" id="webviewModal">
     <div class="webview-box">
-      <div class="webview-header">Opération Deriv</div>
-
-      <iframe id="webviewFrame"></iframe>
-
-      <button id="closeWebview" class="close-btn">Fermer</button>
+      <div class="webview-header">
+        <h3>Opération en cours</h3>
+        <button id="closeWebview">&times;</button>
+      </div>
+      <iframe id="webviewFrame" src="about:blank"></iframe>
     </div>
   </div>
 
