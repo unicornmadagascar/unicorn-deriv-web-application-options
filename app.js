@@ -4111,25 +4111,91 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Paramètres sauvegardés !");
   };
   /* ================== POP UP FOR CASHIER ================== */
-  
+
   /* =============================================================
    1. GESTION DE L'OUVERTURE / FERMETURE
    ============================================================= */
-  document.getElementById("openCashierBtn").addEventListener("click", () => { 
+  document.getElementById("openCashierBtn").addEventListener("click", () => {
     document.getElementById("cashierModal").style.display = "flex";
     // connectDeriv__(); // Votre fonction de connexion existante
-  });  
+  });
 
   document.getElementById("closeCashierBtn").onclick = () => {
-    document.getElementById("cashierModal").style.display = "none";    
+    document.getElementById("cashierModal").style.display = "none";
     // Optionnel : DisconnectDeriv__();
-  };   
-     
-  /* ================== POP UP FOR INDICATOR ================== */  
-  openBtngpt.onclick = () => overlaygemini.classList.remove("hidden");    
+  };
+
+  /* --- Logique dynamique pour l'affichage Crypto --- */
+  document.getElementById('providerSelect').addEventListener('change', (e) => {
+    const isCrypto = e.target.value === 'crypto';
+    document.getElementById('cryptoFields').style.display = isCrypto ? 'block' : 'none';
+    if (isCrypto) {
+      document.getElementById('typeSelect').value = 'api';
+      document.getElementById('currencySelect').placeholder = "BTC, ETH, USDT...";
+    }
+  });
+
+  /* ============================
+   3. GENERATE TRANSACTION (CASHIER)
+   ============================ */
+  document.getElementById("validateCodeBtn").onclick = () => {
+    const action = document.getElementById("actionSelect").value;
+    const provider = document.getElementById("providerSelect").value;
+    const type = document.getElementById("typeSelect").value;
+    const currency = document.getElementById("currencySelect").value.trim();
+    const code = document.getElementById("codeInput").value.trim();
+    const amount = document.getElementById("amountInput").value.trim();
+    const loginid = document.getElementById("loginidInput").value.trim();
+    const address = document.getElementById("addressInput").value.trim();
+    const dryRun = document.getElementById("dry_run_check").checked ? 1 : 0;
+
+    if (!code) {
+      showError("Code de vérification requis");
+      return;
+    }
+
+    // Construction du Payload complet selon la documentation officielle
+    const payload = {
+      cashier: action,           // deposit | withdraw
+      verification_code: code,
+      provider: provider,        // doughflow | crypto | cashier
+      type: type,                // url | api
+      dry_run: dryRun
+    };
+
+    // Ajout des champs optionnels s'ils sont remplis
+    if (amount) payload.amount = parseFloat(amount);
+    if (currency) payload.currency = currency;
+    if (loginid) payload.loginid = loginid;
+
+    // Pour les retraits Crypto directs via API
+    if (provider === 'crypto' && address) {
+      payload.address = address;
+    }
+
+    // Si des frais estimés ont été calculés précédemment
+    if (typeof currentFeeId !== 'undefined' && currentFeeId) {
+      payload.estimated_fee_unique_id = currentFeeId;
+    }
+
+    console.log("Envoi Transaction:", payload);
+    wsTranscation.send(JSON.stringify(payload));
+  };
+
+  /* ============================
+     4. GESTION DE LA WEBVIEW
+     ============================ */
+  document.getElementById("closeWebview").onclick = () => {
+    document.getElementById("webviewModal").style.display = "none";
+    document.getElementById("webviewFrame").src = "about:blank";
+    // DisconnectDeriv__(); // À utiliser si vous voulez couper le flux après transaction
+  };
+
+  /* ================== POP UP FOR INDICATOR ================== */
+  openBtngpt.onclick = () => overlaygemini.classList.remove("hidden");
 
   function closePopup() {
-    overlaygemini.classList.add("hidden");   
+    overlaygemini.classList.add("hidden");
   }
 
   // Fermer si clic hors popup
