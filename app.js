@@ -4126,7 +4126,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };   
   
   /* ================== POP UP FOR INDICATOR ================== */  
-  openBtngpt.onclick = () => overlaygemini.classList.remove("hidden");  
+  openBtngpt.onclick = () => overlaygemini.classList.remove("hidden");    
 
   function closePopup() {
     overlaygemini.classList.add("hidden");  
