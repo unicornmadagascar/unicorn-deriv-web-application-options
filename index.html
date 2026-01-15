@@ -2014,9 +2014,11 @@
       width: 100%;
       max-width: 480px;
       border-radius: 20px;
-      border: 1px solid #f1f5f9; /* Bordure très claire */
+      border: 1px solid #f1f5f9;
+      /* Bordure très claire */
       padding: 25px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); /* Ombre profonde pour décoller du fond */
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+      /* Ombre profonde pour décoller du fond */
       display: flex;
       flex-direction: column;
     }
@@ -2154,6 +2156,11 @@
     #sendEmailBtn:hover {
       background: #f8fafc;
       border-color: var(--text-light);
+    }
+
+    #validateCodeBtn:active {
+      transform: scale(0.98);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     /* Bouton Annuler / Fermer */

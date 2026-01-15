@@ -4115,7 +4115,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =============================================================
    1. GESTION DE L'OUVERTURE / FERMETURE
    ============================================================= */
-  document.getElementById("openCashierBtn").addEventListener("click", () => {
+  document.getElementById("openCashierBtn").addEventListener("click", () => { 
     document.getElementById("cashierModal").style.display = "flex";
     connectDeriv__(); // Votre fonction de connexion existante
   });
