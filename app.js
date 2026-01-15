@@ -2429,7 +2429,7 @@ document.addEventListener("DOMContentLoaded", () => {
             updateGlobalPnL();
           }
           break;
-
+  
         case "portfolio":
           if (typeof handlePortfolio === 'function') {
             handlePortfolio(data);
