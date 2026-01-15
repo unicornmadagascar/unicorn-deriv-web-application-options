@@ -4150,7 +4150,6 @@ document.addEventListener("DOMContentLoaded", () => {
   /* --- Logique dynamique pour l'affichage Crypto --- */
   providerSelect.addEventListener('change', updateCryptoVisibility);
 
-
   /* ============================
    3. GENERATE TRANSACTION (CASHIER)
    ============================ */
@@ -4159,7 +4158,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const provider = document.getElementById("providerSelect").value;
     const type = document.getElementById("typeSelect").value;
     const currency = document.getElementById("currencySelect").value.trim();
-    const code = document.getElementById("codeInput").value.trim();
+    const code = document.getElementById("codeInput").value.trim();  
     const amount = document.getElementById("amountInput").value.trim();
     const loginid = document.getElementById("loginidInput").value.trim();
     const address = document.getElementById("addressInput").value.trim();
