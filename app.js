@@ -4299,12 +4299,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Ajout des champs optionnels s'ils sont remplis
     if (amount) payload.amount = parseFloat(amount);
-    if (currency) payload.currency = currency;
     if (loginid) payload.loginid = loginid;
 
     // Pour les retraits Crypto directs via API
-    if (provider === 'crypto' && address) {
-      payload.address = address;
+    if (provider === 'crypto') {
+      if (address) payload.address = address;
+      if (currency) payload.currency = currency;
     }
 
     // Si des frais estimés ont été calculés précédemment
