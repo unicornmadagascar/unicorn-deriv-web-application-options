@@ -4457,10 +4457,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 2. GESTION DE LA SÉLECTION / MODIFICATION (Si on n'est pas en mode dessin)
     drawingObjects.forEach(obj => {
-      const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
+      const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);  
       const y1 = currentSeries.priceToCoordinate(obj.p1.price);
       const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
-      const y2 = currentSeries.priceToCoordinate(obj.p2.price);
+      const y2 = currentSeries.priceToCoordinate(obj.p2.price);  
 
       // Si on clique près d'une extrémité
       if (Math.hypot(x - x1, y - y1) < 15) {
