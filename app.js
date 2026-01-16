@@ -4509,7 +4509,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (obj.type === 'rect') {
         const minX = Math.min(x1, x2);
         const maxX = Math.max(x1, x2);
-        const minY = Math.min(y1, y2);
+        const minY = Math.min(y1, y2);  
         const maxY = Math.max(y1, y2);
 
         if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
@@ -4617,7 +4617,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     if (objectFound) {
-      selectedObject = objectFound;
+      selectedObject = objectFound; 
       render(); // Met l'objet en surbrillance (orange)
 
       // Positionnement du menu par rapport à la page (e.pageX/Y)
