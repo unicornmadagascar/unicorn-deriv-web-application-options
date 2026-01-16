@@ -4481,7 +4481,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener('mouseup', () => { activePoint = null; });  
 
-  /* --- Synchronisation avec le graphique --- */
+  /* --- Synchronisation avec le graphique --- */  
 
   // Crucial : Redessiner quand on zoom ou scroll
   chart.timeScale().subscribeVisibleLogicalRangeChange(render);
