@@ -1198,12 +1198,19 @@ document.addEventListener("DOMContentLoaded", () => {
    ============================================================= */
   function connectDeriv__() {
     // On ferme l'ancienne connexion si elle existe encore
-    if (wsTranscation && wsTranscation.readyState === WebSocket.OPEN) {
-      wsTranscation.close();  
-    }  
+    if (wsTranscation === null) {
+      wsTranscation = new WebSocket(WS_URL);
+      wsTranscation.onopen = () => { wsTranscation.send(JSON.stringify({ authorize: TOKEN })); };
+    }
 
-    // Création de la connexion (Vérifiez que WS_URL contient votre AppID)
-    wsTranscation = new WebSocket(WS_URL);
+    if (wsTranscation && (wsTranscation.readyState === WebSocket.OPEN || wsTranscation.readyState === WebSocket.CONNECTING)) {
+      wsTranscation.onopen = () => { wsTranscation.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (wsTranscation && (wsTranscation.readyState === WebSocket.CLOSED || wsTranscation.readyState === WebSocket.CLOSING)) {
+      wsTranscation = new WebSocket(WS_URL);
+      wsTranscation.onopen = () => { wsTranscation.send(JSON.stringify({ authorize: TOKEN })); };
+    }  
 
     // Événement : Connexion établie
     wsTranscation.onopen = () => {
