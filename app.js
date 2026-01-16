@@ -2013,7 +2013,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * Le moteur de rendu (Dessine les lignes sur le canvas)
  */
   function render() {
-    if (!ctx) return;
+    if (!ctx) return;  
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const timeScale = chart.timeScale();
