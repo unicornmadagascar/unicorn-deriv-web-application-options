@@ -554,15 +554,15 @@
 
     /* Le Canvas de Trendline */
     #Trendoverlay__ {
-      position: absolute;   
-      /* Sort du flux flex */  
-      top: 0;  
+      position: absolute;
+      /* Sort du flux flex */
+      top: 0;
       left: 0;
       /* On utilise calc pour déduire les marges de 12px du parent */
       width: calc(100% - 24px);
       height: calc(100% - 24px);
       margin: 12px;
-      /* Doit être identique à #chartInner */  
+      /* Doit être identique à #chartInner */
 
       z-index: 10;
       cursor: crosshair;
@@ -570,6 +570,31 @@
       /* Permet de dessiner */
       background: transparent !important;
       /* Indispensable pour voir le chart derrière */
+    }
+
+    /* Style du Menu Contextuel */
+    #context-menu {
+      display: none;
+      position: absolute;  
+      z-index: 100;
+      background: #2b2b43;
+      border: 1px solid #363c4e;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      border-radius: 4px;
+      padding: 5px 0;
+      min-width: 120px;
+    }
+
+    .menu-item {
+      padding: 8px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      color: #d1d4dc;
+    }
+
+    .menu-item:hover {
+      background: #363c4e;
+      color: #ef5350;
     }
 
     /* Style du badge PnL */
@@ -2888,6 +2913,9 @@
 
       <div id="chartInner"></div>
       <canvas id="Trendoverlay__"></canvas>
+      <div id="context-menu">
+        <div id="deleteItem" class="menu-item">Supprimer</div>
+      </div>
 
     </div>
   </div>
