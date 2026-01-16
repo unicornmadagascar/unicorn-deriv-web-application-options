@@ -1991,13 +1991,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Feedback visuel sur le bouton
     // On retire la classe active des autres boutons si nécessaire
-    document.querySelectorAll('.chart-tool-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.btn-drawingLine').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 
     // On s'assure que le canvas peut recevoir les clics
     canvas.style.pointerEvents = 'all';
 
-    btn.classList.add('active');
+    btn.classList.add('active', 'btn-drawingLine');
   }
 
   /**
@@ -4448,6 +4448,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       currentMode = null; // On sort du mode "attente de clic"
       canvas.style.pointerEvents = 'all';
+      document.querySelectorAll('.btn-drawingLine').forEach(btn => {
+          btn.classList.remove('active');  
+      });
       render();
       return; // On arrête là pour ne pas déclencher la sélection
     }
