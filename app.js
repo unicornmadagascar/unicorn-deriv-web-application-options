@@ -4434,9 +4434,9 @@ document.addEventListener("DOMContentLoaded", () => {
       //currentMode = null;
       document.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
     } else {
-      // Logique de sélection d'une ligne existante  
+      // Logique de sélection d'une ligne existante    
       let hit = false;
-      drawingObjects.forEach(obj => {
+      drawingObjects.forEach(obj => { 
         const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
         const y1 = candleSeries.priceToCoordinate(obj.p1.price);
         const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
