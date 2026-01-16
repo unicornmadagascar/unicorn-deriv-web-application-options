@@ -2019,9 +2019,11 @@ document.addEventListener("DOMContentLoaded", () => {
     drawingObjects.forEach((obj) => {
       // Conversion Prix/Temps -> Pixels
       const x1 = timeScale.timeToCoordinate(obj.p1.time);
-      const y1 = candleSeries.priceToCoordinate(obj.p1.price);
+      const y1 = currentSeries.priceToCoordinate(obj.p1.price);
       const x2 = timeScale.timeToCoordinate(obj.p2.time);
-      const y2 = candleSeries.priceToCoordinate(obj.p2.price);
+      const y2 = currentSeries.priceToCoordinate(obj.p2.price);
+
+      console.log("Coordonnées calculées :", { x1, y1 }); // Si vous voyez 'null', la ligne ne sera jamais tracée
 
       if (x1 === null || y1 === null || x2 === null || y2 === null) return;
 
