@@ -2069,7 +2069,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-  
+    
   // Table
   function initTable() {
     const container = document.getElementById("autoHistoryList");
