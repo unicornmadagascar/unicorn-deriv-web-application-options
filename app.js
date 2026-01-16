@@ -2034,7 +2034,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const isSelected = (selectedObject === obj);  
       ctx.strokeStyle = isSelected ? '#f39c12' : '#2962FF';       
-      ctx.lineWidth = isSelected ? 3 : 2;    
+      ctx.lineWidth = isSelected ? 3 : 2;     
 
       // Dessin de la ligne
       ctx.beginPath();
