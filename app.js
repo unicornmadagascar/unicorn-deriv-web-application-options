@@ -4473,7 +4473,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   window.addEventListener('keyup', (e) => {
-    // Si on n'est pas en train de dessiner, on peut couper
+    // Si on n'est pas en train de dessiner, on peut couper  
     if (!currentMode && !activePoint) {
       canvas.style.pointerEvents = 'none';
     }
