@@ -1996,6 +1996,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // On s'assure que le canvas peut recevoir les clics
     canvas.style.pointerEvents = 'all';
+
+    btn.classList.add('active');
   }
 
   /**
@@ -4419,40 +4421,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* --- Événements Souris --- */
   canvas.addEventListener('mousedown', (e) => {
-    if (e.button !== 0) return;
-
     const x = e.offsetX;
     const y = e.offsetY;
-    const time = chart.timeScale().coordinateToTime(x);
-    const price = candleSeries.coordinateToPrice(y);
 
+    // On vérifie si on touche un point d'une ligne existante
+    let hit = false;
+    drawingObjects.forEach(obj => { 
+      const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
+      const y1 = currentSeries.priceToCoordinate(obj.p1.price);
+      const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
+      const y2 = currentSeries.priceToCoordinate(obj.p2.price);
+
+      if (Math.hypot(x - x1, y - y1) < 15 || Math.hypot(x - x2, y - y2) < 15) {
+        hit = true;
+      }
+    });
+
+    // LOGIQUE DE BASCULE :
     if (currentMode === 'trend') {
-      const newObj = { type: 'trend', p1: { time, price }, p2: { time, price } };
-      drawingObjects.push(newObj);
-      selectedObject = newObj;
-      activePoint = { obj: newObj, point: 'p2' };
-
-      // On désactive le mode après le premier clic pour pouvoir déplacer
-      //currentMode = null;
-      document.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
-    } else {
-      // Logique de sélection d'une ligne existante    
-      let hit = false;
-      drawingObjects.forEach(obj => { 
-        const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
-        const y1 = candleSeries.priceToCoordinate(obj.p1.price);
-        const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
-        const y2 = candleSeries.priceToCoordinate(obj.p2.price);
-
-        if (Math.hypot(x - x1, y - y1) < 15) {
-          selectedObject = obj; activePoint = { obj, point: 'p1' }; hit = true;
-        } else if (Math.hypot(x - x2, y - y2) < 15) {
-          selectedObject = obj; activePoint = { obj, point: 'p2' }; hit = true;
-        }
-      });
-      if (!hit) selectedObject = null;
+      // On est en train de créer une nouvelle ligne : on garde 'all'
+      canvas.style.pointerEvents = 'all';
+    } else if (!hit) {
+      // On n'est pas en mode dessin ET on a cliqué à côté d'une ligne :
+      // On désactive le canvas pour rendre la main au graphique (Zoom/Scroll)
+      selectedObject = null;
+      canvas.style.pointerEvents = 'none';
+      render();
     }
-    render();
   });
 
   window.addEventListener('mousemove', (e) => {
@@ -4476,9 +4471,9 @@ document.addEventListener("DOMContentLoaded", () => {
   /* --- Synchronisation avec le graphique --- */
 
   // Crucial : Redessiner quand on zoom ou scroll
-  chart.timeScale().subscribeVisibleLogicalRangeChange(render);  
+  chart.timeScale().subscribeVisibleLogicalRangeChange(render);
 
   // Initialisation
-  window.addEventListener('resize', resizeCanvas);      
+  window.addEventListener('resize', resizeCanvas);
   setTimeout(resizeCanvas, 100); // Petit délai pour laisser le layout flex se stabiliser
 });
