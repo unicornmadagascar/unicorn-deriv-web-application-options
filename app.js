@@ -2025,7 +2025,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const y1 = currentSeries.priceToCoordinate(obj.p1.price);
       const y2 = currentSeries.priceToCoordinate(obj.p2.price);
-
+      
       // DEBUG : Si vous voyez ces logs dans la console, vous saurez où ça bloque
       if (x1 === null) console.error("X1 est null : Problème de format de date", obj.p1.time);
       if (y1 === null) console.error("Y1 est null : Problème de prix", obj.p1.price);
