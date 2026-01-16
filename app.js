@@ -4470,7 +4470,7 @@ document.addEventListener("DOMContentLoaded", () => {
         hit = true;
       }
     }); 
-
+  
     // 3. LOGIQUE DE BASCULE DU CANVAS
     if (!hit) {
       selectedObject = null;
