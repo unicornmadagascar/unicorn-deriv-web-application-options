@@ -1301,7 +1301,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const currency = document.getElementById('currencySelect').value.trim();
     const provider = document.getElementById('providerSelect').value;
 
-    // On ne lance l'appel que si les 3 conditions sont réunies
+    // On ne lance l'appel que si les 3 conditions sont réunies  
     if (amount && currency && provider === 'crypto') {
       console.log("🔄 Demande d'estimation des frais pour:", currency);
       wsTranscation.send(JSON.stringify({
@@ -4309,7 +4309,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Si des frais estimés ont été calculés précédemment
     if (typeof currentFeeId !== 'undefined' && currentFeeId) {
-      payload.estimated_fee_unique_id = currentFeeId;
+      payload.estimated_fee_unique_id = currentFeeId;  
     }
 
     console.log("Envoi Transaction:", payload);
