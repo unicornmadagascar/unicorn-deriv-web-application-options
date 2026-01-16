@@ -2011,7 +2011,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Gestion visuelle du bouton
     document.querySelectorAll('.btn-drawing').forEach(b => b.classList.remove('active'));
     btn.classList.add('active', 'btn-drawing');
-  }
+  }  
 
   /**
  * Redimensionne le canvas pour matcher exactement le chart
