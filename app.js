@@ -4645,7 +4645,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Fermer le menu si on clique ailleurs
   window.addEventListener('mousedown', (e) => {
     if (!contextMenu.contains(e.target)) { 
-      contextMenu.style.display = 'none';
+      contextMenu.style.display = 'none';  
     }
   });
   
