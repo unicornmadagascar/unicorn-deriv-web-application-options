@@ -4585,7 +4585,7 @@ document.addEventListener("DOMContentLoaded", () => {
       contextMenu.style.display = 'none';  
     }
   });
-
+   
   window.addEventListener('mouseup', () => { activePoint = null; });
 
   /* --- Synchronisation avec le graphique --- */
