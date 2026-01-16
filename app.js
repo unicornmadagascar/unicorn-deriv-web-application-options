@@ -4506,13 +4506,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // B. Spécifique au Rectangle : détection du clic à l'intérieur de la zone
-      if (obj.type === 'rect') {
+      if (obj.type === 'rect') {  
         const minX = Math.min(x1, x2);
         const maxX = Math.max(x1, x2);
         const minY = Math.min(y1, y2);  
         const maxY = Math.max(y1, y2);
 
-        if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+        if (x >= minX && x <= maxX && y >= minY && y <= maxY) { 
           selectedObject = obj;
           // Si on clique au milieu du rectangle sans toucher les points, 
           // on ne définit pas d'activePoint (juste sélection) ou on pourrait ajouter une logique de déplacement total.
