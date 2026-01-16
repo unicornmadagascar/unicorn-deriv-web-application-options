@@ -4421,8 +4421,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* --- Événements Souris --- */
   canvas.addEventListener('mousedown', (e) => {
-    const x = e.offsetX;
-    const y = e.offsetY;
+    const x = e.offsetX; 
+    const y = e.offsetY; 
 
     // On vérifie si on touche un point d'une ligne existante
     let hit = false;
