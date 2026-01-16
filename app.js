@@ -4570,13 +4570,13 @@ document.addEventListener("DOMContentLoaded", () => {
     drawingObjects.forEach(obj => {
       const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
       const y1 = currentSeries.priceToCoordinate(obj.p1.price);
-      const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
-      const y2 = currentSeries.priceToCoordinate(obj.p2.price);
+      const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);  
+      const y2 = currentSeries.priceToCoordinate(obj.p2.price);  
 
       // On vérifie la proximité avec les points ou la ligne
-      if (Math.hypot(x - x1, y - y1) < 20 || Math.hypot(x - x2, y - y2) < 20) {
+      if (Math.hypot(x - x1, y - y1) < 20 || Math.hypot(x - x2, y - y2) < 20) {  
         objectFound = obj;
-      }  
+      }   
     });
 
     if (objectFound) {
