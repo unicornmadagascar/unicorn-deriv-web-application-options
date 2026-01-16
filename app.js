@@ -4457,56 +4457,79 @@ document.addEventListener("DOMContentLoaded", () => {
     const time = chart.timeScale().coordinateToTime(x);
     const price = currentSeries.coordinateToPrice(y);
 
-    if (!time || !price) return; // Sécurité : on ne fait rien si on est hors zone
+    if (!time || !price) return;
 
     let hit = false;
 
-    // 1. GESTION DU MODE DESSIN (Si on vient de cliquer sur le bouton Trendline)
+    // 1. GESTION DU MODE DESSIN (Trendline ou Rectangle)
     if (currentMode === 'rect' || currentMode === 'trend') {
       const newObj = {
         type: currentMode,
         p1: { time, price },
-        p2: { time, price } // Au début, p1 et p2 sont au même endroit
+        p2: { time, price }
       };
       drawingObjects.push(newObj);
       selectedObject = newObj;
-      activePoint = { obj: newObj, point: 'p2' }; // On attache p2 à la souris pour l'étirer
+      activePoint = { obj: newObj, point: 'p2' };
 
-      currentMode = null; // On sort du mode "attente de clic"
+      currentMode = null;
       canvas.style.pointerEvents = 'all';
       document.querySelectorAll('.btn-drawing').forEach(btn => {
         btn.classList.remove('active');
       });
       render();
-      return; // On arrête là pour ne pas déclencher la sélection
+      return;
     }
 
-    // 2. GESTION DE LA SÉLECTION / MODIFICATION (Si on n'est pas en mode dessin)
-    drawingObjects.forEach(obj => {
+    // 2. GESTION DE LA SÉLECTION / MODIFICATION
+    // On boucle à l'envers (reverse) pour sélectionner l'objet au premier plan si plusieurs se superposent
+    for (let i = drawingObjects.length - 1; i >= 0; i--) {
+      const obj = drawingObjects[i];
       const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
       const y1 = currentSeries.priceToCoordinate(obj.p1.price);
       const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
       const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
-      // Si on clique près d'une extrémité
+      if (x1 === null || y1 === null || x2 === null || y2 === null) continue;
+
+      // A. Vérification des extrémités (Handles) - Valable pour les deux objets
       if (Math.hypot(x - x1, y - y1) < 15) {
         selectedObject = obj;
         activePoint = { obj, point: 'p1' };
         hit = true;
+        break;
       } else if (Math.hypot(x - x2, y - y2) < 15) {
         selectedObject = obj;
         activePoint = { obj, point: 'p2' };
         hit = true;
+        break;
       }
-    });
+
+      // B. Spécifique au Rectangle : détection du clic à l'intérieur de la zone
+      if (obj.type === 'rect') {
+        const minX = Math.min(x1, x2);
+        const maxX = Math.max(x1, x2);
+        const minY = Math.min(y1, y2);
+        const maxY = Math.max(y1, y2);
+
+        if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+          selectedObject = obj;
+          // Si on clique au milieu du rectangle sans toucher les points, 
+          // on ne définit pas d'activePoint (juste sélection) ou on pourrait ajouter une logique de déplacement total.
+          hit = true;
+          break;
+        }
+      }
+    }
 
     // 3. LOGIQUE DE BASCULE DU CANVAS
     if (!hit) {
       selectedObject = null;
-      canvas.style.pointerEvents = 'none'; // Redonne la main au graphique pour le zoom
+      canvas.style.pointerEvents = 'none';
       render();
     } else {
-      canvas.style.pointerEvents = 'all'; // Garde la main pour déplacer la ligne
+      canvas.style.pointerEvents = 'all';
+      render(); // Force le rendu pour montrer la sélection (couleur orange)
     }
   });
 
@@ -4566,29 +4589,45 @@ document.addEventListener("DOMContentLoaded", () => {
     const y = e.offsetY;
     let objectFound = null;
 
-    // On cherche si on a cliqué près d'une ligne
+    // On parcourt les objets pour voir lequel est sous la souris
     drawingObjects.forEach(obj => {
       const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
-      const y1 = currentSeries.priceToCoordinate(obj.p1.price);  
-      const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);  
-      const y2 = currentSeries.priceToCoordinate(obj.p2.price);  
+      const y1 = currentSeries.priceToCoordinate(obj.p1.price);
+      const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
+      const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
-      // On vérifie la proximité avec les points ou la ligne
-      if (Math.hypot(x - x1, y - y1) < 20 || Math.hypot(x - x2, y - y2) < 20) {  
-        objectFound = obj;
-      }   
+      if (x1 === null || y1 === null || x2 === null || y2 === null) return;
+
+      if (obj.type === 'rect') {
+        // Détection par SURFACE pour le rectangle
+        const minX = Math.min(x1, x2);
+        const maxX = Math.max(x1, x2);
+        const minY = Math.min(y1, y2);
+        const maxY = Math.max(y1, y2);
+
+        if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+          objectFound = obj;
+        }
+      } else {
+        // Détection par POINTS pour la trendline
+        if (Math.hypot(x - x1, y - y1) < 20 || Math.hypot(x - x2, y - y2) < 20) {
+          objectFound = obj;
+        }
+      }
     });
 
     if (objectFound) {
       selectedObject = objectFound;
-      render(); // On met la ligne en surbrillance  
+      render(); // Met l'objet en surbrillance (orange)
 
-      // Positionnement du menu
+      // Positionnement du menu par rapport à la page (e.pageX/Y)
       contextMenu.style.display = 'block';
       contextMenu.style.left = e.pageX + 'px';
       contextMenu.style.top = e.pageY + 'px';
     } else {
       contextMenu.style.display = 'none';
+      selectedObject = null;
+      render();
     }
   });
 
