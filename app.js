@@ -1295,10 +1295,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Déclencheur pour les frais crypto     
   const triggerEstimation = () => {
     // On s'assure que le socket est ouvert avant d'envoyer
-    if (!wsTranscation || wsTranscation.readyState !== WebSocket.OPEN) return;
+    if (!wsTranscation || wsTranscation.readyState !== WebSocket.OPEN) return;   
 
     const amount = document.getElementById('amountInput').value;
-    const currency = document.getElementById('currencySelect').value.trim();
+    const currency = document.getElementById('currencySelect').value.trim();  
     const provider = document.getElementById('providerSelect').value;
 
     // On ne lance l'appel que si les 3 conditions sont réunies  
@@ -1306,7 +1306,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("🔄 Demande d'estimation des frais pour:", currency);  
       wsTranscation.send(JSON.stringify({
         crypto_estimations: 1,
-        currency_code: currency
+        currency_code: currency 
       }));
     }
   };
