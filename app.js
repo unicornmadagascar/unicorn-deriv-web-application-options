@@ -4655,7 +4655,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Crucial : Redessiner quand on zoom ou scroll
   // On force le rendu dès que le graphique a fini de bouger
-  chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
+  chart.timeScale().subscribeVisibleLogicalRangeChange(() => {  
     render();
   });
 
