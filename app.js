@@ -2023,7 +2023,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const x1 = timeScale.timeToCoordinate(obj.p1.time);  
       const x2 = timeScale.timeToCoordinate(obj.p2.time);  
 
-      const y1 = currentSeries.priceToCoordinate(obj.p1.price);
+      const y1 = currentSeries.priceToCoordinate(obj.p1.price); 
       const y2 = currentSeries.priceToCoordinate(obj.p2.price);  
       
       // DEBUG : Si vous voyez ces logs dans la console, vous saurez où ça bloque
