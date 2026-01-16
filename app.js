@@ -4642,13 +4642,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Fermer le menu si on clique ailleurs
-  window.addEventListener('mousedown', (e) => {
-    if (!contextMenu.contains(e.target)) {
-      contextMenu.style.display = 'none';
-    }
-  });
-
   // Fermer le menu au clic gauche sur le canvas
   canvas.addEventListener('mousedown', (e) => {
     if (e.button === 0) { // Clic gauche
