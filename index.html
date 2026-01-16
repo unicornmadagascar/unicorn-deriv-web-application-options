@@ -526,23 +526,22 @@
 
     #container__ {
       position: relative;
-      flex: 0;  
+      flex: 0;
       flex-direction: column;
       display: flex;
     }
 
     /* chart area */
-    #chartArea, #Trendoverlay__ {
+    #chartArea {
+      position: relative;
+      /* Référentiel pour l'absolute */
       flex: 1;
       display: flex;
       flex-direction: column;
-      position: relative;
-      /* Indispensable pour le positionnement du PnL */
     }
 
-    /* Le graphique lui-même */
-    #chartInner,  
-    #Trendoverlay__ {
+    /* Le graphique de fond */
+    #chartInner {
       flex: 0;
       min-height: 750px;
       background: #fff;
@@ -553,9 +552,24 @@
       position: relative;
     }
 
+    /* Le Canvas de Trendline */
     #Trendoverlay__ {
+      position: absolute;
+      /* Sort du flux flex */
+      top: 0;
+      left: 0;
+      /* On utilise calc pour déduire les marges de 12px du parent */
+      width: calc(100% - 24px);
+      height: calc(100% - 24px);
+      margin: 12px;
+      /* Doit être identique à #chartInner */  
+
       z-index: 10;
       cursor: crosshair;
+      pointer-events: all;
+      /* Permet de dessiner */
+      background: transparent !important;
+      /* Indispensable pour voir le chart derrière */
     }
 
     /* Style du badge PnL */
