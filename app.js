@@ -4251,7 +4251,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("closeCashierBtn").onclick = () => {  
-    document.getElementById("cashierModal").style.display = "none";
+    document.getElementById("cashierModal").style.display = "none";  
     DisconnectDeriv__();
   };
 
