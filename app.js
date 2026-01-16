@@ -4450,8 +4450,8 @@ document.addEventListener("DOMContentLoaded", () => {
       canvas.style.pointerEvents = 'all';
       document.querySelectorAll('.btn-drawingLine').forEach(btn => {
           btn.classList.remove('active');  
-      });
-      render();
+      });  
+      render();  
       return; // On arrête là pour ne pas déclencher la sélection
     }
 
