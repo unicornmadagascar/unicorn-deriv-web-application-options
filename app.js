@@ -1198,9 +1198,9 @@ document.addEventListener("DOMContentLoaded", () => {
    ============================================================= */
   function connectDeriv__() {
     // On ferme l'ancienne connexion si elle existe encore
-    if (typeof wsTranscation !== 'undefined' && wsTranscation.readyState === WebSocket.OPEN) {
+    if (wsTranscation && wsTranscation.readyState === WebSocket.OPEN) {
       wsTranscation.close();
-    }
+    } 
 
     // Création de la connexion (Vérifiez que WS_URL contient votre AppID)
     wsTranscation = new WebSocket(WS_URL);
