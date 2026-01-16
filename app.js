@@ -1212,14 +1212,6 @@ document.addEventListener("DOMContentLoaded", () => {
       wsTranscation.onopen = () => { wsTranscation.send(JSON.stringify({ authorize: TOKEN })); };
     }  
 
-    // Événement : Connexion établie
-    wsTranscation.onopen = () => {
-      console.log("✅ Connecté au serveur Deriv");  
-
-      // On lance immédiatement l'autorisation avec votre TOKEN
-      authorize__(TOKEN.trim());
-    }; 
-
     // Événement : Réception d'un message (Le coeur du système)
     wsTranscation.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
@@ -1241,16 +1233,6 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("🔌 Connexion Deriv fermée");
       setTimeout(connectDeriv__, 1000);
     };
-  }
-
-  /* ============================
-   AUTHORIZE
-============================ */
-  function authorize__(token) {
-    authToken = token;
-    wsTranscation.send(JSON.stringify({
-      authorize: token
-    }));
   }
 
   /* ============================
