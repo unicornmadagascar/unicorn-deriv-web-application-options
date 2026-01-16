@@ -4474,7 +4474,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* --- Synchronisation avec le graphique --- */
 
   // Crucial : Redessiner quand on zoom ou scroll
-  chart.timeScale().subscribeVisibleLogicalRangeChange(render);
+  //chart.timeScale().subscribeVisibleLogicalRangeChange(render);
 
   // Initialisation
   window.addEventListener('resize', resizeCanvas);
