@@ -1999,7 +1999,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On s'assure que le canvas peut recevoir les clics
     canvas.style.pointerEvents = 'all';
 
-    btn.classList.add('active', 'btn-drawing'); 
+    btn.classList.add('active', 'btn-drawing');   
   }  
 
   // HTML: <button onclick="enableRectangle(this)">Zone (Rectangle)</button>
