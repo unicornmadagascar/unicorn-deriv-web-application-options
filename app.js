@@ -4410,14 +4410,14 @@ document.addEventListener("DOMContentLoaded", () => {
   openBtngpt.onclick = () => overlaygemini.classList.remove("hidden");
 
   function closePopup() {
-    overlaygemini.classList.add("hidden");
+    overlaygemini.classList.add("hidden");    
   }
 
   // Fermer si clic hors popup
   overlaygemini.addEventListener("click", (e) => {
     if (e.target === overlaygemini) closePopup();
-  });
-  /* ================== TRENDLINE ================== */
+  }); 
+  /* ===================== TRENDLINE =========================== */
 
   /* --- Événements Souris --- */
   canvas.addEventListener('mousedown', (e) => {
