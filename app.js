@@ -4421,12 +4421,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* --- Événements Souris --- */
   canvas.addEventListener('mousedown', (e) => {
-    const x = e.offsetX; 
-    const y = e.offsetY; 
+    const x = e.offsetX;
+    const y = e.offsetY;
 
     // On vérifie si on touche un point d'une ligne existante
     let hit = false;
-    drawingObjects.forEach(obj => { 
+    drawingObjects.forEach(obj => {
       const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
       const y1 = currentSeries.priceToCoordinate(obj.p1.price);
       const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
@@ -4457,12 +4457,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const y = e.clientY - rect.top;
 
     const newTime = chart.timeScale().coordinateToTime(x);
-    const newPrice = candleSeries.coordinateToPrice(y);
+    const newPrice = currentSeries.coordinateToPrice(y);
 
     if (newTime && newPrice) {
       activePoint.obj[activePoint.point].time = newTime;
       activePoint.obj[activePoint.point].price = newPrice;
       render();
+    }
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Control' || e.key === 'Alt') {
+      canvas.style.pointerEvents = 'all';
+    }
+  });
+
+  window.addEventListener('keyup', (e) => {
+    // Si on n'est pas en train de dessiner, on peut couper
+    if (!currentMode && !activePoint) {
+      canvas.style.pointerEvents = 'none';
     }
   });
 
