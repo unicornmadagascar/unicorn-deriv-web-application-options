@@ -2006,7 +2006,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.enableRectangle = function (btn) {
     currentMode = 'rect'; // On change le mode 
-    canvas.style.pointerEvents = 'all';
+    canvas.style.pointerEvents = 'all';  
 
     // Gestion visuelle du bouton
     document.querySelectorAll('.btn-drawing').forEach(b => b.classList.remove('active'));
