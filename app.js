@@ -2019,13 +2019,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const timeScale = chart.timeScale();
 
     drawingObjects.forEach((obj) => {
-      // Conversion Prix/Temps -> Pixels
-      const x1 = timeScale.timeToCoordinate(obj.p1.time);
-      const y1 = currentSeries.priceToCoordinate(obj.p1.price);
+      // 💡 Astuce : Forcer la conversion ou vérifier le type
+      const x1 = timeScale.timeToCoordinate(obj.p1.time);  
       const x2 = timeScale.timeToCoordinate(obj.p2.time);
+
+      const y1 = currentSeries.priceToCoordinate(obj.p1.price);
       const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
-      console.log("Coordonnées calculées :", { x1, y1 }); // Si vous voyez 'null', la ligne ne sera jamais tracée
+      // DEBUG : Si vous voyez ces logs dans la console, vous saurez où ça bloque
+      if (x1 === null) console.error("X1 est null : Problème de format de date", obj.p1.time);
+      if (y1 === null) console.error("Y1 est null : Problème de prix", obj.p1.price);
 
       if (x1 === null || y1 === null || x2 === null || y2 === null) return;
 
@@ -4410,13 +4413,13 @@ document.addEventListener("DOMContentLoaded", () => {
   openBtngpt.onclick = () => overlaygemini.classList.remove("hidden");
 
   function closePopup() {
-    overlaygemini.classList.add("hidden");    
+    overlaygemini.classList.add("hidden");
   }
 
   // Fermer si clic hors popup
   overlaygemini.addEventListener("click", (e) => {
     if (e.target === overlaygemini) closePopup();
-  }); 
+  });
   /* ===================== TRENDLINE =========================== */
 
   /* --- Événements Souris --- */
@@ -4429,11 +4432,11 @@ document.addEventListener("DOMContentLoaded", () => {
     drawingObjects.forEach(obj => {
       const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
       const y1 = currentSeries.priceToCoordinate(obj.p1.price);
-      const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);  
+      const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
       const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
       if (Math.hypot(x - x1, y - y1) < 15 || Math.hypot(x - x2, y - y2) < 15) {
-        hit = true;  
+        hit = true;
       }
     });
 
@@ -4479,9 +4482,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  window.addEventListener('mouseup', () => { activePoint = null; });  
+  window.addEventListener('mouseup', () => { activePoint = null; });
 
-  /* --- Synchronisation avec le graphique --- */  
+  /* --- Synchronisation avec le graphique --- */
 
   // Crucial : Redessiner quand on zoom ou scroll
   chart.timeScale().subscribeVisibleLogicalRangeChange(render);
