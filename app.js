@@ -4303,8 +4303,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Pour les retraits Crypto directs via API
     if (provider === 'crypto') {
-      if (address) payload.address = address;
-      if (currency) payload.currency = currency;  
+      if (address) payload.address = address;  
+      if (currency) payload.currency = currency;   
     }
 
     // Si des frais estimés ont été calculés précédemment
