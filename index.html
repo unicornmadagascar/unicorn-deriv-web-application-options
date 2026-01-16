@@ -541,7 +541,8 @@
     }
 
     /* Le graphique lui-même */
-    #chartInner {
+    #chartInner,
+    #Trendoverlay__ {
       flex: 0;
       min-height: 750px;
       background: #fff;
@@ -550,6 +551,11 @@
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
       overflow: hidden;
       position: relative;
+    }
+
+    #Trendoverlay__ {
+      z-index: 10;
+      cursor: crosshair;
     }
 
     /* Style du badge PnL */
@@ -2867,6 +2873,7 @@
       </div>
 
       <div id="chartInner"></div>
+      <canvas id="Trendoverlay__"></canvas>
 
     </div>
   </div>

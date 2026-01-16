@@ -1299,7 +1299,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const amount = document.getElementById('amountInput').value;
     const currency = document.getElementById('currencySelect').value.trim();  
-    const provider = document.getElementById('providerSelect').value;
+    const provider = document.getElementById('providerSelect').value;  
 
     // On ne lance l'appel que si les 3 conditions sont réunies  
     if (amount && currency && provider === 'crypto') {
