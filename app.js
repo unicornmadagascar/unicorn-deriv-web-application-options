@@ -2010,7 +2010,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Gestion visuelle du bouton
     document.querySelectorAll('.btn-drawing').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active', 'btn-drawing');
+    btn.classList.add('active', 'btn-drawing');  
   }  
 
   /**
