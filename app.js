@@ -75,6 +75,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const overlaygemini = document.getElementById("indicatorOverlay");
   const openBtngpt = document.getElementById("openPopupBtn__");
+  const canvas = document.getElementById('Trendoverlay__');
+  const ctx = canvas.getContext('2d');
   // Tableau des périodes actuellement affichées
   let maSeries = null;
   let maws = null;
@@ -102,6 +104,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let activeContracts = {};
   let currentSortCol = -1;
   let isAscending = true;
+  /* --- Variables globales pour le dessin --- */
+  let drawingObjects = [];
+  let currentMode = null;
+  let selectedObject = null;
+  let activePoint = null;
   // ================== x ==================
 
   let wsReady = false;
@@ -1210,7 +1217,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wsTranscation && (wsTranscation.readyState === WebSocket.CLOSED || wsTranscation.readyState === WebSocket.CLOSING)) {
       wsTranscation = new WebSocket(WS_URL);
       wsTranscation.onopen = () => { wsTranscation.send(JSON.stringify({ authorize: TOKEN })); };
-    }  
+    }
 
     // Événement : Réception d'un message (Le coeur du système)
     wsTranscation.onmessage = (msg) => {
@@ -1240,7 +1247,7 @@ document.addEventListener("DOMContentLoaded", () => {
 ============================ */
   function handleDerivMessage__(data) {
     const errorBox = document.getElementById("errorBox");
-  
+
     // 1. Gestion des erreurs globales
     if (data.error) {
       showError(data.error.message);
@@ -1295,18 +1302,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // Déclencheur pour les frais crypto     
   const triggerEstimation = () => {
     // On s'assure que le socket est ouvert avant d'envoyer
-    if (!wsTranscation || wsTranscation.readyState !== WebSocket.OPEN) return;   
+    if (!wsTranscation || wsTranscation.readyState !== WebSocket.OPEN) return;
 
     const amount = document.getElementById('amountInput').value;
-    const currency = document.getElementById('currencySelect').value.trim();  
-    const provider = document.getElementById('providerSelect').value;  
+    const currency = document.getElementById('currencySelect').value.trim();
+    const provider = document.getElementById('providerSelect').value;
 
     // On ne lance l'appel que si les 3 conditions sont réunies  
     if (amount && currency && provider === 'crypto') {
-      console.log("🔄 Demande d'estimation des frais pour:", currency);  
+      console.log("🔄 Demande d'estimation des frais pour:", currency);
       wsTranscation.send(JSON.stringify({
         crypto_estimations: 1,
-        currency_code: currency 
+        currency_code: currency
       }));
     }
   };
@@ -1972,6 +1979,73 @@ document.addEventListener("DOMContentLoaded", () => {
         zigzagSeries.setMarkers(zzData.markers);
       }
     }
+  }
+
+  /**
+ * Fonction appelée par votre bouton HTML
+ * <button onclick="enableTrendline(this)">Trendline</button>
+ */
+  window.enableTrendline = function (btn) {
+    // On active le mode 'trend'
+    currentMode = 'trend';
+
+    // Feedback visuel sur le bouton
+    // On retire la classe active des autres boutons si nécessaire
+    document.querySelectorAll('.chart-tool-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // On s'assure que le canvas peut recevoir les clics
+    canvas.style.pointerEvents = 'all';
+  }
+
+  /**
+ * Redimensionne le canvas pour matcher exactement le chart
+ */
+  function resizeCanvas() {
+    canvas.width = chartContainer.clientWidth;
+    canvas.height = chartContainer.clientHeight;
+    render();
+  }
+
+  /**
+ * Le moteur de rendu (Dessine les lignes sur le canvas)
+ */
+  function render() {
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const timeScale = chart.timeScale();
+
+    drawingObjects.forEach((obj) => {
+      // Conversion Prix/Temps -> Pixels
+      const x1 = timeScale.timeToCoordinate(obj.p1.time);
+      const y1 = candleSeries.priceToCoordinate(obj.p1.price);
+      const x2 = timeScale.timeToCoordinate(obj.p2.time);
+      const y2 = candleSeries.priceToCoordinate(obj.p2.price);
+
+      if (x1 === null || y1 === null || x2 === null || y2 === null) return;
+
+      const isSelected = (selectedObject === obj);
+      ctx.strokeStyle = isSelected ? '#f39c12' : '#2962FF';
+      ctx.lineWidth = isSelected ? 3 : 2;
+
+      // Dessin de la ligne
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      // Si sélectionné, on dessine les poignées (handles)
+      if (isSelected) {
+        [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+          ctx.fillStyle = 'white';
+          ctx.fill();
+          ctx.stroke();
+        });
+      }
+    });
   }
 
   // Table
@@ -4239,8 +4313,8 @@ document.addEventListener("DOMContentLoaded", () => {
     updateCryptoVisibility();
   });
 
-  document.getElementById("closeCashierBtn").onclick = () => {  
-    document.getElementById("cashierModal").style.display = "none";  
+  document.getElementById("closeCashierBtn").onclick = () => {
+    document.getElementById("cashierModal").style.display = "none";
     DisconnectDeriv__();
   };
 
@@ -4303,13 +4377,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Pour les retraits Crypto directs via API
     if (provider === 'crypto') {
-      if (address) payload.address = address;  
-      if (currency) payload.currency = currency;   
+      if (address) payload.address = address;
+      if (currency) payload.currency = currency;
     }
 
     // Si des frais estimés ont été calculés précédemment
     if (typeof currentFeeId !== 'undefined' && currentFeeId) {
-      payload.estimated_fee_unique_id = currentFeeId;  
+      payload.estimated_fee_unique_id = currentFeeId;
     }
 
     console.log("Envoi Transaction:", payload);
@@ -4339,4 +4413,70 @@ document.addEventListener("DOMContentLoaded", () => {
   overlaygemini.addEventListener("click", (e) => {
     if (e.target === overlaygemini) closePopup();
   });
+  /* ================== TRENDLINE ================== */
+
+  /* --- Événements Souris --- */
+  canvas.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+
+    const x = e.offsetX;
+    const y = e.offsetY;
+    const time = chart.timeScale().coordinateToTime(x);
+    const price = candleSeries.coordinateToPrice(y);
+
+    if (currentMode === 'trend') {
+      const newObj = { type: 'trend', p1: { time, price }, p2: { time, price } };
+      drawingObjects.push(newObj);
+      selectedObject = newObj;
+      activePoint = { obj: newObj, point: 'p2' };
+
+      // On désactive le mode après le premier clic pour pouvoir déplacer
+      //currentMode = null;
+      document.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
+    } else {
+      // Logique de sélection d'une ligne existante
+      let hit = false;
+      drawingObjects.forEach(obj => {
+        const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
+        const y1 = candleSeries.priceToCoordinate(obj.p1.price);
+        const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
+        const y2 = candleSeries.priceToCoordinate(obj.p2.price);
+
+        if (Math.hypot(x - x1, y - y1) < 15) {
+          selectedObject = obj; activePoint = { obj, point: 'p1' }; hit = true;
+        } else if (Math.hypot(x - x2, y - y2) < 15) {
+          selectedObject = obj; activePoint = { obj, point: 'p2' }; hit = true;
+        }
+      });
+      if (!hit) selectedObject = null;
+    }
+    render();
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!activePoint) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const newTime = chart.timeScale().coordinateToTime(x);
+    const newPrice = candleSeries.coordinateToPrice(y);
+
+    if (newTime && newPrice) {
+      activePoint.obj[activePoint.point].time = newTime;
+      activePoint.obj[activePoint.point].price = newPrice;
+      render();
+    }
+  });
+
+  window.addEventListener('mouseup', () => { activePoint = null; });
+
+  /* --- Synchronisation avec le graphique --- */
+
+  // Crucial : Redessiner quand on zoom ou scroll
+  chart.timeScale().subscribeVisibleLogicalRangeChange(render);
+
+  // Initialisation
+  window.addEventListener('resize', resizeCanvas);
+  setTimeout(resizeCanvas, 100); // Petit délai pour laisser le layout flex se stabiliser
 });
