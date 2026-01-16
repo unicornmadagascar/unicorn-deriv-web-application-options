@@ -4577,7 +4577,7 @@ document.addEventListener("DOMContentLoaded", () => {
       contextMenu.style.display = 'none';
       render(); // On redessine le canvas vide
     }
-  };
+  };   
 
   // Fermer le menu si on clique ailleurs
   window.addEventListener('mousedown', (e) => {
