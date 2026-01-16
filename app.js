@@ -2010,7 +2010,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Gestion visuelle du bouton
     document.querySelectorAll('.btn-drawing').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active', 'btn-drawing');  
+    btn.classList.add('active', 'btn-drawing');
   }
 
   /**
@@ -4590,52 +4590,36 @@ document.addEventListener("DOMContentLoaded", () => {
     let objectFound = null;
 
     // On parcourt les objets pour voir lequel est sous la souris
-    canvas.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
+    drawingObjects.forEach(obj => {
+      const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
+      const y1 = currentSeries.priceToCoordinate(obj.p1.price);
+      const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
+      const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
-      const x = e.offsetX;
-      const y = e.offsetY;
-      let objectFound = null;
+      if (x1 === null || y1 === null || x2 === null || y2 === null) return;
 
-      drawingObjects.forEach(obj => {
-        const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
-        const y1 = currentSeries.priceToCoordinate(obj.p1.price);
-        const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
-        const y2 = currentSeries.priceToCoordinate(obj.p2.price);
+      if (obj.type === 'rect') {
+        // Détection par SURFACE pour le rectangle
+        const minX = Math.min(x1, x2);
+        const maxX = Math.max(x1, x2);
+        const minY = Math.min(y1, y2);
+        const maxY = Math.max(y1, y2);
 
-        if (x1 === null || y1 === null || x2 === null || y2 === null) return;
-
-        if (obj.type === 'rect') {  
-          const minX = Math.min(x1, x2);
-          const maxX = Math.max(x1, x2);
-          const minY = Math.min(y1, y2);
-          const maxY = Math.max(y1, y2);
-          if (x >= minX && x <= maxX && y >= minY && y <= maxY) objectFound = obj;
-        } else {
-          if (Math.hypot(x - x1, y - y1) < 20 || Math.hypot(x - x2, y - y2) < 20) objectFound = obj;
+        if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+          objectFound = obj;
         }
-      }); 
-
-      if (objectFound) {
-        selectedObject = objectFound;
-        render();     
-
-        // AFFICHAGE ET POSITIONNEMENT PRÉCIS
-        contextMenu.style.display = 'block';
-
-        // On utilise pageX/pageY pour coller à la souris peu importe le scroll
-        // On ajoute +5 pixels pour éviter que le menu soit pile sous le curseur (confort)
-        contextMenu.style.left = (e.pageX + 5) + 'px';
-        contextMenu.style.top = (e.pageY + 5) + 'px';
       } else {
-        contextMenu.style.display = 'none';
+        // Détection par POINTS pour la trendline
+        if (Math.hypot(x - x1, y - y1) < 20 || Math.hypot(x - x2, y - y2) < 20) {
+          objectFound = obj;
+        }
       }
     });
 
     if (objectFound) {
       selectedObject = objectFound;
-      render(); // Met l'objet en surbrillance (orange)  
-  
+      render(); // Met l'objet en surbrillance (orange)
+
       // Positionnement du menu par rapport à la page (e.pageX/Y)
       contextMenu.style.display = 'block';
       contextMenu.style.left = e.pageX + 'px';
@@ -4661,6 +4645,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Fermer le menu si on clique ailleurs
   window.addEventListener('mousedown', (e) => {
     if (!contextMenu.contains(e.target)) {
+      contextMenu.style.display = 'none';
+    }
+  });
+
+  // Fermer le menu au clic gauche sur le canvas
+  canvas.addEventListener('mousedown', (e) => {
+    if (e.button === 0) { // Clic gauche
       contextMenu.style.display = 'none';
     }
   });
