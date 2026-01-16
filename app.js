@@ -2013,44 +2013,57 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /**
  * Le moteur de rendu (Dessine les lignes sur le canvas)
- */
-  function render() {
+ */  
+  function render() { 
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const timeScale = chart.timeScale();
 
     drawingObjects.forEach((obj) => {
-      // 💡 Astuce : Forcer la conversion ou vérifier le type
+      // Conversion Prix/Temps -> Pixels
       const x1 = timeScale.timeToCoordinate(obj.p1.time);
       const x2 = timeScale.timeToCoordinate(obj.p2.time);
-
       const y1 = currentSeries.priceToCoordinate(obj.p1.price);
       const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
-      // DEBUG : Si vous voyez ces logs dans la console, vous saurez où ça bloque
-      if (x1 === null) console.error("X1 est null : Problème de format de date", obj.p1.time);
-      if (y1 === null) console.error("Y1 est null : Problème de prix", obj.p1.price);
-
+      // Sécurité : si un point est hors champ, on ne dessine pas cet objet
       if (x1 === null || y1 === null || x2 === null || y2 === null) return;
 
       const isSelected = (selectedObject === obj);
+
+      // Configuration du style de trait (commun aux deux types)
       ctx.strokeStyle = isSelected ? '#f39c12' : '#2962FF';
       ctx.lineWidth = isSelected ? 3 : 2;
 
-      // Dessin de la ligne
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
+      if (obj.type === 'trend') {
+        // --- DESSIN DE LA LIGNE (TRENDLINE) ---
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+      else if (obj.type === 'rect') {
+        // --- DESSIN DU RECTANGLE (ZONE) ---
+        const width = x2 - x1;
+        const height = y2 - y1;
 
-      // Si sélectionné, on dessine les poignées (handles)
+        // Remplissage translucide (plus clair si non sélectionné)
+        ctx.fillStyle = isSelected ? 'rgba(243, 156, 18, 0.25)' : 'rgba(41, 98, 255, 0.15)';
+        ctx.fillRect(x1, y1, width, height);
+
+        // Bordure du rectangle
+        ctx.strokeRect(x1, y1, width, height);
+      }
+
+      // --- DESSIN DES POIGNÉES (HANDLES) SI SÉLECTIONNÉ ---  
       if (isSelected) {
-        [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(p => {
+        [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(p => { 
           ctx.beginPath();
           ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
           ctx.fillStyle = 'white';
           ctx.fill();
+          ctx.setLineDash([]); // Assure que le contour des points n'est pas pointillé
           ctx.stroke();
         });
       }
@@ -4438,9 +4451,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let hit = false;
 
     // 1. GESTION DU MODE DESSIN (Si on vient de cliquer sur le bouton Trendline)
-    if (currentMode === 'trend') {
+    if (currentMode === 'rect' || currentMode === 'trend') {
       const newObj = {
-        type: 'trend',
+        type: currentMode,
         p1: { time, price },
         p2: { time, price } // Au début, p1 et p2 sont au même endroit
       };
@@ -4516,7 +4529,7 @@ document.addEventListener("DOMContentLoaded", () => {
       canvas.style.pointerEvents = 'none';
 
       // Éteindre le bouton visuellement
-      document.querySelectorAll('.btn-drawing').forEach(btn => {
+      document.querySelectorAll('.btn-drawingLine').forEach(btn => {
         btn.classList.remove('active');
       });
 
@@ -4543,15 +4556,28 @@ document.addEventListener("DOMContentLoaded", () => {
     let objectFound = null;
 
     // On cherche si on a cliqué près d'une ligne
+    // Dans la détection du clic droit (contextmenu)
     drawingObjects.forEach(obj => {
-      const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
+      const x1 = timeScale.timeToCoordinate(obj.p1.time);
       const y1 = currentSeries.priceToCoordinate(obj.p1.price);
-      const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
+      const x2 = timeScale.timeToCoordinate(obj.p2.time);
       const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
-      // On vérifie la proximité avec les points ou la ligne
-      if (Math.hypot(x - x1, y - y1) < 20 || Math.hypot(x - x2, y - y2) < 20) {
-        objectFound = obj;
+      if (obj.type === 'rect') {
+        // Vérifie si le clic est à l'intérieur du rectangle
+        const minX = Math.min(x1, x2);
+        const maxX = Math.max(x1, x2);
+        const minY = Math.min(y1, y2);
+        const maxY = Math.max(y1, y2);
+
+        if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+          objectFound = obj;
+        }
+      } else {
+        // Logique existante pour la trendline (proximité des points)
+        if (Math.hypot(x - x1, y - y1) < 20 || Math.hypot(x - x2, y - y2) < 20) {
+          objectFound = obj;
+        }
       }
     });
 
@@ -4569,23 +4595,23 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Action de suppression
-  deleteItem.onclick = () => { 
+  deleteItem.onclick = () => {
     if (selectedObject) {
       // On filtre le tableau pour retirer l'objet sélectionné
-      drawingObjects = drawingObjects.filter(o => o !== selectedObject);  
+      drawingObjects = drawingObjects.filter(o => o !== selectedObject);
       selectedObject = null;
-      contextMenu.style.display = 'none';    
+      contextMenu.style.display = 'none';
       render(); // On redessine le canvas vide   
     }
-  };   
+  };
 
   // Fermer le menu si on clique ailleurs
-  window.addEventListener('mousedown', (e) => { 
-    if (!contextMenu.contains(e.target)) {  
-      contextMenu.style.display = 'none';     
+  window.addEventListener('mousedown', (e) => {
+    if (!contextMenu.contains(e.target)) {
+      contextMenu.style.display = 'none';
     }
   });
-   
+
   window.addEventListener('mouseup', () => { activePoint = null; });
 
   /* --- Synchronisation avec le graphique --- */
