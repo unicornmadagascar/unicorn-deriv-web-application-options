@@ -2007,7 +2007,7 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.width = chartInner.clientWidth;
     canvas.height = chartInner.clientHeight;
     render();
-  }
+  }  
   
   /**
  * Le moteur de rendu (Dessine les lignes sur le canvas)
