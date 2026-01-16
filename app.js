@@ -2030,7 +2030,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (x1 === null) console.error("X1 est null : Problème de format de date", obj.p1.time);
       if (y1 === null) console.error("Y1 est null : Problème de prix", obj.p1.price);
 
-      if (x1 === null || y1 === null || x2 === null || y2 === null) return;
+      if (x1 === null || y1 === null || x2 === null || y2 === null) return;  
 
       const isSelected = (selectedObject === obj);
       ctx.strokeStyle = isSelected ? '#f39c12' : '#2962FF';
