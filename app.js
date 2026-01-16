@@ -4433,13 +4433,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
       if (Math.hypot(x - x1, y - y1) < 15 || Math.hypot(x - x2, y - y2) < 15) {
-        hit = true;
+        hit = true;  
       }
     });
 
     // LOGIQUE DE BASCULE :
     if (currentMode === 'trend') {
-      // On est en train de créer une nouvelle ligne : on garde 'all'
+      // On est en train de créer une nouvelle ligne : on garde 'all'  
       canvas.style.pointerEvents = 'all';
     } else if (!hit) {
       // On n'est pas en mode dessin ET on a cliqué à côté d'une ligne :
