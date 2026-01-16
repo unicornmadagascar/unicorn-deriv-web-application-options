@@ -2004,11 +2004,11 @@ document.addEventListener("DOMContentLoaded", () => {
  * Redimensionne le canvas pour matcher exactement le chart
  */
   function resizeCanvas() {
-    canvas.width = chartContainer.clientWidth;
-    canvas.height = chartContainer.clientHeight;
+    canvas.width = chartInner.clientWidth;
+    canvas.height = chartInner.clientHeight;
     render();
   }
-
+  
   /**
  * Le moteur de rendu (Dessine les lignes sur le canvas)
  */
