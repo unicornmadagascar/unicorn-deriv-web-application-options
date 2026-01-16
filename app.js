@@ -2033,7 +2033,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (x1 === null || y1 === null || x2 === null || y2 === null) return;   
 
       const isSelected = (selectedObject === obj);
-      ctx.strokeStyle = isSelected ? '#f39c12' : '#2962FF';  
+      ctx.strokeStyle = isSelected ? '#f39c12' : '#2962FF';    
       ctx.lineWidth = isSelected ? 3 : 2;  
 
       // Dessin de la ligne
