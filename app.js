@@ -2060,9 +2060,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (isSelected) {
         [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(p => {
           ctx.beginPath();
-          ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
-          ctx.fillStyle = 'white';
-          ctx.fill();
+          ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);  
+          ctx.fillStyle = 'white';  
+          ctx.fill();  
           ctx.setLineDash([]); // Assure que le contour des points n'est pas pointillé
           ctx.stroke();
         });
