@@ -4575,12 +4575,12 @@ document.addEventListener("DOMContentLoaded", () => {
       drawingObjects = drawingObjects.filter(o => o !== selectedObject);
       selectedObject = null;
       contextMenu.style.display = 'none';
-      render(); // On redessine le canvas vide
+      render(); // On redessine le canvas vide   
     }
   };   
 
   // Fermer le menu si on clique ailleurs
-  window.addEventListener('mousedown', (e) => {
+  window.addEventListener('mousedown', (e) => { 
     if (!contextMenu.contains(e.target)) {
       contextMenu.style.display = 'none';
     }
