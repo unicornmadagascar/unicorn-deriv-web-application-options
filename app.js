@@ -1999,19 +1999,19 @@ document.addEventListener("DOMContentLoaded", () => {
     // On s'assure que le canvas peut recevoir les clics
     canvas.style.pointerEvents = 'all';
 
-    btn.classList.add('active', 'btn-drawing');   
-  }  
+    btn.classList.add('active', 'btn-drawing');
+  }
 
   // HTML: <button onclick="enableRectangle(this)">Zone (Rectangle)</button>
 
   window.enableRectangle = function (btn) {
     currentMode = 'rect'; // On change le mode 
-    canvas.style.pointerEvents = 'all';  
+    canvas.style.pointerEvents = 'all';
 
     // Gestion visuelle du bouton
     document.querySelectorAll('.btn-drawing').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active', 'btn-drawing');  
-  }  
+    btn.classList.add('active', 'btn-drawing');
+  }
 
   /**
  * Redimensionne le canvas pour matcher exactement le chart
@@ -2079,7 +2079,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     });
-  } 
+  }
 
   // Table
   function initTable() {
@@ -4567,34 +4567,21 @@ document.addEventListener("DOMContentLoaded", () => {
     let objectFound = null;
 
     // On cherche si on a cliqué près d'une ligne
-    // Dans la détection du clic droit (contextmenu)
     drawingObjects.forEach(obj => {
-      const x1 = timeScale.timeToCoordinate(obj.p1.time);
+      const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
       const y1 = currentSeries.priceToCoordinate(obj.p1.price);
-      const x2 = timeScale.timeToCoordinate(obj.p2.time);
+      const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
       const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
-      if (obj.type === 'rect') {
-        // Vérifie si le clic est à l'intérieur du rectangle
-        const minX = Math.min(x1, x2);
-        const maxX = Math.max(x1, x2);
-        const minY = Math.min(y1, y2);
-        const maxY = Math.max(y1, y2);
-
-        if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
-          objectFound = obj;
-        }
-      } else {
-        // Logique existante pour la trendline (proximité des points)
-        if (Math.hypot(x - x1, y - y1) < 20 || Math.hypot(x - x2, y - y2) < 20) {
-          objectFound = obj;
-        }
+      // On vérifie la proximité avec les points ou la ligne
+      if (Math.hypot(x - x1, y - y1) < 20 || Math.hypot(x - x2, y - y2) < 20) {
+        objectFound = obj;
       }
     });
 
     if (objectFound) {
       selectedObject = objectFound;
-      render(); // On met la ligne en surbrillance
+      render(); // On met la ligne en surbrillance  
 
       // Positionnement du menu
       contextMenu.style.display = 'block';
@@ -4612,7 +4599,7 @@ document.addEventListener("DOMContentLoaded", () => {
       drawingObjects = drawingObjects.filter(o => o !== selectedObject);
       selectedObject = null;
       contextMenu.style.display = 'none';
-      render(); // On redessine le canvas vide   
+      render(); // On redessine le canvas vide
     }
   };
 
