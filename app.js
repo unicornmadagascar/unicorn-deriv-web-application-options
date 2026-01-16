@@ -4497,13 +4497,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Control' || e.key === 'Alt') {
+  window.addEventListener('keydown', (e) => { 
+    if (e.key === 'Control' || e.key === 'Alt') { 
       canvas.style.pointerEvents = 'all';
     }
   });
 
-  window.addEventListener('keyup', (e) => {
+  window.addEventListener('keyup', (e) => { 
     // Si on n'est pas en train de dessiner, on peut couper  
     if (!currentMode && !activePoint) {
       canvas.style.pointerEvents = 'none';
