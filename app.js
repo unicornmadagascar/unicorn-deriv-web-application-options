@@ -1200,7 +1200,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On ferme l'ancienne connexion si elle existe encore
     if (wsTranscation && wsTranscation.readyState === WebSocket.OPEN) {
       wsTranscation.close();
-    } 
+    }  
 
     // Création de la connexion (Vérifiez que WS_URL contient votre AppID)
     wsTranscation = new WebSocket(WS_URL);
