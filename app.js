@@ -2067,7 +2067,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ctx.stroke();
         });
       }
-    });
+    });  
   }
     
   // Table
