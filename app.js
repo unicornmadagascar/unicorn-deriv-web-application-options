@@ -2013,8 +2013,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /**
  * Le moteur de rendu (Dessine les lignes sur le canvas)
- */  
-  function render() { 
+ */
+  function render() {
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -2056,9 +2056,9 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.strokeRect(x1, y1, width, height);
       }
 
-      // --- DESSIN DES POIGNÉES (HANDLES) SI SÉLECTIONNÉ ---  
+      // --- DESSIN DES POIGNÉES (HANDLES) SI SÉLECTIONNÉ ---
       if (isSelected) {
-        [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(p => { 
+        [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(p => {
           ctx.beginPath();
           ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
           ctx.fillStyle = 'white';
@@ -2069,7 +2069,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-
+  
   // Table
   function initTable() {
     const container = document.getElementById("autoHistoryList");
