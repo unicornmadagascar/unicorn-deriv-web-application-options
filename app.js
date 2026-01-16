@@ -2008,14 +2008,17 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.classList.add('active', 'btn-drawing');
   }
 
-  // --- FONCTION D'APPEL DU BOUTON ---
   window.enableTPSL = function (btn) {
-    currentMode = 'tpsl';
-    canvas.style.pointerEvents = 'all';
-
-    // Feedback visuel sur les boutons
-    document.querySelectorAll('.btn-drawing').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active', 'btn-drawing');
+    // Si on reclique sur le bouton alors qu'il est déjà actif, on le désactive
+    if (currentMode === 'tpsl') {
+      deactivateAllDrawingButtons();
+      canvas.style.pointerEvents = 'none';
+    } else {
+      deactivateAllDrawingButtons(); // Nettoie les autres boutons (Trendline/Rect)
+      currentMode = 'tpsl';
+      btn.classList.add('active');
+      canvas.style.pointerEvents = 'all';
+    }
   }
 
   /**
@@ -2038,7 +2041,7 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.width = chartInner.clientWidth;
     canvas.height = chartInner.clientHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     // Si on a masqué les dessins, on s'arrête ici
     if (!showDrawings) return;
 
@@ -2149,6 +2152,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // On définit directement la poignée droite comme active pour étirer la largeur au premier clic
     activeHandle = 'RIGHT';
     render();
+  }
+
+  function deactivateAllDrawingButtons() {
+    document.querySelectorAll('.btn-drawing').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    currentMode = null; // Réinitialise aussi le mode d'attente
   }
 
   // Table
@@ -4528,7 +4538,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const ts = chart.timeScale();
     const time = ts.coordinateToTime(x);
     const price = currentSeries.coordinateToPrice(y);
-  
+
     if (!time || !price) return;
 
     let hit = false;
@@ -4797,16 +4807,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- ACTION DE SUPPRESSION RECTIFIÉE ---
   deleteItem.onclick = () => {
-    // Si un objet classique est sélectionné
     if (selectedObject) {
       drawingObjects = drawingObjects.filter(o => o !== selectedObject);
       selectedObject = null;
-    }
-    // Si c'est le setup TP/SL qui était sous le clic (cas isSetupFound)
-    else {
+    } else if (setup) {
       setup = null;
+      // On désactive le bouton TP/SL si l'objet est supprimé
+      deactivateAllDrawingButtons();
     }
 
+    saveDrawings();
     contextMenu.style.display = 'none';
     render();
   };
@@ -4830,8 +4840,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Action de Visibilité
   visibilityItem.onclick = () => {
-    showDrawings = !showDrawings; // Alterne entre true et false
+    showDrawings = !showDrawings;
     visibilityItem.innerText = showDrawings ? "Masquer tout" : "Afficher tout";
+
+    if (!showDrawings) {
+      // Si on masque tout, on force l'arrêt de tout mode de dessin actif
+      deactivateAllDrawingButtons();
+    }
+
     contextMenu.style.display = 'none';
     render();
   };
