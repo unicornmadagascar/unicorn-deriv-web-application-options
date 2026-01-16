@@ -2020,7 +2020,7 @@ document.addEventListener("DOMContentLoaded", () => {
       canvas.style.pointerEvents = 'all';
     }
   }
-
+ 
   /**
  * Redimensionne le canvas pour matcher exactement le chart
  */
