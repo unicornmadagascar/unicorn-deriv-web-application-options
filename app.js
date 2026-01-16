@@ -4572,9 +4572,9 @@ document.addEventListener("DOMContentLoaded", () => {
   deleteItem.onclick = () => {
     if (selectedObject) {
       // On filtre le tableau pour retirer l'objet sélectionné
-      drawingObjects = drawingObjects.filter(o => o !== selectedObject);
+      drawingObjects = drawingObjects.filter(o => o !== selectedObject);  
       selectedObject = null;
-      contextMenu.style.display = 'none';
+      contextMenu.style.display = 'none'; 
       render(); // On redessine le canvas vide   
     }
   };   
