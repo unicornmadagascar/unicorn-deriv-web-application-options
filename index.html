@@ -522,7 +522,7 @@
     .symbol-item:hover {
       background: #007bff;
       color: #fff;
-    }  
+    }
 
     #container__ {
       position: relative;
@@ -549,7 +549,7 @@
       border-radius: 8px;
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
       overflow: hidden;
-      position: relative;  
+      position: relative;
     }
 
     /* Le Canvas de Trendline */
@@ -562,40 +562,40 @@
       width: calc(100% - 24px);
       height: calc(100% - 24px);
       margin: 12px;
-      /* Doit être identique à #chartInner */  
+      /* Doit être identique à #chartInner */
 
       z-index: 1000;
       cursor: crosshair;
       pointer-events: all;
       /* Permet de dessiner */
-      background: transparent !important;  
-      /* Indispensable pour voir le chart derrière */   
-      pointer-events: none; /* Indispensable pour capter le mousedown */
+      background: transparent !important;
+      /* Indispensable pour voir le chart derrière */
+      pointer-events: none;
+      /* Indispensable pour capter le mousedown */
     }
 
     /* Style du Menu Contextuel */
     #context-menu {
       display: none;
-      position: absolute;  
-      z-index: 1000;  
-      background: #2b2b43;  
-      border: 1px solid #363c4e;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      position: absolute;
+      z-index: 2000;
+      background: #1f2937;
+      border: 1px solid #374151;
       border-radius: 4px;
-      padding: 5px 0;  
+      padding: 4px 0;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      color: white;
+      cursor: pointer;
       min-width: 120px;
     }
 
-    .menu-item { 
-      padding: 8px 12px;  
-      font-size: 13px;
-      cursor: pointer;
-      color: #d1d4dc;
+    .menu-item {
+      padding: 8px 12px;
+      font-size: 14px;
     }
 
     .menu-item:hover {
-      background: #363c4e;
-      color: #ef5350;
+      background: #3b82f6;
     }
 
     /* Style du badge PnL */
@@ -1731,10 +1731,10 @@
 
     /* Conteneur de badge de base */
     .badge-status {
-      padding: 4px 10px;   
-      border-radius: 6px;  
-      font-size: 0.7rem;  
-      font-weight: 700;  
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 700;
       text-transform: uppercase;
       display: inline-block;
       letter-spacing: 0.5px;
@@ -2960,7 +2960,7 @@
         <button id="ZigZag" onclick="toggleZigZag(this)">ZigZag 14 : OFF</button>
 
         <!-- Objets graphiques -->
-        <button class = "btn-drawingLine" onclick="enableTrendline(this)">Trendline</button>
+        <button class="btn-drawingLine" onclick="enableTrendline(this)">Trendline</button>
         <button onclick="enableRectangle(this)">Rectangle</button>
         <button onclick="enableTPSL(this)">TP / SL</button>
       </div>

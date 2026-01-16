@@ -76,6 +76,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const overlaygemini = document.getElementById("indicatorOverlay");
   const openBtngpt = document.getElementById("openPopupBtn__");
   const canvas = document.getElementById('Trendoverlay__');
+  const contextMenu = document.getElementById('context-menu');
+  const deleteItem = document.getElementById('deleteItem');
   const ctx = canvas.getContext('2d');
   // Tableau des périodes actuellement affichées
   let maSeries = null;
@@ -4436,7 +4438,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let hit = false;
 
     // 1. GESTION DU MODE DESSIN (Si on vient de cliquer sur le bouton Trendline)
-    if (currentMode === 'trend') { 
+    if (currentMode === 'trend') {
       const newObj = {
         type: 'trend',
         p1: { time, price },
@@ -4449,18 +4451,18 @@ document.addEventListener("DOMContentLoaded", () => {
       currentMode = null; // On sort du mode "attente de clic"
       canvas.style.pointerEvents = 'all';
       document.querySelectorAll('.btn-drawingLine').forEach(btn => {
-          btn.classList.remove('active');  
-      });  
-      render();  
+        btn.classList.remove('active');
+      });
+      render();
       return; // On arrête là pour ne pas déclencher la sélection
     }
 
     // 2. GESTION DE LA SÉLECTION / MODIFICATION (Si on n'est pas en mode dessin)
     drawingObjects.forEach(obj => {
-      const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);  
+      const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
       const y1 = currentSeries.priceToCoordinate(obj.p1.price);
-      const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);  
-      const y2 = currentSeries.priceToCoordinate(obj.p2.price);  
+      const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
+      const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
       // Si on clique près d'une extrémité
       if (Math.hypot(x - x1, y - y1) < 15) {
@@ -4472,8 +4474,8 @@ document.addEventListener("DOMContentLoaded", () => {
         activePoint = { obj, point: 'p2' };
         hit = true;
       }
-    }); 
-  
+    });
+
     // 3. LOGIQUE DE BASCULE DU CANVAS
     if (!hit) {
       selectedObject = null;
@@ -4500,16 +4502,87 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  window.addEventListener('keydown', (e) => { 
-    if (e.key === 'Control' || e.key === 'Alt') { 
+  // 1. Activation et Annulation (Appui sur touche)
+  window.addEventListener('keydown', (e) => {
+    // Mode "Édition forcée" : permet de cliquer sur une ligne existante
+    if (e.key === 'Control' || e.key === 'Alt') {
       canvas.style.pointerEvents = 'all';
+    }
+
+    // Annulation totale
+    else if (e.key === 'Escape') {
+      currentMode = null;
+      activePoint = null; // On arrête tout déplacement en cours
+      canvas.style.pointerEvents = 'none';
+
+      // Éteindre le bouton visuellement
+      document.querySelectorAll('.btn-drawing').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      render(); // Rafraîchir pour désélectionner visuellement l'objet
     }
   });
 
-  window.addEventListener('keyup', (e) => { 
-    // Si on n'est pas en train de dessiner, on peut couper  
-    if (!currentMode && !activePoint) {
-      canvas.style.pointerEvents = 'none';
+  // 2. Désactivation automatique (Relâchement de touche)
+  window.addEventListener('keyup', (e) => {
+    if (e.key === 'Control' || e.key === 'Alt') {
+      // On ne coupe le pointerEvents QUE si on n'est pas en train 
+      // de dessiner ou de déplacer un point.
+      if (!currentMode && !activePoint) {
+        canvas.style.pointerEvents = 'none';
+      }
+    }
+  });
+
+  canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault(); // Empêche le menu classique du navigateur
+
+    const x = e.offsetX;
+    const y = e.offsetY;
+    let objectFound = null;
+
+    // On cherche si on a cliqué près d'une ligne
+    drawingObjects.forEach(obj => {
+      const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
+      const y1 = currentSeries.priceToCoordinate(obj.p1.price);
+      const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
+      const y2 = currentSeries.priceToCoordinate(obj.p2.price);
+
+      // On vérifie la proximité avec les points ou la ligne
+      if (Math.hypot(x - x1, y - y1) < 20 || Math.hypot(x - x2, y - y2) < 20) {
+        objectFound = obj;
+      }
+    });
+
+    if (objectFound) {
+      selectedObject = objectFound;
+      render(); // On met la ligne en surbrillance
+
+      // Positionnement du menu
+      contextMenu.style.display = 'block';
+      contextMenu.style.left = e.pageX + 'px';
+      contextMenu.style.top = e.pageY + 'px';
+    } else {
+      contextMenu.style.display = 'none';
+    }
+  });
+
+  // Action de suppression
+  deleteItem.onclick = () => {
+    if (selectedObject) {
+      // On filtre le tableau pour retirer l'objet sélectionné
+      drawingObjects = drawingObjects.filter(o => o !== selectedObject);
+      selectedObject = null;
+      contextMenu.style.display = 'none';
+      render(); // On redessine le canvas vide
+    }
+  };
+
+  // Fermer le menu si on clique ailleurs
+  window.addEventListener('mousedown', (e) => {
+    if (!contextMenu.contains(e.target)) {
+      contextMenu.style.display = 'none';
     }
   });
 
