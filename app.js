@@ -1993,13 +1993,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Feedback visuel sur le bouton
     // On retire la classe active des autres boutons si nécessaire
-    document.querySelectorAll('.btn-drawingLine').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.btn-drawing').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 
     // On s'assure que le canvas peut recevoir les clics
     canvas.style.pointerEvents = 'all';
 
-    btn.classList.add('active', 'btn-drawingLine');
+    btn.classList.add('active', 'btn-drawing');
+  }  
+
+  // HTML: <button onclick="enableRectangle(this)">Zone (Rectangle)</button>
+
+  window.enableRectangle = function (btn) {
+    currentMode = 'rect'; // On change le mode 
+    canvas.style.pointerEvents = 'all';
+
+    // Gestion visuelle du bouton
+    document.querySelectorAll('.btn-drawing').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active', 'btn-drawing');
   }
 
   /**
@@ -2060,16 +2071,16 @@ document.addEventListener("DOMContentLoaded", () => {
       if (isSelected) {
         [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(p => {
           ctx.beginPath();
-          ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);  
-          ctx.fillStyle = 'white';  
-          ctx.fill();  
+          ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+          ctx.fillStyle = 'white';
+          ctx.fill();
           ctx.setLineDash([]); // Assure que le contour des points n'est pas pointillé
           ctx.stroke();
         });
       }
-    });  
-  }
-    
+    });
+  } 
+
   // Table
   function initTable() {
     const container = document.getElementById("autoHistoryList");
@@ -4463,7 +4474,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       currentMode = null; // On sort du mode "attente de clic"
       canvas.style.pointerEvents = 'all';
-      document.querySelectorAll('.btn-drawingLine').forEach(btn => {
+      document.querySelectorAll('.btn-drawing').forEach(btn => {
         btn.classList.remove('active');
       });
       render();
