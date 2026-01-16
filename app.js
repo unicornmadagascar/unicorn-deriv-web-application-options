@@ -4576,7 +4576,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // On vérifie la proximité avec les points ou la ligne
       if (Math.hypot(x - x1, y - y1) < 20 || Math.hypot(x - x2, y - y2) < 20) {
         objectFound = obj;
-      }
+      }  
     });
 
     if (objectFound) {
