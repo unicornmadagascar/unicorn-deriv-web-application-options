@@ -4490,7 +4490,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // On force le rendu dès que le graphique a fini de bouger
   chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
       render();
-  });
+  });  
 
   // Initialisation
   window.addEventListener('resize', resizeCanvas);
