@@ -4477,6 +4477,6 @@ document.addEventListener("DOMContentLoaded", () => {
   //chart.timeScale().subscribeVisibleLogicalRangeChange(render);
 
   // Initialisation
-  window.addEventListener('resize', resizeCanvas);
+  window.addEventListener('resize', resizeCanvas);  
   setTimeout(resizeCanvas, 100); // Petit délai pour laisser le layout flex se stabiliser
 });
