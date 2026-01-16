@@ -4569,7 +4569,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Action de suppression
-  deleteItem.onclick = () => {
+  deleteItem.onclick = () => { 
     if (selectedObject) {
       // On filtre le tableau pour retirer l'objet sélectionné
       drawingObjects = drawingObjects.filter(o => o !== selectedObject);  
