@@ -63,16 +63,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const startml5 = document.getElementById("ML5BTN");
 
-  // Éléments UI
-  const openCashierBtn = document.getElementById("openCashierBtn");
-  const closePopupBtn = document.getElementById("closeCashierBtn");
-  const cashierModal = document.getElementById("cashierModal");
-  const emailInput = document.getElementById("emailInput");
-  const codeInput = document.getElementById("codeInput");
-  const sendEmailBtn = document.getElementById("sendEmailBtn");
-  const validateCodeBtn = document.getElementById("validateCodeBtn");
-  const cashFrame = document.getElementById("cashierFrame");
-
   const overlaygemini = document.getElementById("indicatorOverlay");
   const openBtngpt = document.getElementById("openPopupBtn__");
   const canvas = document.getElementById('Trendoverlay__');
@@ -111,6 +101,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentMode = null;
   let selectedObject = null;
   let activePoint = null;
+  let setup = null;
+  let activeHandle = null;
+  let dragOffset = null;
   // ================== x ==================
 
   let wsReady = false;
@@ -2013,6 +2006,16 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.classList.add('active', 'btn-drawing');
   }
 
+  // --- FONCTION D'APPEL DU BOUTON ---
+  window.enableTPSL = function (btn) {
+    currentMode = 'tpsl';
+    canvas.style.pointerEvents = 'all';
+
+    // Feedback visuel sur les boutons
+    document.querySelectorAll('.btn-drawing').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active', 'btn-drawing');
+  }
+
   /**
  * Redimensionne le canvas pour matcher exactement le chart
  */
@@ -2023,62 +2026,124 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
- * Le moteur de rendu (Dessine les lignes sur le canvas)
+ * Le moteur de rendu rectifié
+ * Dessine : Trendlines, Rectangles et Setup TP/SL
  */
   function render() {
     if (!ctx) return;
+
+    // Assure que le canvas occupe tout l'espace
+    canvas.width = chartInner.clientWidth;
+    canvas.height = chartInner.clientHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const timeScale = chart.timeScale();
 
+    // 1. DESSIN DES OBJETS DANS LE TABLEAU (Trendlines et Rects)
     drawingObjects.forEach((obj) => {
-      // Conversion Prix/Temps -> Pixels
       const x1 = timeScale.timeToCoordinate(obj.p1.time);
       const x2 = timeScale.timeToCoordinate(obj.p2.time);
       const y1 = currentSeries.priceToCoordinate(obj.p1.price);
       const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
-      // Sécurité : si un point est hors champ, on ne dessine pas cet objet
       if (x1 === null || y1 === null || x2 === null || y2 === null) return;
 
       const isSelected = (selectedObject === obj);
-
-      // Configuration du style de trait (commun aux deux types)
       ctx.strokeStyle = isSelected ? '#f39c12' : '#2962FF';
       ctx.lineWidth = isSelected ? 3 : 2;
 
       if (obj.type === 'trend') {
-        // --- DESSIN DE LA LIGNE (TRENDLINE) ---
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
         ctx.stroke();
       }
       else if (obj.type === 'rect') {
-        // --- DESSIN DU RECTANGLE (ZONE) ---
         const width = x2 - x1;
         const height = y2 - y1;
-
-        // Remplissage translucide (plus clair si non sélectionné)
         ctx.fillStyle = isSelected ? 'rgba(243, 156, 18, 0.25)' : 'rgba(41, 98, 255, 0.15)';
         ctx.fillRect(x1, y1, width, height);
-
-        // Bordure du rectangle
         ctx.strokeRect(x1, y1, width, height);
       }
 
-      // --- DESSIN DES POIGNÉES (HANDLES) SI SÉLECTIONNÉ ---
       if (isSelected) {
         [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(p => {
           ctx.beginPath();
           ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
           ctx.fillStyle = 'white';
           ctx.fill();
-          ctx.setLineDash([]); // Assure que le contour des points n'est pas pointillé
           ctx.stroke();
         });
       }
     });
+
+    // 2. DESSIN DU SETUP TP/SL (Si défini)
+    if (setup) {
+      const xStart = timeScale.timeToCoordinate(setup.startTime);
+      const xEnd = timeScale.timeToCoordinate(setup.endTime);
+      const yEntry = currentSeries.priceToCoordinate(setup.entryPrice);
+      const yTP = currentSeries.priceToCoordinate(setup.tpPrice);
+      const ySL = currentSeries.priceToCoordinate(setup.slPrice);
+
+      // On ne dessine que si toutes les coordonnées sont visibles
+      if (xStart !== null && xEnd !== null && yEntry !== null && yTP !== null && ySL !== null) {
+        const width = xEnd - xStart;
+
+        // Zone Take Profit (Vert)
+        ctx.fillStyle = 'rgba(38, 166, 154, 0.3)';
+        ctx.fillRect(xStart, Math.min(yTP, yEntry), width, Math.abs(yEntry - yTP));
+
+        // Zone Stop Loss (Rouge)
+        ctx.fillStyle = 'rgba(239, 83, 80, 0.3)';
+        ctx.fillRect(xStart, Math.min(yEntry, ySL), width, Math.abs(ySL - yEntry));
+
+        // Bordures TP/SL
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#26a69a';
+        ctx.strokeRect(xStart, Math.min(yTP, yEntry), width, Math.abs(yEntry - yTP));
+        ctx.strokeStyle = '#ef5350';
+        ctx.strokeRect(xStart, Math.min(yEntry, ySL), width, Math.abs(ySL - yEntry));
+
+        // Affichage du Ratio R/R
+        const risk = Math.abs(setup.entryPrice - setup.slPrice);
+        const reward = Math.abs(setup.tpPrice - setup.entryPrice);
+        const rr = (reward / (risk || 1)).toFixed(2);
+
+        ctx.fillStyle = "white";
+        ctx.font = "bold 12px Arial";
+        ctx.fillText(`R/R: ${rr}`, Math.min(xStart, xEnd) + 5, Math.min(yTP, yEntry) - 8);
+
+        // Poignées de l'outil TP/SL
+        ctx.fillStyle = "white";
+        ctx.strokeStyle = "black";
+        const midX = (xStart + xEnd) / 2;
+        const handles = [
+          { x: midX, y: yTP }, { x: midX, y: ySL },
+          { x: midX, y: yEntry }, { x: xStart, y: yEntry }, { x: xEnd, y: yEntry }
+        ];
+        handles.forEach(p => {
+          ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+          ctx.fill(); ctx.stroke();
+        });
+      }
+    }
+  }
+
+  // --- LOGIQUE DE GÉNÉRATION INITIALE ---
+  function generateLinkedSetup(clickTime, clickPrice) {
+    // On crée un setup par défaut autour du point cliqué
+    setup = {
+      type: 'tpsl',
+      startTime: clickTime,
+      endTime: clickTime, // Sera étiré par le mouvement de souris ou par défaut
+      entryPrice: clickPrice,
+      tpPrice: clickPrice + (clickPrice * 0.01), // +1% par défaut
+      slPrice: clickPrice - (clickPrice * 0.005) // -0.5% par défaut
+    };
+
+    // On définit directement la poignée droite comme active pour étirer la largeur au premier clic
+    activeHandle = 'RIGHT';
+    render();
   }
 
   // Table
@@ -4452,101 +4517,173 @@ document.addEventListener("DOMContentLoaded", () => {
   canvas.addEventListener('mousedown', (e) => {
     const x = e.offsetX;
     const y = e.offsetY;
-
-    // Convertir les pixels du clic en données de marché (Temps et Prix)
-    const time = chart.timeScale().coordinateToTime(x);
+    const ts = chart.timeScale();
+    const time = ts.coordinateToTime(x);
     const price = currentSeries.coordinateToPrice(y);
 
     if (!time || !price) return;
 
     let hit = false;
 
-    // 1. GESTION DU MODE DESSIN (Trendline ou Rectangle)
-    if (currentMode === 'rect' || currentMode === 'trend') {
-      const newObj = {
-        type: currentMode,
-        p1: { time, price },
-        p2: { time, price }
-      };
-      drawingObjects.push(newObj);
-      selectedObject = newObj;
-      activePoint = { obj: newObj, point: 'p2' };
+    // 1. GESTION DU MODE DESSIN (Trendline, Rectangle OU TP/SL)
+    if (currentMode === 'rect' || currentMode === 'trend' || currentMode === 'tpsl') {
+      if (currentMode === 'tpsl') {
+        // Appel de votre fonction spécifique TP/SL
+        generateLinkedSetup(time, price);
+      } else {
+        const newObj = {
+          type: currentMode,
+          p1: { time, price },
+          p2: { time, price }
+        };
+        drawingObjects.push(newObj);
+        selectedObject = newObj;
+        activePoint = { obj: newObj, point: 'p2' };
+      }
 
       currentMode = null;
       canvas.style.pointerEvents = 'all';
-      document.querySelectorAll('.btn-drawing').forEach(btn => {
-        btn.classList.remove('active');
-      });
+      document.querySelectorAll('.btn-drawing').forEach(btn => btn.classList.remove('active'));
       render();
       return;
     }
 
-    // 2. GESTION DE LA SÉLECTION / MODIFICATION
-    // On boucle à l'envers (reverse) pour sélectionner l'objet au premier plan si plusieurs se superposent
+    // 2. GESTION DU SETUP TP/SL EXISTANT (Priorité à la sélection)
+    if (setup) {
+      const x1 = ts.timeToCoordinate(setup.startTime);
+      const x2 = ts.timeToCoordinate(setup.endTime);
+      const yEntry = currentSeries.priceToCoordinate(setup.entryPrice);
+      const yTP = currentSeries.priceToCoordinate(setup.tpPrice);
+      const ySL = currentSeries.priceToCoordinate(setup.slPrice);
+      const midX = (x1 + x2) / 2;
+
+      // Détection des poignées du TP/SL
+      if (Math.hypot(x - midX, y - yTP) < 15) { activeHandle = 'TP_TOP'; hit = true; }
+      else if (Math.hypot(x - midX, y - ySL) < 15) { activeHandle = 'SL_BOTTOM'; hit = true; }
+      else if (Math.hypot(x - midX, y - yEntry) < 15) { activeHandle = 'ENTRY'; hit = true; }
+      else if (Math.hypot(x - x1, y - yEntry) < 15) { activeHandle = 'LEFT'; hit = true; }
+      else if (Math.hypot(x - x2, y - yEntry) < 15) { activeHandle = 'RIGHT'; hit = true; }
+      // Détection du clic à l'intérieur pour déplacement global
+      else if (x > Math.min(x1, x2) && x < Math.max(x1, x2) &&
+        y > Math.min(yTP, ySL) && y < Math.max(yTP, ySL)) {
+        activeHandle = 'MOVE_ALL';
+        dragOffset = {
+          timeDiff: x - x1,
+          tpDiff: setup.tpPrice - price,
+          slDiff: setup.slPrice - price,
+          entryDiff: setup.entryPrice - price
+        };
+        hit = true;
+      }
+
+      if (hit) {
+        canvas.style.pointerEvents = 'all';
+        render();
+        return; // On a touché le TP/SL, on arrête là
+      }
+    }
+
+    // 3. GESTION DES OBJETS CLASSIQUES (Trendline / Rectangle)
     for (let i = drawingObjects.length - 1; i >= 0; i--) {
       const obj = drawingObjects[i];
-      const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
+      const x1 = ts.timeToCoordinate(obj.p1.time);
       const y1 = currentSeries.priceToCoordinate(obj.p1.price);
-      const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
+      const x2 = ts.timeToCoordinate(obj.p2.time);
       const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
       if (x1 === null || y1 === null || x2 === null || y2 === null) continue;
 
-      // A. Vérification des extrémités (Handles) - Valable pour les deux objets
+      // Points d'extrémité
       if (Math.hypot(x - x1, y - y1) < 15) {
         selectedObject = obj;
         activePoint = { obj, point: 'p1' };
-        hit = true;
-        break;
+        hit = true; break;
       } else if (Math.hypot(x - x2, y - y2) < 15) {
         selectedObject = obj;
         activePoint = { obj, point: 'p2' };
-        hit = true;
-        break;
+        hit = true; break;
       }
 
-      // B. Spécifique au Rectangle : détection du clic à l'intérieur de la zone
+      // Intérieur du rectangle
       if (obj.type === 'rect') {
-        const minX = Math.min(x1, x2);
-        const maxX = Math.max(x1, x2);
-        const minY = Math.min(y1, y2);
-        const maxY = Math.max(y1, y2);
-
+        const minX = Math.min(x1, x2), maxX = Math.max(x1, x2);
+        const minY = Math.min(y1, y2), maxY = Math.max(y1, y2);
         if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
           selectedObject = obj;
-          // Si on clique au milieu du rectangle sans toucher les points, 
-          // on ne définit pas d'activePoint (juste sélection) ou on pourrait ajouter une logique de déplacement total.
-          hit = true;
-          break;
+          hit = true; break;
         }
       }
     }
 
-    // 3. LOGIQUE DE BASCULE DU CANVAS
+    // 4. BASCULE FINALE
     if (!hit) {
       selectedObject = null;
+      activeHandle = null;
       canvas.style.pointerEvents = 'none';
-      render();
     } else {
       canvas.style.pointerEvents = 'all';
-      render(); // Force le rendu pour montrer la sélection (couleur orange)
     }
+    render();
   });
 
   window.addEventListener('mousemove', (e) => {
-    if (!activePoint) return;
+    // Si rien n'est en train d'être déplacé, on sort
+    if (!activePoint && !activeHandle) return;
+
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const newTime = chart.timeScale().coordinateToTime(x);
+    const ts = chart.timeScale();
+    const newTime = ts.coordinateToTime(x);
     const newPrice = currentSeries.coordinateToPrice(y);
 
-    if (newTime && newPrice) {
-      activePoint.obj[activePoint.point].time = newTime;
-      activePoint.obj[activePoint.point].price = newPrice;
+    // --- CAS 1 : TRENDLINES ET RECTANGLES ---
+    if (activePoint) {
+      if (newTime && newPrice) {
+        activePoint.obj[activePoint.point].time = newTime;
+        activePoint.obj[activePoint.point].price = newPrice;
+        render();
+      }
+    }
+
+    // --- CAS 2 : OUTIL TP/SL ---
+    else if (activeHandle && setup) {
+      if (activeHandle === 'MOVE_ALL') {
+        // Déplacement global du bloc
+        if (newPrice && newTime) {
+          // Calcul du nouveau temps de fin pour garder la largeur
+          const x1_new = x - dragOffset.timeDiff;
+          const x1_old = ts.timeToCoordinate(setup.startTime);
+          const x2_old = ts.timeToCoordinate(setup.endTime);
+          const widthPixels = x2_old - x1_old;
+
+          const timeStart = ts.coordinateToTime(x1_new);
+          const timeEnd = ts.coordinateToTime(x1_new + widthPixels);
+
+          setup.entryPrice = newPrice + dragOffset.entryDiff;
+          setup.tpPrice = newPrice + dragOffset.tpDiff;
+          setup.slPrice = newPrice + dragOffset.slDiff;
+
+          if (timeStart) setup.startTime = timeStart;
+          if (timeEnd) setup.endTime = timeEnd;
+        }
+      } else {
+        // Redimensionnement par poignées individuelles
+        if (activeHandle === 'TP_TOP' && newPrice) setup.tpPrice = newPrice;
+        if (activeHandle === 'SL_BOTTOM' && newPrice) setup.slPrice = newPrice;
+        if (activeHandle === 'ENTRY' && newPrice) setup.entryPrice = newPrice;
+        if (activeHandle === 'LEFT' && newTime) setup.startTime = newTime;
+        if (activeHandle === 'RIGHT' && newTime) setup.endTime = newTime;
+      }
       render();
     }
+  });
+
+  window.addEventListener('mouseup', () => {
+    activePoint = null;
+    activeHandle = null;
+    dragOffset = null;
   });
 
   // 1. Activation et Annulation (Appui sur touche)
@@ -4583,47 +4720,66 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   canvas.addEventListener('contextmenu', (e) => {
-    e.preventDefault(); // Empêche le menu classique du navigateur
+    e.preventDefault();
 
     const x = e.offsetX;
     const y = e.offsetY;
     let objectFound = null;
+    let isSetupFound = false;
 
-    // On parcourt les objets pour voir lequel est sous la souris
-    drawingObjects.forEach(obj => {
-      const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
-      const y1 = currentSeries.priceToCoordinate(obj.p1.price);
-      const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
-      const y2 = currentSeries.priceToCoordinate(obj.p2.price);
+    const ts = chart.timeScale();  
 
-      if (x1 === null || y1 === null || x2 === null || y2 === null) return;
+    // 1. VÉRIFIER LE SETUP TP/SL D'ABORD (Priorité visuelle)
+    if (setup) {
+      const xStart = ts.timeToCoordinate(setup.startTime);
+      const xEnd = ts.timeToCoordinate(setup.endTime);
+      const yTP = currentSeries.priceToCoordinate(setup.tpPrice);
+      const ySL = currentSeries.priceToCoordinate(setup.slPrice);
 
-      if (obj.type === 'rect') {
-        // Détection par SURFACE pour le rectangle
-        const minX = Math.min(x1, x2);
-        const maxX = Math.max(x1, x2);
-        const minY = Math.min(y1, y2);
-        const maxY = Math.max(y1, y2);
+      if (xStart !== null && xEnd !== null && yTP !== null && ySL !== null) {
+        const minX = Math.min(xStart, xEnd);
+        const maxX = Math.max(xStart, xEnd);
+        const minY = Math.min(yTP, ySL);
+        const maxY = Math.max(yTP, ySL);
 
+        // Si clic droit à l'intérieur du bloc TP/SL
         if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
-          objectFound = obj;
-        }
-      } else {
-        // Détection par POINTS pour la trendline
-        if (Math.hypot(x - x1, y - y1) < 20 || Math.hypot(x - x2, y - y2) < 20) {
-          objectFound = obj;
+          isSetupFound = true;
+          selectedObject = null; // On déselectionne les lignes si on touche au setup
         }
       }
-    });
+    }
 
-    if (objectFound) {
-      selectedObject = objectFound;
-      render(); // Met l'objet en surbrillance (orange)
+    // 2. VÉRIFIER LES AUTRES OBJETS (Si le setup n'a pas été touché)
+    if (!isSetupFound) {
+      drawingObjects.forEach(obj => {
+        const x1 = ts.timeToCoordinate(obj.p1.time);
+        const y1 = currentSeries.priceToCoordinate(obj.p1.price);
+        const x2 = ts.timeToCoordinate(obj.p2.time);
+        const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
-      // Positionnement du menu par rapport à la page (e.pageX/Y)
+        if (x1 === null || y1 === null || x2 === null || y2 === null) return;
+
+        if (obj.type === 'rect') {
+          const minX = Math.min(x1, x2), maxX = Math.max(x1, x2);
+          const minY = Math.min(y1, y2), maxY = Math.max(y1, y2);
+          if (x >= minX && x <= maxX && y >= minY && y <= maxY) objectFound = obj;
+        } else {
+          if (Math.hypot(x - x1, y - y1) < 20 || Math.hypot(x - x2, y - y2) < 20) objectFound = obj;
+        }
+      });
+    }
+
+    // 3. AFFICHAGE DU MENU
+    if (isSetupFound || objectFound) {
+      if (objectFound) selectedObject = objectFound;
+
+      render();
+
       contextMenu.style.display = 'block';
-      contextMenu.style.left = e.pageX + 'px';
-      contextMenu.style.top = e.pageY + 'px';
+      // Utilisation de fixed + clientX/Y pour éviter les décalages de scroll
+      contextMenu.style.left = (e.clientX + 5) + 'px';
+      contextMenu.style.top = (e.clientY + 5) + 'px';
     } else {
       contextMenu.style.display = 'none';
       selectedObject = null;
@@ -4631,15 +4787,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Action de suppression
+  // --- ACTION DE SUPPRESSION RECTIFIÉE ---
   deleteItem.onclick = () => {
+    // Si un objet classique est sélectionné
     if (selectedObject) {
-      // On filtre le tableau pour retirer l'objet sélectionné
       drawingObjects = drawingObjects.filter(o => o !== selectedObject);
       selectedObject = null;
-      contextMenu.style.display = 'none';
-      render(); // On redessine le canvas vide
     }
+    // Si c'est le setup TP/SL qui était sous le clic (cas isSetupFound)
+    else {
+      setup = null;
+    }
+
+    contextMenu.style.display = 'none';
+    render();
   };
 
   // Fermer le menu au clic gauche sur le canvas
@@ -4655,7 +4816,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Crucial : Redessiner quand on zoom ou scroll
   // On force le rendu dès que le graphique a fini de bouger
-  chart.timeScale().subscribeVisibleLogicalRangeChange(() => {  
+  chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
     render();
   });
 
