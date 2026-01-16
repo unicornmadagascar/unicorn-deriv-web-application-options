@@ -2007,34 +2007,34 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.width = chartInner.clientWidth;
     canvas.height = chartInner.clientHeight;
     render();
-  }  
-  
+  }
+
   /**
  * Le moteur de rendu (Dessine les lignes sur le canvas)
  */
   function render() {
-    if (!ctx) return;  
+    if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const timeScale = chart.timeScale();
 
     drawingObjects.forEach((obj) => {
       // 💡 Astuce : Forcer la conversion ou vérifier le type
-      const x1 = timeScale.timeToCoordinate(obj.p1.time);  
-      const x2 = timeScale.timeToCoordinate(obj.p2.time);  
+      const x1 = timeScale.timeToCoordinate(obj.p1.time);
+      const x2 = timeScale.timeToCoordinate(obj.p2.time);
 
-      const y1 = currentSeries.priceToCoordinate(obj.p1.price); 
-      const y2 = currentSeries.priceToCoordinate(obj.p2.price);  
-      
+      const y1 = currentSeries.priceToCoordinate(obj.p1.price);
+      const y2 = currentSeries.priceToCoordinate(obj.p2.price);
+
       // DEBUG : Si vous voyez ces logs dans la console, vous saurez où ça bloque
       if (x1 === null) console.error("X1 est null : Problème de format de date", obj.p1.time);
       if (y1 === null) console.error("Y1 est null : Problème de prix", obj.p1.price);
 
-      if (x1 === null || y1 === null || x2 === null || y2 === null) return;     
+      if (x1 === null || y1 === null || x2 === null || y2 === null) return;
 
-      const isSelected = (selectedObject === obj);  
-      ctx.strokeStyle = isSelected ? '#f39c12' : '#2962FF';       
-      ctx.lineWidth = isSelected ? 3 : 2;     
+      const isSelected = (selectedObject === obj);
+      ctx.strokeStyle = isSelected ? '#f39c12' : '#2962FF';
+      ctx.lineWidth = isSelected ? 3 : 2;
 
       // Dessin de la ligne
       ctx.beginPath();
@@ -4427,29 +4427,57 @@ document.addEventListener("DOMContentLoaded", () => {
     const x = e.offsetX;
     const y = e.offsetY;
 
-    // On vérifie si on touche un point d'une ligne existante
+    // Convertir les pixels du clic en données de marché (Temps et Prix)
+    const time = chart.timeScale().coordinateToTime(x);
+    const price = currentSeries.coordinateToPrice(y);
+
+    if (!time || !price) return; // Sécurité : on ne fait rien si on est hors zone
+
     let hit = false;
+
+    // 1. GESTION DU MODE DESSIN (Si on vient de cliquer sur le bouton Trendline)
+    if (currentMode === 'trend') { 
+      const newObj = {
+        type: 'trend',
+        p1: { time, price },
+        p2: { time, price } // Au début, p1 et p2 sont au même endroit
+      };
+      drawingObjects.push(newObj);
+      selectedObject = newObj;
+      activePoint = { obj: newObj, point: 'p2' }; // On attache p2 à la souris pour l'étirer
+
+      currentMode = null; // On sort du mode "attente de clic"
+      canvas.style.pointerEvents = 'all';
+      render();
+      return; // On arrête là pour ne pas déclencher la sélection
+    }
+
+    // 2. GESTION DE LA SÉLECTION / MODIFICATION (Si on n'est pas en mode dessin)
     drawingObjects.forEach(obj => {
       const x1 = chart.timeScale().timeToCoordinate(obj.p1.time);
       const y1 = currentSeries.priceToCoordinate(obj.p1.price);
       const x2 = chart.timeScale().timeToCoordinate(obj.p2.time);
       const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
-      if (Math.hypot(x - x1, y - y1) < 15 || Math.hypot(x - x2, y - y2) < 15) {
+      // Si on clique près d'une extrémité
+      if (Math.hypot(x - x1, y - y1) < 15) {
+        selectedObject = obj;
+        activePoint = { obj, point: 'p1' };
+        hit = true;
+      } else if (Math.hypot(x - x2, y - y2) < 15) {
+        selectedObject = obj;
+        activePoint = { obj, point: 'p2' };
         hit = true;
       }
-    });
+    }); 
 
-    // LOGIQUE DE BASCULE :
-    if (currentMode === 'trend') {
-      // On est en train de créer une nouvelle ligne : on garde 'all'  
-      canvas.style.pointerEvents = 'all';
-    } else if (!hit) {
-      // On n'est pas en mode dessin ET on a cliqué à côté d'une ligne :
-      // On désactive le canvas pour rendre la main au graphique (Zoom/Scroll)
+    // 3. LOGIQUE DE BASCULE DU CANVAS
+    if (!hit) {
       selectedObject = null;
-      canvas.style.pointerEvents = 'none';
+      canvas.style.pointerEvents = 'none'; // Redonne la main au graphique pour le zoom
       render();
+    } else {
+      canvas.style.pointerEvents = 'all'; // Garde la main pour déplacer la ligne
     }
   });
 
@@ -4489,8 +4517,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Crucial : Redessiner quand on zoom ou scroll
   // On force le rendu dès que le graphique a fini de bouger
   chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
-      render();
-  });  
+    render();
+  });
 
   // Initialisation
   window.addEventListener('resize', resizeCanvas);
