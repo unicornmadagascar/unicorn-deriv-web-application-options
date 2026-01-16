@@ -1240,7 +1240,7 @@ document.addEventListener("DOMContentLoaded", () => {
 ============================ */
   function handleDerivMessage__(data) {
     const errorBox = document.getElementById("errorBox");
-
+  
     // 1. Gestion des erreurs globales
     if (data.error) {
       showError(data.error.message);
