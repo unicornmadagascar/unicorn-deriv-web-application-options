@@ -68,6 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById('Trendoverlay__');
   const contextMenu = document.getElementById('context-menu');
   const deleteItem = document.getElementById('deleteItem');
+  const visibilityItem = document.getElementById('visibilityItem');
   const ctx = canvas.getContext('2d');
   // Tableau des périodes actuellement affichées
   let maSeries = null;
@@ -104,6 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let setup = null;
   let activeHandle = null;
   let dragOffset = null;
+  let showDrawings = true; // État de visibilité global
   // ================== x ==================
 
   let wsReady = false;
@@ -2036,6 +2038,9 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.width = chartInner.clientWidth;
     canvas.height = chartInner.clientHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Si on a masqué les dessins, on s'arrête ici
+    if (!showDrawings) return;
 
     const timeScale = chart.timeScale();
 
@@ -4515,12 +4520,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* --- Événements Souris --- */
   canvas.addEventListener('mousedown', (e) => {
+
+    if (!showDrawings) return; // Désactive les interactions si masqué
+
     const x = e.offsetX;
     const y = e.offsetY;
     const ts = chart.timeScale();
     const time = ts.coordinateToTime(x);
     const price = currentSeries.coordinateToPrice(y);
-
+  
     if (!time || !price) return;
 
     let hit = false;
@@ -4727,7 +4735,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let objectFound = null;
     let isSetupFound = false;
 
-    const ts = chart.timeScale();  
+    const ts = chart.timeScale();
 
     // 1. VÉRIFIER LE SETUP TP/SL D'ABORD (Priorité visuelle)
     if (setup) {
@@ -4818,7 +4826,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // On force le rendu dès que le graphique a fini de bouger
   chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
     render();
-  });  
+  });
+
+  // Action de Visibilité
+  visibilityItem.onclick = () => {
+    showDrawings = !showDrawings; // Alterne entre true et false
+    visibilityItem.innerText = showDrawings ? "Masquer tout" : "Afficher tout";
+    contextMenu.style.display = 'none';
+    render();
+  };
 
   // Initialisation
   window.addEventListener('resize', resizeCanvas);
