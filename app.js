@@ -2021,7 +2021,7 @@ document.addEventListener("DOMContentLoaded", () => {
     drawingObjects.forEach((obj) => {
       // 💡 Astuce : Forcer la conversion ou vérifier le type
       const x1 = timeScale.timeToCoordinate(obj.p1.time);  
-      const x2 = timeScale.timeToCoordinate(obj.p2.time);
+      const x2 = timeScale.timeToCoordinate(obj.p2.time);  
 
       const y1 = currentSeries.priceToCoordinate(obj.p1.price);
       const y2 = currentSeries.priceToCoordinate(obj.p2.price);
