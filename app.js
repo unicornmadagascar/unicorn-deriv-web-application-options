@@ -4479,7 +4479,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  window.addEventListener('mouseup', () => { activePoint = null; });
+  window.addEventListener('mouseup', () => { activePoint = null; });  
 
   /* --- Synchronisation avec le graphique --- */
 
