@@ -4634,7 +4634,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (objectFound) {
       selectedObject = objectFound;
-      render(); // Met l'objet en surbrillance (orange)
+      render(); // Met l'objet en surbrillance (orange)  
   
       // Positionnement du menu par rapport à la page (e.pageX/Y)
       contextMenu.style.display = 'block';
