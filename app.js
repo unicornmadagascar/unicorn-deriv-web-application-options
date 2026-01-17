@@ -2072,6 +2072,10 @@ document.addEventListener("DOMContentLoaded", () => {
       ctx.save();
       const { profile, maxTotalVolume, rowHeight } = vpData;
       const maxWidth = 300; // Agrandis à 300px
+      // La frontière est le bord droit du canvas
+      const borderLine = canvas.width; 
+      // On peut ajouter un petit décalage de 2-3px pour ne pas toucher l'échelle des prix
+      const offsetFromPriceScale = 2;
       const chartRight = canvas.width;
 
       for (const yKey in profile) {
@@ -2080,29 +2084,32 @@ document.addEventListener("DOMContentLoaded", () => {
         const totalWidth = (d.total / maxTotalVolume) * maxWidth;
         const buyWidth = (d.buy / d.total) * totalWidth;
 
+        const startX = borderLine - offsetFromPriceScale;
+
         // Histogramme Sell (Rouge) dessiné depuis la droite
         ctx.fillStyle = 'rgba(239, 83, 80, 0.35)';
-        ctx.fillRect(chartRight - totalWidth, y, totalWidth, rowHeight - 1);
+        ctx.fillRect(startX - totalWidth, y, totalWidth, rowHeight - 1);
 
         // Histogramme Buy (Vert) par-dessus
         ctx.fillStyle = 'rgba(38, 166, 154, 0.55)';
-        ctx.fillRect(chartRight - totalWidth, y, buyWidth, rowHeight - 1);
+        ctx.fillRect(startX - totalWidth, y, buyWidth, rowHeight - 1);
 
         // Point of Control (POC)
         if (d.total === maxTotalVolume) {
           const pricePOC = currentSeries.coordinateToPrice(y).toFixed(2);
           ctx.strokeStyle = '#f39c12';
           ctx.lineWidth = 2;
-          ctx.strokeRect(chartRight - totalWidth, y, totalWidth, rowHeight - 1);
+          ctx.strokeRect(startX - totalWidth, y, totalWidth, rowHeight - 1);
 
           // Badge de prix collé à l'échelle de droite
           ctx.fillStyle = '#f39c12';
-          ctx.fillRect(chartRight - 60, y - 8, 60, 16);
+          const badgeWidth = 60;
+          ctx.fillRect(startX - badgeWidth, y - 8, badgeWidth, 16);
           ctx.fillStyle = '#131722';
           ctx.font = "bold 11px Arial";
           ctx.textAlign = "center";
-          ctx.fillText(pricePOC, chartRight - 30, y + 4);
-        }
+          ctx.fillText(pricePOC, startX - (badgeWidth / 2), y + 4);
+        }  
       }
       ctx.restore();
     }
