@@ -4810,7 +4810,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (activeHandle === 'LEFT' && newTime) setup.startTime = newTime;
         if (activeHandle === 'RIGHT' && newTime) setup.endTime = newTime;
       }
-      render();
+      render();  
     }
   }); 
 
