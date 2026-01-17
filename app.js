@@ -2068,7 +2068,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- A. VOLUME PROFILE (Arrière-plan) ---
     // Sécurité : Uniquement si on n'est pas en mode "ticks"
-    const vpData = (chartType === "candlestick") ? calculateVolumeProfile() : null;
+    const vpData = (currentChartType === "candlestick") ? calculateVolumeProfile() : null;    
 
     if (vpData) {  
       ctx.save();
