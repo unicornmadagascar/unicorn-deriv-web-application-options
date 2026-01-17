@@ -2064,7 +2064,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Si les dessins sont masqués (touche 'H'), on arrête ici
     if (!showDrawings) return;
 
-    const timeScale = chart.timeScale(); 
+    const timeScale = chart.timeScale();   
 
     // --- A. VOLUME PROFILE (Arrière-plan) ---
     // Sécurité : Uniquement si on n'est pas en mode "ticks"
