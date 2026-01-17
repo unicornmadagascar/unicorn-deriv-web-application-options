@@ -2086,7 +2086,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const startX = canvas.width - offsetFromPriceScale;
 
         for (const yKey in profile) {
-          const d = profile[yKey];
+          const d = profile[yKey];  
           const y = parseFloat(yKey);
           const isInValueArea = d.price <= vah && d.price >= val;
 
