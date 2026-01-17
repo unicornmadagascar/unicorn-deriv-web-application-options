@@ -2262,8 +2262,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof cache === 'undefined' || cache.length === 0) return null;
 
     const lookback = vpLookback || 300;
-    const startIndex = Math.max(0, cache.length - lookback);
-    const data = cache.slice(startIndex);
+    const startIndex = Math.max(0, cache.length - lookback); 
+    const data = cache.slice(startIndex);  
 
     // 1. Calculer le POC Historique (Prix avec le plus de volume/occurrences)
     const vp = calculateVolumeProfile();
