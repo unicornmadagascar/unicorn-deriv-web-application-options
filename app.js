@@ -2120,7 +2120,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- B. FIBONACCI DYNAMIQUE (Pleine Largeur) ---
     const fiboParams = calculateDynamicFiboPOC();
 
-    if (fiboParams) {
+    if (fiboParams) {  
       ctx.save();
       const { fib0, fib100 } = fiboParams;
 
