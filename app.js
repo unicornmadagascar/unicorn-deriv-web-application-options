@@ -4847,7 +4847,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   });
-
+  
   window.addEventListener('keydown', (e) => {
     // On vérifie que l'utilisateur n'est pas en train d'écrire dans l'input du Lookback
     if (e.target.tagName === 'INPUT') return;
