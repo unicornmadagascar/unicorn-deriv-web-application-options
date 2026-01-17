@@ -698,9 +698,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // --- CAS : CONTRAT ACTIF ---
         const entryPrice = parseFloat(c.entry_tick_display_value);
-        const profit = parseFloat(c.profit || 0);   
+        const profit = parseFloat(c.profit || 0);
         if (isNaN(entryPrice)) return;
-  
+
         // Style dynamique selon le profit
         const isWin = profit >= 0;
         const color = isWin ? "#00ff80" : "#ff4d4d";
@@ -711,7 +711,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!priceLines4openlines[id]) {
           // Création initiale
-          const line = currentSeries.createPriceLine({     
+          const line = currentSeries.createPriceLine({
             price: entryPrice,
             color: color,
             lineWidth: 2,
@@ -2105,7 +2105,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function render() {
     if (!ctx || !chartInner) return;
 
-    // 1. Initialisation et Nettoyage
+    // 1. Initialisation et Nettoyage (Ajustement dynamique à la taille du conteneur)
     canvas.width = chartInner.clientWidth;
     canvas.height = chartInner.clientHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -2130,10 +2130,9 @@ document.addEventListener("DOMContentLoaded", () => {
         for (const yKey in profile) {
           const d = profile[yKey];
           const y = parseFloat(yKey);
-          // Vérification de la zone de valeur
           const isInValueArea = d.price <= vah && d.price >= val;
 
-          // COULEURS POUR FOND BLANC : Plus saturées pour la lisibilité
+          // Couleurs optimisées fond blanc
           const buyColor = isInValueArea ? 'rgba(0, 150, 136, 0.55)' : 'rgba(0, 150, 136, 0.15)';
           const sellColor = isInValueArea ? 'rgba(255, 82, 82, 0.45)' : 'rgba(255, 82, 82, 0.10)';
 
@@ -2148,26 +2147,25 @@ document.addEventListener("DOMContentLoaded", () => {
           // --- POINT OF CONTROL (POC) ---
           if (d.total === maxTotalVolume) {
             const pricePOC = currentSeries.coordinateToPrice(y).toFixed(2);
-            ctx.strokeStyle = '#d35400'; // Orange foncé pour contraste sur blanc
+            ctx.strokeStyle = '#d35400';
             ctx.lineWidth = 2;
             ctx.strokeRect(startX - totalWidth, y, totalWidth, rowHeight - 0.5);
 
-            // Badge du prix POC
             ctx.fillStyle = '#d35400';
             const badgeWidth = 65;
             ctx.fillRect(startX - totalWidth - badgeWidth, y - 9, badgeWidth, 18);
 
-            ctx.fillStyle = '#FFFFFF'; // Texte blanc sur badge foncé
+            ctx.fillStyle = '#FFFFFF';
             ctx.font = "bold 11px Arial";
             ctx.textAlign = "center";
             ctx.fillText(pricePOC, startX - totalWidth - (badgeWidth / 2), y + 4);
           }
         }
 
-        // --- TRACÉ DES LIGNES VAH / VAL (Couleurs sombres pour fond blanc) ---
+        // Tracé des lignes VAH / VAL
         ctx.setLineDash([8, 4]);
         ctx.lineWidth = 1.5;
-        ctx.strokeStyle = '#2c3e50'; // Bleu nuit très sombre
+        ctx.strokeStyle = '#2c3e50';
         [vah, val].forEach((limitPrice, index) => {
           const yLimit = currentSeries.priceToCoordinate(limitPrice);
           if (yLimit !== null) {
@@ -2185,7 +2183,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.restore();
       }
 
-      // B. FIBONACCI DYNAMIQUE (Adapté au Fond Blanc)
+      // B. FIBONACCI DYNAMIQUE
       const fiboParams = calculateDynamicFiboPOC();
       if (fiboParams) {
         ctx.save();
@@ -2200,8 +2198,6 @@ document.addEventListener("DOMContentLoaded", () => {
           levels.forEach(lvl => {
             const yLvl = y0 + (rangeY * lvl);
             const isMain = [0, 0.5, 0.618, 1].includes(lvl);
-
-            // Bleu roi pour niveaux clés, gris pour secondaires
             ctx.strokeStyle = isMain ? 'rgba(0, 86, 179, 0.8)' : 'rgba(0, 0, 0, 0.15)';
             ctx.lineWidth = isMain ? 2 : 1;
             ctx.setLineDash(isMain ? [] : [5, 5]);
@@ -2211,7 +2207,6 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.lineTo(canvas.width, yLvl);
             ctx.stroke();
 
-            // Labels Fibonacci (Texte sombre)
             ctx.setLineDash([]);
             const priceLabel = currentSeries.coordinateToPrice(yLvl).toFixed(3);
             ctx.fillStyle = isMain ? "#0056b3" : "#555555";
@@ -2224,7 +2219,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // --- C. OBJETS CLASSIQUES (Optimisation couleurs sélection) ---
+    // --- C. OBJETS CLASSIQUES ---
     drawingObjects.forEach((obj) => {
       ctx.save();
       const x1 = timeScale.timeToCoordinate(obj.p1.time);
@@ -2244,19 +2239,15 @@ document.addEventListener("DOMContentLoaded", () => {
           ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
           ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
         }
-
-        if (isSelected) {
-          ctx.fillStyle = '#2c3e50'; // Cercles de sélection sombres
-          [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(p => {
-            ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-            ctx.fill(); ctx.stroke();
-          });
-        }
       }
       ctx.restore();
     });
 
-    // --- D. SETUP TP/SL (Optimisé Fond Blanc) ---
+    // --- D. CALENDRIER ÉCONOMIQUE (Nouveau - Appel de la fonction bulles) ---
+    // On dessine ceci après les objets classiques pour qu'ils soient toujours visibles
+    drawCalendarLabels(ctx);
+
+    // --- E. SETUP TP/SL ---
     if (setup) {
       ctx.save();
       const x1 = timeScale.timeToCoordinate(setup.startTime);
@@ -2273,7 +2264,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.fillRect(x1, Math.min(yEntry, ySL), w, Math.abs(ySL - yEntry));
 
         const rr = (Math.abs(setup.tpPrice - setup.entryPrice) / Math.max(0.0001, Math.abs(setup.entryPrice - setup.slPrice))).toFixed(2);
-        ctx.fillStyle = "#2c3e50"; // Texte R/R sombre
+        ctx.fillStyle = "#2c3e50";
         ctx.font = "bold 12px Arial";
         ctx.fillText(`Ratio R/R: ${rr}`, x1 + 5, Math.min(yTP, yEntry) - 10);
       }
@@ -4112,6 +4103,203 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function updateChartMarkers() {
+    if (!currentSeries || !allEvents) return;
+
+    // 1. Filtrer les événements cochés par l'utilisateur dans le tableau
+    const selectedEvents = allEvents.filter(ev => ev.checked);
+
+    // 2. Créer des marqueurs invisibles (ou discrets) pour Lightweight Charts
+    // Cela force le graphique à créer l'espace nécessaire sur l'échelle de temps
+    const markers = selectedEvents.map(ev => {
+      const impactLabel = ev.impact >= 4 ? "HIGH" : (ev.impact === 3 ? "MED" : "LOW");
+      return {
+        time: ev.release_date,
+        position: 'aboveBar',
+        color: 'transparent', // On le rend invisible car on dessine notre propre bulle dans render()
+        shape: 'circle',
+        text: '',
+      };
+    });
+
+    // Appliquer les marqueurs (ceci déclenche un rafraîchissement interne du graphique)
+    currentSeries.setMarkers(markers);
+
+    // 3. Forcer le redessin global de notre Canvas personnalisé (Volume Profile + Bulles Calendar)
+    if (typeof render === 'function') {
+      render();
+    }
+  }
+
+  /**
+ * Dessine les étiquettes du calendrier économique sur le Canvas.
+ * À appeler à l'intérieur de votre fonction render().
+ */
+  function drawCalendarLabels(ctx) {
+    // Vérification des dépendances
+    if (!allEvents || allEvents.length === 0 || !currentSeries || !cache || cache.length === 0) return;
+
+    const timeScale = chart.timeScale();
+    const activeEvents = allEvents.filter(ev => ev.checked);
+
+    activeEvents.forEach(ev => {
+      // 1. Position horizontale
+      const x = timeScale.timeToCoordinate(ev.release_date);
+
+      // 2. Recherche de la bougie correspondante
+      // Note: On s'assure que le timestamp correspond exactement
+      const bar = cache.find(b => b.time === ev.release_date);
+
+      if (x !== null && bar) {
+        const yHigh = currentSeries.priceToCoordinate(bar.high);
+
+        // 3. Couleurs d'impact (Harmonisées avec votre tableau)
+        const impactValue = Number(ev.impact || 0);
+        let color = "#2563eb"; // LOW
+        if (impactValue >= 4) color = "#ef4444";      // HIGH
+        else if (impactValue === 3) color = "#f59e0b"; // MED
+
+        const impactLabel = impactValue >= 4 ? "HIGH" : (impactValue === 3 ? "MED" : "LOW");
+        const text = `${impactLabel}: ${ev.event_name || ev.indicator || ''}`;
+
+        ctx.save();
+
+        // --- CALCULS DE DIMENSIONS ---
+        ctx.font = "bold 11px Arial";
+        const textWidth = ctx.measureText(text).width;
+        const rectW = textWidth + 20;
+        const rectH = 22;
+        const rectX = x - rectW / 2;
+
+        // Sécurité : Si yHigh est trop haut, on descend un peu le label
+        let rectY = yHigh - 67;
+        if (rectY < 5) rectY = yHigh + 20; // On le place en dessous si pas de place au dessus
+
+        // 4. LIGNE DE RAPPEL (Dashed Line)
+        ctx.beginPath();
+        ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.moveTo(x, yHigh - 5);
+        ctx.lineTo(x, rectY + rectH); // Relie la bougie au bas de la pilule
+        ctx.stroke();
+
+        // 5. DESSIN DE LA PILULE (Rectangle arrondi)
+        ctx.shadowColor = "rgba(0,0,0,0.15)";
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetY = 2;
+        ctx.fillStyle = color;
+
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(rectX, rectY, rectW, rectH, 11);
+        } else {
+          // Fallback pour anciens navigateurs
+          const r = 11;
+          ctx.moveTo(rectX + r, rectY);
+          ctx.arcTo(rectX + rectW, rectY, rectX + rectW, rectY + rectH, r);
+          ctx.arcTo(rectX + rectW, rectY + rectH, rectX, rectY + rectH, r);
+          ctx.arcTo(rectX, rectY + rectH, rectX, rectY, r);
+          ctx.arcTo(rectX, rectY, rectX + rectW, rectY, r);
+        }
+        ctx.fill();
+
+        // 6. TEXTE
+        ctx.shadowBlur = 0; // On enlève l'ombre pour le texte
+        ctx.shadowOffsetY = 0;
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(text, x, rectY + (rectH / 2) + 1);
+
+        // 7. POINT D'ANCRAGE SUR LA MÈCHE
+        ctx.beginPath();
+        ctx.setLineDash([]); // On enlève les pointillés pour le cercle
+        ctx.arc(x, yHigh - 5, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
+        ctx.fill();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.restore();
+      }
+    });
+  }
+
+  function setupChartInteractions(chart) {
+    const tooltip = document.getElementById('chart-tooltip');
+    if (!tooltip) return;
+
+    chart.subscribeCrosshairMove(param => {
+      // 1. Nettoyage systématique des surbrillances du tableau
+      document.querySelectorAll('.highlight-row').forEach(row => row.classList.remove('highlight-row'));
+
+      // 2. Vérification de la présence du curseur
+      if (!param.time || !param.point || param.point.x < 0) {
+        tooltip.style.display = 'none';
+        return;
+      }
+
+      // 3. Recherche de l'événement (vérification stricte du timestamp)
+      // Note: On utilise displayedEvents pour ne survoler que ce qui est filtré
+      const event = displayedEvents.find(e => {
+        const eventTime = Number(e.release_date || e.time);
+        return eventTime === param.time;
+      });
+
+      // 4. Affichage et positionnement
+      if (event) {
+        tooltip.style.display = 'block';
+
+        // Contenu stylisé (Actual, Forecast, Previous)
+        tooltip.innerHTML = `
+                <div style="font-weight: bold; color: #1e222d; border-bottom: 1px solid #f1f3f6; padding-bottom: 6px; margin-bottom: 6px; font-size: 12px;">
+                    ${event.event_name || 'Economic Event'}
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; justify-content: space-between; gap: 20px;">
+                        <span style="color: #64748b;">Actual:</span>
+                        <span style="font-weight: 700; color: #00b060;">${event.actual?.display_value || '-'}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #64748b;">Forecast:</span>
+                        <span style="font-weight: 600; color: #1e222d;">${event.forecast?.display_value || '-'}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-top: 1px dashed #e2e8f0; padding-top: 4px;">
+                        <span style="color: #94a3b8;">Previous:</span>
+                        <span style="color: #94a3b8;">${event.previous?.display_value || '-'}</span>
+                    </div>
+                </div>
+            `;
+
+        // Positionnement intelligent pour ne pas sortir de l'écran
+        const rect = chartInner.getBoundingClientRect();
+        const tooltipWidth = 180;
+        const tooltipHeight = 100;
+
+        let left = param.point.x + 15;
+        let top = param.point.y + 15;
+
+        if (left + tooltipWidth > rect.width) left = param.point.x - tooltipWidth - 15;
+        if (top + tooltipHeight > rect.height) top = param.point.y - tooltipHeight - 15;
+
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
+
+        // 5. Interaction avec le tableau
+        const rowId = `row_${event.release_date || event.time}`;
+        const row = document.getElementById(rowId);
+        if (row) {
+          row.classList.add('highlight-row');
+          // Scroll uniquement si la ligne n'est pas déjà visible
+          row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      } else {
+        tooltip.style.display = 'none';
+      }
+    });
+  }
 
   /* --- Logique dynamique pour l'affichage Crypto --- */
   const providerSelect = document.getElementById('providerSelect');
@@ -4788,9 +4976,35 @@ document.addEventListener("DOMContentLoaded", () => {
   overlaygemini.addEventListener("click", (e) => {
     if (e.target === overlaygemini) closePopup();
   });
+
+  // CALENDAR CALLING EVENT 
+
+  // À placer dans votre bloc d'initialisation
+  document.getElementById("calendarBody").addEventListener("change", (e) => {
+    if (e.target.type === 'checkbox') {
+      // On récupère le timestamp depuis l'ID du TR parent
+      const row = e.target.closest('tr');
+      const timestamp = row ? row.getAttribute('data-timestamp') : null;
+
+      if (timestamp) {
+        // 1. Mise à jour de l'état dans votre liste de données
+        // On cherche dans allEvents l'événement qui correspond au timestamp
+        const eventObj = allEvents.find(ev => ev.release_date.toString() === timestamp);
+        if (eventObj) {
+          eventObj.checked = e.target.checked;
+        }
+
+        // 2. Lancement de la mise à jour visuelle du graphique
+        updateChartMarkers();
+
+        // 3. Gestion du style visuel de la ligne (votre code)
+        row.classList.toggle('selected-row-active', e.target.checked);
+      }
+    }
+  });
+
   /* ===================== TRENDLINE =========================== */
 
-  /* --- Événements Souris --- */
   canvas.addEventListener('mousedown', (e) => {
     if (!showDrawings) return;
 
@@ -5121,7 +5335,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       contextMenu.style.display = 'none';
       selectedObject = null;
-      render();  
+      render();
     }
   });
 
@@ -5196,10 +5410,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Notification visuelle rapide dans la console
       console.log("Analyse Mode:", showFiboAnalysis ? "ON" : "OFF");
-    } 
+    }
 
     // Optionnel : Touche 'Escape' pour tout fermer
-    if (e.key === 'Escape') {  
+    if (e.key === 'Escape') {
       if (showFiboAnalysis) {
         enableFibonacci(document.querySelector('.btn-drawing[onclick*="enableFibonacci"]'));
       }
