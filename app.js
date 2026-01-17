@@ -2076,7 +2076,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const borderLine = canvas.width; 
       // On peut ajouter un petit décalage de 2-3px pour ne pas toucher l'échelle des prix
       const offsetFromPriceScale = 20;  
-      const chartRight = canvas.width;
+      const chartRight = canvas.width;  
 
       for (const yKey in profile) {
         const d = profile[yKey];
