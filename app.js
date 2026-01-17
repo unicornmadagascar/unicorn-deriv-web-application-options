@@ -2082,7 +2082,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (vpData) {
         ctx.save();
         const { profile, maxTotalVolume, rowHeight, vah, val } = vpData;
-        const maxWidth = 500;
+        const maxWidth = 300;
         const offsetFromPriceScale = 70;
         const startX = canvas.width - offsetFromPriceScale;
 
@@ -2090,7 +2090,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const d = profile[yKey];
           const y = parseFloat(yKey);
           // Vérification de la zone de valeur
-          const isInValueArea = d.price <= vah && d.price >= val;
+          const isInValueArea = d.price <= vah && d.price >= val;  
 
           // COULEURS POUR FOND BLANC : Plus saturées pour la lisibilité
           const buyColor = isInValueArea ? 'rgba(0, 150, 136, 0.55)' : 'rgba(0, 150, 136, 0.15)';
