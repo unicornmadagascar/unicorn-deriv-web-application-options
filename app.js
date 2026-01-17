@@ -2105,10 +2105,10 @@ document.addEventListener("DOMContentLoaded", () => {
           ctx.fillStyle = '#f39c12';
           const badgeWidth = 60;
           ctx.fillRect(startX - badgeWidth, y - 8, badgeWidth, 16);
-          ctx.fillStyle = '#131722';  
+          ctx.fillStyle = '#131722';    
           ctx.font = "bold 11px Arial";
           ctx.textAlign = "center";  
-          ctx.fillText(pricePOC, startX - (badgeWidth / 2), y + 4);
+          ctx.fillText(pricePOC, startX - (badgeWidth / 2), y + 4);      
         }  
       }
       ctx.restore();
