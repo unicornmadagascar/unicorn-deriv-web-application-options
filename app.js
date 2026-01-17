@@ -2068,15 +2068,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- A. VOLUME PROFILE (Agrandis et collé à droite) ---
     const vpData = (currentChartType === "candlestick") ? calculateVolumeProfile() : null;
 
-    if (vpData) { 
+    if (vpData) {
       ctx.save();
       const { profile, maxTotalVolume, rowHeight } = vpData;
       const maxWidth = 300; // Agrandis à 300px
       // La frontière est le bord droit du canvas
-      const borderLine = canvas.width; 
+      const borderLine = canvas.width;
       // On peut ajouter un petit décalage de 2-3px pour ne pas toucher l'échelle des prix
-      const offsetFromPriceScale = 20;  
-      const chartRight = canvas.width;  
+      const offsetFromPriceScale = 20;
+      const chartRight = canvas.width;
 
       for (const yKey in profile) {
         const d = profile[yKey];
@@ -2105,53 +2105,58 @@ document.addEventListener("DOMContentLoaded", () => {
           ctx.fillStyle = '#f39c12';
           const badgeWidth = 60;
           ctx.fillRect(startX - badgeWidth, y - 8, badgeWidth, 16);
-          ctx.fillStyle = '#131722';    
+          ctx.fillStyle = '#131722';
           ctx.font = "bold 11px Arial";
-          ctx.textAlign = "center";  
-          ctx.fillText(pricePOC, startX - (badgeWidth / 2), y + 4);      
-        }  
+          ctx.textAlign = "center";
+          ctx.fillText(pricePOC, startX - (badgeWidth / 2), y + 4);
+        }
       }
       ctx.restore();
     }
 
     // --- B. FIBONACCI (Affichage de TOUS les niveaux) ---
+    // --- B. FIBONACCI (Version Finale : 7 Niveaux, Pleine Largeur) ---
     if (fiboObj) {
       ctx.save();
-      const xStart = timeScale.timeToCoordinate(fiboObj.startTime);
+
+      // Conversion des prix en coordonnées Y
       const yPoc = currentSeries.priceToCoordinate(fiboObj.pocPrice);
       const yExt = currentSeries.priceToCoordinate(fiboObj.extentionPrice);
 
-      if (xStart !== null && yPoc !== null && yExt !== null) {
+      if (yPoc !== null && yExt !== null) {
         const diff = yExt - yPoc;
 
-        if (isFiboLocked) {
-          ctx.globalAlpha = 0.6;
-          ctx.fillStyle = "#e74c3c";
-          ctx.font = "bold 12px Arial";
-          ctx.fillText("🔒 Verrouillé (L)", xStart + 5, yPoc - 20);
-        }
+        // Définition exhaustive des 7 niveaux demandés
+        const levelsToDraw = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
 
-        // On boucle sur tous les niveaux sans exception
-        fiboObj.levels.forEach(level => {
+        levelsToDraw.forEach(level => {
           const yLevel = yPoc + (diff * level);
+
+          // Style : Niveaux clés (0, 0.5, 0.618, 1) en plein, les autres en pointillés
           const isMain = [0, 0.5, 0.618, 1].includes(level);
 
-          ctx.strokeStyle = isMain ? 'rgba(243, 156, 18, 0.9)' : 'rgba(209, 212, 220, 0.5)';
+          // 1. DESSIN DE LA LIGNE HORIZONTALE
+          ctx.strokeStyle = isMain ? 'rgba(243, 156, 18, 0.8)' : 'rgba(209, 212, 220, 0.4)';
           ctx.lineWidth = isMain ? 1.5 : 1;
-          ctx.setLineDash(isMain ? [] : [4, 4]);
+          ctx.setLineDash(isMain ? [] : [5, 5]);
 
           ctx.beginPath();
-          ctx.moveTo(xStart, yLevel);
-          ctx.lineTo(canvas.width, yLevel); // S'étend vers la droite
+          ctx.moveTo(0, yLevel);           // Point de départ : extrême gauche
+          ctx.lineTo(canvas.width, yLevel); // Point d'arrivée : extrême droite
           ctx.stroke();
 
-          // Labels
-          ctx.setLineDash([]);
-          ctx.fillStyle = isMain ? "#f39c12" : "rgba(255, 255, 255, 0.8)";
+          // 2. DESSIN DES ÉTIQUETTES (Texte)
+          ctx.setLineDash([]); // Toujours réinitialiser pour le texte
+
+          // Calcul du prix correspondant à ce niveau précis sur l'axe Y
+          const priceAtLevel = currentSeries.coordinateToPrice(yLevel).toFixed(3);
+          const labelText = `${(level * 100).toFixed(1)}% (${priceAtLevel})`;
+
+          ctx.fillStyle = isMain ? "rgba(243, 156, 18, 1)" : "rgba(255, 255, 255, 0.7)";
           ctx.font = isMain ? "bold 11px Arial" : "10px Arial";
-          const priceAtLevel = currentSeries.coordinateToPrice(yLevel).toFixed(2);
-          // Texte décalé pour ne pas être caché par l'histogramme large
-          ctx.fillText(`${(level * 100).toFixed(1)}% (${priceAtLevel})`, xStart + 5, yLevel - 5);
+
+          // Positionnement à gauche (x=8) pour ne pas chevaucher l'histogramme de volume à droite
+          ctx.fillText(labelText, 8, yLevel - 6);
         });
       }
       ctx.restore();
@@ -2204,13 +2209,13 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.fillRect(x1, Math.min(yTP, yEntry), w, Math.abs(yEntry - yTP));
         ctx.fillStyle = 'rgba(239, 83, 80, 0.3)';
         ctx.fillRect(x1, Math.min(yEntry, ySL), w, Math.abs(ySL - yEntry));
-  
+
         const rr = (Math.abs(setup.tpPrice - setup.entryPrice) / Math.abs(setup.entryPrice - setup.slPrice || 1)).toFixed(2);
         ctx.fillStyle = "white";
         ctx.font = "bold 12px Arial";
         ctx.fillText(`Ratio R/R: ${rr}`, x1 + 5, Math.min(yTP, yEntry) - 10);
       }
-      ctx.restore();  
+      ctx.restore();
     }
   }
 
