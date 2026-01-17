@@ -4788,7 +4788,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Si rien n'est en train d'être déplacé, on sort
     if (!activePoint && !activeHandle) return;
 
-    const rect = canvas.getBoundingClientRect();
+    const rect = canvas.getBoundingClientRect();  
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
