@@ -2074,7 +2074,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (vpData) {
       ctx.save();
-      const { profile, maxTotalVolume, rowHeight } = vpData;
+      const { profile, maxTotalVolume, rowHeight } = vpData;  
 
       // Configuration demandée : Grand (500px) et décalé de l'échelle
       const maxWidth = 500;
