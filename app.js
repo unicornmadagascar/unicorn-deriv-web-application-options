@@ -569,6 +569,9 @@ document.addEventListener("DOMContentLoaded", () => {
           // Mise à jour et rendu des indicateurs sur la dernière barre
           updateIndicatorData(lastBar.time, lastBar);
           renderIndicators();
+
+          // --- AJOUT : Force le rafraîchissement des dessins et du Volume Profile ---
+          render();
         }
       }
 
@@ -576,6 +579,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (msg.msg_type === "history" || msg.msg_type === "tick") {
         handleTickData(msg);
         // Note: handleTickData doit appeler renderIndicators() en interne
+        render();
       }
 
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
@@ -2048,23 +2052,26 @@ document.addEventListener("DOMContentLoaded", () => {
  * Le moteur de rendu rectifié
  * Dessine : Trendlines, Rectangles et Setup TP/SL
  */
-  // --- 2. LE MOTEUR DE RENDU (RENDER) RECTIFIÉ ---
+  // --- 2. LE MOTEUR DE RENDU (RENDER) ---
   function render() {
     if (!ctx || !chartInner) return;
 
-    // 1. Initialisation du Canvas
+    // 1. Initialisation et Nettoyage
     canvas.width = chartInner.clientWidth;
     canvas.height = chartInner.clientHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Si les dessins sont masqués (touche 'H'), on arrête ici
     if (!showDrawings) return;
 
     const timeScale = chart.timeScale();
 
     // --- A. VOLUME PROFILE (Arrière-plan) ---
-    const vpData = calculateVolumeProfile();
-    if (vpData) {
-      ctx.save(); // Isoler le style du VP
+    // Sécurité : Uniquement si on n'est pas en mode "ticks"
+    const vpData = (chartType === "candlestick") ? calculateVolumeProfile() : null;
+
+    if (vpData) {  
+      ctx.save();
       const { profile, maxTotalVolume, rowHeight } = vpData;
       const maxWidth = 180;
       const chartRight = canvas.width;
@@ -2075,20 +2082,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const totalWidth = (d.total / maxTotalVolume) * maxWidth;
         const buyWidth = (d.buy / d.total) * totalWidth;
 
-        // Dessin Histogramme
-        ctx.fillStyle = 'rgba(239, 83, 80, 0.3)';
+        // Dessin Histogramme (Fond Rouge, Avant-plan Vert pour les achats)
+        ctx.fillStyle = 'rgba(239, 83, 80, 0.3)'; // Vente
         ctx.fillRect(chartRight - totalWidth, y, totalWidth, rowHeight - 1);
-        ctx.fillStyle = 'rgba(38, 166, 154, 0.5)';
+        ctx.fillStyle = 'rgba(38, 166, 154, 0.5)'; // Achat
         ctx.fillRect(chartRight - totalWidth, y, buyWidth, rowHeight - 1);
 
-        // POC
+        // Mise en valeur du POC (Point of Control)
         if (d.total === maxTotalVolume) {
           const pricePOC = currentSeries.coordinateToPrice(y).toFixed(2);
           ctx.strokeStyle = '#f39c12';
           ctx.lineWidth = 1.5;
           ctx.strokeRect(chartRight - totalWidth, y, totalWidth, rowHeight - 1);
 
-          // Badge de prix
+          // Badge de prix à l'extrême droite
           ctx.fillStyle = '#f39c12';
           ctx.fillRect(chartRight - 55, y - 7, 55, 15);
           ctx.fillStyle = '#131722';
@@ -2097,7 +2104,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ctx.fillText(pricePOC, chartRight - 27, y + 4);
         }
       }
-      ctx.restore(); // Réinitialise textAlign, fillStyle, etc.
+      ctx.restore();
     }
 
     // --- B. FIBONACCI (Basé sur le POC) ---
@@ -2110,8 +2117,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (xStart !== null && yPoc !== null && yExt !== null) {
         const diff = yExt - yPoc;
 
+        // Indicateur de verrouillage
         if (isFiboLocked) {
-          ctx.globalAlpha = 0.5;
+          ctx.globalAlpha = 0.6;
           ctx.fillStyle = "#e74c3c";
           ctx.font = "bold 12px Arial";
           ctx.fillText("🔒 Verrouillé (L)", xStart + 5, yPoc - 20);
@@ -2130,6 +2138,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ctx.lineTo(canvas.width, yLevel);
           ctx.stroke();
 
+          // Labels des niveaux
           ctx.setLineDash([]);
           ctx.fillStyle = isMain ? "#f39c12" : "rgba(255, 255, 255, 0.7)";
           ctx.font = isMain ? "bold 11px Arial" : "10px Arial";
@@ -2140,7 +2149,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ctx.restore();
     }
 
-    // --- C. OBJETS CLASSIQUES (Trendlines / Rects) ---
+    // --- C. OBJETS CLASSIQUES (Trendlines / Rectangles) ---
     drawingObjects.forEach((obj) => {
       ctx.save();
       const x1 = timeScale.timeToCoordinate(obj.p1.time);
@@ -2161,6 +2170,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
         }
 
+        // Poignées de sélection
         if (isSelected) {
           ctx.fillStyle = 'white';
           [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(p => {
@@ -2183,44 +2193,63 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (x1 !== null && x2 !== null && yEntry !== null && yTP !== null && ySL !== null) {
         const w = x2 - x1;
-        // Zone TP
+        // Zone Profit (Vert)
         ctx.fillStyle = 'rgba(38, 166, 154, 0.3)';
         ctx.fillRect(x1, Math.min(yTP, yEntry), w, Math.abs(yEntry - yTP));
-        // Zone SL
+        // Zone Perte (Rouge)
         ctx.fillStyle = 'rgba(239, 83, 80, 0.3)';
         ctx.fillRect(x1, Math.min(yEntry, ySL), w, Math.abs(ySL - yEntry));
 
-        // Texte Ratio R/R
+        // R/R Ratio
         const rr = (Math.abs(setup.tpPrice - setup.entryPrice) / Math.abs(setup.entryPrice - setup.slPrice || 1)).toFixed(2);
         ctx.fillStyle = "white";
         ctx.font = "bold 12px Arial";
-        ctx.fillText(`R/R: ${rr}`, x1 + 5, Math.min(yTP, yEntry) - 10);
+        ctx.fillText(`Ratio R/R: ${rr}`, x1 + 5, Math.min(yTP, yEntry) - 10);
       }
       ctx.restore();
     }
   }
 
   // --- CALCUL DU VOLUME PROFILE (Bicolore + POC) ---
+  /**
+ * Calcule le profil de volume basé sur les données du cache.
+ * @returns {Object|null} Les données du profil ou null si indisponible.
+ */
   function calculateVolumeProfile() {
-    const lookback = vpLookback;
-    const startIndex = Math.max(0, data.length - lookback);
-    const relevantData = data.slice(startIndex);
+    // 1. Sécurités : Mode Candlestick uniquement et vérification du cache
+    if (chartType !== "candlestick" || typeof cache === 'undefined' || cache.length === 0) {
+      return null;
+    }
+
+    // 2. Configuration
+    const lookback = vpLookback || 300; // Nombre de bougies à analyser
+    const startIndex = Math.max(0, cache.length - lookback);
+    const relevantData = cache.slice(startIndex);
 
     if (relevantData.length === 0) return null;
 
+    // rowHeight définit la "précision" verticale (3 pixels par bloc de prix)
     const rowHeight = 3;
     const profile = {};
     let maxTotalVolume = 0;
 
+    // 3. Agrégation des volumes par niveau de prix
     relevantData.forEach(bar => {
+      // Conversion du prix de clôture en coordonnée Y pour le groupement
       const yRaw = currentSeries.priceToCoordinate(bar.close);
       if (yRaw === null) return;
 
+      // Arrondi pour grouper les prix dans des "bins" (colonnes horizontales)
       const yCoord = Math.round(yRaw / rowHeight) * rowHeight;
+
+      // Utilisation du volume réel ou 1 par défaut si inexistant
       const vol = bar.volume || 1;
 
-      if (!profile[yCoord]) profile[yCoord] = { buy: 0, sell: 0, total: 0 };
+      if (!profile[yCoord]) {
+        profile[yCoord] = { buy: 0, sell: 0, total: 0 };
+      }
 
+      // Séparation Acheteurs (Vert) / Vendeurs (Rouge)
       if (bar.close >= bar.open) {
         profile[yCoord].buy += vol;
       } else {
@@ -2228,10 +2257,18 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       profile[yCoord].total += vol;
-      if (profile[yCoord].total > maxTotalVolume) maxTotalVolume = profile[yCoord].total;
+
+      // Mise à jour du maximum pour le calcul de la largeur CSS plus tard
+      if (profile[yCoord].total > maxTotalVolume) {
+        maxTotalVolume = profile[yCoord].total;
+      }
     });
 
-    return { profile, maxTotalVolume, rowHeight };
+    return {
+      profile,
+      maxTotalVolume,
+      rowHeight
+    };
   }
 
   // --- LOGIQUE DE GÉNÉRATION INITIALE ---
@@ -4810,9 +4847,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (activeHandle === 'LEFT' && newTime) setup.startTime = newTime;
         if (activeHandle === 'RIGHT' && newTime) setup.endTime = newTime;
       }
-      render();  
+      render();
     }
-  }); 
+  });
 
   window.addEventListener('mouseup', () => {
     activePoint = null;
