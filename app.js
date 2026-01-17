@@ -697,7 +697,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // --- CAS : CONTRAT ACTIF ---
-        const entryPrice = parseFloat(c.entry_tick_display_value || c.buy_price);
+        const entryPrice = parseFloat(c.entry_tick_display_value);
         const profit = parseFloat(c.profit || 0);
         if (isNaN(entryPrice)) return;
 
