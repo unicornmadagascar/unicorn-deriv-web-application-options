@@ -108,6 +108,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let fiboObj = null;      // Outil Fibonacci
   let vpLookback = 300;    // Période ajustable pour le Volume Profile  
   let isFiboLocked = false; // État du verrouillage   
+  let lastAlertPrice = 0;
+  let lastAlertTime = 0;
+  const alertThresholdPips = 2; // Sensibilité de détection (en pips/points)
+  let showVolumeProfile = true; // État spécifique pour le VP
   // ================== x ==================  
 
   let wsReady = false;
@@ -2066,7 +2070,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const timeScale = chart.timeScale();
 
     // --- A. VOLUME PROFILE (Ancré à droite, s'étend vers la gauche) ---
-    const vpData = (currentChartType === "candlestick") ? calculateVolumeProfile() : null;
+    const vpData = (currentChartType === "candlestick" && showVolumeProfile) ? calculateVolumeProfile() : null;
 
     if (vpData) {
       ctx.save();
@@ -2096,7 +2100,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // Bordure du POC
           ctx.strokeStyle = '#f39c12';
-          ctx.lineWidth = 2; 
+          ctx.lineWidth = 2;
           ctx.strokeRect(startX - totalWidth, y, totalWidth, rowHeight - 1);
 
           // Badge de prix du POC
@@ -4710,25 +4714,30 @@ document.addEventListener("DOMContentLoaded", () => {
         generateLinkedSetup(time, price);
       }
       else if (currentMode === 'fibo') {
-        const vpData = calculateVolumeProfile();
-        let finalPocPrice = price;
+        // Calcul automatique basé sur le POC historique lors de la création
+        const fiboParams = calculateDynamicFiboPOC();
 
-        // Aimantage automatique sur le POC du Volume Profile
-        if (vpData) {
-          const pocY = Object.keys(vpData.profile).reduce((a, b) =>
-            vpData.profile[a].total > vpData.profile[b].total ? a : b
-          );
-          finalPocPrice = currentSeries.coordinateToPrice(parseFloat(pocY));
+        if (fiboParams) {
+          fiboObj = {
+            type: 'fibo',
+            startTime: time,
+            pocPrice: fiboParams.fib0,      // Ancrage POC (0%)
+            extentionPrice: fiboParams.fib100, // Extension (100%)
+            levels: [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1],
+            pocIsHigh: fiboParams.pocIsHigh
+          };
+        } else {
+          // Fallback si pas de Volume Profile disponible
+          fiboObj = {
+            type: 'fibo',
+            startTime: time,
+            pocPrice: price,
+            extentionPrice: price,
+            levels: [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1]
+          };
         }
-
-        fiboObj = {
-          type: 'fibo',
-          startTime: time,
-          pocPrice: finalPocPrice, // Base fixée sur le volume max
-          extentionPrice: price,   // Pointe vers la souris
-          levels: [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1]
-        };
-        activeHandle = 'FIBO_EXT'; // On active immédiatement le drag de l'extension
+        isFiboLocked = false; // Par défaut, le nouveau Fibo est dynamique (suit le marché)
+        activeHandle = 'FIBO_EXT';
       }
       else {
         const newObj = {
@@ -4748,15 +4757,23 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 2. GESTION DU FIBONACCI EXISTANT
+    // 2. GESTION DU FIBONACCI EXISTANT (Interaction avec les ancres)
     if (fiboObj) {
-      if (fiboObj && !isFiboLocked) { // On ajoute la condition !isFiboLocked
-        const xF = ts.timeToCoordinate(fiboObj.startTime);
-        const yP = currentSeries.priceToCoordinate(fiboObj.pocPrice);
-        const yE = currentSeries.priceToCoordinate(fiboObj.extentionPrice);
+      // On permet l'interaction seulement si déverrouillé OU pour le sélectionner
+      const xF = ts.timeToCoordinate(fiboObj.startTime);
+      const yP = currentSeries.priceToCoordinate(fiboObj.pocPrice);
+      const yE = currentSeries.priceToCoordinate(fiboObj.extentionPrice);
 
-        if (Math.hypot(x - xF, y - yP) < 15) { activeHandle = 'FIBO_POC'; hit = true; }
-        else if (Math.hypot(x - xF, y - yE) < 15) { activeHandle = 'FIBO_EXT'; hit = true; }
+      // Détection des poignées d'ancrage (15px de rayon)
+      if (Math.hypot(x - xF, y - yP) < 15) {
+        activeHandle = 'FIBO_POC';
+        isFiboLocked = true; // Si on touche manuellement, on verrouille l'automatisme
+        hit = true;
+      }
+      else if (Math.hypot(x - xF, y - yE) < 15) {
+        activeHandle = 'FIBO_EXT';
+        isFiboLocked = true;
+        hit = true;
       }
     }
 
@@ -4781,7 +4798,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 4. GESTION DES OBJETS CLASSIQUES
+    // 4. GESTION DES OBJETS CLASSIQUES (Trendlines, Rectangles)
     if (!hit) {
       for (let i = drawingObjects.length - 1; i >= 0; i--) {
         const obj = drawingObjects[i];
@@ -4801,15 +4818,46 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 5. BASCULE ET RENDU
+    // 5. MISE À JOUR DU CURSEUR ET RENDU
     if (!hit) {
       selectedObject = null;
       activeHandle = null;
-      canvas.style.pointerEvents = 'none';
+      // On ne désactive plus totalement les pointerEvents pour permettre le clic droit/menu
+      canvas.style.cursor = 'default';
     } else {
-      canvas.style.pointerEvents = 'all';
+      canvas.style.cursor = 'grabbing';
     }
+
     render();
+  });
+
+  canvas.addEventListener('dblclick', (e) => {
+    if (!showDrawings || !fiboObj) return;
+
+    const x = e.offsetX;
+    const y = e.offsetY;
+    const ts = chart.timeScale();
+
+    // Coordonnées des ancres actuelles
+    const xF = ts.timeToCoordinate(fiboObj.startTime);
+    const yP = currentSeries.priceToCoordinate(fiboObj.pocPrice);
+    const yE = currentSeries.priceToCoordinate(fiboObj.extentionPrice);
+
+    // Si on double-clique près de l'objet Fibonacci
+    if (Math.hypot(x - xF, y - yP) < 30 || Math.hypot(x - xF, y - yE) < 30) {
+      // RÉINITIALISATION : On déverrouille et on recalcule
+      isFiboLocked = false;
+
+      const fiboParams = calculateDynamicFiboPOC();
+      if (fiboParams) {
+        fiboObj.pocPrice = fiboParams.fib0;
+        fiboObj.extentionPrice = fiboParams.fib100;
+        fiboObj.pocIsHigh = fiboParams.pocIsHigh;
+      }
+
+      console.log("Fibonacci réinitialisé sur le POC dynamique.");
+      render();
+    }
   });
 
   window.addEventListener('mousemove', (e) => {
@@ -4892,6 +4940,12 @@ document.addEventListener("DOMContentLoaded", () => {
       canvas.style.pointerEvents = 'all';
     }
 
+    // Dans votre Window Event Listener 'keydown'
+    else if (e.key.toLowerCase() === 'r') {
+      isFiboLocked = false; // Déverrouille le mode auto
+      render();
+    }
+
     // Annulation totale  
     else if (e.key === 'Escape') {
       currentMode = null;
@@ -4904,6 +4958,14 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       render(); // Rafraîchir pour désélectionner visuellement l'objet
+    }
+  });
+
+  // Dans votre écouteur d'événements clavier (keydown)
+  window.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'v') {
+      showVolumeProfile = !showVolumeProfile;
+      render(); // Force le rafraîchissement
     }
   });
 
