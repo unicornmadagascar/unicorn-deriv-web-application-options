@@ -344,21 +344,50 @@ document.addEventListener("DOMContentLoaded", () => {
     priceDataZZ = [];   // Source unifiée pour ZigZag/MA
     isWsInitialized = false;
 
-    // CRÉATION DU NOUVEAU GRAPHIQUE
+    // CRÉATION DU NOUVEAU GRAPHIQUE (Optimisé Fond Blanc)
     chart = LightweightCharts.createChart(container, {
       layout: {
-        textColor: "#333",
-        background: { type: "solid", color: "#fff" },
+        background: { type: LightweightCharts.ColorType.Solid, color: '#ffffff' },
+        textColor: '#333',
+        fontSize: 12,
+        fontFamily: 'Trebuchet MS, Roboto, Ubuntu, sans-serif',
       },
       grid: {
-        vertLines: { color: "#f0f0f0" },
-        horzLines: { color: "#f0f0f0" }
+        // On utilise une couleur très claire pour que les lignes de Fibonacci restent prioritaires
+        vertLines: { color: 'rgba(197, 203, 206, 0.2)' },
+        horzLines: { color: 'rgba(197, 203, 206, 0.2)' },
+      },
+      crosshair: {
+        // Crosshair sombre pour contraste sur fond blanc
+        mode: LightweightCharts.CrosshairMode.Normal,
+        vertLine: {
+          width: 1,
+          color: '#758696',
+          style: LightweightCharts.LineStyle.Dash,
+        },
+        horzLine: {
+          width: 1,
+          color: '#758696',
+          style: LightweightCharts.LineStyle.Dash,
+        },
       },
       timeScale: {
         timeVisible: true,
         secondsVisible: true,
-        // barSpacing: 10 // Optionnel: pour aérer les 300 ticks
-      }
+        borderColor: '#D1D4DC', // Ligne de séparation propre en bas
+      },
+      rightPriceScale: {
+        borderColor: '#D1D4DC', // Ligne de séparation propre à droite
+      },
+      handleScroll: {
+        mouseWheel: true,
+        pressedMouseMove: true,
+      },
+      handleScale: {
+        axisPressedMouseMove: true,
+        mouseWheel: true,
+        pinch: true,
+      },
     });
 
     // CONFIGURATION DES SÉRIES SELON LE TYPE
@@ -371,8 +400,20 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     } else if (currentChartType === "candlestick") {
       currentSeries = chart.addCandlestickSeries({
-        upColor: "#26a69a", borderUpColor: "#26a69a", wickUpColor: "#26a69a",
-        downColor: "#ef5350", borderDownColor: "#ef5350", wickDownColor: "#ef5350",
+        // Couleurs corps (plus denses pour le fond blanc)
+        upColor: "#26a69a",
+        downColor: "#ef5350",
+
+        // Bordures : On utilise des couleurs pleines pour bien détacher la bougie
+        borderUpColor: "#1a7369",   // Vert plus sombre pour le contour
+        borderDownColor: "#b23c39", // Rouge plus sombre pour le contour
+
+        // Mèches : Identiques aux bordures pour une cohérence visuelle
+        wickUpColor: "#1a7369",
+        wickDownColor: "#b23c39",
+
+        // Optionnel : épaisseur des bordures
+        borderVisible: true,
       });
     } else { // Fallback sur "line"
       currentSeries = chart.addLineSeries({
@@ -2090,7 +2131,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const d = profile[yKey];
           const y = parseFloat(yKey);
           // Vérification de la zone de valeur
-          const isInValueArea = d.price <= vah && d.price >= val;  
+          const isInValueArea = d.price <= vah && d.price >= val;
 
           // COULEURS POUR FOND BLANC : Plus saturées pour la lisibilité
           const buyColor = isInValueArea ? 'rgba(0, 150, 136, 0.55)' : 'rgba(0, 150, 136, 0.15)';
@@ -5016,63 +5057,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Dans votre écouteur d'événements clavier (keydown)
-  window.addEventListener('keydown', (e) => {
-    if (e.key.toLowerCase() === 'v') {
-      showVolumeProfile = !showVolumeProfile;
-      render(); // Force le rafraîchissement
-    }
-  });
-
-  // 2. Désactivation automatique (Relâchement de touche)
-  window.addEventListener('keyup', (e) => {
-    if (e.key === 'Control' || e.key === 'Alt') {
-      // On ne coupe le pointerEvents QUE si on n'est pas en train 
-      // de dessiner ou de déplacer un point.
-      if (!currentMode && !activePoint) {
-        canvas.style.pointerEvents = 'none';
-      }
-    }
-  });
-
-  window.addEventListener('keydown', (e) => {
-    // On vérifie que l'utilisateur n'est pas en train d'écrire dans l'input du Lookback
-    if (e.target.tagName === 'INPUT') return;
-
-    const key = e.key.toLowerCase();
-
-    // Touche 'L' pour Verrouiller/Déverrouiller le Fibonacci
-    if (key === 'l' && fiboObj) {
-      isFiboLocked = !isFiboLocked;
-
-      // Mise à jour du texte du menu contextuel s'il existe
-      const lockItem = document.getElementById('lockFiboItem');
-      if (lockItem) lockItem.innerText = isFiboLocked ? "Déverrouiller Fibo" : "Verrouiller Fibo";
-
-      console.log(isFiboLocked ? "Fibo verrouillé" : "Fibo déverrouillé");
-      render();
-    }
-
-    // Touche 'H' pour Masquer/Afficher (Hide/Show) tous les dessins
-    if (key === 'h') {
-      showDrawings = !showDrawings;
-
-      // Mise à jour du texte du menu contextuel
-      const visItem = document.getElementById('visibilityItem');
-      if (visItem) visItem.innerText = showDrawings ? "Masquer tout" : "Afficher tout";
-
-      render();
-    }
-
-    // Touche 'Delete' ou 'Backspace' pour supprimer l'objet sélectionné
-    if ((key === 'delete' || key === 'backspace') && selectedObject) {
-      drawingObjects = drawingObjects.filter(o => o !== selectedObject);
-      selectedObject = null;
-      saveDrawings();
-      render();
-    }
-  });
-
   canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
 
@@ -5138,6 +5122,87 @@ document.addEventListener("DOMContentLoaded", () => {
       contextMenu.style.display = 'none';
       selectedObject = null;
       render();
+    }
+  });
+
+  // Dans votre écouteur d'événements clavier (keydown)
+  window.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'v') {
+      showVolumeProfile = !showVolumeProfile;
+      render(); // Force le rafraîchissement
+    }
+  });
+
+  // 2. Désactivation automatique (Relâchement de touche)
+  window.addEventListener('keyup', (e) => {
+    if (e.key === 'Control' || e.key === 'Alt') {
+      // On ne coupe le pointerEvents QUE si on n'est pas en train 
+      // de dessiner ou de déplacer un point.
+      if (!currentMode && !activePoint) {
+        canvas.style.pointerEvents = 'none';
+      }
+    }
+  });
+
+  window.addEventListener('keydown', (e) => {
+    // On vérifie que l'utilisateur n'est pas en train d'écrire dans l'input du Lookback
+    if (e.target.tagName === 'INPUT') return;
+
+    const key = e.key.toLowerCase();
+
+    // Touche 'L' pour Verrouiller/Déverrouiller le Fibonacci
+    if (key === 'l' && fiboObj) {
+      isFiboLocked = !isFiboLocked;
+
+      // Mise à jour du texte du menu contextuel s'il existe
+      const lockItem = document.getElementById('lockFiboItem');
+      if (lockItem) lockItem.innerText = isFiboLocked ? "Déverrouiller Fibo" : "Verrouiller Fibo";
+
+      console.log(isFiboLocked ? "Fibo verrouillé" : "Fibo déverrouillé");
+      render();
+    }
+
+    // Touche 'H' pour Masquer/Afficher (Hide/Show) tous les dessins
+    if (key === 'h') {
+      showDrawings = !showDrawings;
+
+      // Mise à jour du texte du menu contextuel
+      const visItem = document.getElementById('visibilityItem');
+      if (visItem) visItem.innerText = showDrawings ? "Masquer tout" : "Afficher tout";
+
+      render();
+    }
+
+    // Touche 'Delete' ou 'Backspace' pour supprimer l'objet sélectionné
+    if ((key === 'delete' || key === 'backspace') && selectedObject) {
+      drawingObjects = drawingObjects.filter(o => o !== selectedObject);
+      selectedObject = null;
+      saveDrawings();
+      render();
+    }
+  });
+
+  window.addEventListener('keydown', function (e) {
+    // Alt + F pour activer/désactiver le mode Fibonacci & Volume Profile
+    if (e.altKey && (e.key === 'f' || e.key === 'F')) {
+      e.preventDefault(); // Empêche le comportement par défaut du navigateur
+
+      const fiboBtn = document.querySelector('.btn-drawing[onclick*="enableFibonacci"]');
+
+      // On réutilise votre fonction existante pour rester cohérent
+      if (typeof enableFibonacci === 'function') {
+        enableFibonacci(fiboBtn);
+      }
+
+      // Notification visuelle rapide dans la console
+      console.log("Analyse Mode:", showFiboAnalysis ? "ON" : "OFF");
+    }
+
+    // Optionnel : Touche 'Escape' pour tout fermer
+    if (e.key === 'Escape') {
+      if (showFiboAnalysis) {
+        enableFibonacci(document.querySelector('.btn-drawing[onclick*="enableFibonacci"]'));
+      }
     }
   });
 
