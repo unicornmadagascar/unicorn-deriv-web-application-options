@@ -2083,7 +2083,7 @@ document.addEventListener("DOMContentLoaded", () => {
       for (const yKey in profile) {
         const d = profile[yKey];
         const y = parseFloat(yKey);  
-        const price = d.price;
+        const price = d.price;  
  
         // On vérifie si le prix est à l'intérieur de la Value Area
         const isInValueArea = price <= vah && price >= val;
