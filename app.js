@@ -2065,21 +2065,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!ctx || !chartInner) return;
 
     // 1. Initialisation et Nettoyage
-    canvas.width = chartInner.clientWidth;  
+    canvas.width = chartInner.clientWidth;
     canvas.height = chartInner.clientHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (!showDrawings) return;
 
-    const timeScale = chart.timeScale();  
+    const timeScale = chart.timeScale();
 
+    // --- BLOC D'ANALYSE (S'affiche avec le bouton Fibonacci) ---
     if (showFiboAnalysis) {
 
       // A. VOLUME PROFILE & VALUE AREA (70%)
       const vpData = (currentChartType === "candlestick") ? calculateVolumeProfile() : null;
 
       if (vpData) {
-        console.log("Volume Profile généré :", Object.keys(vpData.profile).length, "niveaux");
         ctx.save();
         const { profile, maxTotalVolume, rowHeight, vah, val } = vpData;
         const maxWidth = 500;
@@ -2089,57 +2089,62 @@ document.addEventListener("DOMContentLoaded", () => {
         for (const yKey in profile) {
           const d = profile[yKey];
           const y = parseFloat(yKey);
+          // Vérification de la zone de valeur
           const isInValueArea = d.price <= vah && d.price >= val;
 
-          // Couleurs contrastées pour la Value Area
-          const buyColor = isInValueArea ? 'rgba(38, 166, 154, 0.65)' : 'rgba(38, 166, 154, 0.20)';
-          const sellColor = isInValueArea ? 'rgba(239, 83, 80, 0.45)' : 'rgba(239, 83, 80, 0.15)';
+          // COULEURS POUR FOND BLANC : Plus saturées pour la lisibilité
+          const buyColor = isInValueArea ? 'rgba(0, 150, 136, 0.55)' : 'rgba(0, 150, 136, 0.15)';
+          const sellColor = isInValueArea ? 'rgba(255, 82, 82, 0.45)' : 'rgba(255, 82, 82, 0.10)';
 
           const totalWidth = (d.total / maxTotalVolume) * maxWidth;
           const buyWidth = (d.buy / d.total) * totalWidth;
 
           ctx.fillStyle = sellColor;
-          ctx.fillRect(startX - totalWidth, y, totalWidth, rowHeight - 1);
+          ctx.fillRect(startX - totalWidth, y, totalWidth, rowHeight - 0.5);
           ctx.fillStyle = buyColor;
-          ctx.fillRect(startX - totalWidth, y, buyWidth, rowHeight - 1);
+          ctx.fillRect(startX - totalWidth, y, buyWidth, rowHeight - 0.5);
 
           // --- POINT OF CONTROL (POC) ---
           if (d.total === maxTotalVolume) {
             const pricePOC = currentSeries.coordinateToPrice(y).toFixed(2);
-            ctx.strokeStyle = '#f39c12';
+            ctx.strokeStyle = '#d35400'; // Orange foncé pour contraste sur blanc
             ctx.lineWidth = 2;
-            ctx.strokeRect(startX - totalWidth, y, totalWidth, rowHeight - 1);
+            ctx.strokeRect(startX - totalWidth, y, totalWidth, rowHeight - 0.5);
 
-            ctx.fillStyle = '#f39c12';
+            // Badge du prix POC
+            ctx.fillStyle = '#d35400';
             const badgeWidth = 65;
             ctx.fillRect(startX - totalWidth - badgeWidth, y - 9, badgeWidth, 18);
-            ctx.fillStyle = '#131722';
+
+            ctx.fillStyle = '#FFFFFF'; // Texte blanc sur badge foncé
             ctx.font = "bold 11px Arial";
             ctx.textAlign = "center";
             ctx.fillText(pricePOC, startX - totalWidth - (badgeWidth / 2), y + 4);
           }
         }
 
-        // --- TRACÉ DES LIGNES VAH / VAL ---
+        // --- TRACÉ DES LIGNES VAH / VAL (Couleurs sombres pour fond blanc) ---
         ctx.setLineDash([8, 4]);
         ctx.lineWidth = 1.5;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.strokeStyle = '#2c3e50'; // Bleu nuit très sombre
         [vah, val].forEach((limitPrice, index) => {
           const yLimit = currentSeries.priceToCoordinate(limitPrice);
-          ctx.beginPath();
-          ctx.moveTo(startX - maxWidth, yLimit);
-          ctx.lineTo(startX, yLimit);
-          ctx.stroke();
+          if (yLimit !== null) {
+            ctx.beginPath();
+            ctx.moveTo(startX - maxWidth, yLimit);
+            ctx.lineTo(startX, yLimit);
+            ctx.stroke();
 
-          ctx.fillStyle = "white";
-          ctx.font = "bold 10px Arial";
-          ctx.textAlign = "left";
-          ctx.fillText(index === 0 ? "VAH (70%)" : "VAL (70%)", startX - maxWidth + 5, yLimit - 5);
+            ctx.fillStyle = "#2c3e50";
+            ctx.font = "bold 10px Arial";
+            ctx.textAlign = "left";
+            ctx.fillText(index === 0 ? "VAH (70%)" : "VAL (70%)", startX - maxWidth + 5, yLimit - 5);
+          }
         });
         ctx.restore();
       }
 
-      // B. FIBONACCI DYNAMIQUE (Basé sur le POC Historique)
+      // B. FIBONACCI DYNAMIQUE (Adapté au Fond Blanc)
       const fiboParams = calculateDynamicFiboPOC();
       if (fiboParams) {
         ctx.save();
@@ -2155,7 +2160,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const yLvl = y0 + (rangeY * lvl);
             const isMain = [0, 0.5, 0.618, 1].includes(lvl);
 
-            ctx.strokeStyle = isMain ? 'rgba(30, 144, 255, 0.9)' : 'rgba(255, 255, 255, 0.35)';
+            // Bleu roi pour niveaux clés, gris pour secondaires
+            ctx.strokeStyle = isMain ? 'rgba(0, 86, 179, 0.8)' : 'rgba(0, 0, 0, 0.15)';
             ctx.lineWidth = isMain ? 2 : 1;
             ctx.setLineDash(isMain ? [] : [5, 5]);
 
@@ -2164,24 +2170,20 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.lineTo(canvas.width, yLvl);
             ctx.stroke();
 
-            // Labels Fibonacci à gauche
+            // Labels Fibonacci (Texte sombre)
             ctx.setLineDash([]);
             const priceLabel = currentSeries.coordinateToPrice(yLvl).toFixed(3);
-            ctx.fillStyle = isMain ? "#1E90FF" : "white";
+            ctx.fillStyle = isMain ? "#0056b3" : "#555555";
             ctx.font = isMain ? "bold 12px Arial" : "10px Arial";
             ctx.textAlign = "left";
             ctx.fillText(`${(lvl * 100).toFixed(1)}% : ${priceLabel}`, 10, yLvl - 8);
-
-            // Vérification des alertes prix
-            const lastBar = cache[cache.length - 1];
-            if (lastBar) checkPriceAtFiboLevels(lastBar.close, fiboParams);
           });
         }
         ctx.restore();
       }
     }
 
-    // --- C. OBJETS CLASSIQUES (Trendlines / Rectangles) ---
+    // --- C. OBJETS CLASSIQUES (Optimisation couleurs sélection) ---
     drawingObjects.forEach((obj) => {
       ctx.save();
       const x1 = timeScale.timeToCoordinate(obj.p1.time);
@@ -2191,21 +2193,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (x1 !== null && y1 !== null && x2 !== null && y2 !== null) {
         const isSelected = (selectedObject === obj);
-        ctx.strokeStyle = isSelected ? '#f39c12' : '#2962FF';
+        ctx.strokeStyle = isSelected ? '#e67e22' : '#2962FF';
         ctx.lineWidth = isSelected ? 3 : 2;
 
         if (obj.type === 'trend') {
           ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
         } else if (obj.type === 'rect') {
-          ctx.fillStyle = isSelected ? 'rgba(243, 156, 18, 0.25)' : 'rgba(41, 98, 255, 0.15)';
+          ctx.fillStyle = isSelected ? 'rgba(230, 126, 34, 0.15)' : 'rgba(41, 98, 255, 0.08)';
           ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
           ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
         }
 
         if (isSelected) {
-          ctx.fillStyle = 'white';
+          ctx.fillStyle = '#2c3e50'; // Cercles de sélection sombres
           [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(p => {
-            ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+            ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
             ctx.fill(); ctx.stroke();
           });
         }
@@ -2213,7 +2215,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ctx.restore();
     });
 
-    // --- D. SETUP TP/SL ---
+    // --- D. SETUP TP/SL (Optimisé Fond Blanc) ---
     if (setup) {
       ctx.save();
       const x1 = timeScale.timeToCoordinate(setup.startTime);
@@ -2224,50 +2226,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (x1 !== null && x2 !== null && yEntry !== null && yTP !== null && ySL !== null) {
         const w = x2 - x1;
-        ctx.fillStyle = 'rgba(38, 166, 154, 0.25)';
+        ctx.fillStyle = 'rgba(0, 150, 136, 0.2)';
         ctx.fillRect(x1, Math.min(yTP, yEntry), w, Math.abs(yEntry - yTP));
-        ctx.fillStyle = 'rgba(239, 83, 80, 0.25)';
+        ctx.fillStyle = 'rgba(255, 82, 82, 0.2)';
         ctx.fillRect(x1, Math.min(yEntry, ySL), w, Math.abs(ySL - yEntry));
 
-        const rr = (Math.abs(setup.tpPrice - setup.entryPrice) / Math.abs(setup.entryPrice - setup.slPrice || 1)).toFixed(2);
-        ctx.fillStyle = "white";
+        const rr = (Math.abs(setup.tpPrice - setup.entryPrice) / Math.max(0.0001, Math.abs(setup.entryPrice - setup.slPrice))).toFixed(2);
+        ctx.fillStyle = "#2c3e50"; // Texte R/R sombre
         ctx.font = "bold 12px Arial";
-        ctx.fillText(`R/R: ${rr}`, x1 + 5, Math.min(yTP, yEntry) - 10);
+        ctx.fillText(`Ratio R/R: ${rr}`, x1 + 5, Math.min(yTP, yEntry) - 10);
       }
       ctx.restore();
     }
-  }
-
-  function checkPriceAtFiboLevels(currentPrice, fiboParams) {
-    if (!fiboParams) return;
-
-    const { fib0, fib100 } = fiboParams;
-    const range = fib100 - fib0;
-    const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
-
-    // Calcul de la marge d'erreur (threshold) basé sur le symbole
-    const threshold = 0.00010; // À ajuster selon votre instrument (ex: 0.01 pour l'Or)
-    const currentTime = Date.now();
-
-    levels.forEach(lvl => {
-      const priceAtLevel = fib0 + (range * lvl);
-
-      // Si le prix actuel est très proche du niveau
-      if (Math.abs(currentPrice - priceAtLevel) < threshold) {
-        // Anti-spam : Une seule alerte par minute ou si le prix a bougé entre temps
-        if (currentTime - lastAlertTime > 60000 || Math.abs(priceAtLevel - lastAlertPrice) > threshold) {
-          const levelName = (lvl === 0) ? "POC (0%)" : `${(lvl * 100).toFixed(1)}%`;
-
-          console.log(`%c [ALERT] Prix touche le niveau ${levelName} à ${priceAtLevel.toFixed(3)}`, 'background: #222; color: #f39c12; font-weight: bold;');
-
-          // Optionnel : Notification sonore ou visuelle ici
-          // alert(`Niveau ${levelName} touché !`);
-
-          lastAlertPrice = priceAtLevel;
-          lastAlertTime = currentTime;
-        }
-      }
-    });
   }
 
   // --- CALCUL DU VOLUME PROFILE (Bicolore + POC) ---
@@ -2327,10 +2297,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const startIndex = Math.max(0, cache.length - lookback);
     const data = cache.slice(startIndex);
 
-    // Calcul de la précision des rangées (Row Height)
-    const minPrice = Math.min(...data.map(d => d.low));
-    const maxPrice = Math.max(...data.map(d => d.high));
-    const rowHeightPrice = (maxPrice - minPrice) / 40; // 40 rangées pour la fluidité
+    // Trouver les extrêmes de prix sur la période
+    const prices = data.flatMap(d => [d.high, d.low]);
+    const minP = Math.min(...prices);
+    const maxP = Math.max(...prices);
+    const rowHeightPrice = (maxP - minP) / 50; // Précision de 50 lignes
 
     const profile = {};
     let maxTotalVolume = 0;
@@ -2340,42 +2311,50 @@ document.addEventListener("DOMContentLoaded", () => {
       const volume = bar.volume || 100;
       const buyVol = bar.close > bar.open ? volume * 0.6 : volume * 0.4;
 
-      // Distribution du volume entre High et Low
+      // Distribution sur les niveaux de prix
       for (let p = bar.low; p <= bar.high; p += rowHeightPrice) {
-        const yCoord = currentSeries.priceToCoordinate(p);
-        if (yCoord === null) continue;
+        const yPos = currentSeries.priceToCoordinate(p);
+        if (yPos === null) continue;
 
-        const yKey = Math.round(yCoord);
+        const yKey = Math.round(yPos);
         if (!profile[yKey]) {
-          profile[yKey] = { total: 0, buy: 0, price: p }; // Stockage crucial du prix ici
+          profile[yKey] = { total: 0, buy: 0, price: p }; // On stocke le prix p ici
         }
 
-        const stepVol = volume / ((bar.high - bar.low) / rowHeightPrice + 1);
-        profile[yKey].total += stepVol;
-        profile[yKey].buy += (buyVol / ((bar.high - bar.low) / rowHeightPrice + 1));
-        totalVolumeSum += stepVol;
+        const steps = Math.max(1, (bar.high - bar.low) / rowHeightPrice);
+        const vPerStep = volume / steps;
+
+        profile[yKey].total += vPerStep;
+        profile[yKey].buy += (buyVol / steps);
+        totalVolumeSum += vPerStep;
 
         if (profile[yKey].total > maxTotalVolume) maxTotalVolume = profile[yKey].total;
       }
     });
 
-    // Calcul VA (Value Area)
-    const sorted = Object.values(profile).sort((a, b) => b.total - a.total);
-    let acc = 0;
-    const vArea = [];
-    for (let l of sorted) {
-      if (acc < totalVolumeSum * 0.7) {
-        acc += l.total;
-        vArea.push(l.price);
+    // --- CALCUL VA (70%) ---
+    const sortedLevels = Object.values(profile).sort((a, b) => b.total - a.total);
+    let currentAcc = 0;
+    const target = totalVolumeSum * 0.7;
+    let vaPrices = [];
+
+    for (let node of sortedLevels) {
+      if (currentAcc < target) {
+        currentAcc += node.total;
+        vaPrices.push(node.price);
       } else break;
     }
+
+    // Sécurité : si la VA est vide, on prend les extrêmes
+    const vah = vaPrices.length > 0 ? Math.max(...vaPrices) : maxP;
+    const val = vaPrices.length > 0 ? Math.min(...vaPrices) : minP;
 
     return {
       profile,
       maxTotalVolume,
-      rowHeight: Math.abs(currentSeries.priceToCoordinate(minPrice) - currentSeries.priceToCoordinate(minPrice + rowHeightPrice)),
-      vah: Math.max(...vArea),
-      val: Math.min(...vArea)
+      rowHeight: 5, // Hauteur de secours
+      vah,
+      val
     };
   }
 
