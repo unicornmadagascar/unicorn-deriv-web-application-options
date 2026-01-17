@@ -2070,7 +2070,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const timeScale = chart.timeScale();
 
     // --- A. VOLUME PROFILE (Ancré à droite, s'étend vers la gauche) ---
-    const vpData = (currentChartType === "candlestick" && showVolumeProfile) ? calculateVolumeProfile() : null;
+    const vpData = (currentChartType === "candlestick" && showVolumeProfile) ? calculateDynamicFiboPOC() : null;
 
     if (vpData) {
       ctx.save();
