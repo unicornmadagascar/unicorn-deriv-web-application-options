@@ -2129,7 +2129,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (y0 !== null && y100 !== null) {
         const range = y100 - y0;
-        const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+        const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];  
 
         levels.forEach(lvl => {
           const yLevel = y0 + (range * lvl);
