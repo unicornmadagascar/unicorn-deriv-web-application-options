@@ -5121,7 +5121,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       contextMenu.style.display = 'none';
       selectedObject = null;
-      render();
+      render();  
     }
   });
 
@@ -5199,7 +5199,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Optionnel : Touche 'Escape' pour tout fermer
-    if (e.key === 'Escape') {
+    if (e.key === 'Escape') {  
       if (showFiboAnalysis) {
         enableFibonacci(document.querySelector('.btn-drawing[onclick*="enableFibonacci"]'));
       }
