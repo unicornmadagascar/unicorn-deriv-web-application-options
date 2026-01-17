@@ -2203,7 +2203,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.font = "bold 12px Arial";
         ctx.fillText(`Ratio R/R: ${rr}`, x1 + 5, Math.min(yTP, yEntry) - 10);
       }
-      ctx.restore();
+      ctx.restore();  
     }
   }
 
