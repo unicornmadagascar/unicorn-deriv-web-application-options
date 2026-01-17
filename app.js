@@ -2272,7 +2272,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- LOGIQUE DE GÉNÉRATION INITIALE ---
-  function generateLinkedSetup(clickTime, clickPrice) {
+  function generateLinkedSetup(clickTime, clickPrice) {  
     // On crée un setup par défaut autour du point cliqué
     setup = {
       type: 'tpsl',
