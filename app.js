@@ -2021,18 +2021,18 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.classList.add('active');
       canvas.style.pointerEvents = 'all';
     }
-  } 
+  }
 
   window.enableFibonacci = function (btn) {
     if (currentMode === 'fibo') {
-      deactivateAllDrawingButtons(); 
-      canvas.style.pointerEvents = 'none'; 
+      deactivateAllDrawingButtons();
+      canvas.style.pointerEvents = 'none';
     } else {
       deactivateAllDrawingButtons();
       currentMode = 'fibo';
       btn.classList.add('active');
       canvas.style.pointerEvents = 'all';
-    }  
+    }
   }
 
   /**
@@ -2048,11 +2048,11 @@ document.addEventListener("DOMContentLoaded", () => {
  * Le moteur de rendu rectifié
  * Dessine : Trendlines, Rectangles et Setup TP/SL
  */
-  // --- 2. LE MOTEUR DE RENDU (RENDER) ---
+  // --- 2. LE MOTEUR DE RENDU (RENDER) RECTIFIÉ ---
   function render() {
-    if (!ctx) return;
+    if (!ctx || !chartInner) return;
 
-    // Ajustement taille
+    // 1. Initialisation du Canvas
     canvas.width = chartInner.clientWidth;
     canvas.height = chartInner.clientHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -2061,9 +2061,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const timeScale = chart.timeScale();
 
-    // A. VOLUME PROFILE (Arrière-plan)
+    // --- A. VOLUME PROFILE (Arrière-plan) ---
     const vpData = calculateVolumeProfile();
     if (vpData) {
+      ctx.save(); // Isoler le style du VP
       const { profile, maxTotalVolume, rowHeight } = vpData;
       const maxWidth = 180;
       const chartRight = canvas.width;
@@ -2074,33 +2075,34 @@ document.addEventListener("DOMContentLoaded", () => {
         const totalWidth = (d.total / maxTotalVolume) * maxWidth;
         const buyWidth = (d.buy / d.total) * totalWidth;
 
-        // Dessin Histogramme (Sell: Rouge, Buy: Vert)
+        // Dessin Histogramme
         ctx.fillStyle = 'rgba(239, 83, 80, 0.3)';
         ctx.fillRect(chartRight - totalWidth, y, totalWidth, rowHeight - 1);
         ctx.fillStyle = 'rgba(38, 166, 154, 0.5)';
         ctx.fillRect(chartRight - totalWidth, y, buyWidth, rowHeight - 1);
 
-        // Mise en valeur du POC + Label de prix
+        // POC
         if (d.total === maxTotalVolume) {
           const pricePOC = currentSeries.coordinateToPrice(y).toFixed(2);
           ctx.strokeStyle = '#f39c12';
           ctx.lineWidth = 1.5;
           ctx.strokeRect(chartRight - totalWidth, y, totalWidth, rowHeight - 1);
 
-          // Badge de prix à droite
+          // Badge de prix
           ctx.fillStyle = '#f39c12';
           ctx.fillRect(chartRight - 55, y - 7, 55, 15);
           ctx.fillStyle = '#131722';
           ctx.font = "bold 10px Arial";
           ctx.textAlign = "center";
           ctx.fillText(pricePOC, chartRight - 27, y + 4);
-          ctx.textAlign = "left";
         }
       }
+      ctx.restore(); // Réinitialise textAlign, fillStyle, etc.
     }
 
-    // B. FIBONACCI (Basé sur le POC)
+    // --- B. FIBONACCI (Basé sur le POC) ---
     if (fiboObj) {
+      ctx.save();
       const xStart = timeScale.timeToCoordinate(fiboObj.startTime);
       const yPoc = currentSeries.priceToCoordinate(fiboObj.pocPrice);
       const yExt = currentSeries.priceToCoordinate(fiboObj.extentionPrice);
@@ -2108,10 +2110,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (xStart !== null && yPoc !== null && yExt !== null) {
         const diff = yExt - yPoc;
 
-        // 1. GESTION DU VERROUILLAGE (Effet visuel)
         if (isFiboLocked) {
-          ctx.save(); // Sauvegarde l'état pour ne pas affecter le reste du dessin
-          ctx.globalAlpha = 0.5; // Rend l'objet plus discret
+          ctx.globalAlpha = 0.5;
           ctx.fillStyle = "#e74c3c";
           ctx.font = "bold 12px Arial";
           ctx.fillText("🔒 Verrouillé (L)", xStart + 5, yPoc - 20);
@@ -2121,82 +2121,82 @@ document.addEventListener("DOMContentLoaded", () => {
           const yLevel = yPoc + (diff * level);
           const isMain = [0, 0.618, 1].includes(level);
 
-          // 2. STYLE DES LIGNES
           ctx.strokeStyle = isMain ? 'rgba(243, 156, 18, 0.9)' : 'rgba(209, 212, 220, 0.4)';
           ctx.lineWidth = isMain ? 1.5 : 1;
           ctx.setLineDash(isMain ? [] : [5, 5]);
 
           ctx.beginPath();
           ctx.moveTo(xStart, yLevel);
-          ctx.lineTo(canvas.width, yLevel); // S'étend jusqu'à la fin du graphique
+          ctx.lineTo(canvas.width, yLevel);
           ctx.stroke();
 
-          // 3. STYLE DES LABELS (Ratios %)
-          ctx.setLineDash([]); // Reset pour le texte
+          ctx.setLineDash([]);
           ctx.fillStyle = isMain ? "#f39c12" : "rgba(255, 255, 255, 0.7)";
           ctx.font = isMain ? "bold 11px Arial" : "10px Arial";
-
-          // On affiche le ratio + le prix correspondant pour plus de précision
           const priceAtLevel = currentSeries.coordinateToPrice(yLevel).toFixed(2);
           ctx.fillText(`${(level * 100).toFixed(1)}% (${priceAtLevel})`, xStart + 5, yLevel - 5);
         });
-
-        // 4. RÉINITIALISATION
-        if (isFiboLocked) ctx.restore(); // Restaure l'opacité normale pour la suite du render
-        ctx.setLineDash([]);
       }
+      ctx.restore();
     }
 
-    // C. OBJETS CLASSIQUES (Trendlines / Rects)
+    // --- C. OBJETS CLASSIQUES (Trendlines / Rects) ---
     drawingObjects.forEach((obj) => {
+      ctx.save();
       const x1 = timeScale.timeToCoordinate(obj.p1.time);
       const x2 = timeScale.timeToCoordinate(obj.p2.time);
       const y1 = currentSeries.priceToCoordinate(obj.p1.price);
       const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
-      if (x1 === null || y1 === null || x2 === null || y2 === null) return;
+      if (x1 !== null && y1 !== null && x2 !== null && y2 !== null) {
+        const isSelected = (selectedObject === obj);
+        ctx.strokeStyle = isSelected ? '#f39c12' : '#2962FF';
+        ctx.lineWidth = isSelected ? 3 : 2;
 
-      const isSelected = (selectedObject === obj);
-      ctx.strokeStyle = isSelected ? '#f39c12' : '#2962FF';
-      ctx.lineWidth = isSelected ? 3 : 2;
+        if (obj.type === 'trend') {
+          ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        } else if (obj.type === 'rect') {
+          ctx.fillStyle = isSelected ? 'rgba(243, 156, 18, 0.25)' : 'rgba(41, 98, 255, 0.15)';
+          ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+          ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+        }
 
-      if (obj.type === 'trend') {
-        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-      } else if (obj.type === 'rect') {
-        ctx.fillStyle = isSelected ? 'rgba(243, 156, 18, 0.25)' : 'rgba(41, 98, 255, 0.15)';
-        ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
-        ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+        if (isSelected) {
+          ctx.fillStyle = 'white';
+          [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(p => {
+            ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+            ctx.fill(); ctx.stroke();
+          });
+        }
       }
-
-      if (isSelected) {
-        [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(p => {
-          ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
-          ctx.fillStyle = 'white'; ctx.fill(); ctx.stroke();
-        });
-      }
+      ctx.restore();
     });
 
-    // D. SETUP TP/SL
+    // --- D. SETUP TP/SL ---
     if (setup) {
+      ctx.save();
       const x1 = timeScale.timeToCoordinate(setup.startTime);
       const x2 = timeScale.timeToCoordinate(setup.endTime);
       const yEntry = currentSeries.priceToCoordinate(setup.entryPrice);
       const yTP = currentSeries.priceToCoordinate(setup.tpPrice);
       const ySL = currentSeries.priceToCoordinate(setup.slPrice);
 
-      if (x1 !== null && x2 !== null && yEntry !== null) {
+      if (x1 !== null && x2 !== null && yEntry !== null && yTP !== null && ySL !== null) {
         const w = x2 - x1;
-        // Zones
+        // Zone TP
         ctx.fillStyle = 'rgba(38, 166, 154, 0.3)';
         ctx.fillRect(x1, Math.min(yTP, yEntry), w, Math.abs(yEntry - yTP));
+        // Zone SL
         ctx.fillStyle = 'rgba(239, 83, 80, 0.3)';
         ctx.fillRect(x1, Math.min(yEntry, ySL), w, Math.abs(ySL - yEntry));
 
-        // R/R Text
+        // Texte Ratio R/R
         const rr = (Math.abs(setup.tpPrice - setup.entryPrice) / Math.abs(setup.entryPrice - setup.slPrice || 1)).toFixed(2);
         ctx.fillStyle = "white";
+        ctx.font = "bold 12px Arial";
         ctx.fillText(`R/R: ${rr}`, x1 + 5, Math.min(yTP, yEntry) - 10);
       }
+      ctx.restore();
     }
   }
 
@@ -4812,7 +4812,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       render();
     }
-  });
+  }); 
 
   window.addEventListener('mouseup', () => {
     activePoint = null;
