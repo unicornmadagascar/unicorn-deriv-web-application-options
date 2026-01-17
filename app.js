@@ -2082,11 +2082,11 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.save();
         const { profile, maxTotalVolume, rowHeight, vah, val } = vpData;
         const maxWidth = 500;
-        const offsetFromPriceScale = 70;  
+        const offsetFromPriceScale = 70;
         const startX = canvas.width - offsetFromPriceScale;
 
         for (const yKey in profile) {
-          const d = profile[yKey];  
+          const d = profile[yKey];
           const y = parseFloat(yKey);
           const isInValueArea = d.price <= vah && d.price >= val;
 
@@ -2320,59 +2320,61 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function calculateVolumeProfile() {
-    if (typeof cache === 'undefined' || cache.length === 0) return null;
+    if (!cache || cache.length === 0) return null;
 
-    const lookback = typeof vpLookback !== 'undefined' ? vpLookback : 300;
+    const lookback = 300;
     const startIndex = Math.max(0, cache.length - lookback);
     const data = cache.slice(startIndex);
 
-    let totalRange = 0;
-    data.forEach(bar => totalRange += (bar.high - bar.low));
-    const avgRange = totalRange / data.length;
-    const rowHeightPrice = avgRange * 0.1;
+    // Calcul de la précision des rangées (Row Height)
+    const minPrice = Math.min(...data.map(d => d.low));
+    const maxPrice = Math.max(...data.map(d => d.high));
+    const rowHeightPrice = (maxPrice - minPrice) / 40; // 40 rangées pour la fluidité
 
     const profile = {};
     let maxTotalVolume = 0;
     let totalVolumeSum = 0;
 
     data.forEach(bar => {
-      const volume = bar.volume || 0;
-      const buyVolume = bar.close > bar.open ? volume : volume * 0.45;
-      const top = Math.floor(bar.high / rowHeightPrice) * rowHeightPrice;
-      const bottom = Math.ceil(bar.low / rowHeightPrice) * rowHeightPrice;
+      const volume = bar.volume || 100;
+      const buyVol = bar.close > bar.open ? volume * 0.6 : volume * 0.4;
 
-      for (let price = bottom; price <= top; price += rowHeightPrice) {
-        const yKey = Math.round(currentSeries.priceToCoordinate(price));
-        if (!profile[yKey]) profile[yKey] = { total: 0, buy: 0, sell: 0, price: price };
+      // Distribution du volume entre High et Low
+      for (let p = bar.low; p <= bar.high; p += rowHeightPrice) {
+        const yCoord = currentSeries.priceToCoordinate(p);
+        if (yCoord === null) continue;
 
-        const stepVol = volume / (Math.max(1, (top - bottom) / rowHeightPrice + 1));
+        const yKey = Math.round(yCoord);
+        if (!profile[yKey]) {
+          profile[yKey] = { total: 0, buy: 0, price: p }; // Stockage crucial du prix ici
+        }
+
+        const stepVol = volume / ((bar.high - bar.low) / rowHeightPrice + 1);
         profile[yKey].total += stepVol;
-        profile[yKey].buy += (buyVolume / (Math.max(1, (top - bottom) / rowHeightPrice + 1)));
+        profile[yKey].buy += (buyVol / ((bar.high - bar.low) / rowHeightPrice + 1));
         totalVolumeSum += stepVol;
 
         if (profile[yKey].total > maxTotalVolume) maxTotalVolume = profile[yKey].total;
       }
     });
 
-    // --- CALCUL DE LA VALUE AREA (70%) ---
-    const sortedLevels = Object.values(profile).sort((a, b) => b.total - a.total);
-    let currentAreaVolume = 0;
-    const targetVolume = totalVolumeSum * 0.70;
-    const areaPrices = [];
-
-    for (let level of sortedLevels) {
-      if (currentAreaVolume < targetVolume) {
-        currentAreaVolume += level.total;
-        areaPrices.push(level.price);
+    // Calcul VA (Value Area)
+    const sorted = Object.values(profile).sort((a, b) => b.total - a.total);
+    let acc = 0;
+    const vArea = [];
+    for (let l of sorted) {
+      if (acc < totalVolumeSum * 0.7) {
+        acc += l.total;
+        vArea.push(l.price);
       } else break;
     }
 
     return {
       profile,
       maxTotalVolume,
-      rowHeight: Math.max(1, Math.abs(currentSeries.priceToCoordinate(data[0].close) - currentSeries.priceToCoordinate(data[0].close + rowHeightPrice))),
-      vah: Math.max(...areaPrices),
-      val: Math.min(...areaPrices)
+      rowHeight: Math.abs(currentSeries.priceToCoordinate(minPrice) - currentSeries.priceToCoordinate(minPrice + rowHeightPrice)),
+      vah: Math.max(...vArea),
+      val: Math.min(...vArea)
     };
   }
 
