@@ -2065,18 +2065,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const timeScale = chart.timeScale();
 
-    // --- A. VOLUME PROFILE (Agrandis et collé à droite) ---
+    // --- A. VOLUME PROFILE (Ancré à droite, s'étend vers la gauche) ---
     const vpData = (currentChartType === "candlestick") ? calculateVolumeProfile() : null;
 
     if (vpData) {
       ctx.save();
       const { profile, maxTotalVolume, rowHeight } = vpData;
-      const maxWidth = 500; // Agrandis à 300px
-      // La frontière est le bord droit du canvas
-      const borderLine = canvas.width;
-      // On peut ajouter un petit décalage de 2-3px pour ne pas toucher l'échelle des prix
-      const offsetFromPriceScale = 70;
-      const chartRight = canvas.width;
+
+      // Configuration demandée : Grand (500px) et décalé de l'échelle
+      const maxWidth = 500;
+      const offsetFromPriceScale = 70; // Espace pour l'échelle de prix TradingView
+      const startX = canvas.width - offsetFromPriceScale;
 
       for (const yKey in profile) {
         const d = profile[yKey];
@@ -2084,27 +2083,27 @@ document.addEventListener("DOMContentLoaded", () => {
         const totalWidth = (d.total / maxTotalVolume) * maxWidth;
         const buyWidth = (d.buy / d.total) * totalWidth;
 
-        const startX = borderLine - offsetFromPriceScale;
-
-        // Histogramme Sell (Rouge) dessiné depuis la droite
-        ctx.fillStyle = 'rgba(239, 83, 80, 0.35)';
+        // Dessin depuis la frontière vers la gauche (startX - largeur)
+        ctx.fillStyle = 'rgba(239, 83, 80, 0.30)'; // Vente (Alpha légèrement réduit pour la clarté)
         ctx.fillRect(startX - totalWidth, y, totalWidth, rowHeight - 1);
 
-        // Histogramme Buy (Vert) par-dessus
-        ctx.fillStyle = 'rgba(38, 166, 154, 0.55)';
+        ctx.fillStyle = 'rgba(38, 166, 154, 0.45)'; // Achat
         ctx.fillRect(startX - totalWidth, y, buyWidth, rowHeight - 1);
 
         // Point of Control (POC)
         if (d.total === maxTotalVolume) {
           const pricePOC = currentSeries.coordinateToPrice(y).toFixed(2);
+
+          // Bordure du POC
           ctx.strokeStyle = '#f39c12';
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 2; 
           ctx.strokeRect(startX - totalWidth, y, totalWidth, rowHeight - 1);
 
-          // Badge de prix collé à l'échelle de droite
+          // Badge de prix du POC
           ctx.fillStyle = '#f39c12';
-          const badgeWidth = 60;
-          ctx.fillRect(startX - badgeWidth, y - 8, badgeWidth, 16);
+          const badgeWidth = 65;
+          ctx.fillRect(startX - badgeWidth, y - 9, badgeWidth, 18);
+
           ctx.fillStyle = '#131722';
           ctx.font = "bold 11px Arial";
           ctx.textAlign = "center";
@@ -2114,29 +2113,27 @@ document.addEventListener("DOMContentLoaded", () => {
       ctx.restore();
     }
 
-    // Mise à jour automatique avant le dessin (si non verrouillé par 'L')
-    if (fiboObj && !isFiboLocked) {
-      updateDynamicFiboToPOC();
-    }
+    // --- B. FIBONACCI DYNAMIQUE (Pleine Largeur) ---
+    const fiboParams = calculateDynamicFiboPOC();
 
-    if (fiboObj) {
+    if (fiboParams) {
       ctx.save();
+      const { fib0, fib100 } = fiboParams;
 
-      const y0 = currentSeries.priceToCoordinate(fiboObj.pocPrice);
-      const y100 = currentSeries.priceToCoordinate(fiboObj.extentionPrice);
+      const y0 = currentSeries.priceToCoordinate(fib0);
+      const y100 = currentSeries.priceToCoordinate(fib100);
 
       if (y0 !== null && y100 !== null) {
-        const diff = y100 - y0;
-        // Les 7 niveaux demandés
+        const range = y100 - y0;
         const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
 
-        levels.forEach(level => {
-          const yLevel = y0 + (diff * level);
-          const isMain = [0, 0.5, 0.618, 1].includes(level);
+        levels.forEach(lvl => {
+          const yLevel = y0 + (range * lvl);
+          const isMain = [0, 0.5, 0.618, 1].includes(lvl);
 
-          // 1. STYLE DES LIGNES (Pleine largeur)
-          ctx.strokeStyle = isMain ? 'rgba(243, 156, 18, 0.8)' : 'rgba(209, 212, 220, 0.4)';
-          ctx.lineWidth = isMain ? 1.5 : 1;
+          // TRACÉ PLEINE LARGEUR
+          ctx.strokeStyle = isMain ? 'rgba(30, 144, 255, 0.8)' : 'rgba(255, 255, 255, 0.3)';
+          ctx.lineWidth = isMain ? 2 : 1;
           ctx.setLineDash(isMain ? [] : [5, 5]);
 
           ctx.beginPath();
@@ -2144,16 +2141,20 @@ document.addEventListener("DOMContentLoaded", () => {
           ctx.lineTo(canvas.width, yLevel);
           ctx.stroke();
 
-          // 2. STYLE DES TEXTES
+          // LABELS À GAUCHE
           ctx.setLineDash([]);
-          const price = currentSeries.coordinateToPrice(yLevel).toFixed(3);
-          const labelText = `${(level * 100).toFixed(1)}% (${price})`;
+          const priceAtLevel = currentSeries.coordinateToPrice(yLevel).toFixed(3);
+          let labelName = (lvl === 0) ? "POC (0%)" : `${(lvl * 100).toFixed(1)}%`;
+          const fullText = `${labelName} : ${priceAtLevel}`;
 
-          ctx.fillStyle = isMain ? "#f39c12" : "rgba(255, 255, 255, 0.7)";
-          ctx.font = isMain ? "bold 11px Arial" : "10px Arial";
+          ctx.fillStyle = isMain ? "#1E90FF" : "rgba(255, 255, 255, 0.8)";
+          ctx.font = isMain ? "bold 12px Arial" : "10px Arial";
+          ctx.textAlign = "left";
+          ctx.fillText(fullText, 10, yLevel - 7);
 
-          // Placement à gauche (padding 8px)
-          ctx.fillText(labelText, 8, yLevel - 6);
+          // ALERTE (Vérification si le prix touche ce niveau)
+          const lastBar = cache[cache.length - 1];
+          if (lastBar) checkPriceAtFiboLevels(lastBar.close, fiboParams);
         });
       }
       ctx.restore();
@@ -2202,44 +2203,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (x1 !== null && x2 !== null && yEntry !== null && yTP !== null && ySL !== null) {
         const w = x2 - x1;
-        ctx.fillStyle = 'rgba(38, 166, 154, 0.3)';
+        ctx.fillStyle = 'rgba(38, 166, 154, 0.25)';
         ctx.fillRect(x1, Math.min(yTP, yEntry), w, Math.abs(yEntry - yTP));
-        ctx.fillStyle = 'rgba(239, 83, 80, 0.3)';
+        ctx.fillStyle = 'rgba(239, 83, 80, 0.25)';
         ctx.fillRect(x1, Math.min(yEntry, ySL), w, Math.abs(ySL - yEntry));
 
         const rr = (Math.abs(setup.tpPrice - setup.entryPrice) / Math.abs(setup.entryPrice - setup.slPrice || 1)).toFixed(2);
         ctx.fillStyle = "white";
         ctx.font = "bold 12px Arial";
-        ctx.fillText(`Ratio R/R: ${rr}`, x1 + 5, Math.min(yTP, yEntry) - 10);
+        ctx.fillText(`R/R: ${rr}`, x1 + 5, Math.min(yTP, yEntry) - 10);
       }
       ctx.restore();
     }
   }
 
-  function updateDynamicFiboToPOC() {
-    const vpData = calculateVolumeProfile();
-    if (!fiboObj || !vpData || !cache || cache.length === 0) return;
+  function checkPriceAtFiboLevels(currentPrice, fiboParams) {
+    if (!fiboParams) return;
 
-    // 1. Trouver le prix du POC
-    let maxVol = 0;
-    let pocY = 0;
-    for (const y in vpData.profile) {
-      if (vpData.profile[y].total > maxVol) {
-        maxVol = vpData.profile[y].total;
-        pocY = parseFloat(y);
+    const { fib0, fib100 } = fiboParams;
+    const range = fib100 - fib0;
+    const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+
+    // Calcul de la marge d'erreur (threshold) basé sur le symbole
+    const threshold = 0.00010; // À ajuster selon votre instrument (ex: 0.01 pour l'Or)
+    const currentTime = Date.now();
+
+    levels.forEach(lvl => {
+      const priceAtLevel = fib0 + (range * lvl);
+
+      // Si le prix actuel est très proche du niveau
+      if (Math.abs(currentPrice - priceAtLevel) < threshold) {
+        // Anti-spam : Une seule alerte par minute ou si le prix a bougé entre temps
+        if (currentTime - lastAlertTime > 60000 || Math.abs(priceAtLevel - lastAlertPrice) > threshold) {
+          const levelName = (lvl === 0) ? "POC (0%)" : `${(lvl * 100).toFixed(1)}%`;
+
+          console.log(`%c [ALERT] Prix touche le niveau ${levelName} à ${priceAtLevel.toFixed(3)}`, 'background: #222; color: #f39c12; font-weight: bold;');
+
+          // Optionnel : Notification sonore ou visuelle ici
+          // alert(`Niveau ${levelName} touché !`);
+
+          lastAlertPrice = priceAtLevel;
+          lastAlertTime = currentTime;
+        }
       }
-    }
-    const pocPrice = currentSeries.coordinateToPrice(pocY);
-
-    // 2. Trouver l'extension (le dernier prix du marché)
-    const lastBar = cache[cache.length - 1];
-    const currentMarketPrice = lastBar.close;
-
-    // 3. Mise à jour de l'objet
-    if (pocPrice && currentMarketPrice) {
-      fiboObj.pocPrice = pocPrice;           // Point 0 (Ancre de volume)
-      fiboObj.extentionPrice = currentMarketPrice; // Point 100 (Prix actuel)
-    }
+    });
   }
 
   // --- CALCUL DU VOLUME PROFILE (Bicolore + POC) ---
@@ -2247,60 +2254,49 @@ document.addEventListener("DOMContentLoaded", () => {
  * Calcule le profil de volume basé sur les données du cache.
  * @returns {Object|null} Les données du profil ou null si indisponible.
  */
-  function calculateVolumeProfile() {
-    // 1. Sécurités : Mode Candlestick uniquement et vérification du cache
-    if (currentChartType !== "candlestick" || typeof cache === 'undefined' || cache.length === 0) {
-      return null;
-    }
+  function calculateDynamicFiboPOC() {
+    if (typeof cache === 'undefined' || cache.length === 0) return null;
 
-    // 2. Configuration
-    const lookback = vpLookback || 300; // Nombre de bougies à analyser
+    const lookback = vpLookback || 300;
     const startIndex = Math.max(0, cache.length - lookback);
-    const relevantData = cache.slice(startIndex);
+    const data = cache.slice(startIndex);
 
-    if (relevantData.length === 0) return null;
+    // 1. Calculer le POC Historique (Prix avec le plus de volume/occurrences)
+    const vp = calculateVolumeProfile();
+    if (!vp) return null;
 
-    // rowHeight définit la "précision" verticale (3 pixels par bloc de prix)
-    const rowHeight = 3;
-    const profile = {};
-    let maxTotalVolume = 0;
-
-    // 3. Agrégation des volumes par niveau de prix
-    relevantData.forEach(bar => {
-      // Conversion du prix de clôture en coordonnée Y pour le groupement
-      const yRaw = currentSeries.priceToCoordinate(bar.close);
-      if (yRaw === null) return;
-
-      // Arrondi pour grouper les prix dans des "bins" (colonnes horizontales)
-      const yCoord = Math.round(yRaw / rowHeight) * rowHeight;
-
-      // Utilisation du volume réel ou 1 par défaut si inexistant
-      const vol = bar.volume || 1;
-
-      if (!profile[yCoord]) {
-        profile[yCoord] = { buy: 0, sell: 0, total: 0 };
+    let maxVol = 0;
+    let pocY = 0;
+    for (const y in vp.profile) {
+      if (vp.profile[y].total > maxVol) {
+        maxVol = vp.profile[y].total;
+        pocY = parseFloat(y);
       }
+    }
+    const pocPrice = currentSeries.coordinateToPrice(pocY);
 
-      // Séparation Acheteurs (Vert) / Vendeurs (Rouge)
-      if (bar.close >= bar.open) {
-        profile[yCoord].buy += vol;
-      } else {
-        profile[yCoord].sell += vol;
-      }
-
-      profile[yCoord].total += vol;
-
-      // Mise à jour du maximum pour le calcul de la largeur CSS plus tard
-      if (profile[yCoord].total > maxTotalVolume) {
-        maxTotalVolume = profile[yCoord].total;
-      }
+    // 2. Trouver le plus Haut et plus Bas de la période
+    let highest = -Infinity;
+    let lowest = Infinity;
+    data.forEach(bar => {
+      if (bar.high > highest) highest = bar.high;
+      if (bar.low < lowest) lowest = bar.low;
     });
 
-    return {
-      profile,
-      maxTotalVolume,
-      rowHeight
-    };
+    // 3. Déterminer la direction (Si POC est en haut ou en bas)
+    // Comme dans votre code : bool pocIsHigh = (MathAbs(pocPrice - highestPrice) < MathAbs(pocPrice - lowestPrice))
+    const pocIsHigh = Math.abs(pocPrice - highest) < Math.abs(pocPrice - lowest);
+
+    let fib0, fib100;
+    if (pocIsHigh) {
+      fib0 = highest;
+      fib100 = lowest;
+    } else {
+      fib0 = lowest;
+      fib100 = highest;
+    }
+
+    return { fib0, fib100, pocIsHigh, pocPrice };
   }
 
   // --- LOGIQUE DE GÉNÉRATION INITIALE ---
