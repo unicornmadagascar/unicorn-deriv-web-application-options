@@ -2021,12 +2021,12 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.classList.add('active');
       canvas.style.pointerEvents = 'all';
     }
-  }
+  } 
 
   window.enableFibonacci = function (btn) {
     if (currentMode === 'fibo') {
-      deactivateAllDrawingButtons();
-      canvas.style.pointerEvents = 'none';
+      deactivateAllDrawingButtons(); 
+      canvas.style.pointerEvents = 'none'; 
     } else {
       deactivateAllDrawingButtons();
       currentMode = 'fibo';
