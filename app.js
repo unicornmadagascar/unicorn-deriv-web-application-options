@@ -2068,7 +2068,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- A. VOLUME PROFILE (Agrandis et collé à droite) ---
     const vpData = (currentChartType === "candlestick") ? calculateVolumeProfile() : null;
 
-    if (vpData) {
+    if (vpData) { 
       ctx.save();
       const { profile, maxTotalVolume, rowHeight } = vpData;
       const maxWidth = 300; // Agrandis à 300px
