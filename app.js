@@ -698,7 +698,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // --- CAS : CONTRAT ACTIF ---
         const entryPrice = parseFloat(c.entry_tick_display_value);
-        const profit = parseFloat(c.profit || 0);
+        const profit = parseFloat(c.profit || 0);   
         if (isNaN(entryPrice)) return;
 
         // Style dynamique selon le profit
