@@ -711,7 +711,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!priceLines4openlines[id]) {
           // Création initiale
-          const line = currentSeries.createPriceLine({  
+          const line = currentSeries.createPriceLine({     
             price: entryPrice,
             color: color,
             lineWidth: 2,
