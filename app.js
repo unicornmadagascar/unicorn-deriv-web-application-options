@@ -2114,7 +2114,6 @@ document.addEventListener("DOMContentLoaded", () => {
       ctx.restore();
     }
 
-    // --- B. FIBONACCI (Affichage de TOUS les niveaux) ---
     // --- B. FIBONACCI (Version Finale : 7 Niveaux, Pleine Largeur) ---
     if (fiboObj) {
       ctx.save();
@@ -2198,7 +2197,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (setup) {
       ctx.save();
       const x1 = timeScale.timeToCoordinate(setup.startTime);
-      const x2 = timeScale.timeToCoordinate(setup.endTime);
+      const x2 = timeScale.timeToCoordinate(setup.endTime);  
       const yEntry = currentSeries.priceToCoordinate(setup.entryPrice);
       const yTP = currentSeries.priceToCoordinate(setup.tpPrice);
       const ySL = currentSeries.priceToCoordinate(setup.slPrice);
