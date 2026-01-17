@@ -2088,10 +2088,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Histogramme Sell (Rouge) dessiné depuis la droite
         ctx.fillStyle = 'rgba(239, 83, 80, 0.35)';
-        ctx.fillRect(startX - totalWidth, y, totalWidth, rowHeight - 1);  
+        ctx.fillRect(startX - totalWidth, y, totalWidth, rowHeight - 1);
 
         // Histogramme Buy (Vert) par-dessus
-        ctx.fillStyle = 'rgba(38, 166, 154, 0.55)';  
+        ctx.fillStyle = 'rgba(38, 166, 154, 0.55)';
         ctx.fillRect(startX - totalWidth, y, buyWidth, rowHeight - 1);
 
         // Point of Control (POC)
@@ -2114,47 +2114,45 @@ document.addEventListener("DOMContentLoaded", () => {
       ctx.restore();
     }
 
-    // --- B. FIBONACCI (Version Finale : 7 Niveaux, Pleine Largeur) ---
+    // Mise à jour automatique avant le dessin (si non verrouillé par 'L')
+    if (fiboObj && !isFiboLocked) {
+      updateDynamicFiboToPOC();
+    }
+
     if (fiboObj) {
       ctx.save();
 
-      // Conversion des prix en coordonnées Y
-      const yPoc = currentSeries.priceToCoordinate(fiboObj.pocPrice);
-      const yExt = currentSeries.priceToCoordinate(fiboObj.extentionPrice);
+      const y0 = currentSeries.priceToCoordinate(fiboObj.pocPrice);
+      const y100 = currentSeries.priceToCoordinate(fiboObj.extentionPrice);
 
-      if (yPoc !== null && yExt !== null) {
-        const diff = yExt - yPoc;
+      if (y0 !== null && y100 !== null) {
+        const diff = y100 - y0;
+        // Les 7 niveaux demandés
+        const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
 
-        // Définition exhaustive des 7 niveaux demandés
-        const levelsToDraw = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
-
-        levelsToDraw.forEach(level => {
-          const yLevel = yPoc + (diff * level);
-
-          // Style : Niveaux clés (0, 0.5, 0.618, 1) en plein, les autres en pointillés
+        levels.forEach(level => {
+          const yLevel = y0 + (diff * level);
           const isMain = [0, 0.5, 0.618, 1].includes(level);
 
-          // 1. DESSIN DE LA LIGNE HORIZONTALE
+          // 1. STYLE DES LIGNES (Pleine largeur)
           ctx.strokeStyle = isMain ? 'rgba(243, 156, 18, 0.8)' : 'rgba(209, 212, 220, 0.4)';
           ctx.lineWidth = isMain ? 1.5 : 1;
           ctx.setLineDash(isMain ? [] : [5, 5]);
 
           ctx.beginPath();
-          ctx.moveTo(0, yLevel);           // Point de départ : extrême gauche
-          ctx.lineTo(canvas.width, yLevel); // Point d'arrivée : extrême droite
+          ctx.moveTo(0, yLevel);
+          ctx.lineTo(canvas.width, yLevel);
           ctx.stroke();
 
-          // 2. DESSIN DES ÉTIQUETTES (Texte)
-          ctx.setLineDash([]); // Toujours réinitialiser pour le texte
+          // 2. STYLE DES TEXTES
+          ctx.setLineDash([]);
+          const price = currentSeries.coordinateToPrice(yLevel).toFixed(3);
+          const labelText = `${(level * 100).toFixed(1)}% (${price})`;
 
-          // Calcul du prix correspondant à ce niveau précis sur l'axe Y
-          const priceAtLevel = currentSeries.coordinateToPrice(yLevel).toFixed(3);
-          const labelText = `${(level * 100).toFixed(1)}% (${priceAtLevel})`;
-
-          ctx.fillStyle = isMain ? "rgba(243, 156, 18, 1)" : "rgba(255, 255, 255, 0.7)";
+          ctx.fillStyle = isMain ? "#f39c12" : "rgba(255, 255, 255, 0.7)";
           ctx.font = isMain ? "bold 11px Arial" : "10px Arial";
 
-          // Positionnement à gauche (x=8) pour ne pas chevaucher l'histogramme de volume à droite
+          // Placement à gauche (padding 8px)
           ctx.fillText(labelText, 8, yLevel - 6);
         });
       }
@@ -2197,7 +2195,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (setup) {
       ctx.save();
       const x1 = timeScale.timeToCoordinate(setup.startTime);
-      const x2 = timeScale.timeToCoordinate(setup.endTime);  
+      const x2 = timeScale.timeToCoordinate(setup.endTime);
       const yEntry = currentSeries.priceToCoordinate(setup.entryPrice);
       const yTP = currentSeries.priceToCoordinate(setup.tpPrice);
       const ySL = currentSeries.priceToCoordinate(setup.slPrice);
@@ -2215,6 +2213,32 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.fillText(`Ratio R/R: ${rr}`, x1 + 5, Math.min(yTP, yEntry) - 10);
       }
       ctx.restore();
+    }
+  }
+
+  function updateDynamicFiboToPOC() {
+    const vpData = calculateVolumeProfile();
+    if (!fiboObj || !vpData || !cache || cache.length === 0) return;
+
+    // 1. Trouver le prix du POC
+    let maxVol = 0;
+    let pocY = 0;
+    for (const y in vpData.profile) {
+      if (vpData.profile[y].total > maxVol) {
+        maxVol = vpData.profile[y].total;
+        pocY = parseFloat(y);
+      }
+    }
+    const pocPrice = currentSeries.coordinateToPrice(pocY);
+
+    // 2. Trouver l'extension (le dernier prix du marché)
+    const lastBar = cache[cache.length - 1];
+    const currentMarketPrice = lastBar.close;
+
+    // 3. Mise à jour de l'objet
+    if (pocPrice && currentMarketPrice) {
+      fiboObj.pocPrice = pocPrice;           // Point 0 (Ancre de volume)
+      fiboObj.extentionPrice = currentMarketPrice; // Point 100 (Prix actuel)
     }
   }
 
