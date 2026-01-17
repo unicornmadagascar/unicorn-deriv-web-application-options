@@ -2268,8 +2268,8 @@ document.addEventListener("DOMContentLoaded", () => {
       profile,
       maxTotalVolume,
       rowHeight
-    };
-  }  
+    }; 
+  }    
   
   // --- LOGIQUE DE GÉNÉRATION INITIALE ---
   function generateLinkedSetup(clickTime, clickPrice) {  
