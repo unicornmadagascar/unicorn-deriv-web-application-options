@@ -4692,7 +4692,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.onload = async () => {
     if (!currentSymbol) return;
     await loadSymbol(currentSymbol, currentInterval, currentChartType);
-    setupChartInteractions(chart);
+    setupChartInteractions(chart);  
   };
 
   // Simulation : mise à jour toutes les 2 secondes
