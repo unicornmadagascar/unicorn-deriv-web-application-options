@@ -2093,7 +2093,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const sellColor = isInValueArea ? 'rgba(239, 83, 80, 0.45)' : 'rgba(239, 83, 80, 0.15)';
 
         const totalWidth = (d.total / maxTotalVolume) * maxWidth;  
-        const buyWidth = (d.buy / d.total) * totalWidth;
+        const buyWidth = (d.buy / d.total) * totalWidth;  
 
         // Dessin Histogramme Sell (Fond)
         ctx.fillStyle = sellColor;
