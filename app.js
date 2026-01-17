@@ -4848,6 +4848,44 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  window.addEventListener('keydown', (e) => {
+    // On vérifie que l'utilisateur n'est pas en train d'écrire dans l'input du Lookback
+    if (e.target.tagName === 'INPUT') return;
+
+    const key = e.key.toLowerCase();
+
+    // Touche 'L' pour Verrouiller/Déverrouiller le Fibonacci
+    if (key === 'l' && fiboObj) {
+      isFiboLocked = !isFiboLocked;
+
+      // Mise à jour du texte du menu contextuel s'il existe
+      const lockItem = document.getElementById('lockFiboItem');
+      if (lockItem) lockItem.innerText = isFiboLocked ? "Déverrouiller Fibo" : "Verrouiller Fibo";
+
+      console.log(isFiboLocked ? "Fibo verrouillé" : "Fibo déverrouillé");
+      render();
+    }
+
+    // Touche 'H' pour Masquer/Afficher (Hide/Show) tous les dessins
+    if (key === 'h') {
+      showDrawings = !showDrawings;
+
+      // Mise à jour du texte du menu contextuel
+      const visItem = document.getElementById('visibilityItem');
+      if (visItem) visItem.innerText = showDrawings ? "Masquer tout" : "Afficher tout";
+
+      render();
+    }
+
+    // Touche 'Delete' ou 'Backspace' pour supprimer l'objet sélectionné
+    if ((key === 'delete' || key === 'backspace') && selectedObject) {
+      drawingObjects = drawingObjects.filter(o => o !== selectedObject);
+      selectedObject = null;
+      saveDrawings();
+      render();
+    }
+  });
+
   canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
 
