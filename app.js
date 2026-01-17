@@ -61,14 +61,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const tradeHistoryDataRow = document.getElementById("tradeHistoryDataRow__");
   const tradeHistoryBody = document.getElementById("tradeHistoryBody__");
 
-  const startml5 = document.getElementById("ML5BTN");
-
   const overlaygemini = document.getElementById("indicatorOverlay");
   const openBtngpt = document.getElementById("openPopupBtn__");
   const canvas = document.getElementById('Trendoverlay__');
   const contextMenu = document.getElementById('context-menu');
   const deleteItem = document.getElementById('deleteItem');
   const visibilityItem = document.getElementById('visibilityItem');
+  const lockFiboItem = document.getElementById('lockFiboItem');
   const ctx = canvas.getContext('2d');
   // Tableau des périodes actuellement affichées
   let maSeries = null;
@@ -106,6 +105,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let activeHandle = null;
   let dragOffset = null;
   let showDrawings = true; // État de visibilité global
+  let fiboObj = null;      // Outil Fibonacci
+  let vpLookback = 300;    // Période ajustable pour le Volume Profile
+  let isFiboLocked = false; // État du verrouillage
   // ================== x ==================
 
   let wsReady = false;
@@ -2020,7 +2022,14 @@ document.addEventListener("DOMContentLoaded", () => {
       canvas.style.pointerEvents = 'all';
     }
   }
- 
+
+  window.enableFibo = function (btn) {
+    deactivateAllDrawingButtons();
+    currentMode = 'fibo';
+    btn.classList.add('active');
+    canvas.style.pointerEvents = 'all';
+  }
+
   /**
  * Redimensionne le canvas pour matcher exactement le chart
  */
@@ -2034,20 +2043,106 @@ document.addEventListener("DOMContentLoaded", () => {
  * Le moteur de rendu rectifié
  * Dessine : Trendlines, Rectangles et Setup TP/SL
  */
+  // --- 2. LE MOTEUR DE RENDU (RENDER) ---
   function render() {
     if (!ctx) return;
 
-    // Assure que le canvas occupe tout l'espace
+    // Ajustement taille
     canvas.width = chartInner.clientWidth;
     canvas.height = chartInner.clientHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Si on a masqué les dessins, on s'arrête ici
     if (!showDrawings) return;
 
     const timeScale = chart.timeScale();
 
-    // 1. DESSIN DES OBJETS DANS LE TABLEAU (Trendlines et Rects)
+    // A. VOLUME PROFILE (Arrière-plan)
+    const vpData = calculateVolumeProfile();
+    if (vpData) {
+      const { profile, maxTotalVolume, rowHeight } = vpData;
+      const maxWidth = 180;
+      const chartRight = canvas.width;
+
+      for (const yKey in profile) {
+        const d = profile[yKey];
+        const y = parseFloat(yKey);
+        const totalWidth = (d.total / maxTotalVolume) * maxWidth;
+        const buyWidth = (d.buy / d.total) * totalWidth;
+
+        // Dessin Histogramme (Sell: Rouge, Buy: Vert)
+        ctx.fillStyle = 'rgba(239, 83, 80, 0.3)';
+        ctx.fillRect(chartRight - totalWidth, y, totalWidth, rowHeight - 1);
+        ctx.fillStyle = 'rgba(38, 166, 154, 0.5)';
+        ctx.fillRect(chartRight - totalWidth, y, buyWidth, rowHeight - 1);
+
+        // Mise en valeur du POC + Label de prix
+        if (d.total === maxTotalVolume) {
+          const pricePOC = currentSeries.coordinateToPrice(y).toFixed(2);
+          ctx.strokeStyle = '#f39c12';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(chartRight - totalWidth, y, totalWidth, rowHeight - 1);
+
+          // Badge de prix à droite
+          ctx.fillStyle = '#f39c12';
+          ctx.fillRect(chartRight - 55, y - 7, 55, 15);
+          ctx.fillStyle = '#131722';
+          ctx.font = "bold 10px Arial";
+          ctx.textAlign = "center";
+          ctx.fillText(pricePOC, chartRight - 27, y + 4);
+          ctx.textAlign = "left";
+        }
+      }
+    }
+
+    // B. FIBONACCI (Basé sur le POC)
+    if (fiboObj) {
+      const xStart = timeScale.timeToCoordinate(fiboObj.startTime);
+      const yPoc = currentSeries.priceToCoordinate(fiboObj.pocPrice);
+      const yExt = currentSeries.priceToCoordinate(fiboObj.extentionPrice);
+
+      if (xStart !== null && yPoc !== null && yExt !== null) {
+        const diff = yExt - yPoc;
+
+        // 1. GESTION DU VERROUILLAGE (Effet visuel)
+        if (isFiboLocked) {
+          ctx.save(); // Sauvegarde l'état pour ne pas affecter le reste du dessin
+          ctx.globalAlpha = 0.5; // Rend l'objet plus discret
+          ctx.fillStyle = "#e74c3c";
+          ctx.font = "bold 12px Arial";
+          ctx.fillText("🔒 Verrouillé (L)", xStart + 5, yPoc - 20);
+        }
+
+        fiboObj.levels.forEach(level => {
+          const yLevel = yPoc + (diff * level);
+          const isMain = [0, 0.618, 1].includes(level);
+
+          // 2. STYLE DES LIGNES
+          ctx.strokeStyle = isMain ? 'rgba(243, 156, 18, 0.9)' : 'rgba(209, 212, 220, 0.4)';
+          ctx.lineWidth = isMain ? 1.5 : 1;
+          ctx.setLineDash(isMain ? [] : [5, 5]);
+
+          ctx.beginPath();
+          ctx.moveTo(xStart, yLevel);
+          ctx.lineTo(canvas.width, yLevel); // S'étend jusqu'à la fin du graphique
+          ctx.stroke();
+
+          // 3. STYLE DES LABELS (Ratios %)
+          ctx.setLineDash([]); // Reset pour le texte
+          ctx.fillStyle = isMain ? "#f39c12" : "rgba(255, 255, 255, 0.7)";
+          ctx.font = isMain ? "bold 11px Arial" : "10px Arial";
+
+          // On affiche le ratio + le prix correspondant pour plus de précision
+          const priceAtLevel = currentSeries.coordinateToPrice(yLevel).toFixed(2);
+          ctx.fillText(`${(level * 100).toFixed(1)}% (${priceAtLevel})`, xStart + 5, yLevel - 5);
+        });
+
+        // 4. RÉINITIALISATION
+        if (isFiboLocked) ctx.restore(); // Restaure l'opacité normale pour la suite du render
+        ctx.setLineDash([]);
+      }
+    }
+
+    // C. OBJETS CLASSIQUES (Trendlines / Rects)
     drawingObjects.forEach((obj) => {
       const x1 = timeScale.timeToCoordinate(obj.p1.time);
       const x2 = timeScale.timeToCoordinate(obj.p2.time);
@@ -2061,80 +2156,77 @@ document.addEventListener("DOMContentLoaded", () => {
       ctx.lineWidth = isSelected ? 3 : 2;
 
       if (obj.type === 'trend') {
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-      }
-      else if (obj.type === 'rect') {
-        const width = x2 - x1;
-        const height = y2 - y1;
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      } else if (obj.type === 'rect') {
         ctx.fillStyle = isSelected ? 'rgba(243, 156, 18, 0.25)' : 'rgba(41, 98, 255, 0.15)';
-        ctx.fillRect(x1, y1, width, height);
-        ctx.strokeRect(x1, y1, width, height);
+        ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+        ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
       }
 
       if (isSelected) {
         [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(p => {
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
-          ctx.fillStyle = 'white';
-          ctx.fill();
-          ctx.stroke();
+          ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+          ctx.fillStyle = 'white'; ctx.fill(); ctx.stroke();
         });
       }
     });
 
-    // 2. DESSIN DU SETUP TP/SL (Si défini)
+    // D. SETUP TP/SL
     if (setup) {
-      const xStart = timeScale.timeToCoordinate(setup.startTime);
-      const xEnd = timeScale.timeToCoordinate(setup.endTime);
+      const x1 = timeScale.timeToCoordinate(setup.startTime);
+      const x2 = timeScale.timeToCoordinate(setup.endTime);
       const yEntry = currentSeries.priceToCoordinate(setup.entryPrice);
       const yTP = currentSeries.priceToCoordinate(setup.tpPrice);
       const ySL = currentSeries.priceToCoordinate(setup.slPrice);
 
-      // On ne dessine que si toutes les coordonnées sont visibles
-      if (xStart !== null && xEnd !== null && yEntry !== null && yTP !== null && ySL !== null) {
-        const width = xEnd - xStart;
-
-        // Zone Take Profit (Vert)
+      if (x1 !== null && x2 !== null && yEntry !== null) {
+        const w = x2 - x1;
+        // Zones
         ctx.fillStyle = 'rgba(38, 166, 154, 0.3)';
-        ctx.fillRect(xStart, Math.min(yTP, yEntry), width, Math.abs(yEntry - yTP));
-
-        // Zone Stop Loss (Rouge)
+        ctx.fillRect(x1, Math.min(yTP, yEntry), w, Math.abs(yEntry - yTP));
         ctx.fillStyle = 'rgba(239, 83, 80, 0.3)';
-        ctx.fillRect(xStart, Math.min(yEntry, ySL), width, Math.abs(ySL - yEntry));
+        ctx.fillRect(x1, Math.min(yEntry, ySL), w, Math.abs(ySL - yEntry));
 
-        // Bordures TP/SL
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = '#26a69a';
-        ctx.strokeRect(xStart, Math.min(yTP, yEntry), width, Math.abs(yEntry - yTP));
-        ctx.strokeStyle = '#ef5350';
-        ctx.strokeRect(xStart, Math.min(yEntry, ySL), width, Math.abs(ySL - yEntry));
-
-        // Affichage du Ratio R/R
-        const risk = Math.abs(setup.entryPrice - setup.slPrice);
-        const reward = Math.abs(setup.tpPrice - setup.entryPrice);
-        const rr = (reward / (risk || 1)).toFixed(2);
-
+        // R/R Text
+        const rr = (Math.abs(setup.tpPrice - setup.entryPrice) / Math.abs(setup.entryPrice - setup.slPrice || 1)).toFixed(2);
         ctx.fillStyle = "white";
-        ctx.font = "bold 12px Arial";
-        ctx.fillText(`R/R: ${rr}`, Math.min(xStart, xEnd) + 5, Math.min(yTP, yEntry) - 8);
-
-        // Poignées de l'outil TP/SL
-        ctx.fillStyle = "white";
-        ctx.strokeStyle = "black";
-        const midX = (xStart + xEnd) / 2;
-        const handles = [
-          { x: midX, y: yTP }, { x: midX, y: ySL },
-          { x: midX, y: yEntry }, { x: xStart, y: yEntry }, { x: xEnd, y: yEntry }
-        ];
-        handles.forEach(p => {
-          ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-          ctx.fill(); ctx.stroke();
-        });
+        ctx.fillText(`R/R: ${rr}`, x1 + 5, Math.min(yTP, yEntry) - 10);
       }
     }
+  }
+
+  // --- CALCUL DU VOLUME PROFILE (Bicolore + POC) ---
+  function calculateVolumeProfile() {
+    const lookback = vpLookback;
+    const startIndex = Math.max(0, data.length - lookback);
+    const relevantData = data.slice(startIndex);
+
+    if (relevantData.length === 0) return null;
+
+    const rowHeight = 3;
+    const profile = {};
+    let maxTotalVolume = 0;
+
+    relevantData.forEach(bar => {
+      const yRaw = currentSeries.priceToCoordinate(bar.close);
+      if (yRaw === null) return;
+
+      const yCoord = Math.round(yRaw / rowHeight) * rowHeight;
+      const vol = bar.volume || 1;
+
+      if (!profile[yCoord]) profile[yCoord] = { buy: 0, sell: 0, total: 0 };
+
+      if (bar.close >= bar.open) {
+        profile[yCoord].buy += vol;
+      } else {
+        profile[yCoord].sell += vol;
+      }
+
+      profile[yCoord].total += vol;
+      if (profile[yCoord].total > maxTotalVolume) maxTotalVolume = profile[yCoord].total;
+    });
+
+    return { profile, maxTotalVolume, rowHeight };
   }
 
   // --- LOGIQUE DE GÉNÉRATION INITIALE ---
@@ -4530,8 +4622,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* --- Événements Souris --- */
   canvas.addEventListener('mousedown', (e) => {
-
-    if (!showDrawings) return; // Désactive les interactions si masqué
+    if (!showDrawings) return;
 
     const x = e.offsetX;
     const y = e.offsetY;
@@ -4543,12 +4634,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let hit = false;
 
-    // 1. GESTION DU MODE DESSIN (Trendline, Rectangle OU TP/SL)
-    if (currentMode === 'rect' || currentMode === 'trend' || currentMode === 'tpsl') {
+    // 1. GESTION DU MODE CRÉATION (Trend, Rect, TP/SL, Fibo)
+    if (currentMode) {
       if (currentMode === 'tpsl') {
-        // Appel de votre fonction spécifique TP/SL
         generateLinkedSetup(time, price);
-      } else {
+      }
+      else if (currentMode === 'fibo') {
+        const vpData = calculateVolumeProfile();
+        let finalPocPrice = price;
+
+        // Aimantage automatique sur le POC du Volume Profile
+        if (vpData) {
+          const pocY = Object.keys(vpData.profile).reduce((a, b) =>
+            vpData.profile[a].total > vpData.profile[b].total ? a : b
+          );
+          finalPocPrice = currentSeries.coordinateToPrice(parseFloat(pocY));
+        }
+
+        fiboObj = {
+          type: 'fibo',
+          startTime: time,
+          pocPrice: finalPocPrice, // Base fixée sur le volume max
+          extentionPrice: price,   // Pointe vers la souris
+          levels: [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1]
+        };
+        activeHandle = 'FIBO_EXT'; // On active immédiatement le drag de l'extension
+      }
+      else {
         const newObj = {
           type: currentMode,
           p1: { time, price },
@@ -4566,8 +4678,20 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 2. GESTION DU SETUP TP/SL EXISTANT (Priorité à la sélection)
-    if (setup) {
+    // 2. GESTION DU FIBONACCI EXISTANT
+    if (fiboObj) {
+      if (fiboObj && !isFiboLocked) { // On ajoute la condition !isFiboLocked
+        const xF = ts.timeToCoordinate(fiboObj.startTime);
+        const yP = currentSeries.priceToCoordinate(fiboObj.pocPrice);
+        const yE = currentSeries.priceToCoordinate(fiboObj.extentionPrice);
+
+        if (Math.hypot(x - xF, y - yP) < 15) { activeHandle = 'FIBO_POC'; hit = true; }
+        else if (Math.hypot(x - xF, y - yE) < 15) { activeHandle = 'FIBO_EXT'; hit = true; }
+      }
+    }
+
+    // 3. GESTION DU SETUP TP/SL EXISTANT
+    if (!hit && setup) {
       const x1 = ts.timeToCoordinate(setup.startTime);
       const x2 = ts.timeToCoordinate(setup.endTime);
       const yEntry = currentSeries.priceToCoordinate(setup.entryPrice);
@@ -4575,65 +4699,39 @@ document.addEventListener("DOMContentLoaded", () => {
       const ySL = currentSeries.priceToCoordinate(setup.slPrice);
       const midX = (x1 + x2) / 2;
 
-      // Détection des poignées du TP/SL
       if (Math.hypot(x - midX, y - yTP) < 15) { activeHandle = 'TP_TOP'; hit = true; }
       else if (Math.hypot(x - midX, y - ySL) < 15) { activeHandle = 'SL_BOTTOM'; hit = true; }
       else if (Math.hypot(x - midX, y - yEntry) < 15) { activeHandle = 'ENTRY'; hit = true; }
       else if (Math.hypot(x - x1, y - yEntry) < 15) { activeHandle = 'LEFT'; hit = true; }
       else if (Math.hypot(x - x2, y - yEntry) < 15) { activeHandle = 'RIGHT'; hit = true; }
-      // Détection du clic à l'intérieur pour déplacement global
-      else if (x > Math.min(x1, x2) && x < Math.max(x1, x2) &&
-        y > Math.min(yTP, ySL) && y < Math.max(yTP, ySL)) {
+      else if (x > Math.min(x1, x2) && x < Math.max(x1, x2) && y > Math.min(yTP, ySL) && y < Math.max(yTP, ySL)) {
         activeHandle = 'MOVE_ALL';
-        dragOffset = {
-          timeDiff: x - x1,
-          tpDiff: setup.tpPrice - price,
-          slDiff: setup.slPrice - price,
-          entryDiff: setup.entryPrice - price
-        };
+        dragOffset = { timeDiff: x - x1, tpDiff: setup.tpPrice - price, slDiff: setup.slPrice - price, entryDiff: setup.entryPrice - price };
         hit = true;
-      }
-
-      if (hit) {
-        canvas.style.pointerEvents = 'all';
-        render();
-        return; // On a touché le TP/SL, on arrête là
       }
     }
 
-    // 3. GESTION DES OBJETS CLASSIQUES (Trendline / Rectangle)
-    for (let i = drawingObjects.length - 1; i >= 0; i--) {
-      const obj = drawingObjects[i];
-      const x1 = ts.timeToCoordinate(obj.p1.time);
-      const y1 = currentSeries.priceToCoordinate(obj.p1.price);
-      const x2 = ts.timeToCoordinate(obj.p2.time);
-      const y2 = currentSeries.priceToCoordinate(obj.p2.price);
+    // 4. GESTION DES OBJETS CLASSIQUES
+    if (!hit) {
+      for (let i = drawingObjects.length - 1; i >= 0; i--) {
+        const obj = drawingObjects[i];
+        const x1 = ts.timeToCoordinate(obj.p1.time);
+        const y1 = currentSeries.priceToCoordinate(obj.p1.price);
+        const x2 = ts.timeToCoordinate(obj.p2.time);
+        const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
-      if (x1 === null || y1 === null || x2 === null || y2 === null) continue;
+        if (Math.hypot(x - x1, y - y1) < 15) { selectedObject = obj; activePoint = { obj, point: 'p1' }; hit = true; break; }
+        if (Math.hypot(x - x2, y - y2) < 15) { selectedObject = obj; activePoint = { obj, point: 'p2' }; hit = true; break; }
 
-      // Points d'extrémité
-      if (Math.hypot(x - x1, y - y1) < 15) {
-        selectedObject = obj;
-        activePoint = { obj, point: 'p1' };
-        hit = true; break;
-      } else if (Math.hypot(x - x2, y - y2) < 15) {
-        selectedObject = obj;
-        activePoint = { obj, point: 'p2' };
-        hit = true; break;
-      }
-
-      // Intérieur du rectangle
-      if (obj.type === 'rect') {
-        const minX = Math.min(x1, x2), maxX = Math.max(x1, x2);
-        const minY = Math.min(y1, y2), maxY = Math.max(y1, y2);
-        if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
-          selectedObject = obj;
-          hit = true; break;
+        if (obj.type === 'rect') {
+          const minX = Math.min(x1, x2), maxX = Math.max(x1, x2);
+          const minY = Math.min(y1, y2), maxY = Math.max(y1, y2);
+          if (x >= minX && x <= maxX && y >= minY && y <= maxY) { selectedObject = obj; hit = true; break; }
         }
       }
     }
 
-    // 4. BASCULE FINALE
+    // 5. BASCULE ET RENDU
     if (!hit) {
       selectedObject = null;
       activeHandle = null;
@@ -4665,12 +4763,25 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // --- CAS 2 : OUTIL TP/SL ---
+    // --- CAS 2 : OUTIL FIBONACCI (Nouveau) ---
+    else if (activeHandle && activeHandle.startsWith('FIBO') && fiboObj) {
+      if (activeHandle === 'FIBO_POC') {
+        // Déplace le niveau 0% (le point d'ancrage POC)
+        if (newPrice) fiboObj.pocPrice = newPrice;
+        if (newTime) fiboObj.startTime = newTime;
+      }
+      else if (activeHandle === 'FIBO_EXT') {
+        // Déplace le niveau 100% (l'extension)
+        if (newPrice) fiboObj.extentionPrice = newPrice;
+      }
+      render();
+    }
+
+    // --- CAS 3 : OUTIL TP/SL ---
     else if (activeHandle && setup) {
       if (activeHandle === 'MOVE_ALL') {
         // Déplacement global du bloc
         if (newPrice && newTime) {
-          // Calcul du nouveau temps de fin pour garder la largeur
           const x1_new = x - dragOffset.timeDiff;
           const x1_old = ts.timeToCoordinate(setup.startTime);
           const x2_old = ts.timeToCoordinate(setup.endTime);
@@ -4848,6 +4959,13 @@ document.addEventListener("DOMContentLoaded", () => {
       deactivateAllDrawingButtons();
     }
 
+    contextMenu.style.display = 'none';
+    render();
+  };
+
+  lockFiboItem.onclick = () => {
+    isFiboLocked = !isFiboLocked;
+    lockFiboItem.innerText = isFiboLocked ? "Déverrouiller Fibo" : "Verrouiller Fibo";
     contextMenu.style.display = 'none';
     render();
   };
