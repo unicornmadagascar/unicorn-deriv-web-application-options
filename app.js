@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let dragOffset = null;
   let showDrawings = true; // État de visibilité global
   let fiboObj = null;      // Outil Fibonacci
-  let vpLookback = 700;    // Période ajustable pour le Volume Profile  
+  let vpLookback = 400;    // Période ajustable pour le Volume Profile  
   let isFiboLocked = false; // État du verrouillage   
   // ================== x ==================  
 
@@ -2071,7 +2071,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (vpData) {
       ctx.save();
       const { profile, maxTotalVolume, rowHeight } = vpData;
-      const maxWidth = 300; // Agrandis à 300px
+      const maxWidth = 500; // Agrandis à 300px
       // La frontière est le bord droit du canvas
       const borderLine = canvas.width;
       // On peut ajouter un petit décalage de 2-3px pour ne pas toucher l'échelle des prix
