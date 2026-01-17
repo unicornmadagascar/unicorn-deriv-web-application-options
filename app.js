@@ -2258,7 +2258,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * Calcule le profil de volume basé sur les données du cache.
  * @returns {Object|null} Les données du profil ou null si indisponible.
  */
-  function calculateDynamicFiboPOC() {
+  function calculateDynamicFiboPOC() { 
     if (typeof cache === 'undefined' || cache.length === 0) return null;
 
     const lookback = vpLookback || 300;
