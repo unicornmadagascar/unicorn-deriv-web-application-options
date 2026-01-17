@@ -112,6 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let lastAlertTime = 0;
   const alertThresholdPips = 2; // Sensibilité de détection (en pips/points)
   let showVolumeProfile = true; // État spécifique pour le VP
+  let showFiboAnalysis = false; // Variable globale pour le rendu
   // ================== x ==================  
 
   let wsReady = false;
@@ -2035,13 +2036,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentMode === 'fibo') {
       deactivateAllDrawingButtons();
       canvas.style.pointerEvents = 'none';
+      showFiboAnalysis = false; // On cache tout quand on désactive
     } else {
       deactivateAllDrawingButtons();
       currentMode = 'fibo';
       btn.classList.add('active');
       canvas.style.pointerEvents = 'all';
+      showFiboAnalysis = true; // On affiche tout quand on active
     }
-  }
+    render(); // Rafraîchissement immédiat
+  };
 
   /**
  * Redimensionne le canvas pour matcher exactement le chart
@@ -2069,127 +2073,111 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const timeScale = chart.timeScale();
 
-    // --- A. VOLUME PROFILE (Ancré à droite, s'étend vers la gauche) ---
-    // --- A. VOLUME PROFILE (Avec distinction Value Area 70%) ---
-    const vpData = (currentChartType === "candlestick" && showVolumeProfile) ? calculateVolumeProfile() : null;
+    if (showFiboAnalysis) {
 
-    if (vpData) {
-      ctx.save();
-      const { profile, maxTotalVolume, rowHeight, vah, val } = vpData;
-      const maxWidth = 500;
-      const offsetFromPriceScale = 70;
-      const startX = canvas.width - offsetFromPriceScale;
+      // A. VOLUME PROFILE & VALUE AREA (70%)
+      const vpData = (currentChartType === "candlestick") ? calculateVolumeProfile() : null;
 
-      for (const yKey in profile) {
-        const d = profile[yKey];
-        const y = parseFloat(yKey);  
-        const price = d.price;  
- 
-        // On vérifie si le prix est à l'intérieur de la Value Area
-        const isInValueArea = price <= vah && price >= val;
+      if (vpData) {
+        ctx.save();
+        const { profile, maxTotalVolume, rowHeight, vah, val } = vpData;
+        const maxWidth = 500;
+        const offsetFromPriceScale = 70;
+        const startX = canvas.width - offsetFromPriceScale;
 
-        // Configuration des couleurs : Plus vif si dans la VA, plus terne si en dehors
-        const buyColor = isInValueArea ? 'rgba(38, 166, 154, 0.65)' : 'rgba(38, 166, 154, 0.20)';
-        const sellColor = isInValueArea ? 'rgba(239, 83, 80, 0.45)' : 'rgba(239, 83, 80, 0.15)';
+        for (const yKey in profile) {
+          const d = profile[yKey];
+          const y = parseFloat(yKey);
+          const isInValueArea = d.price <= vah && d.price >= val;
 
-        const totalWidth = (d.total / maxTotalVolume) * maxWidth;  
-        const buyWidth = (d.buy / d.total) * totalWidth;  
+          // Couleurs contrastées pour la Value Area
+          const buyColor = isInValueArea ? 'rgba(38, 166, 154, 0.65)' : 'rgba(38, 166, 154, 0.20)';
+          const sellColor = isInValueArea ? 'rgba(239, 83, 80, 0.45)' : 'rgba(239, 83, 80, 0.15)';
 
-        // Dessin Histogramme Sell (Fond)
-        ctx.fillStyle = sellColor;
-        ctx.fillRect(startX - totalWidth, y, totalWidth, rowHeight - 1);
+          const totalWidth = (d.total / maxTotalVolume) * maxWidth;
+          const buyWidth = (d.buy / d.total) * totalWidth;
 
-        // Dessin Histogramme Buy (Dessus)
-        ctx.fillStyle = buyColor;
-        ctx.fillRect(startX - totalWidth, y, buyWidth, rowHeight - 1);
+          ctx.fillStyle = sellColor;
+          ctx.fillRect(startX - totalWidth, y, totalWidth, rowHeight - 1);
+          ctx.fillStyle = buyColor;
+          ctx.fillRect(startX - totalWidth, y, buyWidth, rowHeight - 1);
 
-        // --- POINT OF CONTROL (POC) ---
-        if (d.total === maxTotalVolume) {
-          const pricePOC = currentSeries.coordinateToPrice(y).toFixed(2);
+          // --- POINT OF CONTROL (POC) ---
+          if (d.total === maxTotalVolume) {
+            const pricePOC = currentSeries.coordinateToPrice(y).toFixed(2);
+            ctx.strokeStyle = '#f39c12';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(startX - totalWidth, y, totalWidth, rowHeight - 1);
 
-          // Ligne de contour du POC
-          ctx.strokeStyle = '#f39c12';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(startX - totalWidth, y, totalWidth, rowHeight - 1);
-
-          // Badge du prix POC
-          ctx.fillStyle = '#f39c12';
-          const badgeWidth = 65;
-          // On place le badge à la fin de la barre de volume
-          ctx.fillRect(startX - totalWidth - badgeWidth, y - 9, badgeWidth, 18);
-
-          ctx.fillStyle = '#131722';
-          ctx.font = "bold 11px Arial";
-          ctx.textAlign = "center";
-          ctx.fillText(pricePOC, startX - totalWidth - (badgeWidth / 2), y + 4);
+            ctx.fillStyle = '#f39c12';
+            const badgeWidth = 65;
+            ctx.fillRect(startX - totalWidth - badgeWidth, y - 9, badgeWidth, 18);
+            ctx.fillStyle = '#131722';
+            ctx.font = "bold 11px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(pricePOC, startX - totalWidth - (badgeWidth / 2), y + 4);
+          }
         }
-      }
 
-      // --- TRACÉ DES LIGNES VAH / VAL ---
-      ctx.setLineDash([8, 4]);
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-
-      [vah, val].forEach((limitPrice, index) => {
-        const yLimit = currentSeries.priceToCoordinate(limitPrice);
-        ctx.beginPath();
-        ctx.moveTo(startX - maxWidth, yLimit);
-        ctx.lineTo(startX, yLimit);
-        ctx.stroke();
-
-        ctx.fillStyle = "white";
-        ctx.font = "bold 10px Arial";
-        ctx.fillText(index === 0 ? "VAH (70%)" : "VAL (70%)", startX + 5, yLimit + 3);
-      });
-
-      ctx.restore();
-    }
-
-    // --- B. FIBONACCI DYNAMIQUE (Pleine Largeur) ---
-    const fiboParams = calculateDynamicFiboPOC();
-
-    if (fiboParams) {
-      ctx.save();
-      const { fib0, fib100 } = fiboParams;
-
-      const y0 = currentSeries.priceToCoordinate(fib0);
-      const y100 = currentSeries.priceToCoordinate(fib100);
-
-      if (y0 !== null && y100 !== null) {
-        const range = y100 - y0;
-        const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
-
-        levels.forEach(lvl => {
-          const yLevel = y0 + (range * lvl);
-          const isMain = [0, 0.5, 0.618, 1].includes(lvl);
-
-          // TRACÉ PLEINE LARGEUR
-          ctx.strokeStyle = isMain ? 'rgba(30, 144, 255, 0.8)' : 'rgba(255, 255, 255, 0.3)';
-          ctx.lineWidth = isMain ? 2 : 1;
-          ctx.setLineDash(isMain ? [] : [5, 5]);
-
+        // --- TRACÉ DES LIGNES VAH / VAL ---
+        ctx.setLineDash([8, 4]);
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        [vah, val].forEach((limitPrice, index) => {
+          const yLimit = currentSeries.priceToCoordinate(limitPrice);
           ctx.beginPath();
-          ctx.moveTo(0, yLevel);
-          ctx.lineTo(canvas.width, yLevel);
+          ctx.moveTo(startX - maxWidth, yLimit);
+          ctx.lineTo(startX, yLimit);
           ctx.stroke();
 
-          // LABELS À GAUCHE
-          ctx.setLineDash([]);
-          const priceAtLevel = currentSeries.coordinateToPrice(yLevel).toFixed(3);
-          let labelName = (lvl === 0) ? "POC (0%)" : `${(lvl * 100).toFixed(1)}%`;
-          const fullText = `${labelName} : ${priceAtLevel}`;
-
-          ctx.fillStyle = isMain ? "#1E90FF" : "rgba(255, 255, 255, 0.8)";
-          ctx.font = isMain ? "bold 12px Arial" : "10px Arial";
+          ctx.fillStyle = "white";
+          ctx.font = "bold 10px Arial";
           ctx.textAlign = "left";
-          ctx.fillText(fullText, 10, yLevel - 7);
-
-          // ALERTE (Vérification si le prix touche ce niveau)
-          const lastBar = cache[cache.length - 1];
-          if (lastBar) checkPriceAtFiboLevels(lastBar.close, fiboParams);
+          ctx.fillText(index === 0 ? "VAH (70%)" : "VAL (70%)", startX - maxWidth + 5, yLimit - 5);
         });
+        ctx.restore();
       }
-      ctx.restore();
+
+      // B. FIBONACCI DYNAMIQUE (Basé sur le POC Historique)
+      const fiboParams = calculateDynamicFiboPOC();
+      if (fiboParams) {
+        ctx.save();
+        const { fib0, fib100 } = fiboParams;
+        const y0 = currentSeries.priceToCoordinate(fib0);
+        const y100 = currentSeries.priceToCoordinate(fib100);
+
+        if (y0 !== null && y100 !== null) {
+          const rangeY = y100 - y0;
+          const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+
+          levels.forEach(lvl => {
+            const yLvl = y0 + (rangeY * lvl);
+            const isMain = [0, 0.5, 0.618, 1].includes(lvl);
+
+            ctx.strokeStyle = isMain ? 'rgba(30, 144, 255, 0.9)' : 'rgba(255, 255, 255, 0.35)';
+            ctx.lineWidth = isMain ? 2 : 1;
+            ctx.setLineDash(isMain ? [] : [5, 5]);
+
+            ctx.beginPath();
+            ctx.moveTo(0, yLvl);
+            ctx.lineTo(canvas.width, yLvl);
+            ctx.stroke();
+
+            // Labels Fibonacci à gauche
+            ctx.setLineDash([]);
+            const priceLabel = currentSeries.coordinateToPrice(yLvl).toFixed(3);
+            ctx.fillStyle = isMain ? "#1E90FF" : "white";
+            ctx.font = isMain ? "bold 12px Arial" : "10px Arial";
+            ctx.textAlign = "left";
+            ctx.fillText(`${(lvl * 100).toFixed(1)}% : ${priceLabel}`, 10, yLvl - 8);
+
+            // Vérification des alertes prix
+            const lastBar = cache[cache.length - 1];
+            if (lastBar) checkPriceAtFiboLevels(lastBar.close, fiboParams);
+          });
+        }
+        ctx.restore();
+      }
     }
 
     // --- C. OBJETS CLASSIQUES (Trendlines / Rectangles) ---
