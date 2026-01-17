@@ -4845,8 +4845,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!currentMode && !activePoint) {
         canvas.style.pointerEvents = 'none';
       }
-    }
-  });
+    }     
+  });     
   
   window.addEventListener('keydown', (e) => {
     // On vérifie que l'utilisateur n'est pas en train d'écrire dans l'input du Lookback
@@ -4855,7 +4855,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const key = e.key.toLowerCase();
 
     // Touche 'L' pour Verrouiller/Déverrouiller le Fibonacci
-    if (key === 'l' && fiboObj) {
+    if (key === 'l' && fiboObj) {  
       isFiboLocked = !isFiboLocked;
 
       // Mise à jour du texte du menu contextuel s'il existe
