@@ -107,8 +107,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let showDrawings = true; // État de visibilité global
   let fiboObj = null;      // Outil Fibonacci
   let vpLookback = 700;    // Période ajustable pour le Volume Profile  
-  let isFiboLocked = false; // État du verrouillage
-  // ================== x ==================
+  let isFiboLocked = false; // État du verrouillage 
+  // ================== x ==================  
 
   let wsReady = false;
   let wsControl = null;
