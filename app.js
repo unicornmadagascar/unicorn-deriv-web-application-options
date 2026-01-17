@@ -5196,7 +5196,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Notification visuelle rapide dans la console
       console.log("Analyse Mode:", showFiboAnalysis ? "ON" : "OFF");
-    }
+    } 
 
     // Optionnel : Touche 'Escape' pour tout fermer
     if (e.key === 'Escape') {  
