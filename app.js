@@ -2061,20 +2061,18 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.height = chartInner.clientHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Si les dessins sont masqués (touche 'H'), on arrête ici
     if (!showDrawings) return;
 
-    const timeScale = chart.timeScale();   
+    const timeScale = chart.timeScale();
 
-    // --- A. VOLUME PROFILE (Arrière-plan) ---
-    // Sécurité : Uniquement si on n'est pas en mode "ticks"
-    const vpData = (currentChartType === "candlestick") ? calculateVolumeProfile() : null;    
+    // --- A. VOLUME PROFILE (Agrandis et collé à droite) ---
+    const vpData = (currentChartType === "candlestick") ? calculateVolumeProfile() : null;
 
-    if (vpData) {  
+    if (vpData) {
       ctx.save();
       const { profile, maxTotalVolume, rowHeight } = vpData;
-      const maxWidth = 180;
-      const chartRight = canvas.width;  
+      const maxWidth = 300; // Agrandis à 300px
+      const chartRight = canvas.width;
 
       for (const yKey in profile) {
         const d = profile[yKey];
@@ -2082,32 +2080,34 @@ document.addEventListener("DOMContentLoaded", () => {
         const totalWidth = (d.total / maxTotalVolume) * maxWidth;
         const buyWidth = (d.buy / d.total) * totalWidth;
 
-        // Dessin Histogramme (Fond Rouge, Avant-plan Vert pour les achats)
-        ctx.fillStyle = 'rgba(239, 83, 80, 0.3)'; // Vente
+        // Histogramme Sell (Rouge) dessiné depuis la droite
+        ctx.fillStyle = 'rgba(239, 83, 80, 0.35)';
         ctx.fillRect(chartRight - totalWidth, y, totalWidth, rowHeight - 1);
-        ctx.fillStyle = 'rgba(38, 166, 154, 0.5)'; // Achat
+
+        // Histogramme Buy (Vert) par-dessus
+        ctx.fillStyle = 'rgba(38, 166, 154, 0.55)';
         ctx.fillRect(chartRight - totalWidth, y, buyWidth, rowHeight - 1);
 
-        // Mise en valeur du POC (Point of Control)
+        // Point of Control (POC)
         if (d.total === maxTotalVolume) {
           const pricePOC = currentSeries.coordinateToPrice(y).toFixed(2);
           ctx.strokeStyle = '#f39c12';
-          ctx.lineWidth = 1.5;
+          ctx.lineWidth = 2;
           ctx.strokeRect(chartRight - totalWidth, y, totalWidth, rowHeight - 1);
 
-          // Badge de prix à l'extrême droite
+          // Badge de prix collé à l'échelle de droite
           ctx.fillStyle = '#f39c12';
-          ctx.fillRect(chartRight - 55, y - 7, 55, 15);
+          ctx.fillRect(chartRight - 60, y - 8, 60, 16);
           ctx.fillStyle = '#131722';
-          ctx.font = "bold 10px Arial";
+          ctx.font = "bold 11px Arial";
           ctx.textAlign = "center";
-          ctx.fillText(pricePOC, chartRight - 27, y + 4);
+          ctx.fillText(pricePOC, chartRight - 30, y + 4);
         }
       }
       ctx.restore();
     }
 
-    // --- B. FIBONACCI (Basé sur le POC) ---
+    // --- B. FIBONACCI (Affichage de TOUS les niveaux) ---
     if (fiboObj) {
       ctx.save();
       const xStart = timeScale.timeToCoordinate(fiboObj.startTime);
@@ -2117,7 +2117,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (xStart !== null && yPoc !== null && yExt !== null) {
         const diff = yExt - yPoc;
 
-        // Indicateur de verrouillage
         if (isFiboLocked) {
           ctx.globalAlpha = 0.6;
           ctx.fillStyle = "#e74c3c";
@@ -2125,24 +2124,26 @@ document.addEventListener("DOMContentLoaded", () => {
           ctx.fillText("🔒 Verrouillé (L)", xStart + 5, yPoc - 20);
         }
 
+        // On boucle sur tous les niveaux sans exception
         fiboObj.levels.forEach(level => {
           const yLevel = yPoc + (diff * level);
-          const isMain = [0, 0.618, 1].includes(level);
+          const isMain = [0, 0.5, 0.618, 1].includes(level);
 
-          ctx.strokeStyle = isMain ? 'rgba(243, 156, 18, 0.9)' : 'rgba(209, 212, 220, 0.4)';
+          ctx.strokeStyle = isMain ? 'rgba(243, 156, 18, 0.9)' : 'rgba(209, 212, 220, 0.5)';
           ctx.lineWidth = isMain ? 1.5 : 1;
-          ctx.setLineDash(isMain ? [] : [5, 5]);
+          ctx.setLineDash(isMain ? [] : [4, 4]);
 
           ctx.beginPath();
           ctx.moveTo(xStart, yLevel);
-          ctx.lineTo(canvas.width, yLevel);
+          ctx.lineTo(canvas.width, yLevel); // S'étend vers la droite
           ctx.stroke();
 
-          // Labels des niveaux
+          // Labels
           ctx.setLineDash([]);
-          ctx.fillStyle = isMain ? "#f39c12" : "rgba(255, 255, 255, 0.7)";
+          ctx.fillStyle = isMain ? "#f39c12" : "rgba(255, 255, 255, 0.8)";
           ctx.font = isMain ? "bold 11px Arial" : "10px Arial";
           const priceAtLevel = currentSeries.coordinateToPrice(yLevel).toFixed(2);
+          // Texte décalé pour ne pas être caché par l'histogramme large
           ctx.fillText(`${(level * 100).toFixed(1)}% (${priceAtLevel})`, xStart + 5, yLevel - 5);
         });
       }
@@ -2170,7 +2171,6 @@ document.addEventListener("DOMContentLoaded", () => {
           ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
         }
 
-        // Poignées de sélection
         if (isSelected) {
           ctx.fillStyle = 'white';
           [{ x: x1, y: y1 }, { x: x2, y: y2 }].forEach(p => {
@@ -2193,14 +2193,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (x1 !== null && x2 !== null && yEntry !== null && yTP !== null && ySL !== null) {
         const w = x2 - x1;
-        // Zone Profit (Vert)
         ctx.fillStyle = 'rgba(38, 166, 154, 0.3)';
         ctx.fillRect(x1, Math.min(yTP, yEntry), w, Math.abs(yEntry - yTP));
-        // Zone Perte (Rouge)
         ctx.fillStyle = 'rgba(239, 83, 80, 0.3)';
         ctx.fillRect(x1, Math.min(yEntry, ySL), w, Math.abs(ySL - yEntry));
-
-        // R/R Ratio
+  
         const rr = (Math.abs(setup.tpPrice - setup.entryPrice) / Math.abs(setup.entryPrice - setup.slPrice || 1)).toFixed(2);
         ctx.fillStyle = "white";
         ctx.font = "bold 12px Arial";
@@ -2220,7 +2217,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentChartType !== "candlestick" || typeof cache === 'undefined' || cache.length === 0) {
       return null;
     }
-    
+
     // 2. Configuration
     const lookback = vpLookback || 300; // Nombre de bougies à analyser
     const startIndex = Math.max(0, cache.length - lookback);
@@ -2268,11 +2265,11 @@ document.addEventListener("DOMContentLoaded", () => {
       profile,
       maxTotalVolume,
       rowHeight
-    }; 
-  }    
-  
+    };
+  }
+
   // --- LOGIQUE DE GÉNÉRATION INITIALE ---
-  function generateLinkedSetup(clickTime, clickPrice) {  
+  function generateLinkedSetup(clickTime, clickPrice) {
     // On crée un setup par défaut autour du point cliqué
     setup = {
       type: 'tpsl',
@@ -4788,7 +4785,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Si rien n'est en train d'être déplacé, on sort
     if (!activePoint && !activeHandle) return;
 
-    const rect = canvas.getBoundingClientRect();  
+    const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
