@@ -2217,10 +2217,10 @@ document.addEventListener("DOMContentLoaded", () => {
  */
   function calculateVolumeProfile() {
     // 1. Sécurités : Mode Candlestick uniquement et vérification du cache
-    if (chartType !== "candlestick" || typeof cache === 'undefined' || cache.length === 0) {
+    if (currentChartType !== "candlestick" || typeof cache === 'undefined' || cache.length === 0) {
       return null;
     }
-
+    
     // 2. Configuration
     const lookback = vpLookback || 300; // Nombre de bougies à analyser
     const startIndex = Math.max(0, cache.length - lookback);
