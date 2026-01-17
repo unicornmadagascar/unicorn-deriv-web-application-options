@@ -2079,6 +2079,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const vpData = (currentChartType === "candlestick") ? calculateVolumeProfile() : null;
 
       if (vpData) {
+        console.log("Volume Profile généré :", Object.keys(vpData.profile).length, "niveaux");
         ctx.save();
         const { profile, maxTotalVolume, rowHeight, vah, val } = vpData;
         const maxWidth = 500;
