@@ -2023,7 +2023,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  window.enableFibo = function (btn) {
+  window.enableFibonacci = function (btn) {
     deactivateAllDrawingButtons();
     currentMode = 'fibo';
     btn.classList.add('active');
