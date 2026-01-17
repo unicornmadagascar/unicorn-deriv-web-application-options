@@ -2070,66 +2070,94 @@ document.addEventListener("DOMContentLoaded", () => {
     const timeScale = chart.timeScale();
 
     // --- A. VOLUME PROFILE (Ancré à droite, s'étend vers la gauche) ---
-    const vpData = (currentChartType === "candlestick" && showVolumeProfile) ? calculateDynamicFiboPOC() : null;
+    // --- A. VOLUME PROFILE (Avec distinction Value Area 70%) ---
+    const vpData = (currentChartType === "candlestick" && showVolumeProfile) ? calculateVolumeProfile() : null;
 
     if (vpData) {
       ctx.save();
-      const { profile, maxTotalVolume, rowHeight } = vpData;  
-
-      // Configuration demandée : Grand (500px) et décalé de l'échelle
+      const { profile, maxTotalVolume, rowHeight, vah, val } = vpData;
       const maxWidth = 500;
-      const offsetFromPriceScale = 70; // Espace pour l'échelle de prix TradingView
+      const offsetFromPriceScale = 70;
       const startX = canvas.width - offsetFromPriceScale;
 
       for (const yKey in profile) {
         const d = profile[yKey];
-        const y = parseFloat(yKey);
+        const y = parseFloat(yKey);  
+        const price = d.price;
+ 
+        // On vérifie si le prix est à l'intérieur de la Value Area
+        const isInValueArea = price <= vah && price >= val;
+
+        // Configuration des couleurs : Plus vif si dans la VA, plus terne si en dehors
+        const buyColor = isInValueArea ? 'rgba(38, 166, 154, 0.65)' : 'rgba(38, 166, 154, 0.20)';
+        const sellColor = isInValueArea ? 'rgba(239, 83, 80, 0.45)' : 'rgba(239, 83, 80, 0.15)';
+
         const totalWidth = (d.total / maxTotalVolume) * maxWidth;
         const buyWidth = (d.buy / d.total) * totalWidth;
 
-        // Dessin depuis la frontière vers la gauche (startX - largeur)
-        ctx.fillStyle = 'rgba(239, 83, 80, 0.30)'; // Vente (Alpha légèrement réduit pour la clarté)
+        // Dessin Histogramme Sell (Fond)
+        ctx.fillStyle = sellColor;
         ctx.fillRect(startX - totalWidth, y, totalWidth, rowHeight - 1);
 
-        ctx.fillStyle = 'rgba(38, 166, 154, 0.45)'; // Achat
+        // Dessin Histogramme Buy (Dessus)
+        ctx.fillStyle = buyColor;
         ctx.fillRect(startX - totalWidth, y, buyWidth, rowHeight - 1);
 
-        // Point of Control (POC)
+        // --- POINT OF CONTROL (POC) ---
         if (d.total === maxTotalVolume) {
           const pricePOC = currentSeries.coordinateToPrice(y).toFixed(2);
 
-          // Bordure du POC
+          // Ligne de contour du POC
           ctx.strokeStyle = '#f39c12';
           ctx.lineWidth = 2;
           ctx.strokeRect(startX - totalWidth, y, totalWidth, rowHeight - 1);
 
-          // Badge de prix du POC
+          // Badge du prix POC
           ctx.fillStyle = '#f39c12';
           const badgeWidth = 65;
-          ctx.fillRect(startX - badgeWidth, y - 9, badgeWidth, 18);
+          // On place le badge à la fin de la barre de volume
+          ctx.fillRect(startX - totalWidth - badgeWidth, y - 9, badgeWidth, 18);
 
           ctx.fillStyle = '#131722';
           ctx.font = "bold 11px Arial";
           ctx.textAlign = "center";
-          ctx.fillText(pricePOC, startX - (badgeWidth / 2), y + 4);
+          ctx.fillText(pricePOC, startX - totalWidth - (badgeWidth / 2), y + 4);
         }
       }
+
+      // --- TRACÉ DES LIGNES VAH / VAL ---
+      ctx.setLineDash([8, 4]);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+
+      [vah, val].forEach((limitPrice, index) => {
+        const yLimit = currentSeries.priceToCoordinate(limitPrice);
+        ctx.beginPath();
+        ctx.moveTo(startX - maxWidth, yLimit);
+        ctx.lineTo(startX, yLimit);
+        ctx.stroke();
+
+        ctx.fillStyle = "white";
+        ctx.font = "bold 10px Arial";
+        ctx.fillText(index === 0 ? "VAH (70%)" : "VAL (70%)", startX + 5, yLimit + 3);
+      });
+
       ctx.restore();
     }
 
     // --- B. FIBONACCI DYNAMIQUE (Pleine Largeur) ---
     const fiboParams = calculateDynamicFiboPOC();
 
-    if (fiboParams) {  
+    if (fiboParams) {
       ctx.save();
       const { fib0, fib100 } = fiboParams;
 
       const y0 = currentSeries.priceToCoordinate(fib0);
       const y100 = currentSeries.priceToCoordinate(fib100);
-   
-      if (y0 !== null && y100 !== null) {  
+
+      if (y0 !== null && y100 !== null) {
         const range = y100 - y0;
-        const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];  
+        const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
 
         levels.forEach(lvl => {
           const yLevel = y0 + (range * lvl);
@@ -2258,12 +2286,12 @@ document.addEventListener("DOMContentLoaded", () => {
  * Calcule le profil de volume basé sur les données du cache.
  * @returns {Object|null} Les données du profil ou null si indisponible.
  */
-  function calculateDynamicFiboPOC() { 
+  function calculateDynamicFiboPOC() {
     if (typeof cache === 'undefined' || cache.length === 0) return null;
 
     const lookback = vpLookback || 300;
-    const startIndex = Math.max(0, cache.length - lookback); 
-    const data = cache.slice(startIndex);  
+    const startIndex = Math.max(0, cache.length - lookback);
+    const data = cache.slice(startIndex);
 
     // 1. Calculer le POC Historique (Prix avec le plus de volume/occurrences)
     const vp = calculateVolumeProfile();
@@ -2301,6 +2329,63 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     return { fib0, fib100, pocIsHigh, pocPrice };
+  }
+
+  function calculateVolumeProfile() {
+    if (typeof cache === 'undefined' || cache.length === 0) return null;
+
+    const lookback = typeof vpLookback !== 'undefined' ? vpLookback : 300;
+    const startIndex = Math.max(0, cache.length - lookback);
+    const data = cache.slice(startIndex);
+
+    let totalRange = 0;
+    data.forEach(bar => totalRange += (bar.high - bar.low));
+    const avgRange = totalRange / data.length;
+    const rowHeightPrice = avgRange * 0.1;
+
+    const profile = {};
+    let maxTotalVolume = 0;
+    let totalVolumeSum = 0;
+
+    data.forEach(bar => {
+      const volume = bar.volume || 0;
+      const buyVolume = bar.close > bar.open ? volume : volume * 0.45;
+      const top = Math.floor(bar.high / rowHeightPrice) * rowHeightPrice;
+      const bottom = Math.ceil(bar.low / rowHeightPrice) * rowHeightPrice;
+
+      for (let price = bottom; price <= top; price += rowHeightPrice) {
+        const yKey = Math.round(currentSeries.priceToCoordinate(price));
+        if (!profile[yKey]) profile[yKey] = { total: 0, buy: 0, sell: 0, price: price };
+
+        const stepVol = volume / (Math.max(1, (top - bottom) / rowHeightPrice + 1));
+        profile[yKey].total += stepVol;
+        profile[yKey].buy += (buyVolume / (Math.max(1, (top - bottom) / rowHeightPrice + 1)));
+        totalVolumeSum += stepVol;
+
+        if (profile[yKey].total > maxTotalVolume) maxTotalVolume = profile[yKey].total;
+      }
+    });
+
+    // --- CALCUL DE LA VALUE AREA (70%) ---
+    const sortedLevels = Object.values(profile).sort((a, b) => b.total - a.total);
+    let currentAreaVolume = 0;
+    const targetVolume = totalVolumeSum * 0.70;
+    const areaPrices = [];
+
+    for (let level of sortedLevels) {
+      if (currentAreaVolume < targetVolume) {
+        currentAreaVolume += level.total;
+        areaPrices.push(level.price);
+      } else break;
+    }
+
+    return {
+      profile,
+      maxTotalVolume,
+      rowHeight: Math.max(1, Math.abs(currentSeries.priceToCoordinate(data[0].close) - currentSeries.priceToCoordinate(data[0].close + rowHeightPrice))),
+      vah: Math.max(...areaPrices),
+      val: Math.min(...areaPrices)
+    };
   }
 
   // --- LOGIQUE DE GÉNÉRATION INITIALE ---
