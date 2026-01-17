@@ -2269,7 +2269,7 @@ document.addEventListener("DOMContentLoaded", () => {
       maxTotalVolume,
       rowHeight
     };
-  }
+  }  
 
   // --- LOGIQUE DE GÉNÉRATION INITIALE ---
   function generateLinkedSetup(clickTime, clickPrice) {  
