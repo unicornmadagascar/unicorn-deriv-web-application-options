@@ -2088,10 +2088,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Histogramme Sell (Rouge) dessiné depuis la droite
         ctx.fillStyle = 'rgba(239, 83, 80, 0.35)';
-        ctx.fillRect(startX - totalWidth, y, totalWidth, rowHeight - 1);
+        ctx.fillRect(startX - totalWidth, y, totalWidth, rowHeight - 1);  
 
         // Histogramme Buy (Vert) par-dessus
-        ctx.fillStyle = 'rgba(38, 166, 154, 0.55)';
+        ctx.fillStyle = 'rgba(38, 166, 154, 0.55)';  
         ctx.fillRect(startX - totalWidth, y, buyWidth, rowHeight - 1);
 
         // Point of Control (POC)
