@@ -4827,7 +4827,7 @@ document.addEventListener("DOMContentLoaded", () => {
       canvas.style.pointerEvents = 'all';
     }
 
-    // Annulation totale
+    // Annulation totale  
     else if (e.key === 'Escape') {
       currentMode = null;
       activePoint = null; // On arrête tout déplacement en cours
