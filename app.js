@@ -2065,13 +2065,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!ctx || !chartInner) return;
 
     // 1. Initialisation et Nettoyage
-    canvas.width = chartInner.clientWidth;
+    canvas.width = chartInner.clientWidth;  
     canvas.height = chartInner.clientHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (!showDrawings) return;
 
-    const timeScale = chart.timeScale();
+    const timeScale = chart.timeScale();  
 
     if (showFiboAnalysis) {
 
