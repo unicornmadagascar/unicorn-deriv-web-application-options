@@ -2064,7 +2064,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Si les dessins sont masqués (touche 'H'), on arrête ici
     if (!showDrawings) return;
 
-    const timeScale = chart.timeScale();
+    const timeScale = chart.timeScale(); 
 
     // --- A. VOLUME PROFILE (Arrière-plan) ---
     // Sécurité : Uniquement si on n'est pas en mode "ticks"
@@ -2074,7 +2074,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ctx.save();
       const { profile, maxTotalVolume, rowHeight } = vpData;
       const maxWidth = 180;
-      const chartRight = canvas.width;
+      const chartRight = canvas.width;  
 
       for (const yKey in profile) {
         const d = profile[yKey];
