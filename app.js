@@ -700,7 +700,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const entryPrice = parseFloat(c.entry_tick_display_value);
         const profit = parseFloat(c.profit || 0);   
         if (isNaN(entryPrice)) return;
-
+  
         // Style dynamique selon le profit
         const isWin = profit >= 0;
         const color = isWin ? "#00ff80" : "#ff4d4d";
