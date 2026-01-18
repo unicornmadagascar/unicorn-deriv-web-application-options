@@ -2825,9 +2825,19 @@
       /* Animation fluide */
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
+
+    .btn-main-action {
+      background: #2962ff; 
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
   </style>
 </head>
- 
+
 <body>
   <header>
     <div id="symbolList"></div>
@@ -2945,11 +2955,11 @@
         <div id="visibilityItem" class="menu-item">Masquer tout</div>
         <div id="lockFiboItem" class="menu-item">Verrouiller Fibo</div>
       </div>
-  
+
     </div>
   </div>
 
-  <div id="tradeHistoryContainer__" class="glass-panel">  
+  <div id="tradeHistoryContainer__" class="glass-panel">
     <div class="header-flex">
       <h2 class="tradeHistoryTitle__">AI-TCN Engine <span class="live-pulse"></span></h2>
       <div id="tradeHistoryStatus__">Standby</div>
