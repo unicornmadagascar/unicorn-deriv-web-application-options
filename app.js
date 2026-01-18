@@ -5021,7 +5021,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Fermer si on clique à l'extérieur de la popup
   window.onclick = (event) => {
-    if (event.target == modal_symbol) closeModal();
+    if (event.target == modal_symbol) closeModal();  
   }
 
   /* ===================== GRAPHICAL OBJECTS =========================== */
