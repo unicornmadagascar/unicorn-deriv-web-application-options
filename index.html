@@ -391,6 +391,8 @@
       font-weight: bold;
     }
 
+    ²
+
     /* Conteneur de base du badge */
     .impact-badge {
       display: inline-flex;
@@ -671,16 +673,37 @@
     }
 
     #connectBtn {
-      background: #007bff;
-      color: #fff;
+      /* Couleur Bleu TradingView */
+      background: #2962ff;
+      color: #ffffff;
+
+      /* Dimensions et Espacement */
+      padding: 12px 24px;
+      border-radius: 8px;
+      /* Coins légèrement plus arrondis */
+
+      /* Typographie */
+      font-weight: 600;
+      font-size: 14px;
       border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
+
+      /* Interaction */
       cursor: pointer;
+      transition: background 0.2s ease;
+      /* Transition douce pour le hover */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     #connectBtn:hover {
-      background: #0056b3;
+      /* Un bleu légèrement plus sombre au survol */
+      background: #1e53e5;
+    }
+
+    #connectBtn:active {
+      /* Effet de clic */
+      transform: scale(0.98);
     }
 
     /* --- Control Panel --- */
@@ -2827,7 +2850,7 @@
     }
 
     .btn-main-action {
-      background: #2962ff; 
+      background: #2962ff;
       color: white;
       padding: 12px 24px;
       border: none;
@@ -2842,8 +2865,8 @@
   <header>
     <div id="symbolList"></div>
     <div id="controls">
-      <button id="openPickerBtn" class="btn-main-action">Symbols</button>   
-      <button id="connectBtn">Connect</button>    
+      <button id="openPickerBtn" class="btn-main-action">Symbols</button>
+      <button id="connectBtn">Connect</button>
     </div>
   </header>
 
