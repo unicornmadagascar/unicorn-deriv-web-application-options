@@ -51,6 +51,13 @@
       --text-dark: #1e293b;
       --text-light: #64748b;
       --border-color: #e2e8f0;
+      /* POPUP Symbols */
+      --bg-white: #ffffff;
+      --light-gray: #f0f3fa;
+      --border-color: #e0e3eb;
+      --text-dark: #131722;
+      --text-grey: #6a6d78;
+      --accent-blue: #2962ff;
     }
 
     /* .container {
@@ -60,7 +67,7 @@
       margin-right: 30px;
       margin-top: 3px;
       padding-top: 2px;
-      box-sizing: border-box  
+      box-sizing: border-box    
     } */
 
     h1 {
@@ -2862,7 +2869,7 @@
 
       /* Alignement pour plus de propreté */
       display: inline-flex;
-      align-items: center;  
+      align-items: center;
       justify-content: center;
 
       /* Animation de transition douce */
@@ -2879,6 +2886,112 @@
       transform: scale(0.98);
     }
 
+    .tv-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      /* Modifié : initialement caché */
+      display: none;
+
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      z-index: 1000;
+      /* Assure que la popup est au-dessus du graphique */
+    }
+
+    /* Cette classe sera ajoutée par le JavaScript */
+    .tv-modal-overlay.active {
+      display: flex;
+    }
+
+    .tv-modal {
+      background: var(--bg-white);
+      width: 480px;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+    }
+
+    .tv-modal-header {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .search-container input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 15px;
+      background: var(--light-gray);
+      outline: none;
+    }
+
+    .rounded-container {
+      background: var(--light-gray);
+      border-radius: 15px;
+      /* Container très arrondi */
+      padding: 15px;
+      border: 1px solid var(--border-color);
+      min-height: 200px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .symbol-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    /* REMPLACÉ : .symbol-item par .asset-selector-item */
+    .asset-selector-item {
+      background: white;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-dark);
+      transition: 0.2s;
+    }
+
+    .asset-selector-item:hover {
+      border-color: var(--accent-blue);
+      background: #f8faff;
+    }
+
+    .asset-selector-item.selected {
+      background: var(--accent-blue);
+      color: white;
+      border-color: var(--accent-blue);
+    }
+
+    .tv-modal-footer {
+      padding: 15px 20px;
+      background: white;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn-validate {
+      background: var(--accent-blue);
+      color: white;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
   </style>
 </head>
 
@@ -2890,6 +3003,47 @@
       <button id="connectBtn">Connect</button>
     </div>
   </header>
+
+
+  <div class="tv-modal-overlay" id="modalOverlay">
+    <div class="tv-modal">
+      <div class="tv-modal-header">
+        <span>Select an instrument</span>
+        <button class="close-icon" onclick="closeModal()">&times;</button>
+      </div>
+
+      <div class="tv-modal-body">
+        <div class="search-container">
+          <input type="text" id="symbolSearch" placeholder="Rechercher un symbole..." onkeyup="filterSymbols()">
+        </div>
+
+        <div class="field-group">
+          <label>Catégorie</label>
+          <select id="categorySelect" onchange="updateSymbols()">
+            <option value="metals">Metals</option>
+            <option value="crypto">Cryptocurrencies</option>
+            <option value="minor">Minor Pairs</option>
+            <option value="major" selected>Major Pairs</option>
+            <option value="step">Step Indices</option>
+            <option value="jump">Jump Indices</option>
+            <option value="crash">Crash/Boom Indices</option>
+            <option value="continuous">Continuous Indices</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label>Symbols available</label>
+          <div id="symbolGrid" class="symbol-grid rounded-container">
+          </div>
+        </div>
+      </div>
+
+      <div class="tv-modal-footer">
+        <button class="btn-close" onclick="closeModal()">Close</button>
+        <button id="validateBtn" class="btn-validate" disabled onclick="confirmSelection()">Validate</button>
+      </div>
+    </div>
+  </div>
 
   <section class="widget-section full-width" id="gold-info-section">
     <div id="gold-info-container" class="tradingview-widget-container"></div>

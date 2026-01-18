@@ -68,6 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const deleteItem = document.getElementById('deleteItem');
   const visibilityItem = document.getElementById('visibilityItem');
   const lockFiboItem = document.getElementById('lockFiboItem');
+  const modal_symbol = document.getElementById('modalOverlay');
+  const openBtn = document.getElementById('openPickerBtn');
   const ctx = canvas.getContext('2d');
   // Tableau des périodes actuellement affichées
   let maSeries = null;
@@ -113,6 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const alertThresholdPips = 2; // Sensibilité de détection (en pips/points)
   let showVolumeProfile = true; // État spécifique pour le VP
   let showFiboAnalysis = false; // Variable globale pour le rendu
+  let selectedSymbol = null;
   // ================== x ==================  
 
   let wsReady = false;
@@ -229,14 +232,18 @@ document.addEventListener("DOMContentLoaded", () => {
   let economicEventLines = [];
   let overlayCtx = null;
   // ================================
-  // VARIABLES GLOBALES NN ML5
+  // VARIABLES GLOBALES SYMBOLS
   // ================================ 
-  const SEQ = 20;
-  let buffer = [];
-  const RUPTURE_THRESHOLD = 0.85;
-  let autorunningml5 = false;
-  let ruptureModel = null;
-  let wsml5 = null;
+  const data = {
+    metals: ["Gold/USD", "Palladium/USD", "Silver/USD", "Platinum/USD"],
+    crypto: ["BTC/USD", "ETH/USD"],
+    minor: ["AUD/CAD", "AUD/CHF", "AUD/NZD", "EUR/NZD", "GBP/CAD", "GBP/CHF", "GBP/NZD", "NZD/JPY", "NZD/USD", "USD/MXN", "USD/PLN"],
+    major: ["AUD/JPY", "AUD/USD", "EUR/AUD", "EUR/CAD", "EUR/CHF", "EUR/GBP", "EUR/JPY", "EUR/USD", "GBP/JPY", "USD/CAD", "GBP/USD", "GBP/AUD", "USD/CHF"],
+    step: ["Step Index 100", "Step Index 200", "Step Index 300", "Step Index 400", "Step Index 500"],
+    jump: ["Jump 10 Index", "Jump 25 Index", "Jump 50 Index", "Jump 75 Index", "Jump 100 Index"],
+    crash: ["Boom 300", "Boom 500", "Boom 600", "Boom 900", "Boom 1000", "Crash 300", "Crash 500", "Crash 600", "Crash 900", "Crash 1000"],
+    continuous: ["Volatility 10 (1s)", "Volatility 15 (1s)", "Volatility 25 (1s)", "Volatility 30 (1s)", "Volatility 50 (1s)", "Volatility 75 (1s)", "Volatility 90 (1s)", "Volatility 100 (1s)", "Volatility 10", "Volatility 25", "Volatility 50", "Volatility 75", "Volatility 100"]
+  };
 
   const SYMBOLS = [
     { symbol: "BOOM300N", name: "Boom 300" },
@@ -4691,8 +4698,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.onload = async () => {
     if (!currentSymbol) return;
-    await loadSymbol(currentSymbol, currentInterval, currentChartType);  
-    setupChartInteractions(chart);  
+    await loadSymbol(currentSymbol, currentInterval, currentChartType);
+    setupChartInteractions(chart);
   };
 
   // Simulation : mise à jour toutes les 2 secondes
@@ -5004,7 +5011,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  /* ===================== TRENDLINE =========================== */
+  /* ===================== SYMBOLS POPUP =========================== */
+
+  function closeModal() {
+    modal.style.display = 'none';
+  }
+
+  openBtn.onclick = () => modal.style.display = 'flex';
+
+  // Fermer si on clique à l'extérieur de la popup
+  window.onclick = (event) => {
+    if (event.target == modal) closeModal();
+  }
+
+  /* ===================== GRAPHICAL OBJECTS =========================== */
 
   canvas.addEventListener('mousedown', (e) => {
     if (!showDrawings) return;
