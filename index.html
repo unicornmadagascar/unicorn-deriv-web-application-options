@@ -682,7 +682,7 @@
       border-radius: 8px;
       /* Coins légèrement plus arrondis */
 
-      /* Typographie */ 
+      /* Typographie */
       font-weight: 600;
       font-size: 14px;
       border: none;
@@ -2850,14 +2850,35 @@
     }
 
     .btn-main-action {
+      /* Base identique au connectBtn */
       background: #2962ff;
-      color: white;
+      color: #ffffff;
       padding: 12px 24px;
-      border: none;
       border-radius: 8px;
+      border: none;
       cursor: pointer;
       font-weight: 600;
+      font-size: 14px;
+
+      /* Alignement pour plus de propreté */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      /* Animation de transition douce */
+      transition: background 0.2s ease, transform 0.1s ease;
     }
+
+    /* Style au survol (Bleu plus sombre) */
+    .btn-main-action:hover {
+      background: #1e53e5;
+    }
+
+    /* Effet de clic (légère réduction de taille) */
+    .btn-main-action:active {
+      transform: scale(0.98);
+    }
+    
   </style>
 </head>
 
