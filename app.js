@@ -270,7 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
       el.textContent = s.name;
       el.dataset.symbol = s.symbol;
 
-      // On enlève le async ici car loadSymbol gère ses propres asynchronicités (WS)
+      // On enlève le async ici car loadSymbol gère ses propres asynchronicités (WS)  
       el.addEventListener("click", () => {
         // 1. Mise à jour visuelle (immédiate pour le feedback utilisateur)
         const allItems = symbolList.querySelectorAll(".symbol-item");
