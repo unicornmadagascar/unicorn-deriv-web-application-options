@@ -5014,14 +5014,14 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ===================== SYMBOLS POPUP =========================== */
 
   function closeModal() {
-    modal.style.display = 'none';
+    modal_symbol.style.display = 'none';
   }
 
-  openBtn.onclick = () => modal.style.display = 'flex';
+  openBtn.onclick = () => modal_symbol.style.display = 'flex';
 
   // Fermer si on clique à l'extérieur de la popup
   window.onclick = (event) => {
-    if (event.target == modal) closeModal();
+    if (event.target == modal_symbol) closeModal();
   }
 
   /* ===================== GRAPHICAL OBJECTS =========================== */
