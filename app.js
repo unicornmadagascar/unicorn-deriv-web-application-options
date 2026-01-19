@@ -347,22 +347,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const filteredSymbols = data[currentCategory].filter(symbol =>
       symbol.toLowerCase().includes(searchTerm)
     );
-
+  
     // 4. Appeler la fonction de rendu pour mettre à jour la grille visuelle
     renderGrid(filteredSymbols);
-  }
+  } 
 
-  window.confirmSelection = function () {
+  function confirmSelection() {
     if (!selectedSymbol) return;
 
     // Simulation de chargement : On met à jour le titre du bouton et le graphique
     openBtn.innerText = `Instrument : ${selectedSymbol}`;
 
     // On simule un nouveau signal spécifique au symbole
-    const newData = generateData();
-    lineSeries.setData(newData);
-
-    chart.timeScale().fitContent();
+    showToast(`Selected Symbol ${selectedSymbol} Validated`,'info');
 
     console.log("Chargement du signal pour : " + selectedSymbol);
     closeModal();
@@ -2114,7 +2111,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.classList.add('active');
 
     // On s'assure que le canvas peut recevoir les clics
-    canvas.style.pointerEvents = 'all';  
+    canvas.style.pointerEvents = 'all';
 
     btn.classList.add('active', 'btn-drawing');
   }
@@ -2128,7 +2125,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Gestion visuelle du bouton
     document.querySelectorAll('.btn-drawing').forEach(b => b.classList.remove('active'));
     btn.classList.add('active', 'btn-drawing');
-  }  
+  }
 
   window.enableTPSL = function (btn) {
     // Si on reclique sur le bouton alors qu'il est déjà actif, on le désactive
@@ -5081,6 +5078,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ===================== SYMBOLS POPUP =========================== */
 
+  // Initialisation
+  window.onload = updateSymbols;
 
   openBtn.onclick = () => modal_symbol.style.display = 'flex';
 
@@ -5088,6 +5087,19 @@ document.addEventListener("DOMContentLoaded", () => {
   window.onclick = (event) => {
     if (event.target == modal_symbol) closeModal();
   }
+
+  // On récupère le bouton par son ID
+  const validateBtn = document.getElementById('validateBtn');
+
+  // On lui attache la fonction au clic
+  validateBtn.addEventListener('click', confirmSelection);
+
+  document.addEventListener('keydown', function (event) {
+    // Si la touche pressée est "Enter" et qu'un symbole est déjà choisi
+    if (event.key === "Enter" && !document.getElementById('validateBtn').disabled) {
+      confirmSelection();
+    }
+  });
 
   /* ===================== GRAPHICAL OBJECTS =========================== */
 
