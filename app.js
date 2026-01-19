@@ -448,8 +448,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
     currentSymbol = selectedSymbolconverted;
-    console.log("Chargement du signal pour : " + selectedSymbol);
-    closeModal();
+    console.log("Chargement du signal pour : " + selectedSymbol);  
+    closeModal(); 
   }
 
   function Callingsymbolforderiv(selectedsymbol4convert) {  
