@@ -5405,12 +5405,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateSymbols();
   });
 
-  openBtn.onclick = () => modal_symbol.style.display = 'flex';
-
-  // Fermer si on clique à l'extérieur de la popup  
-  window.onclick = (event) => {
-    if (event.target == modal_symbol) closeModal();
-  }
+  openBtn.onclick = () => modal_symbol.style.display = 'flex'; 
 
   // On récupère le bouton par son ID
   const validateBtn = document.getElementById('validateBtn');
