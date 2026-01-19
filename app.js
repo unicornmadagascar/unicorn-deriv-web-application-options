@@ -474,7 +474,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function Callingsymbolforderiv(selectedsymbol4convert) {
-    const symbol = selectedsymbol4convert.trim();
+    const symbol = selectedsymbol4convert.trim(); 
     switch (symbol) {
       case "Gold/USD", "Palladium/USD", "Silver/USD", "Platinum/USD":
         selectedSymbolconverted = SymbolSelectedLocation4metals(symbol);
