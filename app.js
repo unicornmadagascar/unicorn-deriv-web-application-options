@@ -382,7 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         // C. Appliquer la sélection visuelle sur l'item cliqué
-        div.classList.add('selected');
+        div.classList.add('selected');  
 
         // D. Stocker le symbole choisi globalement
         selectedSymbol = symbol;
