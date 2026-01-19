@@ -427,7 +427,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.confirmSelection = function() { 
     if (!selectedSymbol) return;
 
-    // Simulation de chargement : On met à jour le titre du bouton et le graphique
+    // Simulation de chargement : On met à jour le titre du bouton et le graphique  
     openBtn.innerText = `Instrument : ${selectedSymbol}`;  
 
     // On simule un nouveau signal spécifique au symbole
