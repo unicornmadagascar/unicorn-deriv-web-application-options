@@ -4303,7 +4303,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const rowId = `row_${event.release_date || event.time}`;
         const row = document.getElementById(rowId);
         if (row) {
-          row.classList.add('active-event-sync');
+          row.classList.add('active-event-sync');   
           row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
       } else {
