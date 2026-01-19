@@ -351,7 +351,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 4. Appeler la fonction de rendu pour mettre à jour la grille visuelle
     renderGrid(filteredSymbols);
   } 
-
+  
   function confirmSelection() {
     if (!selectedSymbol) return;
 
