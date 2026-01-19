@@ -382,7 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         // C. Appliquer la sélection visuelle sur l'item cliqué
-        div.classList.add('selected');  
+        div.classList.add('selected');
 
         // D. Stocker le symbole choisi globalement
         selectedSymbol = symbol;
@@ -450,10 +450,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     currentSymbol = selectedSymbolconverted;
     console.log("Chargement du signal pour : " + selectedSymbol);
-    closeModal();
+    window.closeModal();
   }
 
-  window.closeModal = function () {  
+  window.closeModal = function () {
     const modal = document.getElementById('modalOverlay');
     const validateBtn = document.getElementById('validateBtn');
 
@@ -5079,7 +5079,10 @@ document.addEventListener("DOMContentLoaded", () => {
   initCalendarTable();
   initHistoricalTable();
   inithistoricalchart();
-  updateSymbols();
+
+  if (typeof window.updateSymbols === 'function') {
+    window.updateSymbols();
+  }
 
   window.onload = async () => {
     if (!currentSymbol) return;
