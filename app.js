@@ -428,10 +428,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!selectedSymbol) return;
 
     // Simulation de chargement : On met à jour le titre du bouton et le graphique
-    openBtn.innerText = `Instrument : ${selectedSymbol}`;
+    openBtn.innerText = `Instrument : ${selectedSymbol}`;  
 
     // On simule un nouveau signal spécifique au symbole
-    showToast(`Selected Symbol ${selectedSymbol} Validated`, 'info');  
+    showToast(`Selected Symbol ${selectedSymbol} Validated`, 'info');   
 
     // Real calling Symbol selected
     selectedSymbolconverted = Callingsymbolforderiv(selectedSymbol.trim());
