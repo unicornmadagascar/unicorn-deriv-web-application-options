@@ -387,6 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // D. Stocker le symbole choisi globalement
         selectedSymbol = symbol;
         currentSymbol = selectedSymbol;
+        console.log(`Render : ${selectedSymbol}`);
         // E. Activer le bouton de validation
         if (validateBtn) validateBtn.disabled = false;
       };
@@ -402,7 +403,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Si la barre de recherche est vide, on revient à l'affichage par catégorie
     if (searchTerm === "") {
-      updateSymbols();
+      window.updateSymbols();
       return;
     }
 
