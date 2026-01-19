@@ -2970,21 +2970,37 @@
 
     .symbol-grid {
       display: grid;
+      /* Garde 2 colonnes fixes de même largeur */
       grid-template-columns: repeat(2, 1fr);
       gap: 12px;
+      /* Aligne les lignes en haut pour éviter qu'elles ne s'étirent sur toute la hauteur */
+      align-content: start;
     }
 
     /* Vos items renommés avec style blanc arrondi */
     .asset-selector-item {
       background: var(--bg-white);
       border: 1px solid var(--border-light);
-      padding: 15px;
       border-radius: 10px;
-      text-align: center;
       cursor: pointer;
       font-size: 14px;
       font-weight: 500;
       transition: all 0.2s ease;
+
+      /* SOLUTION : Alignement centré */
+      display: flex;
+      align-items: center;
+      /* Centre verticalement */
+      justify-content: center;
+      /* Centre horizontalement */
+      text-align: center;
+
+      /* SOLUTION : Hauteur fixe pour éviter l'étirement */
+      height: 80px;
+      /* Ajustez cette valeur selon vos besoins */
+      padding: 10px;
+      /* Espace intérieur minimum */
+      box-sizing: border-box;
     }
 
     .asset-selector-item:hover {
@@ -3036,7 +3052,8 @@
 
       <div class="tv-modal-body">
         <div class="search-container">
-          <input type="text" id="symbolSearch" placeholder="Search a symbol..." oninput="filterSymbols()" autocomplete="off">
+          <input type="text" id="symbolSearch" placeholder="Search a symbol..." oninput="filterSymbols()"
+            autocomplete="off">
         </div>
 
         <div class="field-group">
@@ -3045,11 +3062,11 @@
             <option value="metals">Metals</option>
             <option value="crypto">Cryptocurrencies</option>
             <option value="minor">Minor Pairs</option>
-            <option value="major" selected>Major Pairs</option>  
-            <option value="step">Step Indices</option>   
-            <option value="jump">Jump Indices</option>    
-            <option value="crash">Crash/Boom Indices</option>  
-            <option value="continuous">Continuous Indices</option>  
+            <option value="major" selected>Major Pairs</option>
+            <option value="step">Step Indices</option>
+            <option value="jump">Jump Indices</option>
+            <option value="crash">Crash/Boom Indices</option>
+            <option value="continuous">Continuous Indices</option>
           </select>
         </div>
 
