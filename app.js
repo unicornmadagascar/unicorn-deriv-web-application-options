@@ -257,7 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { symbol: "frxEURUSD", name: "EURUSD" },
     { symbol: "frxGBPUSD", name: "GBPUSD" },
     { symbol: "frxUSDJPY", name: "USDJPY" },
-    { symbol: "R_50", name: "VIX 50" },  
+    { symbol: "R_50", name: "VIX 50" },
     { symbol: "R_75", name: "VIX 75" }
   ];
   const fmt = n => Number(n).toFixed(2);
@@ -300,7 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
             showToast(`Critical error during switch: ${err.message}`, 'error');
           });
 
-        currentSymbol = s.symbol;  
+        currentSymbol = s.symbol;
       });
 
       symbolList.appendChild(el);
@@ -3862,31 +3862,38 @@ document.addEventListener("DOMContentLoaded", () => {
     displayedEvents = events; // Stockage global pour l'accès via le graphique
     let rows = "";
 
-    console.log("Données reçues pour le tableau :", events);
+    // Fonction interne pour la couleur des pastilles
+    const getCurrencyColor = (curr) => {
+      const colors = {
+        'USD': '#22c55e', 'EUR': '#3b82f6', 'JPY': '#ef4444',
+        'GBP': '#a855f7', 'AUD': '#f97316', 'CAD': '#06b6d4',
+        'CHF': '#64748b', 'CNH': '#8b5cf6', 'CNY': '#8b5cf6', 'MXN': '#10b981'
+      };
+      return colors[curr] || '#94a3b8';
+    };
 
-    events.forEach((e) => {
-      // 1. Extraction sécurisée des données
+    events.forEach((e) => {  
+      // 1. Extraction sécurisée
       const actual = e.actual?.display_value || "-";
       const previous = e.previous?.display_value || "-";
       const forecast = e.forecast?.display_value || "-";
       const revision = e.revision?.display_value || "-";
       const impactValue = e.impact || 0;
 
-      // 2. Gestion du temps
+      // 2. Temps
       const timestamp = e.release_date || 0;
       const releaseDate = timestamp ? new Date(timestamp * 1000).toLocaleString() : "-";
 
       const currency = e.currency || "-";
       const indicator = e.event_name || "-";
 
-      // 3. Style d'impact (Badge dynamique)
+      // 3. Style d'impact
       const impactClass = `imp-${Math.min(Math.max(impactValue, 1), 5)}`;
       const impactLabel = impactValue >= 4 ? "HIGH" : (impactValue >= 3 ? "MED" : "LOW");
 
-      // Couleur du texte de l'impact pour plus de clarté  
-      let impactTextColor = "#64748b"; // Gris par défaut
-      if (impactValue >= 4) impactTextColor = "#ef4444"; // Rouge
-      else if (impactValue >= 2) impactTextColor = "#f59e0b"; // Orange
+      let impactTextColor = "#64748b";
+      if (impactValue >= 4) impactTextColor = "#ef4444";
+      else if (impactValue >= 2) impactTextColor = "#f59e0b";
 
       rows += `
             <tr id="row_${timestamp}" data-timestamp="${timestamp}">
@@ -3897,14 +3904,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${GetCountrycode(currency)}</td>
                 <td>${GetCountryname(currency)}</td>     
                 <td>
-                   <div class="impact-badge ${impactClass}">  
-                         ${impactLabel}: ${indicator}
-                   </div>
+                    <div class="impact-badge ${impactClass}" style="padding: 4px 12px; border-radius: 20px; display: inline-block; font-size: 0.8rem;">  
+                         <span style="font-weight: bold; margin-right: 5px;">${impactLabel}:</span> ${indicator}
+                    </div>
                 </td>
                 <td class="text-center">-</td>  
-                <td class="text-center"><b>${currency}</b></td>  
+                <td class="text-center">
+                    <div style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; background: #f8f9fb; border: 1px solid #e2e8f0; border-radius: 20px;">
+                        <span style="width: 8px; height: 8px; background-color: ${getCurrencyColor(currency)}; border-radius: 50%;"></span>
+                        <b style="color: #1e222d; font-size: 0.8rem;">${currency}</b>
+                    </div>
+                </td>  
                 <td>
-                    <span class="${impactClass}" style="padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">
+                    <span class="${impactClass}" style="padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.7rem; display: inline-block; text-transform: uppercase;">
                        ${impactValue ? `Impact ${impactValue}` : "N/A"}
                     </span>
                 </td>
@@ -4804,10 +4816,10 @@ document.addEventListener("DOMContentLoaded", () => {
   initDerivAccountManager();
   displaySymbols(currentInterval, currentChartType);
   initChart(currentChartType);
-  initTable();  
-  initCalendarTable();  
+  initTable();
+  initCalendarTable();
   initHistoricalTable();
-  inithistoricalchart(); 
+  inithistoricalchart();
   updateSymbols();
 
   window.onload = async () => {
