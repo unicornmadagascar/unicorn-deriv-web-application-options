@@ -440,7 +440,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadSymbol(selectedSymbolconverted, currentInterval, currentChartType)
       .then(() => {
-        console.log(`Commande de chargement envoyée pour ${selectedSymbol}`);
+        console.log(`Commande de chargement envoyée pour ${selectedSymbol}`);  
         showToast(`Loading command sent for ${selectedSymbol}`, 'info');
       })
       .catch(error => {
