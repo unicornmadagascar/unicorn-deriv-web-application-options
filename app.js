@@ -309,6 +309,49 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function updateSymbols() {
+    const category = document.getElementById('categorySelect').value;
+    renderGrid(data[category]);
+  }
+
+  function renderGrid(symbols) {
+    const grid = document.getElementById('symbolGrid');
+    grid.innerHTML = '';
+
+    symbols.forEach(symbol => {
+      const div = document.createElement('div');
+      // REMPLACÉ : symbol-item par asset-selector-item
+      div.className = 'asset-selector-item';
+      div.innerText = symbol;
+
+      div.onclick = () => {
+        // REMPLACÉ : .symbol-item par .asset-selector-item
+        document.querySelectorAll('.asset-selector-item').forEach(el => el.classList.remove('selected'));
+        div.classList.add('selected');
+        selectedSymbol = symbol;
+        document.getElementById('validateBtn').disabled = false;
+      };
+      grid.appendChild(div);
+    });
+  }
+
+  window.filterSymbols = function() {
+    // 1. Récupérer la valeur de recherche (en minuscule pour ne pas être sensible à la casse)
+    const searchTerm = document.getElementById('symbolSearch').value.toLowerCase();
+
+    // 2. Récupérer la catégorie actuellement sélectionnée
+    const currentCategory = document.getElementById('categorySelect').value;
+
+    // 3. Filtrer les données
+    // On prend les symboles de la catégorie et on ne garde que ceux qui contiennent le texte
+    const filteredSymbols = data[currentCategory].filter(symbol =>
+      symbol.toLowerCase().includes(searchTerm)
+    );
+
+    // 4. Appeler la fonction de rendu pour mettre à jour la grille visuelle
+    renderGrid(filteredSymbols);
+  }
+
   function initChart(currentChartType) {
     const containerHistoryList = document.getElementById("autoHistoryList");
     const container = document.getElementById("chartInner");
@@ -4296,15 +4339,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (left + tooltipWidth > containerWidth) left = param.point.x - tooltipWidth - 15;
         if (top + tooltipHeight > containerHeight) top = param.point.y - tooltipHeight - 15;
 
-        tooltip.style.left = `${left}px`;  
+        tooltip.style.left = `${left}px`;
         tooltip.style.top = `${top}px`;
 
         // 5. Interaction avec le tableau (utilisation du nouveau nom de classe)
         const rowId = `row_${event.release_date || event.time}`;
         const row = document.getElementById(rowId);
         if (row) {
-          row.classList.add('active-event-sync');   
-          row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });  
+          row.classList.add('active-event-sync');
+          row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
       } else {
         // Cacher le tooltip si aucun événement n'est survolé
@@ -4315,7 +4358,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* --- Logique dynamique pour l'affichage Crypto --- */
   const providerSelect = document.getElementById('providerSelect');
- 
+
   function updateCryptoVisibility() {
     const isCrypto = providerSelect.value === 'crypto';
     const cryptoFields = document.getElementById('cryptoFields');
