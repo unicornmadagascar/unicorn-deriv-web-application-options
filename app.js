@@ -299,13 +299,14 @@ document.addEventListener("DOMContentLoaded", () => {
         loadSymbol(s.symbol, currentInterval, currentChartType)
           .then(() => {
             console.log(`Commande de chargement envoyée pour ${s.symbol}`);
-            currentSymbol = s.symbol;
             showToast(`Loading command sent for ${s.symbol}`, 'info');
           })
           .catch(error => {
             console.error("Erreur critique lors du basculement :", error);
             showToast(`Critical error during switch: ${err.message}`, 'error');
           });  
+
+          currentSymbol = s.symbol;
       });
 
       symbolList.appendChild(el);
@@ -436,7 +437,6 @@ document.addEventListener("DOMContentLoaded", () => {
     loadSymbol(selectedSymbolconverted, currentInterval, currentChartType)
       .then(() => {
         console.log(`Commande de chargement envoyée pour ${selectedSymbol}`);
-        currentSymbol = selectedSymbolconverted;
         showToast(`Loading command sent for ${selectedSymbol}`, 'info');
       })
       .catch(error => {
@@ -444,6 +444,7 @@ document.addEventListener("DOMContentLoaded", () => {
         showToast(`Critical error during switch: ${err.message}`, 'error');  
       });
 
+    currentSymbol = selectedSymbolconverted;
     console.log("Chargement du signal pour : " + selectedSymbol);
     closeModal();
   }
