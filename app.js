@@ -4805,8 +4805,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initDerivAccountManager();
   displaySymbols(currentInterval, currentChartType);
   initChart(currentChartType);
-  initTable();
-  initCalendarTable();
+  initTable();  
+  initCalendarTable();  
   initHistoricalTable();
   inithistoricalchart(); 
   updateSymbols();
