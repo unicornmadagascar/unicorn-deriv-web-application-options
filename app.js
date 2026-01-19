@@ -4304,7 +4304,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const row = document.getElementById(rowId);
         if (row) {
           row.classList.add('active-event-sync');   
-          row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });  
         }
       } else {
         // Cacher le tooltip si aucun événement n'est survolé
