@@ -116,6 +116,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let showVolumeProfile = true; // État spécifique pour le VP
   let showFiboAnalysis = false; // Variable globale pour le rendu
   let selectedSymbol = null;
+  let selectedSymbolLocated = null;
+  let selectedSymbolconverted = null;
   // ================== x ==================  
 
   let wsReady = false;
@@ -275,32 +277,35 @@ document.addEventListener("DOMContentLoaded", () => {
       el.textContent = s.name;
       el.dataset.symbol = s.symbol;
 
-      // On enlève le async ici car loadSymbol gère ses propres asynchronicités (WS)  
-      el.addEventListener("click", () => {
-        // 1. Mise à jour visuelle (immédiate pour le feedback utilisateur)
-        const allItems = symbolList.querySelectorAll(".symbol-item");
-        allItems.forEach(item => item.classList.remove("selected"));
+      // Si le symbole chargé est celui-ci, on l'affiche comme sélectionné d'emblée
+      if (typeof currentSymbol !== 'undefined' && s.symbol === currentSymbol) {
+        el.classList.add("selected");
+      }
+
+      el.addEventListener("click", () => { 
+        // --- SYNCHRONISATION GLOBALE ---
+        // 1. Retirer 'selected' de la liste latérale
+        document.querySelectorAll(".symbol-item").forEach(item => item.classList.remove("selected"));
+        // 2. Retirer 'selected' de la popup (le nom de classe que nous avons créé ensemble)
+        document.querySelectorAll(".asset-selector-item").forEach(item => item.classList.remove("selected"));
+
+        // Appliquer la sélection sur l'élément cliqué
         el.classList.add("selected");
 
         if (!s.symbol) return;
 
         console.log(`Tentative de basculement vers : ${s.name}`);
-        showToast(`Attempting to switch to: ${s.name}`, 'error');
 
-        // 2. Appel de loadSymbol
-        // On ne met pas "await" devant loadSymbol car c'est une fonction de flux (WS)
-        // mais on utilise .catch pour attraper les erreurs d'initialisation
         loadSymbol(s.symbol, currentInterval, currentChartType)
           .then(() => {
             console.log(`Commande de chargement envoyée pour ${s.symbol}`);
+            currentSymbol = s.symbol;
             showToast(`Loading command sent for ${s.symbol}`, 'info');
           })
           .catch(error => {
             console.error("Erreur critique lors du basculement :", error);
             showToast(`Critical error during switch: ${err.message}`, 'error');
-          });
-
-        currentSymbol = s.symbol;
+          });  
       });
 
       symbolList.appendChild(el);
@@ -337,12 +342,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. On vide la grille existante
     grid.innerHTML = '';
 
-    // 2. On désactive le bouton valider tant qu'un nouveau choix n'est pas fait
+    // 2. On désactive le bouton valider par sécurité
     if (validateBtn) validateBtn.disabled = true;
 
-    // 3. Si aucun symbole ne correspond (ex: recherche infructueuse)
+    // 3. Cas où aucun symbole n'est trouvé
     if (symbols.length === 0) {
-      grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #6a6d78; padding: 20px;">Aucun symbole trouvé</div>';
+      grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; color: #6a6d78; padding: 40px;">
+                <div style="font-size: 1.5rem; margin-bottom: 10px;">🔍</div>
+                Aucun symbole trouvé
+            </div>`;
       return;
     }
 
@@ -352,19 +361,32 @@ document.addEventListener("DOMContentLoaded", () => {
       div.className = 'asset-selector-item';
       div.innerText = symbol;
 
+      // On s'assure que le style est appliqué pour le centrage si ce n'est pas fait en CSS
+      div.style.display = "flex";
+      div.style.alignItems = "center";
+      div.style.justifyContent = "center";
+
       div.onclick = () => {
-        // Retirer la sélection des autres items
+        // --- SYNCHRONISATION GLOBALE ---
+
+        // A. Retirer la sélection des autres items de la POPUP
         document.querySelectorAll('.asset-selector-item').forEach(el =>
           el.classList.remove('selected')
         );
 
-        // Appliquer la sélection à l'item cliqué
+        // B. Retirer la sélection de la LISTE LATÉRALE (Sidebar)
+        // Cela évite d'avoir deux symboles visuellement actifs
+        document.querySelectorAll('.symbol-item').forEach(el =>
+          el.classList.remove('selected')
+        );
+
+        // C. Appliquer la sélection visuelle sur l'item cliqué
         div.classList.add('selected');
 
-        // Stocker le symbole choisi globalement
+        // D. Stocker le symbole choisi globalement
         selectedSymbol = symbol;
-
-        // Activer le bouton de validation
+        currentSymbol = selectedSymbol;
+        // E. Activer le bouton de validation
         if (validateBtn) validateBtn.disabled = false;
       };
 
@@ -409,8 +431,224 @@ document.addEventListener("DOMContentLoaded", () => {
     // On simule un nouveau signal spécifique au symbole
     showToast(`Selected Symbol ${selectedSymbol} Validated`, 'info');
 
+    // Real calling Symbol selected
+    selectedSymbolconverted = Callingsymbolforderiv(selectedSymbol.trim())
+    loadSymbol(selectedSymbolconverted, currentInterval, currentChartType)
+      .then(() => {
+        console.log(`Commande de chargement envoyée pour ${selectedSymbol}`);
+        currentSymbol = selectedSymbolconverted;
+        showToast(`Loading command sent for ${selectedSymbol}`, 'info');
+      })
+      .catch(error => {
+        console.error("Erreur critique lors du basculement :", error);
+        showToast(`Critical error during switch: ${err.message}`, 'error');
+      });
+
     console.log("Chargement du signal pour : " + selectedSymbol);
     closeModal();
+  }
+
+  function Callingsymbolforderiv(selectedsymbol4convert) {  
+    const symbol = selectedsymbol4convert.trim();
+    switch (symbol) {
+      case "Gold/USD", "Palladium/USD", "Silver/USD", "Platinum/USD":
+        selectedSymbolconverted = SymbolSelectedLocation4metals(symbol);
+        return selectedSymbolconverted;
+
+      case "BTC/USD", "ETH/USD":
+        selectedSymbolconverted = SymbolSelectedLocation4crypto(symbol);
+        return selectedSymbolconverted;
+
+      case "AUD/CAD", "AUD/CHF", "AUD/NZD", "EUR/NZD", "GBP/CAD", "GBP/CHF", "GBP/NZD", "NZD/JPY", "NZD/USD", "USD/MXN", "USD/PLN":
+        selectedSymbolconverted = SymbolSelectedLocation4minor(symbol);
+        return selectedSymbolconverted;
+
+      case "AUD/JPY", "AUD/USD", "EUR/AUD", "EUR/CAD", "EUR/CHF", "EUR/GBP", "EUR/JPY", "EUR/USD", "GBP/JPY", "USD/CAD", "GBP/USD", "GBP/AUD", "USD/CHF":
+        selectedSymbolconverted = SymbolSelectedLocation4major(symbol);
+        return selectedSymbolconverted;
+
+      case "Step Index 100", "Step Index 200", "Step Index 300", "Step Index 400", "Step Index 500":
+        selectedSymbolconverted = SymbolSelectedLocation4step(symbol);
+        return selectedSymbolconverted;
+
+      case "Jump 10 Index", "Jump 25 Index", "Jump 50 Index", "Jump 75 Index", "Jump 100 Index":
+        selectedSymbolconverted = SymbolSelectedLocation4jump(symbol);
+        return selectedSymbolconverted;
+
+      case "Boom 300", "Boom 500", "Boom 600", "Boom 900", "Boom 1000", "Crash 300", "Crash 500", "Crash 600", "Crash 900", "Crash 1000":
+        selectedSymbolconverted = SymbolSelectedLocation4BC(symbol);
+        return selectedSymbolconverted;
+
+      case "Volatility 10 (1s)", "Volatility 15 (1s)", "Volatility 25 (1s)", "Volatility 30 (1s)", "Volatility 50 (1s)", "Volatility 75 (1s)", "Volatility 90 (1s)", "Volatility 100 (1s)", "Volatility 10", "Volatility 25", "Volatility 50", "Volatility 75", "Volatility 100":
+        selectedSymbolconverted = SymbolSelectedLocation4VX(symbol);
+        return selectedSymbolconverted;
+    }
+  }
+
+  function SymbolSelectedLocation4VX(selectedsymbol4converting) {
+    switch (selectedsymbol4converting.trim()) {
+      case "Volatility 10 (1s)":
+        return "1HZ10V";
+      case "Volatility 15 (1s)":
+        return "1HZ15V";
+      case "Volatility 25 (1s)":
+        return "1HZ25V";
+      case "Volatility 30 (1s)":
+        return "1HZ30V";
+      case "Volatility 50 (1s)":
+        return "1HZ50V";
+      case "Volatility 75 (1s)":
+        return "1HZ75V";
+      case "Volatility 90 (1s)":
+        return "1HZ90V";
+      case "Volatility 100 (1s)":
+        return "1HZ100V";
+      case "Volatility 10":
+        return "R_10";
+      case "Volatility 25":
+        return "R_25";
+      case "Volatility 50":
+        return "R_50";
+      case "Volatility 75":
+        return "R_75";
+      case "Volatility 100":
+        return "R_100";
+    }
+  }
+
+  function SymbolSelectedLocation4BC(selectedsymbol4converting) {
+    switch (selectedsymbol4converting.trim()) {
+      case "Boom 300":
+        return "BOOM300N";
+      case "Boom 500":
+        return "BOOM500";
+      case "Boom 600":
+        return "BOOM600";
+      case "Boom 900":
+        return "BOOM900";
+      case "Boom 1000":
+        return "BOOM1000";
+      case "Crash 300":
+        return "CRASH300N";
+      case "Crash 500":
+        return "CRASH500";
+      case "Crash 600":
+        return "CRASH600";
+      case "Crash 900":
+        return "CRASH900";
+      case "Crash 1000":
+        return "CRASH1000";
+    }
+  }
+
+  function SymbolSelectedLocation4jump(selectedsymbol4converting) {
+    switch (selectedsymbol4converting.trim()) {
+      case "Jump 10 Index":
+        return "JD10";
+      case "Jump 25 Index":
+        return "JD25";
+      case "Jump 50 Index":
+        return "JD50";
+      case "Jump 75 Index":
+        return "JD75";
+      case "Jump 100 Index":
+        return "JD100";
+    }
+  }
+
+  function SymbolSelectedLocation4step(selectedsymbol4converting) {
+    switch (selectedsymbol4converting.trim()) {
+      case "Step Index 100":
+        return "stpRNG";
+      case "Step Index 200":
+        return "stpRNG2";
+      case "Step Index 300":
+        return "stpRNG3";
+      case "Step Index 400":
+        return "stpRNG4";
+      case "Step Index 500":
+        return "stpRNG5";
+    }
+  }
+
+  function SymbolSelectedLocation4major(selectedsymbol4converting) {
+    switch (selectedsymbol4converting.trim()) {
+      case "AUD/JPY":
+        return "frxAUDJPY";
+      case "AUD/USD":
+        return "frxAUDUSD";
+      case "EUR/AUD":
+        return "frxEURAUD";
+      case "EUR/CAD":
+        return "frxEURCAD";
+      case "EUR/CHF":
+        return "frxEURCHF";
+      case "EUR/GBP":
+        return "frxEURGBP";
+      case "EUR/JPY":
+        return "frxEURJPY";
+      case "EUR/USD":
+        return "frxEURUSD";
+      case "GBP/JPY":
+        return "frxGBPJPY";
+      case "USD/CAD":
+        return "frxUSDCAD";
+      case "GBP/USD":
+        return "frxGBPUSD";
+      case "GBP/AUD":
+        return "frxGBPAUD";
+      case "USD/CHF":
+        return "frxUSDCHF";
+    }
+  }
+
+  function SymbolSelectedLocation4minor(selectedsymbol4converting) {
+    switch (selectedsymbol4converting.trim()) {
+      case "AUD/CAD":
+        return "frxAUDCAD";
+      case "AUD/CHF":
+        return "frxAUDCHF";
+      case "AUD/NZD":
+        return "frxAUDNZD";
+      case "EUR/NZD":
+        return "frxEURNZD";
+      case "GBP/CAD":
+        return "frxGBPCAD";
+      case "GBP/CHF":
+        return "frxGBPCHF";
+      case "GBP/NZD":
+        return "frxGBPNZD";
+      case "NZD/JPY":
+        return "frxNZDJPY";
+      case "NZD/USD":
+        return "frxNZDUSD";
+      case "USD/MXN":
+        return "frxUSDMXN";
+      case "USD/PLN":
+        return "frxUSDPLN";
+    }
+  }
+
+  function SymbolSelectedLocation4metals(selectedsymbol4converting) {
+    switch (selectedsymbol4converting.trim()) {
+      case "Gold/USD":
+        return "frxXAUUSD";
+      case "Palladium/USD":
+        return "frxXPDUSD";
+      case "Platinum/USD":
+        return "frxXPTUSD";
+      case "Silver/USD":
+        return "frxXAGUSD";
+    }
+  }
+
+  function SymbolSelectedLocation4crypto(selectedsymbol4converting) {
+    switch (selectedsymbol4converting.trim()) {
+      case "BTC/USD":
+        return "cryBTCUSD";
+      case "ETH/USD":
+        return "cryETHUSD";
+    }
   }
 
   function closeModal() {
@@ -689,10 +927,10 @@ document.addEventListener("DOMContentLoaded", () => {
           // On transforme et filtre toutes les bougies historiques
           const formattedData = candles.map(normalize).filter(Boolean);
 
-          if (formattedData.length > 0) {
+          if (formattedData.length > 0) { 
             cache = formattedData; // On remplit le cache
             currentSeries.setData(cache); // Chargement initial complet
-            priceDataZZ = [...cache];
+            priceDataZZ = [...cache]; 
 
             chart.timeScale().fitContent();
             isWsInitialized = true;
@@ -705,9 +943,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // B. Gestion du FLUX TEMPS RÉEL (Une seule barre à la fois)
-      if (msg.msg_type === "ohlc") {
+      if (msg.msg_type === "ohlc") { 
         const ohlc = msg.ohlc;
-        const lastBar = normalize(ohlc);
+        const lastBar = normalize(ohlc); 
 
         if (lastBar && isWsInitialized) {
           // Mise à jour de Lightweight Charts (gère seul le remplacement ou l'ajout)
@@ -3869,10 +4107,10 @@ document.addEventListener("DOMContentLoaded", () => {
         'GBP': '#a855f7', 'AUD': '#f97316', 'CAD': '#06b6d4',
         'CHF': '#64748b', 'CNH': '#8b5cf6', 'CNY': '#8b5cf6', 'MXN': '#10b981'
       };
-      return colors[curr] || '#94a3b8';     
-    }; 
-  
-    events.forEach((e) => {  
+      return colors[curr] || '#94a3b8';
+    };
+
+    events.forEach((e) => {
       // 1. Extraction sécurisée
       const actual = e.actual?.display_value || "-";
       const previous = e.previous?.display_value || "-";
