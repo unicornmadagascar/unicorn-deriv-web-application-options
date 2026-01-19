@@ -3869,7 +3869,7 @@ document.addEventListener("DOMContentLoaded", () => {
         'GBP': '#a855f7', 'AUD': '#f97316', 'CAD': '#06b6d4',
         'CHF': '#64748b', 'CNH': '#8b5cf6', 'CNY': '#8b5cf6', 'MXN': '#10b981'
       };
-      return colors[curr] || '#94a3b8';  
+      return colors[curr] || '#94a3b8';    
     }; 
   
     events.forEach((e) => {  
