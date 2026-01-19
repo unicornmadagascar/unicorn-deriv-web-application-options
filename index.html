@@ -2969,12 +2969,12 @@
     }
 
     .symbol-grid {
-      display: grid; 
+      display: grid;
       /* Garde 2 colonnes fixes de même largeur */
       grid-template-columns: repeat(2, 1fr);
       gap: 12px;
       /* Aligne les lignes en haut pour éviter qu'elles ne s'étirent sur toute la hauteur */
-      align-content: start;  
+      align-content: start;
     }
 
     /* Vos items renommés avec style blanc arrondi */
@@ -3105,7 +3105,19 @@
         <button id="closeAll">Close All</button>
         <button id="openPopup">Chart Types</button>
         <button id="DatasettingPopup">Trade setting</button>
-        <div id="accountInfo" style="margin-left:200px; font-weight:500; color:#333;"></div>
+        <div id="accountInfo" style="
+            margin-left: 200px;
+            font-weight: 500;
+            background-color: #1e222d;      /* Fond sombre type TradingView */
+            color: #d1d4dc;                 /* Texte gris clair pour le contraste */
+            border: 1px solid #363a45;      /* Bordure subtile */
+            border-radius: 12px;            /* Coins arrondis */
+            padding: 10px 20px;             /* Espace intérieur */
+            display: inline-flex;           /* S'adapte au contenu */
+            align-items: center;            /* Centre verticalement les éléments internes */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Ombre pour la profondeur */
+            font-family: 'Trebuchet MS', sans-serif;">
+        </div>
       </div>
     </div>
   </div>
