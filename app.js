@@ -309,26 +309,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateSymbols() {
-    // 1. Récupérer le menu déroulant et la barre de recherche
     const select = document.getElementById('categorySelect');
     const searchInput = document.getElementById('symbolSearch');
 
-    // Sécurité : Vérifier si l'élément existe
-    if (!select) return;
+    // 1. Récupérer la catégorie choisie
+    const category = select.value;
 
-    // 2. Vider la recherche quand on change de catégorie pour éviter les listes vides
+    // 2. Vider la barre de recherche (pour éviter les conflits avec le filtre)
     if (searchInput) {
       searchInput.value = "";
     }
 
-    const category = select.value;
-
-    // 3. Vérifier si les données pour cette catégorie existent
-    // On suppose que votre objet s'appelle 'data'
-    if (typeof data !== 'undefined' && data[category]) {
+    // 3. Vérifier si les données existent et mettre à jour la grille
+    if (data[category]) {
       renderGrid(data[category]);
     } else {
-      console.error("Les données pour la catégorie '" + category + "' sont introuvables.");
+      console.error("Catégorie introuvable :", category);
+      renderGrid([]); // Vide la grille
     }
   }
 
@@ -378,31 +375,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.filterSymbols = function () {
     const searchInput = document.getElementById('symbolSearch');
+    const searchTerm = searchInput.value.toLowerCase().trim();
     const categorySelect = document.getElementById('categorySelect');
 
-    if (!searchInput || !categorySelect) return;
+    // Si la barre de recherche est vide, on revient à l'affichage par catégorie
+    if (searchTerm === "") {
+      updateSymbols();
+      return;
+    }
 
-    // 1. Nettoyage de la recherche (trim retire les espaces au début et à la fin)
-    const searchTerm = searchInput.value.toLowerCase().trim();
+    // RECHERCHE GLOBALE : On parcourt toutes les catégories de l'objet 'data'
+    let allFilteredSymbols = [];
 
-    // 2. Récupération de la catégorie
-    const currentCategory = categorySelect.value;
-
-    // 3. Sécurité : Vérifier si la catégorie existe dans l'objet 'data'
-    if (typeof data !== 'undefined' && data[currentCategory]) {
-
-      // Filtrage des symboles
-      const filteredSymbols = data[currentCategory].filter(symbol =>
+    Object.keys(data).forEach(cat => {
+      const matches = data[cat].filter(symbol =>
         symbol.toLowerCase().includes(searchTerm)
       );
+      allFilteredSymbols = [...allFilteredSymbols, ...matches];
+    });
 
-      // 4. Mise à jour de la grille
-      renderGrid(filteredSymbols);
-    } else {
-      console.warn(`La catégorie "${currentCategory}" est vide ou introuvable.`);
-      renderGrid([]); // Affiche "Aucun symbole trouvé"
-    }
-  }
+    // Supprimer les doublons éventuels
+    const uniqueSymbols = [...new Set(allFilteredSymbols)];
+
+    // Mise à jour de la grille
+    renderGrid(uniqueSymbols);
+  };
 
   function confirmSelection() {
     if (!selectedSymbol) return;
@@ -5130,12 +5127,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ===================== SYMBOLS POPUP =========================== */
 
-  // Initialisation
-  window.onload = updateSymbols;
+  const categorySelect = document.getElementById('categorySelect');
+
+  if (categorySelect) {
+    // Écouteur de changement
+    categorySelect.addEventListener('change', () => {
+      console.log("Changement de catégorie détecté !");
+      updateSymbols();
+    });
+
+    // Appel initial pour remplir la grille au chargement de la page
+    updateSymbols();
+  }
 
   openBtn.onclick = () => modal_symbol.style.display = 'flex';
 
-  // Fermer si on clique à l'extérieur de la popup
+  // Fermer si on clique à l'extérieur de la popup  
   window.onclick = (event) => {
     if (event.target == modal_symbol) closeModal();
   }
