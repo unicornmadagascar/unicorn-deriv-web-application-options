@@ -343,8 +343,8 @@ document.addEventListener("DOMContentLoaded", () => {
             showToast(`Critical error during switch: ${error.message}`, 'error');
           });
 
-        currentSymbol = s.symbol;
-      });
+        currentSymbol = s.symbol; 
+      }); 
 
       symbolList.appendChild(el);  
     });
