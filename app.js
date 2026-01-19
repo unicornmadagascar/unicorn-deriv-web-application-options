@@ -453,7 +453,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeModal();
   }
 
-  window.closeModal = function () {
+  window.closeModal = function () {  
     const modal = document.getElementById('modalOverlay');
     const validateBtn = document.getElementById('validateBtn');
 
@@ -674,10 +674,6 @@ document.addEventListener("DOMContentLoaded", () => {
       case "ETH/USD":
         return "cryETHUSD";
     }
-  }
-
-  function closeModal() {
-    modal_symbol.style.display = 'none';
   }
 
   function initChart(currentChartType) {
