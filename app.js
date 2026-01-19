@@ -4296,7 +4296,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (left + tooltipWidth > containerWidth) left = param.point.x - tooltipWidth - 15;
         if (top + tooltipHeight > containerHeight) top = param.point.y - tooltipHeight - 15;
 
-        tooltip.style.left = `${left}px`;
+        tooltip.style.left = `${left}px`;  
         tooltip.style.top = `${top}px`;
 
         // 5. Interaction avec le tableau (utilisation du nouveau nom de classe)
@@ -4315,7 +4315,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* --- Logique dynamique pour l'affichage Crypto --- */
   const providerSelect = document.getElementById('providerSelect');
-
+ 
   function updateCryptoVisibility() {
     const isCrypto = providerSelect.value === 'crypto';
     const cryptoFields = document.getElementById('cryptoFields');
