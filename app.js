@@ -5077,8 +5077,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initChart(currentChartType);
   initTable();
   initCalendarTable();
-  initHistoricalTable();
-  inithistoricalchart();
+  initHistoricalTable();  
+  inithistoricalchart(); 
 
   if (typeof window.updateSymbols === 'function') {
     window.updateSymbols();
@@ -5093,7 +5093,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
     if (connectBtn.textContent !== "Connect") {
-      // Subscribing Tables  S
+      // Subscribing Tables  S  
       connectDeriv_table();
     }
   }, 300);
