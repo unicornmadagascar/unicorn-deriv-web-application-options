@@ -466,7 +466,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (searchInput) searchInput.value = '';
 
       // Désactiver le bouton de validation jusqu'au prochain choix 
-      if (validateBtn) validateBtn.disabled = true;
+      if (validateBtn) validateBtn.disabled = true;  
 
       console.log("Modal de sélection fermé.");
     }
