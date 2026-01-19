@@ -343,10 +343,10 @@ document.addEventListener("DOMContentLoaded", () => {
             showToast(`Critical error during switch: ${error.message}`, 'error');
           });
 
-        currentSymbol = s.symbol; 
-      }); 
+        currentSymbol = s.symbol;
+      });
 
-      symbolList.appendChild(el);  
+      symbolList.appendChild(el);
     });
   }
 
@@ -507,25 +507,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // On attache la fonction à window pour qu'elle soit accessible depuis le onclick du HTML
   window.closeModal = function () {
     const modal = document.getElementById('modalOverlay');
     const validateBtn = document.getElementById('validateBtn');
+    const searchInput = document.getElementById('symbolSearch');
 
     if (modal) {
-      // Masquer le modal
+      // 1. On cache le modal
       modal.style.display = 'none';
 
-      // Optionnel : Réinitialiser la recherche et la sélection 
-      // pour que le modal soit "neuf" à la prochaine ouverture
-      const searchInput = document.getElementById('symbolSearch');
+      // 2. Nettoyage de l'interface pour la prochaine fois
       if (searchInput) searchInput.value = '';
-
-      // Désactiver le bouton de validation jusqu'au prochain choix 
       if (validateBtn) validateBtn.disabled = true;
 
       console.log("Modal de sélection fermé.");
+    } else {
+      console.error("Élément 'modalOverlay' non trouvé dans le DOM.");
     }
-  }
+  };
 
   function Callingsymbolforderiv(selectedsymbol4converting) {
     const symbol = selectedsymbol4converting.trim();
@@ -5272,7 +5272,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const validateBtn = document.getElementById('validateBtn');
 
   // On lui attache la fonction au clic
-  validateBtn.addEventListener('click', () => {window.confirmSelection();});
+  validateBtn.addEventListener('click', () => { window.confirmSelection(); });
 
   document.addEventListener('keydown', function (event) {
     // Si la touche pressée est "Enter" et qu'un symbole est déjà choisi
