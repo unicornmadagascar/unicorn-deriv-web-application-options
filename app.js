@@ -5272,12 +5272,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const validateBtn = document.getElementById('validateBtn');
 
   // On lui attache la fonction au clic
-  validateBtn.addEventListener('click', confirmSelection);
+  validateBtn.addEventListener('click', () => {window.confirmSelection();});
 
   document.addEventListener('keydown', function (event) {
     // Si la touche pressée est "Enter" et qu'un symbole est déjà choisi
     if (event.key === "Enter" && !document.getElementById('validateBtn').disabled) {
-      confirmSelection();
+      window.confirmSelection();
     }
   });
 
