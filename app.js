@@ -282,7 +282,7 @@ document.addEventListener("DOMContentLoaded", () => {
         el.classList.add("selected");
       }
 
-      el.addEventListener("click", () => { 
+      el.addEventListener("click", () => {
         // --- SYNCHRONISATION GLOBALE ---
         // 1. Retirer 'selected' de la liste latérale
         document.querySelectorAll(".symbol-item").forEach(item => item.classList.remove("selected"));
@@ -304,9 +304,9 @@ document.addEventListener("DOMContentLoaded", () => {
           .catch(error => {
             console.error("Erreur critique lors du basculement :", error);
             showToast(`Critical error during switch: ${err.message}`, 'error');
-          });  
+          });
 
-          currentSymbol = s.symbol;
+        currentSymbol = s.symbol;
       });
 
       symbolList.appendChild(el);
@@ -434,7 +434,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Real calling Symbol selected
     selectedSymbolconverted = Callingsymbolforderiv(selectedSymbol.trim());
-  
+
     console.log(`Selected Symbol Converted : ${selectedSymbolconverted}`);
 
     loadSymbol(selectedSymbolconverted, currentInterval, currentChartType)
@@ -444,17 +444,37 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch(error => {
         console.error("Erreur critique lors du basculement :", error);
-        showToast(`Critical error during switch: ${err.message}`, 'error');  
+        showToast(`Critical error during switch: ${err.message}`, 'error');
       });
 
     currentSymbol = selectedSymbolconverted;
-    console.log("Chargement du signal pour : " + selectedSymbol);  
-    closeModal(); 
+    console.log("Chargement du signal pour : " + selectedSymbol);
+    closeModal();
   }
 
-  function Callingsymbolforderiv(selectedsymbol4convert) {  
-    const symbol = selectedsymbol4convert.trim();  
-    switch (symbol) { 
+  window.closeModal = function() {
+    const modal = document.getElementById('modalOverlay');
+    const validateBtn = document.getElementById('validateBtn');
+
+    if (modal) {
+      // Masquer le modal
+      modal.style.display = 'none';
+
+      // Optionnel : Réinitialiser la recherche et la sélection 
+      // pour que le modal soit "neuf" à la prochaine ouverture
+      const searchInput = document.getElementById('symbolSearch');
+      if (searchInput) searchInput.value = '';
+
+      // Désactiver le bouton de validation jusqu'au prochain choix 
+      if (validateBtn) validateBtn.disabled = true;
+
+      console.log("Modal de sélection fermé.");
+    }
+  }
+
+  function Callingsymbolforderiv(selectedsymbol4convert) {
+    const symbol = selectedsymbol4convert.trim();
+    switch (symbol) {
       case "Gold/USD", "Palladium/USD", "Silver/USD", "Platinum/USD":
         selectedSymbolconverted = SymbolSelectedLocation4metals(symbol);
         return selectedSymbolconverted;
@@ -931,10 +951,10 @@ document.addEventListener("DOMContentLoaded", () => {
           // On transforme et filtre toutes les bougies historiques
           const formattedData = candles.map(normalize).filter(Boolean);
 
-          if (formattedData.length > 0) { 
+          if (formattedData.length > 0) {
             cache = formattedData; // On remplit le cache
             currentSeries.setData(cache); // Chargement initial complet
-            priceDataZZ = [...cache]; 
+            priceDataZZ = [...cache];
 
             chart.timeScale().fitContent();
             isWsInitialized = true;
@@ -947,9 +967,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // B. Gestion du FLUX TEMPS RÉEL (Une seule barre à la fois)
-      if (msg.msg_type === "ohlc") { 
+      if (msg.msg_type === "ohlc") {
         const ohlc = msg.ohlc;
-        const lastBar = normalize(ohlc); 
+        const lastBar = normalize(ohlc);
 
         if (lastBar && isWsInitialized) {
           // Mise à jour de Lightweight Charts (gère seul le remplacement ou l'ajout)

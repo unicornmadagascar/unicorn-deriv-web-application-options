@@ -3605,26 +3605,6 @@
       }
     }
 
-    function closeModal() {
-      const modal = document.getElementById('modalOverlay');
-      const validateBtn = document.getElementById('validateBtn');
-
-      if (modal) {
-        // Masquer le modal
-        modal.style.display = 'none';
-
-        // Optionnel : Réinitialiser la recherche et la sélection 
-        // pour que le modal soit "neuf" à la prochaine ouverture
-        const searchInput = document.getElementById('symbolSearch');
-        if (searchInput) searchInput.value = '';
-
-        // Désactiver le bouton de validation jusqu'au prochain choix
-        if (validateBtn) validateBtn.disabled = true;
-
-        console.log("Modal de sélection fermé.");
-      }
-    }
-
     // TRADINGVIEW WIDGET
     function createTradingViewEmbed(containerId, src, config, creditHtml) {
       const container = document.getElementById(containerId);
