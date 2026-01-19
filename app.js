@@ -433,7 +433,10 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast(`Selected Symbol ${selectedSymbol} Validated`, 'info');
 
     // Real calling Symbol selected
-    selectedSymbolconverted = Callingsymbolforderiv(selectedSymbol.trim())
+    selectedSymbolconverted = Callingsymbolforderiv(selectedSymbol.trim()).toString();
+  
+    console.log(`Selected Symbol Converted : ${selectedSymbolconverted}`);
+
     loadSymbol(selectedSymbolconverted, currentInterval, currentChartType)
       .then(() => {
         console.log(`Commande de chargement envoyée pour ${selectedSymbol}`);
