@@ -4239,8 +4239,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!tooltip) return;
 
     chart.subscribeCrosshairMove(param => {
-      // 1. Nettoyage systématique des surbrillances du tableau
-      document.querySelectorAll('.highlight-row').forEach(row => row.classList.remove('highlight-row'));
+      // 1. Nettoyage : Utilisation du nouveau nom de classe .active-event-sync
+      document.querySelectorAll('.active-event-sync').forEach(row => {
+        row.classList.remove('active-event-sync');
+      });
 
       // 2. Vérification de la présence du curseur
       if (!param.time || !param.point || param.point.x < 0) {
@@ -4248,14 +4250,13 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // 3. Recherche de l'événement (vérification stricte du timestamp)
-      // Note: On utilise displayedEvents pour ne survoler que ce qui est filtré
-      const event = displayedEvents.find(e => {
+      // 3. Recherche de l'événement économique
+      const event = typeof displayedEvents !== 'undefined' ? displayedEvents.find(e => {
         const eventTime = Number(e.release_date || e.time);
         return eventTime === param.time;
-      });
+      }) : null;
 
-      // 4. Affichage et positionnement
+      // 4. Affichage et positionnement si un événement est trouvé
       if (event) {
         tooltip.style.display = 'block';
 
@@ -4273,36 +4274,40 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span style="color: #64748b;">Forecast:</span>
                         <span style="font-weight: 600; color: #1e222d;">${event.forecast?.display_value || '-'}</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; border-top: 1px dashed #e2e8f0; padding-top: 4px;">
+                    <div style="display: flex; justify-content: space-between; border-top: 1px dashed #e2e8f0; padding-top: 4px; margin-top: 2px;">
                         <span style="color: #94a3b8;">Previous:</span>
                         <span style="color: #94a3b8;">${event.previous?.display_value || '-'}</span>
                     </div>
                 </div>
             `;
 
-        // Positionnement intelligent pour ne pas sortir de l'écran
-        const rect = chartInner.getBoundingClientRect();
+        // Positionnement intelligent (rectifié pour utiliser les dimensions du chart)
+        const chartContainer = document.getElementById('chartInner');
+        const containerWidth = chartContainer.clientWidth;
+        const containerHeight = chartContainer.clientHeight;
+
         const tooltipWidth = 180;
-        const tooltipHeight = 100;
+        const tooltipHeight = 110;
 
         let left = param.point.x + 15;
         let top = param.point.y + 15;
 
-        if (left + tooltipWidth > rect.width) left = param.point.x - tooltipWidth - 15;
-        if (top + tooltipHeight > rect.height) top = param.point.y - tooltipHeight - 15;
+        // Ajustement si le tooltip sort du cadre
+        if (left + tooltipWidth > containerWidth) left = param.point.x - tooltipWidth - 15;
+        if (top + tooltipHeight > containerHeight) top = param.point.y - tooltipHeight - 15;
 
         tooltip.style.left = `${left}px`;
         tooltip.style.top = `${top}px`;
 
-        // 5. Interaction avec le tableau
+        // 5. Interaction avec le tableau (utilisation du nouveau nom de classe)
         const rowId = `row_${event.release_date || event.time}`;
         const row = document.getElementById(rowId);
         if (row) {
-          row.classList.add('highlight-row');
-          // Scroll uniquement si la ligne n'est pas déjà visible
+          row.classList.add('active-event-sync');
           row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
       } else {
+        // Cacher le tooltip si aucun événement n'est survolé
         tooltip.style.display = 'none';
       }
     });
@@ -5021,7 +5026,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Fermer si on clique à l'extérieur de la popup
   window.onclick = (event) => {
-    if (event.target == modal_symbol) closeModal();  
+    if (event.target == modal_symbol) closeModal();
   }
 
   /* ===================== GRAPHICAL OBJECTS =========================== */
