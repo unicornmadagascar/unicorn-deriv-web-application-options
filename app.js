@@ -335,7 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  window.filterSymbols = function() {
+  window.filterSymbols = function () {
     // 1. Récupérer la valeur de recherche (en minuscule pour ne pas être sensible à la casse)
     const searchTerm = document.getElementById('symbolSearch').value.toLowerCase();
 
@@ -350,6 +350,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 4. Appeler la fonction de rendu pour mettre à jour la grille visuelle
     renderGrid(filteredSymbols);
+  }
+
+  window.confirmSelection = function () {
+    if (!selectedSymbol) return;
+
+    // Simulation de chargement : On met à jour le titre du bouton et le graphique
+    openBtn.innerText = `Instrument : ${selectedSymbol}`;
+
+    // On simule un nouveau signal spécifique au symbole
+    const newData = generateData();
+    lineSeries.setData(newData);
+
+    chart.timeScale().fitContent();
+
+    console.log("Chargement du signal pour : " + selectedSymbol);
+    closeModal();
+  }
+
+  function closeModal() {
+    modal_symbol.style.display = 'none';
   }
 
   function initChart(currentChartType) {
@@ -2094,7 +2114,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.classList.add('active');
 
     // On s'assure que le canvas peut recevoir les clics
-    canvas.style.pointerEvents = 'all';
+    canvas.style.pointerEvents = 'all';  
 
     btn.classList.add('active', 'btn-drawing');
   }
@@ -5061,9 +5081,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ===================== SYMBOLS POPUP =========================== */
 
-  function closeModal() {
-    modal_symbol.style.display = 'none';
-  }
 
   openBtn.onclick = () => modal_symbol.style.display = 'flex';
 
