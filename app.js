@@ -4808,7 +4808,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initTable();
   initCalendarTable();
   initHistoricalTable();
-  inithistoricalchart();
+  inithistoricalchart(); 
+  updateSymbols();
 
   window.onload = async () => {
     if (!currentSymbol) return;
@@ -5126,19 +5127,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ===================== SYMBOLS POPUP =========================== */
-
-  const categorySelect = document.getElementById('categorySelect');
-
-  if (categorySelect) {
-    // Écouteur de changement
-    categorySelect.addEventListener('change', () => {
-      console.log("Changement de catégorie détecté !");
-      updateSymbols();
-    });
-
-    // Appel initial pour remplir la grille au chargement de la page
+  document.getElementById('categorySelect').addEventListener('change', () => {
+    console.log("Changement de catégorie détecté !");
     updateSymbols();
-  }
+  });
 
   openBtn.onclick = () => modal_symbol.style.display = 'flex';
 
