@@ -434,7 +434,7 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast(`Selected Symbol ${selectedSymbol} Validated`, 'info');   
 
     // Real calling Symbol selected
-    selectedSymbolconverted = Callingsymbolforderiv(selectedSymbol.trim());
+    selectedSymbolconverted = Callingsymbolforderiv(selectedSymbol);
 
     console.log(`Selected Symbol Converted : ${selectedSymbolconverted}`);
 
