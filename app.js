@@ -2122,13 +2122,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // HTML: <button onclick="enableRectangle(this)">Zone (Rectangle)</button>
 
   window.enableRectangle = function (btn) {
-    currentMode = 'rect'; // On change le mode 
+    currentMode = 'rect'; // On change le mode   
     canvas.style.pointerEvents = 'all';
 
     // Gestion visuelle du bouton
     document.querySelectorAll('.btn-drawing').forEach(b => b.classList.remove('active'));
     btn.classList.add('active', 'btn-drawing');
-  }
+  }  
 
   window.enableTPSL = function (btn) {
     // Si on reclique sur le bouton alors qu'il est déjà actif, on le désactive
