@@ -441,7 +441,7 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch(error => {
         console.error("Erreur critique lors du basculement :", error);
-        showToast(`Critical error during switch: ${err.message}`, 'error');
+        showToast(`Critical error during switch: ${err.message}`, 'error');  
       });
 
     console.log("Chargement du signal pour : " + selectedSymbol);
