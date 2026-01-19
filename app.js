@@ -295,7 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { symbol: "frxUSDJPY", name: "USDJPY" },
     { symbol: "R_50", name: "VIX 50" },
     { symbol: "R_75", name: "VIX 75" }
-  ];  
+  ];
 
   const fmt = n => Number(n).toFixed(2);
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
@@ -312,22 +312,23 @@ document.addEventListener("DOMContentLoaded", () => {
       el.textContent = s.name;
       el.dataset.symbol = s.symbol;
 
-      // Si le symbole chargé est celui-ci, on l'affiche comme sélectionné d'emblée
+      // État actif au chargement initial
       if (typeof currentSymbol !== 'undefined' && s.symbol === currentSymbol) {
         el.classList.add("selected");
       }
 
       el.addEventListener("click", () => {
         // --- SYNCHRONISATION GLOBALE ---
-        // 1. Retirer 'selected' de la liste latérale
         document.querySelectorAll(".symbol-item").forEach(item => item.classList.remove("selected"));
-        // 2. Retirer 'selected' de la popup (le nom de classe que nous avons créé ensemble)
         document.querySelectorAll(".asset-selector-item").forEach(item => item.classList.remove("selected"));
 
-        // Appliquer la sélection sur l'élément cliqué
         el.classList.add("selected");
 
         if (!s.symbol) return;
+
+        // Mise à jour du bouton principal du graphique (Optionnel mais recommandé)
+        const openBtn = document.getElementById('openPickerBtn');
+        if (openBtn) openBtn.innerText = `Instrument : ${s.name}`;
 
         console.log(`Tentative de basculement vers : ${s.name}`);
 
@@ -338,7 +339,8 @@ document.addEventListener("DOMContentLoaded", () => {
           })
           .catch(error => {
             console.error("Erreur critique lors du basculement :", error);
-            showToast(`Critical error during switch: ${err.message}`, 'error');
+            // CORRECTION : On utilise error.message (pas err.message)
+            showToast(`Critical error during switch: ${error.message}`, 'error');
           });
 
         currentSymbol = s.symbol;
