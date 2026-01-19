@@ -346,7 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
         currentSymbol = s.symbol;
       });
 
-      symbolList.appendChild(el);
+      symbolList.appendChild(el);  
     });
   }
 
