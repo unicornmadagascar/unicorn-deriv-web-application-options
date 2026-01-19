@@ -313,26 +313,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function updateSymbols() {
+  // On l'attache à window pour qu'elle soit accessible depuis le onchange="" du HTML
+  window.updateSymbols = function () {
     const select = document.getElementById('categorySelect');
     const searchInput = document.getElementById('symbolSearch');
 
-    // 1. Récupérer la catégorie choisie
+    if (!select) return;
+
     const category = select.value;
 
-    // 2. Vider la barre de recherche (pour éviter les conflits avec le filtre)
-    if (searchInput) {
-      searchInput.value = "";
-    }
+    // 1. Reset de la recherche quand on change de catégorie
+    if (searchInput) searchInput.value = "";
 
-    // 3. Vérifier si les données existent et mettre à jour la grille
-    if (data[category]) {
+    // 2. Vérification des données (on suppose que 'data' est défini globalement)
+    if (typeof data !== 'undefined' && data[category]) {
       renderGrid(data[category]);
     } else {
-      console.error("Catégorie introuvable :", category);
-      renderGrid([]); // Vide la grille
+      console.warn("Catégorie non trouvée ou 'data' non défini:", category);
+      renderGrid([]);
     }
-  }
+  };
 
   function renderGrid(symbols) {
     const grid = document.getElementById('symbolGrid');
@@ -452,13 +452,13 @@ document.addEventListener("DOMContentLoaded", () => {
     closeModal();
   }
 
-  window.closeModal = function() {
+  window.closeModal = function () {
     const modal = document.getElementById('modalOverlay');
     const validateBtn = document.getElementById('validateBtn');
 
-    if (modal) { 
+    if (modal) {
       // Masquer le modal
-      modal.style.display = 'none'; 
+      modal.style.display = 'none';
 
       // Optionnel : Réinitialiser la recherche et la sélection 
       // pour que le modal soit "neuf" à la prochaine ouverture
@@ -466,7 +466,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (searchInput) searchInput.value = '';
 
       // Désactiver le bouton de validation jusqu'au prochain choix 
-      if (validateBtn) validateBtn.disabled = true;  
+      if (validateBtn) validateBtn.disabled = true;
 
       console.log("Modal de sélection fermé.");
     }
@@ -5400,12 +5400,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ===================== SYMBOLS POPUP =========================== */
-  document.getElementById('categorySelect').addEventListener('change', () => {
-    console.log("Changement de catégorie détecté !");
-    updateSymbols();
-  });
 
-  openBtn.onclick = () => modal_symbol.style.display = 'flex'; 
+  openBtn.onclick = () => modal_symbol.style.display = 'flex';
 
   // On récupère le bouton par son ID
   const validateBtn = document.getElementById('validateBtn');
