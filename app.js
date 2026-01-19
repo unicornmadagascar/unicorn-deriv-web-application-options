@@ -431,7 +431,7 @@ document.addEventListener("DOMContentLoaded", () => {
     openBtn.innerText = `Instrument : ${selectedSymbol}`;
 
     // On simule un nouveau signal spécifique au symbole
-    showToast(`Selected Symbol ${selectedSymbol} Validated`, 'info');
+    showToast(`Selected Symbol ${selectedSymbol} Validated`, 'info');  
 
     // Real calling Symbol selected
     selectedSymbolconverted = Callingsymbolforderiv(selectedSymbol.trim());
