@@ -435,30 +435,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.filterSymbols = function () {
     const searchInput = document.getElementById('symbolSearch');
-    const searchTerm = searchInput.value.toLowerCase().trim();
-    const categorySelect = document.getElementById('categorySelect');
+    if (!searchInput) return;
 
-    // Si la barre de recherche est vide, on revient à l'affichage par catégorie
+    const searchTerm = searchInput.value.toLowerCase().trim();
+
+    // 1. Retour à la catégorie sélectionnée si recherche vide
     if (searchTerm === "") {
-      window.updateSymbols();
+      if (typeof window.updateSymbols === 'function') {
+        window.updateSymbols();
+      }
       return;
     }
 
-    // RECHERCHE GLOBALE : On parcourt toutes les catégories de l'objet 'data'
-    let allFilteredSymbols = [];
+    // 2. Vérification que 'data' existe
+    if (typeof data === 'undefined') {
+      console.error("L'objet 'data' contenant les symboles est introuvable.");
+      return;
+    }
 
-    Object.keys(data).forEach(cat => {
-      const matches = data[cat].filter(symbol =>
-        symbol.toLowerCase().includes(searchTerm)
-      );
-      allFilteredSymbols = [...allFilteredSymbols, ...matches];
-    });
+    // 3. RECHERCHE GLOBALE : Extraction et filtrage
+    // .flatMap fusionne tous les tableaux de toutes les catégories en un seul
+    const allFilteredSymbols = Object.values(data)
+      .flat()
+      .filter(symbol => symbol.toLowerCase().includes(searchTerm));
 
-    // Supprimer les doublons éventuels
+    // 4. Supprimer les doublons (Set)
     const uniqueSymbols = [...new Set(allFilteredSymbols)];
 
-    // Mise à jour de la grille
-    renderGrid(uniqueSymbols);
+    // 5. Mise à jour de la grille
+    if (typeof renderGrid === 'function') {
+      renderGrid(uniqueSymbols);
+    }
   };
 
   window.confirmSelection = function () {
