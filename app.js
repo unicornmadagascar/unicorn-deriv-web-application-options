@@ -433,7 +433,7 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast(`Selected Symbol ${selectedSymbol} Validated`, 'info');
 
     // Real calling Symbol selected
-    selectedSymbolconverted = Callingsymbolforderiv(selectedSymbol.trim()).toString();
+    selectedSymbolconverted = Callingsymbolforderiv(selectedSymbol.trim());
   
     console.log(`Selected Symbol Converted : ${selectedSymbolconverted}`);
 
@@ -454,7 +454,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function Callingsymbolforderiv(selectedsymbol4convert) {  
     const symbol = selectedsymbol4convert.trim();  
-    switch (symbol) {
+    switch (symbol) { 
       case "Gold/USD", "Palladium/USD", "Silver/USD", "Platinum/USD":
         selectedSymbolconverted = SymbolSelectedLocation4metals(symbol);
         return selectedSymbolconverted;
