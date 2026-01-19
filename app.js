@@ -456,9 +456,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById('modalOverlay');
     const validateBtn = document.getElementById('validateBtn');
 
-    if (modal) {
+    if (modal) { 
       // Masquer le modal
-      modal.style.display = 'none';
+      modal.style.display = 'none'; 
 
       // Optionnel : Réinitialiser la recherche et la sélection 
       // pour que le modal soit "neuf" à la prochaine ouverture
