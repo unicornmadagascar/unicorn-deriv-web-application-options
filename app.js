@@ -247,6 +247,40 @@ document.addEventListener("DOMContentLoaded", () => {
     continuous: ["Volatility 10 (1s)", "Volatility 15 (1s)", "Volatility 25 (1s)", "Volatility 30 (1s)", "Volatility 50 (1s)", "Volatility 75 (1s)", "Volatility 90 (1s)", "Volatility 100 (1s)", "Volatility 10", "Volatility 25", "Volatility 50", "Volatility 75", "Volatility 100"]
   };
 
+  const SYMBOL_CONVERSION_MAP = {
+    // METALS
+    "Gold/USD": "frxXAUUSD", "Palladium/USD": "frxXPDUSD", "Platinum/USD": "frxXPTUSD", "Silver/USD": "frxXAGUSD",
+
+    // CRYPTO
+    "BTC/USD": "cryBTCUSD", "ETH/USD": "cryETHUSD",
+
+    // FOREX MAJORS
+    "AUD/JPY": "frxAUDJPY", "AUD/USD": "frxAUDUSD", "EUR/AUD": "frxEURAUD", "EUR/CAD": "frxEURCAD",
+    "EUR/CHF": "frxEURCHF", "EUR/GBP": "frxEURGBP", "EUR/JPY": "frxEURJPY", "EUR/USD": "frxEURUSD",
+    "GBP/JPY": "frxGBPJPY", "USD/CAD": "frxUSDCAD", "GBP/USD": "frxGBPUSD", "GBP/AUD": "frxGBPAUD", "USD/CHF": "frxUSDCHF",
+
+    // FOREX MINORS
+    "AUD/CAD": "frxAUDCAD", "AUD/CHF": "frxAUDCHF", "AUD/NZD": "frxAUDNZD", "EUR/NZD": "frxEURNZD",
+    "GBP/CAD": "frxGBPCAD", "GBP/CHF": "frxGBPCHF", "GBP/NZD": "frxGBPNZD", "NZD/JPY": "frxNZDJPY",
+    "NZD/USD": "frxNZDUSD", "USD/MXN": "frxUSDMXN", "USD/PLN": "frxUSDPLN",
+
+    // VOLATILITY (1s)
+    "Volatility 10 (1s)": "1HZ10V", "Volatility 15 (1s)": "1HZ15V", "Volatility 25 (1s)": "1HZ25V",
+    "Volatility 30 (1s)": "1HZ30V", "Volatility 50 (1s)": "1HZ50V", "Volatility 75 (1s)": "1HZ75V",
+    "Volatility 90 (1s)": "1HZ90V", "Volatility 100 (1s)": "1HZ100V",
+
+    // VOLATILITY STANDARD
+    "Volatility 10": "R_10", "Volatility 25": "R_25", "Volatility 50": "R_50", "Volatility 75": "R_75", "Volatility 100": "R_100",
+
+    // BOOM & CRASH
+    "Boom 300": "BOOM300N", "Boom 500": "BOOM500", "Boom 600": "BOOM600", "Boom 900": "BOOM900", "Boom 1000": "BOOM1000",
+    "Crash 300": "CRASH300N", "Crash 500": "CRASH500", "Crash 600": "CRASH600", "Crash 900": "CRASH900", "Crash 1000": "CRASH1000",
+
+    // JUMP & STEP
+    "Jump 10 Index": "JD10", "Jump 25 Index": "JD25", "Jump 50 Index": "JD50", "Jump 75 Index": "JD75", "Jump 100 Index": "JD100",
+    "Step Index 100": "stpRNG", "Step Index 200": "stpRNG2", "Step Index 300": "stpRNG3", "Step Index 400": "stpRNG4", "Step Index 500": "stpRNG5"
+  };
+
   const SYMBOLS = [
     { symbol: "BOOM300N", name: "Boom 300" },
     { symbol: "CRASH300N", name: "Crash 300" },
@@ -261,7 +295,8 @@ document.addEventListener("DOMContentLoaded", () => {
     { symbol: "frxUSDJPY", name: "USDJPY" },
     { symbol: "R_50", name: "VIX 50" },
     { symbol: "R_75", name: "VIX 75" }
-  ];
+  ];  
+
   const fmt = n => Number(n).toFixed(2);
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
 
@@ -424,34 +459,51 @@ document.addEventListener("DOMContentLoaded", () => {
     renderGrid(uniqueSymbols);
   };
 
-  window.confirmSelection = function() { 
-    if (!selectedSymbol) return;
+  window.confirmSelection = function () {
+    // 1. Sécurité de base : on vérifie si un symbole a été cliqué dans la grille
+    if (!selectedSymbol) {
+      showToast("Please select an instrument first", "warning");
+      return;
+    }
 
-    // Simulation de chargement : On met à jour le titre du bouton et le graphique  
-    openBtn.innerText = `Instrument : ${selectedSymbol}`;  
+    // 2. Conversion du nom (ex: "Gold/USD") en code technique (ex: "frxXAUUSD")
+    const selectedSymbolconverted = Callingsymbolforderiv(selectedSymbol);
 
-    // On simule un nouveau signal spécifique au symbole
-    showToast(`Selected Symbol ${selectedSymbol} Validated`, 'info');   
+    // 3. Mise à jour de l'interface utilisateur
+    const openBtn = document.getElementById('openPickerBtn');
+    if (openBtn) {
+      openBtn.innerText = `Instrument : ${selectedSymbol}`;
+    }
 
-    // Real calling Symbol selected
-    selectedSymbolconverted = Callingsymbolforderiv(selectedSymbol);
-
-    console.log(`Selected Symbol Converted : ${selectedSymbolconverted}`);
+    // 4. Lancement du chargement du graphique
+    // On met à jour la variable globale currentSymbol pour le reste de l'app
+    currentSymbol = selectedSymbolconverted;
 
     loadSymbol(selectedSymbolconverted, currentInterval, currentChartType)
       .then(() => {
-        console.log(`Commande de chargement envoyée pour ${selectedSymbol}`);  
-        showToast(`Loading command sent for ${selectedSymbol}`, 'info');
+        console.log(`Successfully switched to ${selectedSymbolconverted}`);
+        showToast(`${selectedSymbol} loaded`, "success");
+
+        // --- SYNCHRONISATION VISUELLE DE LA SIDEBAR ---
+        // On désélectionne tout dans la liste latérale
+        document.querySelectorAll('.symbol-item').forEach(el => el.classList.remove('selected'));
+
+        // On allume le symbole correspondant dans la sidebar
+        const activeSidebarItem = document.querySelector(`.symbol-item[data-symbol="${selectedSymbolconverted}"]`);
+        if (activeSidebarItem) {
+          activeSidebarItem.classList.add('selected');
+        }
       })
       .catch(error => {
-        console.error("Erreur critique lors du basculement :", error);
-        showToast(`Critical error during switch: ${err.message}`, 'error');
+        console.error("Chart loading error:", error);
+        showToast("Failed to load chart", "error");
       });
 
-    currentSymbol = selectedSymbolconverted;
-    console.log("Chargement du signal pour : " + selectedSymbol);
-    window.closeModal();
-  }
+    // 5. Fermeture du modal (Popup)
+    if (typeof window.closeModal === 'function') {
+      window.closeModal();
+    }
+  };
 
   window.closeModal = function () {
     const modal = document.getElementById('modalOverlay');
@@ -473,207 +525,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function Callingsymbolforderiv(selectedsymbol4convert) {
-    const symbol = selectedsymbol4convert.trim(); 
-    switch (symbol) {
-      case "Gold/USD", "Palladium/USD", "Silver/USD", "Platinum/USD":
-        selectedSymbolconverted = SymbolSelectedLocation4metals(symbol);
-        return selectedSymbolconverted;
+  function Callingsymbolforderiv(selectedsymbol4converting) {
+    const symbol = selectedsymbol4converting.trim();
 
-      case "BTC/USD", "ETH/USD":
-        selectedSymbolconverted = SymbolSelectedLocation4crypto(symbol);
-        return selectedSymbolconverted;
+    // On cherche dans la map, si pas trouvé, on retourne le symbole original par défaut
+    const converted = SYMBOL_CONVERSION_MAP[symbol];
 
-      case "AUD/CAD", "AUD/CHF", "AUD/NZD", "EUR/NZD", "GBP/CAD", "GBP/CHF", "GBP/NZD", "NZD/JPY", "NZD/USD", "USD/MXN", "USD/PLN":
-        selectedSymbolconverted = SymbolSelectedLocation4minor(symbol);
-        return selectedSymbolconverted;
-
-      case "AUD/JPY", "AUD/USD", "EUR/AUD", "EUR/CAD", "EUR/CHF", "EUR/GBP", "EUR/JPY", "EUR/USD", "GBP/JPY", "USD/CAD", "GBP/USD", "GBP/AUD", "USD/CHF":
-        selectedSymbolconverted = SymbolSelectedLocation4major(symbol);
-        return selectedSymbolconverted;
-
-      case "Step Index 100", "Step Index 200", "Step Index 300", "Step Index 400", "Step Index 500":
-        selectedSymbolconverted = SymbolSelectedLocation4step(symbol);
-        return selectedSymbolconverted;
-
-      case "Jump 10 Index", "Jump 25 Index", "Jump 50 Index", "Jump 75 Index", "Jump 100 Index":
-        selectedSymbolconverted = SymbolSelectedLocation4jump(symbol);
-        return selectedSymbolconverted;
-
-      case "Boom 300", "Boom 500", "Boom 600", "Boom 900", "Boom 1000", "Crash 300", "Crash 500", "Crash 600", "Crash 900", "Crash 1000":
-        selectedSymbolconverted = SymbolSelectedLocation4BC(symbol);
-        return selectedSymbolconverted;
-
-      case "Volatility 10 (1s)", "Volatility 15 (1s)", "Volatility 25 (1s)", "Volatility 30 (1s)", "Volatility 50 (1s)", "Volatility 75 (1s)", "Volatility 90 (1s)", "Volatility 100 (1s)", "Volatility 10", "Volatility 25", "Volatility 50", "Volatility 75", "Volatility 100":
-        selectedSymbolconverted = SymbolSelectedLocation4VX(symbol);
-        return selectedSymbolconverted;
+    if (!converted) {
+      console.warn(`Attention: Pas de conversion trouvée pour "${symbol}"`);
+      return symbol;
     }
-  }
 
-  function SymbolSelectedLocation4VX(selectedsymbol4converting) {
-    switch (selectedsymbol4converting.trim()) {
-      case "Volatility 10 (1s)":
-        return "1HZ10V";
-      case "Volatility 15 (1s)":
-        return "1HZ15V";
-      case "Volatility 25 (1s)":
-        return "1HZ25V";
-      case "Volatility 30 (1s)":
-        return "1HZ30V";
-      case "Volatility 50 (1s)":
-        return "1HZ50V";
-      case "Volatility 75 (1s)":
-        return "1HZ75V";
-      case "Volatility 90 (1s)":
-        return "1HZ90V";
-      case "Volatility 100 (1s)":
-        return "1HZ100V";
-      case "Volatility 10":
-        return "R_10";
-      case "Volatility 25":
-        return "R_25";
-      case "Volatility 50":
-        return "R_50";
-      case "Volatility 75":
-        return "R_75";
-      case "Volatility 100":
-        return "R_100";
-    }
-  }
-
-  function SymbolSelectedLocation4BC(selectedsymbol4converting) {
-    switch (selectedsymbol4converting.trim()) {
-      case "Boom 300":
-        return "BOOM300N";
-      case "Boom 500":
-        return "BOOM500";
-      case "Boom 600":
-        return "BOOM600";
-      case "Boom 900":
-        return "BOOM900";
-      case "Boom 1000":
-        return "BOOM1000";
-      case "Crash 300":
-        return "CRASH300N";
-      case "Crash 500":
-        return "CRASH500";
-      case "Crash 600":
-        return "CRASH600";
-      case "Crash 900":
-        return "CRASH900";
-      case "Crash 1000":
-        return "CRASH1000";
-    }
-  }
-
-  function SymbolSelectedLocation4jump(selectedsymbol4converting) {
-    switch (selectedsymbol4converting.trim()) {
-      case "Jump 10 Index":
-        return "JD10";
-      case "Jump 25 Index":
-        return "JD25";
-      case "Jump 50 Index":
-        return "JD50";
-      case "Jump 75 Index":
-        return "JD75";
-      case "Jump 100 Index":
-        return "JD100";
-    }
-  }
-
-  function SymbolSelectedLocation4step(selectedsymbol4converting) {
-    switch (selectedsymbol4converting.trim()) {
-      case "Step Index 100":
-        return "stpRNG";
-      case "Step Index 200":
-        return "stpRNG2";
-      case "Step Index 300":
-        return "stpRNG3";
-      case "Step Index 400":
-        return "stpRNG4";
-      case "Step Index 500":
-        return "stpRNG5";
-    }
-  }
-
-  function SymbolSelectedLocation4major(selectedsymbol4converting) {
-    switch (selectedsymbol4converting.trim()) {
-      case "AUD/JPY":
-        return "frxAUDJPY";
-      case "AUD/USD":
-        return "frxAUDUSD";
-      case "EUR/AUD":
-        return "frxEURAUD";
-      case "EUR/CAD":
-        return "frxEURCAD";
-      case "EUR/CHF":
-        return "frxEURCHF";
-      case "EUR/GBP":
-        return "frxEURGBP";
-      case "EUR/JPY":
-        return "frxEURJPY";
-      case "EUR/USD":
-        return "frxEURUSD";
-      case "GBP/JPY":
-        return "frxGBPJPY";
-      case "USD/CAD":
-        return "frxUSDCAD";
-      case "GBP/USD":
-        return "frxGBPUSD";
-      case "GBP/AUD":
-        return "frxGBPAUD";
-      case "USD/CHF":
-        return "frxUSDCHF";
-    }
-  }
-
-  function SymbolSelectedLocation4minor(selectedsymbol4converting) {
-    switch (selectedsymbol4converting.trim()) {
-      case "AUD/CAD":
-        return "frxAUDCAD";
-      case "AUD/CHF":
-        return "frxAUDCHF";
-      case "AUD/NZD":
-        return "frxAUDNZD";
-      case "EUR/NZD":
-        return "frxEURNZD";
-      case "GBP/CAD":
-        return "frxGBPCAD";
-      case "GBP/CHF":
-        return "frxGBPCHF";
-      case "GBP/NZD":
-        return "frxGBPNZD";
-      case "NZD/JPY":
-        return "frxNZDJPY";
-      case "NZD/USD":
-        return "frxNZDUSD";
-      case "USD/MXN":
-        return "frxUSDMXN";
-      case "USD/PLN":
-        return "frxUSDPLN";
-    }
-  }
-
-  function SymbolSelectedLocation4metals(selectedsymbol4converting) {
-    switch (selectedsymbol4converting.trim()) {
-      case "Gold/USD":
-        return "frxXAUUSD";
-      case "Palladium/USD":
-        return "frxXPDUSD";
-      case "Platinum/USD":
-        return "frxXPTUSD";
-      case "Silver/USD":
-        return "frxXAGUSD";
-    }
-  }
-
-  function SymbolSelectedLocation4crypto(selectedsymbol4converting) {
-    switch (selectedsymbol4converting.trim()) {
-      case "BTC/USD":
-        return "cryBTCUSD";
-      case "ETH/USD":
-        return "cryETHUSD";
-    }
+    return converted;
   }
 
   function initChart(currentChartType) {
@@ -5077,8 +4940,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initChart(currentChartType);
   initTable();
   initCalendarTable();
-  initHistoricalTable();  
-  inithistoricalchart(); 
+  initHistoricalTable();
+  inithistoricalchart();
 
   if (typeof window.updateSymbols === 'function') {
     window.updateSymbols();
