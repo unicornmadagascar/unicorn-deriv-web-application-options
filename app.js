@@ -3871,7 +3871,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       return colors[curr] || '#94a3b8';
     };
-
+  
     events.forEach((e) => {  
       // 1. Extraction sécurisée
       const actual = e.actual?.display_value || "-";
