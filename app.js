@@ -310,48 +310,101 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateSymbols() {
-    const category = document.getElementById('categorySelect').value;
-    renderGrid(data[category]);
+    // 1. Récupérer le menu déroulant et la barre de recherche
+    const select = document.getElementById('categorySelect');
+    const searchInput = document.getElementById('symbolSearch');
+
+    // Sécurité : Vérifier si l'élément existe
+    if (!select) return;
+
+    // 2. Vider la recherche quand on change de catégorie pour éviter les listes vides
+    if (searchInput) {
+      searchInput.value = "";
+    }
+
+    const category = select.value;
+
+    // 3. Vérifier si les données pour cette catégorie existent
+    // On suppose que votre objet s'appelle 'data'
+    if (typeof data !== 'undefined' && data[category]) {
+      renderGrid(data[category]);
+    } else {
+      console.error("Les données pour la catégorie '" + category + "' sont introuvables.");
+    }
   }
 
   function renderGrid(symbols) {
     const grid = document.getElementById('symbolGrid');
+    const validateBtn = document.getElementById('validateBtn');
+
+    if (!grid) return;
+
+    // 1. On vide la grille existante
     grid.innerHTML = '';
 
+    // 2. On désactive le bouton valider tant qu'un nouveau choix n'est pas fait
+    if (validateBtn) validateBtn.disabled = true;
+
+    // 3. Si aucun symbole ne correspond (ex: recherche infructueuse)
+    if (symbols.length === 0) {
+      grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #6a6d78; padding: 20px;">Aucun symbole trouvé</div>';
+      return;
+    }
+
+    // 4. Création des éléments
     symbols.forEach(symbol => {
       const div = document.createElement('div');
-      // REMPLACÉ : symbol-item par asset-selector-item
       div.className = 'asset-selector-item';
       div.innerText = symbol;
 
       div.onclick = () => {
-        // REMPLACÉ : .symbol-item par .asset-selector-item
-        document.querySelectorAll('.asset-selector-item').forEach(el => el.classList.remove('selected'));
+        // Retirer la sélection des autres items
+        document.querySelectorAll('.asset-selector-item').forEach(el =>
+          el.classList.remove('selected')
+        );
+
+        // Appliquer la sélection à l'item cliqué
         div.classList.add('selected');
+
+        // Stocker le symbole choisi globalement
         selectedSymbol = symbol;
-        document.getElementById('validateBtn').disabled = false;
+
+        // Activer le bouton de validation
+        if (validateBtn) validateBtn.disabled = false;
       };
+
       grid.appendChild(div);
     });
   }
 
   window.filterSymbols = function () {
-    // 1. Récupérer la valeur de recherche (en minuscule pour ne pas être sensible à la casse)
-    const searchTerm = document.getElementById('symbolSearch').value.toLowerCase();
+    const searchInput = document.getElementById('symbolSearch');
+    const categorySelect = document.getElementById('categorySelect');
 
-    // 2. Récupérer la catégorie actuellement sélectionnée
-    const currentCategory = document.getElementById('categorySelect').value;
+    if (!searchInput || !categorySelect) return;
 
-    // 3. Filtrer les données
-    // On prend les symboles de la catégorie et on ne garde que ceux qui contiennent le texte
-    const filteredSymbols = data[currentCategory].filter(symbol =>
-      symbol.toLowerCase().includes(searchTerm)
-    );
-  
-    // 4. Appeler la fonction de rendu pour mettre à jour la grille visuelle
-    renderGrid(filteredSymbols);
-  } 
-  
+    // 1. Nettoyage de la recherche (trim retire les espaces au début et à la fin)
+    const searchTerm = searchInput.value.toLowerCase().trim();
+
+    // 2. Récupération de la catégorie
+    const currentCategory = categorySelect.value;
+
+    // 3. Sécurité : Vérifier si la catégorie existe dans l'objet 'data'
+    if (typeof data !== 'undefined' && data[currentCategory]) {
+
+      // Filtrage des symboles
+      const filteredSymbols = data[currentCategory].filter(symbol =>
+        symbol.toLowerCase().includes(searchTerm)
+      );
+
+      // 4. Mise à jour de la grille
+      renderGrid(filteredSymbols);
+    } else {
+      console.warn(`La catégorie "${currentCategory}" est vide ou introuvable.`);
+      renderGrid([]); // Affiche "Aucun symbole trouvé"
+    }
+  }
+
   function confirmSelection() {
     if (!selectedSymbol) return;
 
@@ -359,7 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
     openBtn.innerText = `Instrument : ${selectedSymbol}`;
 
     // On simule un nouveau signal spécifique au symbole
-    showToast(`Selected Symbol ${selectedSymbol} Validated`,'info');
+    showToast(`Selected Symbol ${selectedSymbol} Validated`, 'info');
 
     console.log("Chargement du signal pour : " + selectedSymbol);
     closeModal();
