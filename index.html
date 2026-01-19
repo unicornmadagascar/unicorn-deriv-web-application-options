@@ -3116,9 +3116,9 @@
             display: inline-flex;           /* S'adapte au contenu */
             align-items: center;            /* Centre verticalement les éléments internes */
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Ombre pour la profondeur */
-            font-family: 'Trebuchet MS', sans-serif;"> 
-        </div>  
-      </div> 
+            font-family: 'Trebuchet MS', sans-serif;">
+        </div>
+      </div>
     </div>
   </div>
 
@@ -3602,6 +3602,26 @@
       const overlay = document.getElementById('indicatorOverlay');
       if (overlay) {
         overlay.classList.add('hidden');
+      }
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('modalOverlay');
+      const validateBtn = document.getElementById('validateBtn');
+
+      if (modal) {
+        // Masquer le modal
+        modal.style.display = 'none';
+
+        // Optionnel : Réinitialiser la recherche et la sélection 
+        // pour que le modal soit "neuf" à la prochaine ouverture
+        const searchInput = document.getElementById('symbolSearch');
+        if (searchInput) searchInput.value = '';
+
+        // Désactiver le bouton de validation jusqu'au prochain choix
+        if (validateBtn) validateBtn.disabled = true;
+
+        console.log("Modal de sélection fermé.");
       }
     }
 
