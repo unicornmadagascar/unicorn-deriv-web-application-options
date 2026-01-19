@@ -388,7 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedSymbol = symbol;
         currentSymbol = selectedSymbol;
         console.log(`Render : ${selectedSymbol}`);
-        // E. Activer le bouton de validation
+        // E. Activer le bouton de validation  
         if (validateBtn) validateBtn.disabled = false;
       };
 
