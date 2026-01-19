@@ -424,7 +424,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderGrid(uniqueSymbols);
   };
 
-  function confirmSelection() {
+  window.confirmSelection = function() { 
     if (!selectedSymbol) return;
 
     // Simulation de chargement : On met à jour le titre du bouton et le graphique
