@@ -566,6 +566,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let emaArray = [seedValue];
 
+    console.log(`EMA Array : ${emaArray}`);
+
     for (let i = 1; i < data.length; i++) {
       let currentPrice = parseFloat(data[i]);
       if (isNaN(currentPrice)) {
@@ -592,6 +594,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let angleRad = Math.atan(slope * sensitivity);
     let angleDeg = angleRad * (180 / Math.PI);
+
+    console.log(`Angle in dégré : ${angleDeg}`);
 
     // On s'assure que le résultat final est un nombre, sinon 0
     return isNaN(angleDeg) ? 0 : parseFloat(angleDeg.toFixed(2));
