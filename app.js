@@ -648,7 +648,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const tr = Math.max(
         candles[i].high - candles[i].low,
         Math.abs(candles[i].high - candles[i - 1].close),
-        Math.abs(candles[i].low - candles[i - 1].close)
+        Math.abs(candles[i].low - candles[i - 1].close)  
       );
       trs.push(tr);
     }
@@ -658,7 +658,7 @@ document.addEventListener("DOMContentLoaded", () => {
       currentATR = (currentATR * (period - 1) + trs[i]) / period;
     }
 
-    const lastClose = candles[candles.length - 1].close;
+    const lastClose = candles[candles.length - 1].close;  
 
     // --- ZONE DE RÉGLAGE DE LA SENSIBILITÉ ---
     const baseRatio = (currentATR / lastClose) * 100; // Variation en %
