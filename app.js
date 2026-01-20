@@ -580,7 +580,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // fallback tick
         if (c.value !== undefined && typeof c.value === "number") return c.value;
 
-        return NaN;
+        return NaN;  
       })
       .filter(Number.isFinite);
   }
