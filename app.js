@@ -704,10 +704,10 @@ document.addEventListener("DOMContentLoaded", () => {
        * MISE À JOUR : On retire la condition '>= 200' 
        * car nous calculons maintenant l'angle direct sur les derniers prix.
        */
-      window.updateAngleGauge(candles);
+      window.updateAngleGauge(candles);  
     
     } catch (e) {  
-      console.error("Erreur mise à jour jauges:", e);
+      console.error("Erreur mise à jour jauges:", e);  
     }  
   };
 
