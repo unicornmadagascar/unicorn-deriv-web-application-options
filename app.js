@@ -570,100 +570,99 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // 2. Calcul de l'Angle de l'EMA200
-  function calculateEMASlopeAngle(emaData, lookback = 5) {
-    // Vérification : on s'assure qu'on a assez de données et que les valeurs ne sont pas nulles
-    if (emaData.length < lookback + 1 || emaData[emaData.length - 1] === null || emaData[emaData.length - 1 - lookback] === null) {
-      return 0;
-    }
+  function calculateEMASlopeAngle(emaData, lookback = 10) {
+    // 1. Vérification de la présence de données valides
+    if (!emaData || emaData.length < lookback + 1) return 0;
 
     const currentEMA = emaData[emaData.length - 1];
     const prevEMA = emaData[emaData.length - 1 - lookback];
 
-    // Calcul de la variation en pourcentage (indépendant du prix de l'actif)
-    const priceChange = currentEMA - prevEMA;
-    const slope = (priceChange / prevEMA) * 100;
+    // Sécurité si les valeurs sont nulles ou NaN
+    if (!currentEMA || !prevEMA) return 0;
 
-    // Ajustement de la sensibilité : 
-    // Multipliez par un facteur plus grand (ex: 500) si l'aiguille ne bouge pas assez
-    const sensitivity = 500;
+    // 2. Calcul de la pente en pourcentage de variation logarithmique
+    // Cela rend l'angle indépendant de la valeur nominale du prix
+    const slope = (Math.log(currentEMA) - Math.log(prevEMA)) * 100;
+
+    // 3. Sensibilité (Multiplicateur)
+    // On augmente ici la force pour que l'aiguille bouge de façon visible
+    const sensitivity = 5000;
     let angleRad = Math.atan(slope * sensitivity);
     let angleDeg = angleRad * (180 / Math.PI);
 
+    // 4. Limiter l'angle entre -90 et 90
     return parseFloat(angleDeg.toFixed(2));
   }
 
-  function updateAngleGauge(candles) {
-    // 1. Extraction sécurisée des prix (on transforme les objets en nombres purs)
-    const closes = candles
-      .map(c => {
-        const val = (c.close !== undefined) ? c.close : c.value;
-        return parseFloat(val);
-      })
-      .filter(val => !isNaN(val));
+  window.updateAngleGauge = function (candles) {
+    // Extraction des prix
+    const closes = candles.map(c => parseFloat(c.close || c.value)).filter(v => !isNaN(v));
 
-    // 2. Vérification critique de la quantité de données
-    // L'EMA200 ne peut pas exister mathématiquement avec moins de 200 points
-    if (closes.length < 205) {
-      console.warn(`Angle EMA200 : Données insuffisantes (${closes.length}/205)`);
-      const label = document.getElementById('txt-angle-label');
-      if (label) label.innerText = "Calcul... " + Math.floor((closes.length / 205) * 100) + "%";
+    // VERIFICATION N°1 : Nombre de bougies
+    if (closes.length < 210) {
+      console.warn("EMA 200 : Pas assez de bougies dans le cache (" + closes.length + "/210)");
       return;
     }
 
-    // 3. Calculs
+    // Calcul de l'EMA 200
     const ema200 = calculateEMA(closes, 200);
-    const angle = calculateEMASlopeAngle(ema200, 5);
 
-    // 4. Mapping visuel (-90° à +90° => 0% à 100%)
+    // Calcul de l'angle
+    const angle = calculateEMASlopeAngle(ema200, 10);
+
+    // VERIFICATION N°2 : L'angle est-il calculé ?
+    // console.log("Debug Angle:", angle);
+
+    // Mapping visuel pour le SVG
     const percent = ((angle + 90) / 180) * 100;
 
-    // 5. Choix de la couleur et du label
-    let color = "#ff9800"; // Orange par défaut (Range)
-    let labelText = "Ranging";
+    let color = "#ff9800"; // Orange (Neutre)
+    let label = "Ranging";
 
-    if (angle > 3) {
-      color = "#089981"; // Vert (Achat)
-      labelText = "Ascending";
-    } else if (angle < -3) {
-      color = "#f23645"; // Rouge (Vente)
-      labelText = "Descending";
+    // Seuils d'activation (plus sensibles)
+    if (angle > 1.5) {
+      color = "#089981"; // Vert
+      label = "Bullish Slope";
+    } else if (angle < -1.5) {
+      color = "#f23645"; // Rouge
+      label = "Bearish Slope";
     }
 
-    // 6. Mise à jour du HTML (Vérifiez bien ces IDs dans votre HTML)
-    setGaugeValue('path-angle', percent, color); 
+    // Application au HTML
+    setGaugeValue('path-angle', percent, color);
 
     const valEl = document.getElementById('txt-angle-val');
-    const labEl = document.getElementById('txt-angle-label');
-
     if (valEl) valEl.innerText = angle.toFixed(1) + "°";
-    if (labEl) labEl.innerText = labelText;  
-  }   
+
+    const labEl = document.getElementById('txt-angle-label');
+    if (labEl) labEl.innerText = label;
+  };
 
   // 3. Calcul de l'ATR (Volatilité)
-  function calculateATR(candles, period = 50) {  
-    if (candles.length <= period) return { percent: 0 };  
+  function calculateATR(candles, period = 50) {
+    if (candles.length <= period) return { percent: 0 };
 
-    let trs = [];  
+    let trs = [];
     for (let i = 1; i < candles.length; i++) {
       const tr = Math.max(
         candles[i].high - candles[i].low,
-        Math.abs(candles[i].high - candles[i - 1].close),  
+        Math.abs(candles[i].high - candles[i - 1].close),
         Math.abs(candles[i].low - candles[i - 1].close)
       );
-      trs.push(tr);  
+      trs.push(tr);
     }
 
     let currentATR = trs.slice(0, period).reduce((a, b) => a + b) / period;
     for (let i = period; i < trs.length; i++) {
       currentATR = (currentATR * (period - 1) + trs[i]) / period;
-    }  
+    }
 
     const lastClose = candles[candles.length - 1].close;
-    const baseRatio = (currentATR / lastClose) * 100;  
-  
+    const baseRatio = (currentATR / lastClose) * 100;
+
     // --- RÉGLAGE : Sensibilité réduite ---
     // On passe de 1500 à 1000 pour calmer l'amplitude
-    let volPercent = Math.sqrt(baseRatio) * 800;  
+    let volPercent = Math.sqrt(baseRatio) * 800;
 
     return {
       percent: Math.min(volPercent, 100).toFixed(1)
@@ -713,7 +712,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // MISE À JOUR JAUGE 2 : Angle EMA
   function updateVolatilityGauge(candles) {
     const atr = calculateATR(candles, 50);
-    const targetPercent = parseFloat(atr.percent); 
+    const targetPercent = parseFloat(atr.percent);
 
     // --- RÉGLAGE : Lissage beaucoup plus fort ---
     // 0.05 signifie que l'aiguille ne parcourt que 5% de la distance vers la cible à chaque tick.
@@ -750,7 +749,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       updateTrendGauge(candles);
-      updateAngleGauge(candles);
+      window.updateAngleGauge(candles);
       updateVolatilityGauge(candles);
     } catch (e) {
       console.error("Erreur mise à jour jauges:", e);
