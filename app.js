@@ -663,7 +663,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
     // --- RÉGLAGE : Sensibilité réduite ---
     // On passe de 1500 à 1000 pour calmer l'amplitude
-    let volPercent = Math.sqrt(baseRatio) * 1300;  
+    let volPercent = Math.sqrt(baseRatio) * 500;  
 
     return {
       percent: Math.min(volPercent, 100).toFixed(1)
@@ -712,8 +712,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // MISE À JOUR JAUGE 2 : Angle EMA
   function updateVolatilityGauge(candles) {
-    const atr = calculateATR(candles, 14);
-    const targetPercent = parseFloat(atr.percent);
+    const atr = calculateATR(candles, 50);
+    const targetPercent = parseFloat(atr.percent); 
 
     // --- RÉGLAGE : Lissage beaucoup plus fort ---
     // 0.05 signifie que l'aiguille ne parcourt que 5% de la distance vers la cible à chaque tick.
