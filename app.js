@@ -586,56 +586,47 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentEMA = emaData[emaData.length - 1];
     const prevEMA = emaData[emaData.length - 1 - lookback];
 
-    // Si l'une des deux valeurs est invalide, on ne calcule pas
-    if (isNaN(currentEMA) || isNaN(prevEMA) || prevEMA === 0) return 0;
+    if (!currentEMA || !prevEMA || isNaN(currentEMA) || isNaN(prevEMA)) return 0;
 
-    const slope = (Math.log(currentEMA) - Math.log(prevEMA)) * 100;
-    const sensitivity = 5000;
+    // 1. Calculer la variation brute
+    const diff = currentEMA - prevEMA;
 
-    let angleRad = Math.atan(slope * sensitivity);  
+    // 2. NORMALISATION CRITIQUE
+    // On divise la différence par le prix actuel pour obtenir un % de variation
+    // Puis on multiplie par un facteur de sensibilité très élevé (ex: 10000)
+    const slope = (diff / prevEMA) * 10000;
+
+    // 3. Calcul de l'angle
+    // Si l'angle est toujours à 0, augmentez le 50 ci-dessous à 100 ou 200
+    let angleRad = Math.atan(slope * 50);
     let angleDeg = angleRad * (180 / Math.PI);
 
-    console.log(`Angle in dégré : ${angleDeg}`);   
-
-    // On s'assure que le résultat final est un nombre, sinon 0
-    return isNaN(angleDeg) ? 0 : parseFloat(angleDeg.toFixed(2));
+    return parseFloat(angleDeg.toFixed(2));
   }
 
   window.updateAngleGauge = function (candles) {
-    if (!candles || candles.length < 205) {
-      // Au démarrage, on affiche "Initialisation" au lieu de NaN
-      const valEl = document.getElementById('txt-angle-val');
-      if (valEl) valEl.innerText = "--";
-      return;
-    }
+    const closes = candles.map(c => parseFloat(c.close || c.value)).filter(v => !isNaN(v));
 
-    // Extraction propre des prix de clôture
-    const closes = candles.map(c => {
-      const val = (c.close !== undefined) ? c.close : c.value;
-      return parseFloat(val);
-    }).filter(v => !isNaN(v));
+    if (closes.length < 205) return;
 
     const ema200 = calculateEMA(closes, 200);
     const angle = calculateEMASlopeAngle(ema200, 10);
 
-    // Sécurité finale : si l'angle est NaN, on l'arrête ici
-    if (isNaN(angle)) return;
+    // --- TEST DE DEBUG DANS LA CONSOLE ---
+    const lastEMA = ema200[ema200.length - 1];
+    const prevEMA = ema200[ema200.length - 11];
+    console.info(`EMA Actuelle: ${lastEMA} | Précédente: ${prevEMA} | Angle: ${angle}°`);
 
     const percent = ((angle + 90) / 180) * 100;
 
     let color = "#ff9800";
-    let label = "Ranging";
-
-    if (angle > 1.5) { color = "#089981"; label = "Ascending"; }
-    else if (angle < -1.5) { color = "#f23645"; label = "Descending"; }
+    if (angle > 0.5) color = "#089981";
+    else if (angle < -0.5) color = "#f23645";
 
     setGaugeValue('path-angle', percent, color);
 
     const valEl = document.getElementById('txt-angle-val');
-    if (valEl) valEl.innerText = angle.toFixed(1) + "°";
-
-    const labEl = document.getElementById('txt-angle-label');
-    if (labEl) labEl.innerText = label;
+    if (valEl) valEl.innerText = angle.toFixed(2) + "°";
   };
 
   // 3. Calcul de l'ATR (Volatilité)
@@ -738,14 +729,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // On arrondit l'affichage pour éviter les chiffres qui défilent trop vite
     document.getElementById('txt-vol-val').innerText = Math.round(smoothedVol) + "%";
-    document.getElementById('txt-vol-label').innerText = label;  
-  } 
-  
+    document.getElementById('txt-vol-label').innerText = label;
+  }
+
   /**
    * FONCTION PRINCIPALE À APPELER
    * @param {Array} candles - Données reçues de l'API Deriv
-   */  
-  window.updateAllMarketGauges = function (candles) { 
+   */
+  window.updateAllMarketGauges = function (candles) {
     if (!candles || candles.length < 2) return;
 
     try {
