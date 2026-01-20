@@ -585,7 +585,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const slope = (Math.log(currentEMA) - Math.log(prevEMA)) * 100;
 
     // 3. Sensibilité (Multiplicateur)
-    // On augmente ici la force pour que l'aiguille bouge de façon visible
+    // On augmente ici la force pour que l'aiguille bouge de façon visible  
     const sensitivity = 5000;
     let angleRad = Math.atan(slope * sensitivity);
     let angleDeg = angleRad * (180 / Math.PI);
