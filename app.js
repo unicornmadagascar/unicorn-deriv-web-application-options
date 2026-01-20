@@ -573,7 +573,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (isNaN(currentPrice)) {
         emaArray.push(emaArray[i - 1]); // On répète la dernière valeur si erreur
       } else {
-        emaArray.push((currentPrice - emaArray[i - 1]) * k + emaArray[i - 1]); 
+        emaArray.push((currentPrice - emaArray[i - 1]) * k + emaArray[i - 1]);
       }
     }
     return emaArray;
@@ -594,7 +594,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let angleRad = Math.atan(slope * sensitivity);
     let angleDeg = angleRad * (180 / Math.PI);
 
-    return parseFloat(angleDeg.toFixed(2));
+    return parseFloat(angleDeg.toFixed(2));  
   }
 
   window.updateAngleGauge = function (candles) {
