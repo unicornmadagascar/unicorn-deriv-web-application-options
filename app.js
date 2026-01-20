@@ -565,7 +565,7 @@ document.addEventListener("DOMContentLoaded", () => {
       emaArray.push((data[i] - emaArray[i - 1]) * k + emaArray[i - 1]);
     }
   
-    console.log(`emaArray : ${emaArray}`);     
+    console.log(`emaArray : ${emaArray}`);      
     
     return emaArray;  
   }
