@@ -650,7 +650,7 @@ document.addEventListener("DOMContentLoaded", () => {
         Math.abs(candles[i].high - candles[i - 1].close),  
         Math.abs(candles[i].low - candles[i - 1].close)
       );
-      trs.push(tr);
+      trs.push(tr);  
     }
 
     let currentATR = trs.slice(0, period).reduce((a, b) => a + b) / period;
@@ -663,7 +663,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
     // --- RÉGLAGE : Sensibilité réduite ---
     // On passe de 1500 à 1000 pour calmer l'amplitude
-    let volPercent = Math.sqrt(baseRatio) * 500;  
+    let volPercent = Math.sqrt(baseRatio) * 800;  
 
     return {
       percent: Math.min(volPercent, 100).toFixed(1)
