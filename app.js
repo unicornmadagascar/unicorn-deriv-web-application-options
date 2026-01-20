@@ -641,7 +641,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 3. Calcul de l'ATR (Volatilité)
   function calculateATR(candles, period = 50) {  
-    if (candles.length <= period) return { percent: 0 };
+    if (candles.length <= period) return { percent: 0 };  
 
     let trs = [];  
     for (let i = 1; i < candles.length; i++) {
