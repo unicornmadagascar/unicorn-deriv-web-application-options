@@ -566,7 +566,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   
     console.log(`emaArray : ${emaArray}`);      
-    
+      
     return emaArray;  
   }
 
