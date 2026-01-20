@@ -570,7 +570,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const nextEMA = (currentPrice - emaArray[i - 1]) * k + emaArray[i - 1];
       emaArray.push(nextEMA);
     }
-    return emaArray;
+    return emaArray;  
   }
 
   window.updateAngleGauge = function (candles) {
@@ -617,7 +617,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const valEl = document.getElementById('txt-angle-val');
     if (valEl) valEl.innerText = Number(angleDeg).toFixed(1) + "°";
   };
-  
+
   // 3. Calcul de l'ATR (Volatilité)
   function calculateATR(candles, period = 50) {
     if (candles.length <= period) return { percent: 0 };
