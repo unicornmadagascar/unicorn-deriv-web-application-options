@@ -555,69 +555,75 @@ document.addEventListener("DOMContentLoaded", () => {
  * ============================================================
  */
   function calculateEMA(data, period) {
-    if (!data || data.length < period) return [];
+    if (!Array.isArray(data) || data.length === 0) return [];
 
     const k = 2 / (period + 1);
-    // On s'assure que le point de départ est un nombre pur
-    let firstValue = parseFloat(data[0]);
-    if (isNaN(firstValue)) return [];
+    let emaArray = [];
 
-    let emaArray = [firstValue];
+    // 👉 Initialisation avec la première valeur (standard en trading live)
+    let ema = data[0];
+    emaArray.push(ema);
 
     for (let i = 1; i < data.length; i++) {
-      const currentPrice = parseFloat(data[i]);  
-      // Formule mathématique pure (Nombre - Nombre) * Nombre + Nombre
-      const nextEMA = (currentPrice - emaArray[i - 1]) * k + emaArray[i - 1];
-      emaArray.push(nextEMA);
-    } 
-    return emaArray;     
+      ema = (data[i] - ema) * k + ema;
+      emaArray.push(ema);
+    }
+
+    return emaArray;
   }
 
   window.updateAngleGauge = function (candles) {
-    // 1. Extraction stricte en nombres
-    const closes = candles.map(c => {
-      const val = (c.close !== undefined) ? c.close : c.value;  
-      return parseFloat(val);
-    }).filter(v => !isNaN(v));      
+
+    const closes = candles
+      .map(c => Number(c.close ?? c.value))
+      .filter(v => Number.isFinite(v));
 
     if (closes.length < 210) return;
 
-    // 2. Calcul
-    const emaArray = calculateEMA(closes, 200);
+    const ema = calculateEMA(closes, 200);
 
-    console.log(`EMA ARRAY :`,emaArray);   
+    // 🔒 On enlève les nulls
+    const emaClean = ema.filter(v => v !== null);
+    if (emaClean.length < 6) return;
 
-    // 3. Récupération des deux derniers points
-    let lastEMA = emaArray[emaArray.length - 1];
-    let prevEMA = emaArray[emaArray.length - 6];
+    const lastEMA = emaClean[emaClean.length - 1];
+    const prevEMA = emaClean[emaClean.length - 6]; // 5 candles back
 
-    // --- FORCE LE TYPE NOMBRE (Anti-Objet) ---
-    if (lastEMA && typeof lastEMA === 'object') lastEMA = lastEMA.value;
-    if (prevEMA && typeof prevEMA === 'object') prevEMA = prevEMA.value;
+    // ΔEMA / Δtime
+    const deltaEMA = lastEMA - prevEMA;
+    const deltaTime = 5; // 5 candles
 
-    // 4. Vérification finale avant calcul de l'angle
-    if (typeof lastEMA !== 'number' || isNaN(lastEMA) || isNaN(prevEMA)) {
-      console.error("EMA calculée invalide (NaN)");
-      return;
-    }
-
-    // 5. Calcul de l'angle
-    const change = (lastEMA - prevEMA) / prevEMA;
-    const sensitivity = 1500000;
-    const angleRad = Math.atan(change * sensitivity);
+    // Angle réel
+    const angleRad = Math.atan(deltaEMA / deltaTime);
     const angleDeg = angleRad * (180 / Math.PI);
 
-    // 6. Mise à jour de la jauge
-    const percent = ((angleDeg + 90) / 180) * 100;
+    console.log(
+      `EMA200: ${lastEMA.toFixed(2)} | ΔEMA: ${deltaEMA.toFixed(4)} | Angle: ${angleDeg.toFixed(2)}°`
+    );
+
+    // Clamp pour la jauge (-45° → +45°)
+    const maxAngle = 45;
+    const clamped = Math.max(-maxAngle, Math.min(maxAngle, angleDeg));
+
+    const percent = ((clamped + maxAngle) / (2 * maxAngle)) * 100;
+
+    // 🎨 Couleur
     let color = "#ff9800";
-    if (angleDeg > 1.0) color = "#089981";
-    else if (angleDeg < -1.0) color = "#f23645";
+    if (angleDeg > 2) color = "#089981";
+    else if (angleDeg < -2) color = "#f23645";
 
-    setGaugeValue('path-angle', percent, color);
+    setGaugeValue("path-angle", percent, color);
 
-    // Sécurité .toFixed() : on s'assure que c'est bien un nombre
-    const valEl = document.getElementById('txt-angle-val');
-    if (valEl) valEl.innerText = Number(angleDeg).toFixed(1) + "°";
+    const valEl = document.getElementById("txt-angle-val");
+    const labelEl = document.getElementById("txt-angle-label");
+
+    if (valEl) valEl.innerText = angleDeg.toFixed(1) + "°";
+
+    if (labelEl) {
+      if (angleDeg > 2) labelEl.innerText = "ASCENDING";
+      else if (angleDeg < -2) labelEl.innerText = "DESCENDING";
+      else labelEl.innerText = "RANGING";
+    }
   };
 
   // 3. Calcul de l'ATR (Volatilité)
