@@ -612,7 +612,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const lastClose = candles[candles.length - 1].close;
-
+  
     // --- ZONE DE RÉGLAGE DE LA SENSIBILITÉ ---
     const baseRatio = (currentATR / lastClose) * 100; // Variation en %
 
@@ -623,7 +623,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return { 
       percent: Math.min(volPercent, 100).toFixed(1)
     };
-  }
+  }  
 
   // 4. Calcul de la Force Bulls vs Bears
   function calculateBullBearForce(candles, period = 14) {
