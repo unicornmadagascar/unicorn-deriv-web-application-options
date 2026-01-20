@@ -597,7 +597,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return parseFloat(angleDeg.toFixed(2)); 
   }
 
-  window.updateAngleGauge = function (candles) {
+  window.updateAngleGauge = function (candles) {  
     // 1. Extraction des prix en nombres
     const closes = candles.map(c => parseFloat(c.close || c.value)).filter(v => !isNaN(v));
 
