@@ -611,10 +611,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const percent = ((angleDeg + 90) / 180) * 100;
 
     let color = "#ff9800";
-    if (angleDeg > 1.0) color = "#089981";  
+    if (angleDeg > 1.0) color = "#089981";   
     else if (angleDeg < -1.0) color = "#f23645";    
 
-    setGaugeValue('path-angle', percent, color);
+    setGaugeValue('path-angle', percent, color);  
     
     const valEl = document.getElementById('txt-angle-val'); 
     if (valEl) valEl.innerText = angleDeg.toFixed(1) + "°";  
