@@ -590,7 +590,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const slope = (current - previous) / previous;
 
     // Multiplicateur pour rendre l'angle visible (Ajustez 100000 si besoin)
-    const sensitivity = 100000;
+    const sensitivity = 500000;
     let angleRad = Math.atan(slope * sensitivity);
     let angleDeg = angleRad * (180 / Math.PI);
 
