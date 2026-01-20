@@ -555,59 +555,65 @@ document.addEventListener("DOMContentLoaded", () => {
  * ============================================================
  */
   function calculateEMA(data, period) {
-    if (!Array.isArray(data) || data.length === 0) return [];  
+    if (!Array.isArray(data) || data.length === 0) return [];
 
-    const k = 2 / (period + 1);   
-    let emaArray = [];  
+    const k = 2 / (period + 1);
+    let emaArray = [];
 
-    // 👉 Initialisation avec la première valeur (standard en trading live)
     let ema = data[0];
-    emaArray.push(ema);  
+    emaArray.push(ema);
 
     for (let i = 1; i < data.length; i++) {
-      ema = (data[i] - ema) * k + ema;  
-      emaArray.push(ema);    
-    }  
+      ema = (data[i] - ema) * k + ema;
+      emaArray.push(ema);
+    }
 
-    return emaArray;     
+    return emaArray;
   }
+
+  function extractClosesFromCandles(candles) {
+    return candles
+      .map(c => {
+        // Deriv candle standard
+        if (c.close !== undefined) return Number(c.close);
+
+        // fallback tick
+        if (c.value !== undefined && typeof c.value === "number") return c.value;
+
+        return NaN;
+      })
+      .filter(Number.isFinite);
+  }
+
 
   window.updateAngleGauge = function (candles) {
 
-    const closes = candles
-      .map(c => Number(c.close ?? c.value))
-      .filter(v => Number.isFinite(v));
+    const closes = extractClosesFromCandles(candles);
 
     if (closes.length < 210) return;
 
-    const ema = calculateEMA(closes, 200);  
+    const ema = calculateEMA(closes, 200);
 
-    // 🔒 On enlève les nulls
-    const emaClean = ema.filter(v => v !== null);
-    if (emaClean.length < 6) return;
+    const lastEMA = ema[ema.length - 1];
+    const prevEMA = ema[ema.length - 6];
 
-    const lastEMA = emaClean[emaClean.length - 1];  
-    const prevEMA = emaClean[emaClean.length - 6]; // 5 candles back  
+    if (!Number.isFinite(lastEMA) || !Number.isFinite(prevEMA)) return;
 
-    // ΔEMA / Δtime
     const deltaEMA = lastEMA - prevEMA;
-    const deltaTime = 5; // 5 candles
+    const lookback = 5;
 
-    // Angle réel
-    const angleRad = Math.atan(deltaEMA / deltaTime);
-    const angleDeg = angleRad * (180 / Math.PI);
+    const angleDeg =
+      Math.atan(deltaEMA / lookback) * (180 / Math.PI);
 
     console.log(
-      `EMA200: ${lastEMA.toFixed(2)} | ΔEMA: ${deltaEMA.toFixed(4)} | Angle: ${angleDeg.toFixed(2)}°`
+      `EMA200: ${lastEMA.toFixed(2)} | Angle: ${angleDeg.toFixed(2)}°`
     );
 
-    // Clamp pour la jauge (-45° → +45°)
+    // --- Jauge ---
     const maxAngle = 45;
     const clamped = Math.max(-maxAngle, Math.min(maxAngle, angleDeg));
-
     const percent = ((clamped + maxAngle) / (2 * maxAngle)) * 100;
-    
-    // 🎨 Couleur
+
     let color = "#ff9800";
     if (angleDeg > 2) color = "#089981";
     else if (angleDeg < -2) color = "#f23645";
@@ -616,9 +622,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const valEl = document.getElementById("txt-angle-val");
     const labelEl = document.getElementById("txt-angle-label");
-  
-    if (valEl) valEl.innerText = angleDeg.toFixed(1) + "°";
 
+    if (valEl) valEl.innerText = angleDeg.toFixed(1) + "°";
     if (labelEl) {
       if (angleDeg > 2) labelEl.innerText = "ASCENDING";
       else if (angleDeg < -2) labelEl.innerText = "DESCENDING";
@@ -741,7 +746,7 @@ document.addEventListener("DOMContentLoaded", () => {
       updateVolatilityGauge(candles);
 
       // L'angle EMA200 a besoin de son historique
-      if (candles.length >= 210) {  
+      if (candles.length >= 210) {
         window.updateAngleGauge(candles);
       }
     } catch (e) {
