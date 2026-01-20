@@ -554,32 +554,67 @@ document.addEventListener("DOMContentLoaded", () => {
  * CONFIGURATION ET CALCULS TECHNIQUES (LOGIQUE)
  * ============================================================
  */
+  function calculateEMA(data, period) {
+    if (!data || data.length < period) return [];
+    let k = 2 / (period + 1);
+    let emaArray = [data[0]];
+
+    for (let i = 1; i < data.length; i++) {
+      emaArray.push((data[i] - emaArray[i - 1]) * k + emaArray[i - 1]);
+    }
+    return emaArray;
+  }
+
   window.updateAngleGauge = function (candles) {
-    const lastIdx = candles.length - 1;
+    // 1. On attend d'avoir assez de données pour l'EMA200
+    if (!candles || candles.length < 210) {
+      const labEl = document.getElementById('txt-angle-label');
+      if (labEl) labEl.innerText = `Sync... (${candles.length}/210)`;
+      return;
+    }
 
-    // Extraction des prix numériques
-    const currentPrice = parseFloat(candles[lastIdx].close || candles[lastIdx].value);
-    const previousPrice = parseFloat(candles[lastIdx - 1].close || candles[lastIdx - 1].value);
+    // 2. Extraction des prix de clôture (nombres uniquement)
+    const closes = candles.map(c => parseFloat(c.close || c.value)).filter(v => !isNaN(v));
 
-    if (isNaN(currentPrice) || isNaN(previousPrice)) return;
+    // 3. Calcul de l'EMA200
+    const ema200 = calculateEMA(closes, 200);
 
-    // Calcul de l'angle (variation relative * sensibilité)
-    const change = (currentPrice - previousPrice) / previousPrice;
-    const sensitivity = 200000;
+    // 4. On prend l'EMA actuelle et celle d'il y a 5 bougies pour calculer la pente
+    const lastEMA = ema200[ema200.length - 1];
+    const prevEMA = ema200[ema200.length - 6]; // '6' pour avoir un écart de 5 bougies
+
+    if (isNaN(lastEMA) || isNaN(prevEMA)) return;
+
+    // 5. Calcul de l'angle réel de la tendance
+    const change = (lastEMA - prevEMA) / prevEMA;
+
+    // Sensibilité pour l'EMA : l'EMA bouge beaucoup plus lentement que le prix,
+    // on utilise donc une sensibilité plus élevée (ex: 1 000 000)
+    const sensitivity = 1000000;
     let angleRad = Math.atan(change * sensitivity);
     let angleDeg = angleRad * (180 / Math.PI);
 
-    // Mise à jour visuelle
+    // 6. Mise à jour visuelle
     const percent = ((angleDeg + 90) / 180) * 100;
 
-    let color = "#ff9800"; // Orange
-    if (angleDeg > 2) color = "#089981"; // Vert
-    else if (angleDeg < -2) color = "#f23645"; // Rouge
+    let color = "#ff9800"; // Orange (Neutre)
+    let label = "Trend Flat";
+
+    if (angleDeg > 1.5) {
+      color = "#089981";
+      label = "Bullish Trend";
+    } else if (angleDeg < -1.5) {
+      color = "#f23645";
+      label = "Bearish Trend";
+    }
 
     setGaugeValue('path-angle', percent, color);
 
     const valEl = document.getElementById('txt-angle-val');
     if (valEl) valEl.innerText = angleDeg.toFixed(1) + "°";
+
+    const labEl = document.getElementById('txt-angle-label');
+    if (labEl) labEl.innerText = label;
   };
 
   // 3. Calcul de l'ATR (Volatilité)
@@ -690,25 +725,19 @@ document.addEventListener("DOMContentLoaded", () => {
    * @param {Array} candles - Données reçues de l'API Deriv
    */
   window.updateAllMarketGauges = function (candles) {
-    // 1. Sécurité de base : il faut au moins 2 bougies pour comparer le prix actuel au précédent
     if (!candles || candles.length < 2) return;
 
     try {
-      // Met à jour la jauge de Force (Bulls/Bears)
       updateTrendGauge(candles);
-
-      // Met à jour la jauge de Volatilité (ATR)
       updateVolatilityGauge(candles);
 
-      /**
-       * MISE À JOUR : On retire la condition '>= 200' 
-       * car nous calculons maintenant l'angle direct sur les derniers prix.
-       */
-      window.updateAngleGauge(candles);    
-    
-    } catch (e) {      
-      console.error("Erreur mise à jour jauges:", e);  
-    }  
+      // L'angle EMA200 a besoin de son historique
+      if (candles.length >= 210) {
+        window.updateAngleGauge(candles);
+      }
+    } catch (e) {
+      console.error("Erreur:", e);  
+    }
   };
 
   function initChart(currentChartType) {
