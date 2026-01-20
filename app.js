@@ -5462,7 +5462,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (event.target === modal) {
       window.closeModal();
     }
-  };
+  };  
 
   // On récupère le bouton par son ID
   const validateBtn = document.getElementById('validateBtn');
