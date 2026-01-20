@@ -643,7 +643,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function calculateATR(candles, period = 14) {  
     if (candles.length <= period) return { percent: 0 };
 
-    let trs = [];
+    let trs = [];  
     for (let i = 1; i < candles.length; i++) {
       const tr = Math.max(
         candles[i].high - candles[i].low,
