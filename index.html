@@ -3033,31 +3033,36 @@
     }
 
     /*--------------- JAUGES ----------------*/
-    /* Grid Layout */
+    /* Grid Layout - Fond Blanc */
     .indicators-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 20px;
       padding: 20px;
-      background-color: #131722;
-      /* Dark TradingView Theme */
+      background-color: #ffffff;
+      /* Fond blanc pur */
     }
 
     .indicator-card {
-      background: #1e222d;
+      background: #ffffff;
+      /* Fond de carte blanc */
       border-radius: 12px;
       padding: 20px;
       text-align: center;
-      border: 1px solid #363a45;
+      border: 1px solid #e0e3eb;
+      /* Bordure grise très claire */
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      /* Légère ombre pour le relief */
     }
 
     .indicator-header {
-      color: #d1d4dc;
-      font-size: 0.9rem;
-      font-weight: 500;
+      color: #131722;
+      /* Texte sombre pour lisibilité */
+      font-size: 0.85rem;
+      font-weight: 600;
       margin-bottom: 15px;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
     }
 
     /* Gauge SVG Styling */
@@ -3065,67 +3070,69 @@
       position: relative;
       width: 100%;
       max-width: 220px;
-      /* Taille augmentée */
       margin: 0 auto;
-    }
-
-    .half-circle-gauge {
-      width: 100%;
     }
 
     .gauge-bg {
       fill: none;
-      stroke: #363a45;
-      stroke-width: 8;
+      stroke: #f0f3fa;
+      /* Rail de la jauge gris très clair */
+      stroke-width: 10;
+      /* Un peu plus épais pour le thème clair */
     }
 
     .gauge-fill {
       fill: none;
-      stroke-width: 8;
+      stroke-width: 10;
       stroke-linecap: round;
       stroke-dasharray: 126;
-      /* Longueur totale du demi-cercle */
-      transition: stroke-dashoffset 0.8s ease-out, stroke 0.5s ease;
+      transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s ease;
     }
 
     /* Text in Center */
     .gauge-center-text {
       position: absolute;
-      bottom: 5px;
+      bottom: 8px;
       left: 0;
-      right: 0;  
+      right: 0;
       display: flex;
-      flex-direction: column; 
+      flex-direction: column;
     }
-   
+
     .main-val {
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: #ffffff;  
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #131722;
+      /* Chiffres en noir/bleu foncé */
     }
 
     .sub-label {
-      font-size: 0.75rem;
-      color: #868993;
+      font-size: 0.8rem;
+      color: #707a8a;
+      /* Sous-titre gris moyen */
+      font-weight: 500;
     }
 
     /* Footer labels */
     .indicator-footer {
       display: flex;
       justify-content: space-between;
-      margin-top: 10px;
-      font-size: 0.7rem;
-      color: #5d606b;
-      font-weight: bold;
+      margin-top: 12px;
+      font-size: 0.75rem;
+      color: #707a8a;
+      font-weight: 600;
     }
 
     .label-bear {
-      color: #ff4444;
+      color: #f23645;
     }
 
+    /* Rouge standard TradingView */
     .label-bull {
-      color: #00c805;
+      color: #089981;
     }
+
+    /* Vert standard TradingView */
 
     @media (max-width: 768px) {
       .indicators-grid {
@@ -3186,6 +3193,8 @@
   </div>
 
   <section class="widget-section full-width" id="gold-info-section">
+    <div id="gold-info-container" class="tradingview-widget-container indicators-grid">
+
       <div class="indicator-card">
         <div class="indicator-header">Trend Strength (Smoothed)</div>
         <div class="gauge-container">
@@ -3211,7 +3220,7 @@
           <svg viewBox="0 0 100 55" class="half-circle-gauge">
             <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50" />
             <path id="path-angle" class="gauge-fill" d="M 10 50 A 40 40 0 0 1 90 50"
-              style="stroke-dashoffset: 63; stroke: #ff9800;" />
+              style="stroke-dashoffset: 63; stroke: #f57c00;" />
           </svg>
           <div class="gauge-center-text">
             <span id="txt-angle-val" class="main-val">0°</span>
@@ -3230,7 +3239,7 @@
           <svg viewBox="0 0 100 55" class="half-circle-gauge">
             <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50" />
             <path id="path-vol" class="gauge-fill" d="M 10 50 A 40 40 0 0 1 90 50"
-              style="stroke-dashoffset: 126; stroke: #2196f3;" />
+              style="stroke-dashoffset: 126; stroke: #1976d2;" />
           </svg>
           <div class="gauge-center-text">
             <span id="txt-vol-val" class="main-val">Low</span>
