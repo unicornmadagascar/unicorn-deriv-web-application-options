@@ -663,7 +663,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- RÉGLAGE : Sensibilité réduite ---
     // On passe de 1500 à 1000 pour calmer l'amplitude
-    let volPercent = Math.sqrt(baseRatio) * 1000;
+    let volPercent = Math.sqrt(baseRatio) * 500;
 
     return {
       percent: Math.min(volPercent, 100).toFixed(1)
