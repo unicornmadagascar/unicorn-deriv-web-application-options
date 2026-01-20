@@ -592,6 +592,53 @@ document.addEventListener("DOMContentLoaded", () => {
     return parseFloat(angleDeg.toFixed(2));
   }
 
+  window.updateAngleGauge = function (candles) {
+    // 1. Extraction sécurisée des prix (on transforme les objets en nombres purs)
+    const closes = candles
+      .map(c => {
+        const val = (c.close !== undefined) ? c.close : c.value;
+        return parseFloat(val);
+      })
+      .filter(val => !isNaN(val));
+
+    // 2. Vérification critique de la quantité de données
+    // L'EMA200 ne peut pas exister mathématiquement avec moins de 200 points
+    if (closes.length < 205) {
+      console.warn(`Angle EMA200 : Données insuffisantes (${closes.length}/205)`);
+      const label = document.getElementById('txt-angle-label');
+      if (label) label.innerText = "Calcul... " + Math.floor((closes.length / 205) * 100) + "%";
+      return;
+    }
+
+    // 3. Calculs
+    const ema200 = calculateEMA(closes, 200);
+    const angle = calculateEMASlopeAngle(ema200, 5);
+
+    // 4. Mapping visuel (-90° à +90° => 0% à 100%)
+    const percent = ((angle + 90) / 180) * 100;
+
+    // 5. Choix de la couleur et du label
+    let color = "#ff9800"; // Orange par défaut (Range)
+    let labelText = "Ranging";
+
+    if (angle > 3) {
+      color = "#089981"; // Vert (Achat)
+      labelText = "Ascending";
+    } else if (angle < -3) {
+      color = "#f23645"; // Rouge (Vente)
+      labelText = "Descending";
+    }
+
+    // 6. Mise à jour du HTML (Vérifiez bien ces IDs dans votre HTML)
+    setGaugeValue('path-angle', percent, color);
+
+    const valEl = document.getElementById('txt-angle-val');
+    const labEl = document.getElementById('txt-angle-label');
+
+    if (valEl) valEl.innerText = angle.toFixed(1) + "°";
+    if (labEl) labEl.innerText = labelText;
+  };
+
   // 3. Calcul de l'ATR (Volatilité)
   function calculateATR(candles, period = 14) {
     if (candles.length <= period) return { percent: 0 };
@@ -612,18 +659,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const lastClose = candles[candles.length - 1].close;
-  
+
     // --- ZONE DE RÉGLAGE DE LA SENSIBILITÉ ---
     const baseRatio = (currentATR / lastClose) * 100; // Variation en %
 
     // Multiplicateur augmenté : testez 1500 ou 2000 pour une sensibilité extrême
     // On utilise Math.sqrt pour que la jauge soit très réactive au début
-    let volPercent = Math.sqrt(baseRatio) * 1500;  
+    let volPercent = Math.sqrt(baseRatio) * 1500;
 
-    return { 
+    return {
       percent: Math.min(volPercent, 100).toFixed(1)
     };
-  }  
+  }
 
   // 4. Calcul de la Force Bulls vs Bears
   function calculateBullBearForce(candles, period = 14) {
