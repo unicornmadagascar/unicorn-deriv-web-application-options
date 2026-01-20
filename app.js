@@ -566,7 +566,7 @@ document.addEventListener("DOMContentLoaded", () => {
       emaArray.push((data[i] - emaArray[i - 1]) * k + emaArray[i - 1]);
     }
     return emaArray;
-  }  
+  }   
   
   // 2. Calcul de l'Angle de l'EMA200
   function calculateEMASlopeAngle(emaData, lookback = 5) {
