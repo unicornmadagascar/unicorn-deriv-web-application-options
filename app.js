@@ -607,7 +607,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.warn(`Angle EMA200 : Données insuffisantes (${closes.length}/205)`);
       const label = document.getElementById('txt-angle-label');
       if (label) label.innerText = "Calcul... " + Math.floor((closes.length / 205) * 100) + "%";
-      return;
+      return; 
     }
 
     // 3. Calculs
