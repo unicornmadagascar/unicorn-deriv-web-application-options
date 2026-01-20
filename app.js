@@ -565,7 +565,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Formule standard : EMA = (Close - EMA_hier) * k + EMA_hier
       emaArray.push((data[i] - emaArray[i - 1]) * k + emaArray[i - 1]);
     }
-    return emaArray;
+    return emaArray; 
   }   
   
   // 2. Calcul de l'Angle de l'EMA200
