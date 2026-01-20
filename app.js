@@ -1015,7 +1015,7 @@ document.addEventListener("DOMContentLoaded", () => {
           // On utilise le 'cache' mis à jour car nos fonctions de calcul
           // (EMA200, ATR, Bull/Bear) ont besoin de l'historique complet présent dans le cache.
           if (typeof window.updateAllMarketGauges === 'function') {
-            window.updateAllMarketGauges(cache);
+            window.updateAllMarketGauges(cache);  
           }  
         }
       }
