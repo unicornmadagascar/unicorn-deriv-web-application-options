@@ -118,6 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedSymbol = null;
   let selectedSymbolLocated = null;
   let selectedSymbolconverted = null;
+  let smoothedVol = 0; // Mémoire de la position précédente
   // ================== x ==================  
 
   let wsReady = false;
@@ -594,6 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 3. Calcul de l'ATR (Volatilité)
   function calculateATR(candles, period = 14) {
     if (candles.length <= period) return { percent: 0 };
+
     let trs = [];
     for (let i = 1; i < candles.length; i++) {
       const tr = Math.max(
@@ -603,14 +605,24 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       trs.push(tr);
     }
+
     let currentATR = trs.slice(0, period).reduce((a, b) => a + b) / period;
     for (let i = period; i < trs.length; i++) {
       currentATR = (currentATR * (period - 1) + trs[i]) / period;
     }
+
     const lastClose = candles[candles.length - 1].close;
-    // Normalisation : On considère qu'un ATR de 0.2% du prix est une volatilité haute
-    let volPercent = Math.min((currentATR / lastClose) * 500, 100);
-    return { percent: parseFloat(volPercent.toFixed(1)) };
+
+    // --- ZONE DE RÉGLAGE DE LA SENSIBILITÉ ---
+    const baseRatio = (currentATR / lastClose) * 100; // Variation en %
+
+    // Multiplicateur augmenté : testez 1500 ou 2000 pour une sensibilité extrême
+    // On utilise Math.sqrt pour que la jauge soit très réactive au début
+    let volPercent = Math.sqrt(baseRatio) * 1500;
+
+    return { 
+      percent: Math.min(volPercent, 100).toFixed(1)
+    };
   }
 
   // 4. Calcul de la Force Bulls vs Bears
@@ -654,48 +666,32 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // MISE À JOUR JAUGE 2 : Angle EMA
-  function updateAngleGauge(candles) {
-    // 1. EXTRACTION & NETTOYAGE : On ne garde que les prix de clôture (nombres)
-    // On s'assure d'utiliser .close ou .value selon votre format 'normalize' 
-    const closes = candles
-      .map(c => (typeof c.close !== 'undefined' ? parseFloat(c.close) : parseFloat(c.value)))
-      .filter(val => !isNaN(val)); // On élimine les valeurs invalides
-
-    // 2. VÉRIFICATION DE LA TAILLE : 
-    // Il faut au moins la période (200) + quelques bougies pour la pente (5)
-    if (closes.length < 205) {
-      console.warn(`Données insuffisantes pour EMA200: ${closes.length}/205`);
-      document.getElementById('txt-angle-label').innerText = "Loading Data...";
-      return;
-    }
-
-    // 3. CALCUL DE L'EMA200
-    const ema200 = calculateEMA(closes, 200);
-
-    // 4. CALCUL DE L'ANGLE
-    const angle = calculateEMASlopeAngle(ema200, 5);
-
-    // 5. MISE À JOUR VISUELLE
-    let percent = ((angle + 90) / 180) * 100;
-    let color = "#ff9800", label = "Ranging";
-
-    if (angle > 3) { color = "#089981"; label = "Ascending"; }
-    else if (angle < -3) { color = "#f23645"; label = "Descending"; }
-
-    setGaugeValue('path-angle', percent, color);
-    document.getElementById('txt-angle-val').innerText = angle + "°";
-    document.getElementById('txt-angle-label').innerText = label;
-  }
-
-  // MISE À JOUR JAUGE 3 : Volatilité
   function updateVolatilityGauge(candles) {
     const atr = calculateATR(candles, 14);
-    let color = "#1976d2", label = "Quiet";
-    if (atr.percent > 70) { color = "#f23645"; label = "Explosive"; }
-    else if (atr.percent > 35) { color = "#f57c00"; label = "Volatile"; }
+    const targetPercent = parseFloat(atr.percent);
 
-    setGaugeValue('path-vol', atr.percent, color);
-    document.getElementById('txt-vol-val').innerText = atr.percent + "%";
+    // --- LOGIQUE DE LISSAGE (SMOOTHING) ---
+    // Facteur de lissage : 0.1 = très lent/fluide, 0.5 = nerveux mais stable
+    const smoothingFactor = 0.2;
+
+    // Formule : (Valeur Cible - Valeur Actuelle) * Facteur
+    smoothedVol = smoothedVol + (targetPercent - smoothedVol) * smoothingFactor;
+
+    let color = "#1976d2";
+    let label = "Quiet";
+
+    if (smoothedVol > 65) {
+      color = "#f23645";
+      label = "High Volatility";
+    }
+    else if (smoothedVol > 25) {
+      color = "#f57c00";
+      label = "Rising Volatility";
+    }
+
+    // On utilise la valeur lissée pour l'affichage
+    setGaugeValue('path-vol', smoothedVol, color);
+    document.getElementById('txt-vol-val').innerText = smoothedVol.toFixed(1) + "%";
     document.getElementById('txt-vol-label').innerText = label;
   }
 
@@ -5455,14 +5451,14 @@ document.addEventListener("DOMContentLoaded", () => {
   openBtn.onclick = () => modal_symbol.style.display = 'flex';
   document.getElementById("litleclosebtn").onclick = () => modal_symbol.style.display = 'none';
   document.getElementById("symbolclosebtn").onclick = () => modal_symbol.style.display = 'none';
-  
-  window.onclick = function (event) { 
+
+  window.onclick = function (event) {
     const modal = document.getElementById('modalOverlay');
     // Si la cible du clic est exactement l'overlay (et pas le contenu interne)
     if (event.target === modal) {
-      window.closeModal(); 
+      window.closeModal();
     }
-  };  
+  };
 
   // On récupère le bouton par son ID
   const validateBtn = document.getElementById('validateBtn');

@@ -3125,19 +3125,24 @@
 
     .label-bear {
       color: #f23645;
-    } 
+    }
 
     /* Rouge standard TradingView */
     .label-bull {
-      color: #089981;  
+      color: #089981;
     }
 
     /* Vert standard TradingView */
-  
+
     @media (max-width: 768px) {
       .indicators-grid {
         grid-template-columns: 1fr;
       }
+    }
+
+    .gauge-fill {
+      /* Une transition courte (0.3s) suffit car le JS gère déjà la fluidité */
+      transition: stroke-dashoffset 0.3s ease-out;
     }
   </style>
 </head>
@@ -3214,7 +3219,7 @@
         </div>
       </div>
 
-      <div class="indicator-card"> 
+      <div class="indicator-card">
         <div class="indicator-header">EMA 200 Slope Angle</div>
         <div class="gauge-container">
           <svg viewBox="0 0 100 55" class="half-circle-gauge">
