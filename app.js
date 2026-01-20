@@ -580,7 +580,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (closes.length < 210) return;
 
-    const ema = calculateEMA(closes, 200);
+    const ema = calculateEMA(closes, 200);  
 
     // 🔒 On enlève les nulls
     const emaClean = ema.filter(v => v !== null);
@@ -741,7 +741,7 @@ document.addEventListener("DOMContentLoaded", () => {
       updateVolatilityGauge(candles);
 
       // L'angle EMA200 a besoin de son historique
-      if (candles.length >= 210) {
+      if (candles.length >= 210) {  
         window.updateAngleGauge(candles);
       }
     } catch (e) {
