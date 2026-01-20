@@ -594,40 +594,48 @@ document.addEventListener("DOMContentLoaded", () => {
     let angleRad = Math.atan(slope * sensitivity);
     let angleDeg = angleRad * (180 / Math.PI);
 
-    return parseFloat(angleDeg.toFixed(2));  
+    return parseFloat(angleDeg.toFixed(2));
   }
 
   window.updateAngleGauge = function (candles) {
     // 1. Extraction des prix en nombres
     const closes = candles.map(c => parseFloat(c.close || c.value)).filter(v => !isNaN(v));
 
-    // 2. Sécurité : On attend d'avoir assez de données
+    // 2. Sécurité : On attend d'avoir assez de données pour l'EMA 200
     if (closes.length < 205) return;
 
-    // 3. Calcul de l'EMA (Retourne un tableau de nombres)
+    // 3. Calcul de l'EMA
     const emaArray = calculateEMA(closes, 200);
 
-    // 4. Récupération des deux points pour la pente
-    // On prend la valeur actuelle et celle d'il y a 10 bougies (lookback)
-    const lastEMA = emaArray[emaArray.length - 1];
-    const prevEMA = emaArray[emaArray.length - 11];
+    // 4. Récupération des deux points  
+    let lastEMA = emaArray[emaArray.length - 1];
+    let prevEMA = emaArray[emaArray.length - 11];
 
-    // Vérification de sécurité pour éviter le NaN
-    if (lastEMA === undefined || prevEMA === undefined) return;
+    // --- CORRECTION CRITIQUE : Extraction de la valeur si c'est un objet ---
+    if (lastEMA && typeof lastEMA === 'object') {
+      lastEMA = lastEMA.value || lastEMA.close || 0;
+    }
+    if (prevEMA && typeof prevEMA === 'object') {
+      prevEMA = prevEMA.value || prevEMA.close || 0;
+    }
 
-    // 5. Calcul de l'angle
-    // On envoie directement les nombres à notre fonction de calcul
+    // 5. Sécurité : On vérifie que ce sont bien des nombres avant de continuer
+    if (typeof lastEMA !== 'number' || typeof prevEMA !== 'number' || isNaN(lastEMA)) {
+      return;
+    }
+
+    // 6. Calcul de l'angle
     const angle = calculateEMASlopeAngle({ current: lastEMA, previous: prevEMA }, false);
 
-    // DEBUG CONSOLE (Vous devriez voir des nombres réels ici)  
-    console.info(`EMA: ${lastEMA.toFixed(2)} | Prev: ${prevEMA.toFixed(2)} | Angle: ${angle}°`);
+    // Affichage console sécurisé
+    console.info("Angle calculé avec succès :", angle.toFixed(2));
 
-    // 6. Mise à jour de la jauge
+    // 7. Mise à jour visuelle
     const percent = ((angle + 90) / 180) * 100;
 
-    let color = "#ff9800"; // Neutre
-    if (angle > 0.15) color = "#089981"; // Haussier
-    else if (angle < -0.15) color = "#f23645"; // Baissier
+    let color = "#ff9800";
+    if (angle > 0.15) color = "#089981";
+    else if (angle < -0.15) color = "#f23645";
 
     setGaugeValue('path-angle', percent, color);
 
