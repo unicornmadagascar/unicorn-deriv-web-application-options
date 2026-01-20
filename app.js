@@ -586,8 +586,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const emaClean = ema.filter(v => v !== null);
     if (emaClean.length < 6) return;
 
-    const lastEMA = emaClean[emaClean.length - 1];
-    const prevEMA = emaClean[emaClean.length - 6]; // 5 candles back
+    const lastEMA = emaClean[emaClean.length - 1];  
+    const prevEMA = emaClean[emaClean.length - 6]; // 5 candles back  
 
     // ΔEMA / Δtime
     const deltaEMA = lastEMA - prevEMA;
