@@ -626,7 +626,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setGaugeValue('path-angle', percent, color);  
 
     const valEl = document.getElementById('txt-angle-val');  
-    if (valEl) valEl.innerText = angle.toFixed(2) + "°";
+    if (valEl) valEl.innerText = angle.toFixed(2) + "°";  
   };
 
   // 3. Calcul de l'ATR (Volatilité)
