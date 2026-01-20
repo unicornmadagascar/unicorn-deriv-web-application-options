@@ -594,7 +594,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let angleRad = Math.atan(slope * sensitivity);
     let angleDeg = angleRad * (180 / Math.PI);
 
-    return parseFloat(angleDeg.toFixed(2));
+    return parseFloat(angleDeg.toFixed(2)); 
   }
 
   window.updateAngleGauge = function (candles) {
@@ -605,7 +605,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (closes.length < 205) return;
 
     // 3. Calcul de l'EMA
-    const emaArray = calculateEMA(closes, 200);
+    const emaArray = calculateEMA(closes, 200);  
 
     // 4. Récupération des deux points  
     let lastEMA = emaArray[emaArray.length - 1];
