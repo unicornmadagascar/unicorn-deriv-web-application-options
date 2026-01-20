@@ -620,7 +620,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const percent = ((angle + 90) / 180) * 100;
 
     let color = "#ff9800";
-    if (angle > 0.5) color = "#089981";
+    if (angle > 0.5) color = "#089981";  
     else if (angle < -0.5) color = "#f23645";
 
     setGaugeValue('path-angle', percent, color);
