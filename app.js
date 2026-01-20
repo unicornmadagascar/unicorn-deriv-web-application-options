@@ -636,7 +636,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const labEl = document.getElementById('txt-angle-label');
 
     if (valEl) valEl.innerText = angle.toFixed(1) + "°";
-    if (labEl) labEl.innerText = labelText;
+    if (labEl) labEl.innerText = labelText;  
   }  
 
   // 3. Calcul de l'ATR (Volatilité)
