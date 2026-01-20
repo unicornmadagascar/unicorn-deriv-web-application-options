@@ -554,98 +554,32 @@ document.addEventListener("DOMContentLoaded", () => {
  * CONFIGURATION ET CALCULS TECHNIQUES (LOGIQUE)
  * ============================================================
  */
+  window.updateAngleGauge = function (candles) {
+    const lastIdx = candles.length - 1;
 
-  // 1. Calcul de la Moyenne Mobile Exponentielle (EMA)
-  function calculateEMA(data, period) {
-    if (!data || data.length < period) return [];
+    // Extraction des prix numériques
+    const currentPrice = parseFloat(candles[lastIdx].close || candles[lastIdx].value);
+    const previousPrice = parseFloat(candles[lastIdx - 1].close || candles[lastIdx - 1].value);
 
-    let k = 2 / (period + 1);
-    // On s'assure que la valeur de départ est un nombre valide
-    let seedValue = parseFloat(data[0]);
-    if (isNaN(seedValue)) return [];
+    if (isNaN(currentPrice) || isNaN(previousPrice)) return;
 
-    let emaArray = [seedValue];
+    // Calcul de l'angle (variation relative * sensibilité)
+    const change = (currentPrice - previousPrice) / previousPrice;
+    const sensitivity = 200000;
+    let angleRad = Math.atan(change * sensitivity);
+    let angleDeg = angleRad * (180 / Math.PI);
 
-    console.log(`EMA Array : ${emaArray}`);
+    // Mise à jour visuelle
+    const percent = ((angleDeg + 90) / 180) * 100;
 
-    for (let i = 1; i < data.length; i++) {
-      let currentPrice = parseFloat(data[i]);
-      if (isNaN(currentPrice)) {
-        emaArray.push(emaArray[i - 1]); // On répète la dernière valeur si erreur
-      } else {
-        emaArray.push((currentPrice - emaArray[i - 1]) * k + emaArray[i - 1]);
-      }
-    }
-    return emaArray;
-  }
-
-  // 2. Calcul de l'Angle de l'EMA200
-  function calculateEMASlopeAngle(data, isArray = true) {
-    const current = isArray ? data[data.length - 1] : data.current;
-    const previous = isArray ? data[data.length - 11] : data.previous;
-
-    if (isNaN(current) || isNaN(previous) || previous === 0) return 0;
-
-    // Calcul de la pente relative (en %) pour s'adapter à tous les prix
-    const slope = (current - previous) / previous;
-
-    // Multiplicateur pour rendre l'angle visible (Ajustez 100000 si besoin)
-    const sensitivity = 500000;
-    let angleRad = Math.atan(slope * sensitivity);
-    let angleDeg = angleRad * (180 / Math.PI);  
-
-    return parseFloat(angleDeg.toFixed(2));   
-  }  
-
-  window.updateAngleGauge = function (candles) {  
-    // 1. Extraction des prix en nombres
-    const closes = candles.map(c => parseFloat(c.close || c.value)).filter(v => !isNaN(v));
-
-    // 2. Sécurité : On attend d'avoir assez de données pour l'EMA 200
-    if (closes.length < 205) return;  
-
-    // 3. Calcul de l'EMA
-    const emaArray = calculateEMA(closes, 200);  
-
-    // 4. Récupération des deux points  
-    let lastEMA = emaArray[emaArray.length - 1];  
-    let prevEMA = emaArray[emaArray.length - 11];
-
-    // --- CORRECTION CRITIQUE : Extraction de la valeur si c'est un objet ---
-    if (lastEMA && typeof lastEMA === 'object') {
-      lastEMA = lastEMA.value || lastEMA.close || 0;
-    }
-    if (prevEMA && typeof prevEMA === 'object') {
-      prevEMA = prevEMA.value || prevEMA.close || 0;
-    }
-
-    // 5. Sécurité : On vérifie que ce sont bien des nombres avant de continuer
-    if (typeof lastEMA !== 'number' || typeof prevEMA !== 'number' || isNaN(lastEMA)) {
-      return;
-    }
-
-    // 6. Calcul de l'angle
-    const angle = calculateEMASlopeAngle({ current: lastEMA, previous: prevEMA }, false);
-
-    // Affichage console sécurisé
-    console.info("Angle calculé avec succès :", angle.toFixed(2));
-
-    // 7. Mise à jour visuelle
-    const percent = ((angle + 90) / 180) * 100;
-
-    let color = "#ff9800";
-    if (angle > 0.15) color = "#089981";
-    else if (angle < -0.15) color = "#f23645";
+    let color = "#ff9800"; // Orange
+    if (angleDeg > 2) color = "#089981"; // Vert
+    else if (angleDeg < -2) color = "#f23645"; // Rouge
 
     setGaugeValue('path-angle', percent, color);
 
     const valEl = document.getElementById('txt-angle-val');
-    if (valEl) valEl.innerText = angle.toFixed(2) + "°";
-
-    const labEl = document.getElementById('txt-angle-label');
-    if (labEl) {
-      labEl.innerText = angle > 0.15 ? "Ascending" : (angle < -0.15 ? "Descending" : "Ranging");
-    }
+    if (valEl) valEl.innerText = angleDeg.toFixed(1) + "°";
   };
 
   // 3. Calcul de l'ATR (Volatilité)
@@ -756,22 +690,23 @@ document.addEventListener("DOMContentLoaded", () => {
    * @param {Array} candles - Données reçues de l'API Deriv
    */
   window.updateAllMarketGauges = function (candles) {
+    // 1. Sécurité de base : il faut au moins 2 bougies pour comparer le prix actuel au précédent
     if (!candles || candles.length < 2) return;
 
     try {
-      // Ces deux-là fonctionnent avec peu de bougies
+      // Met à jour la jauge de Force (Bulls/Bears)
       updateTrendGauge(candles);
+
+      // Met à jour la jauge de Volatilité (ATR)
       updateVolatilityGauge(candles);
 
-      // L'angle nécessite un historique important (EMA 200)
-      if (candles.length >= 200) {
-        window.updateAngleGauge(candles);
-      } else {
-        // Optionnel : afficher un message d'attente sur la jauge d'angle
-        const labEl = document.getElementById('txt-angle-label');
-        if (labEl) labEl.innerText = `Loading (${candles.length}/200)`;
-      }
-    } catch (e) {
+      /**
+       * MISE À JOUR : On retire la condition '>= 200' 
+       * car nous calculons maintenant l'angle direct sur les derniers prix.
+       */
+      window.updateAngleGauge(candles);
+
+    } catch (e) {  
       console.error("Erreur mise à jour jauges:", e);
     }
   };
