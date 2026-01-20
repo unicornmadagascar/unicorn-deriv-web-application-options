@@ -595,7 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`EMA ARRAY :`,emaArray);
 
     // 3. Récupération des points de pente
-    const lastEMA = emaArray[emaArray.length - 1];
+    const lastEMA = emaArray[emaArray.length - 1];   
     const prevEMA = emaArray[emaArray.length - 6]; // On regarde 5 bougies en arrière
 
     console.log(`lastEMA :`,lastEMA);
