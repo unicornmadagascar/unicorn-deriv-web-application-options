@@ -556,20 +556,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 1. Calcul de la Moyenne Mobile Exponentielle (EMA)
   function calculateEMA(data, period) {
-    const k = 2 / (period + 1);
-    let emaData = [];
-    let sum = 0;
-    for (let i = 0; i < period; i++) sum += data[i];
-    let firstSMA = sum / period;
-    for (let i = 0; i < period - 1; i++) emaData.push(null);
-    emaData.push(firstSMA);
-    for (let i = period; i < data.length; i++) {
-      const nextEMA = (data[i] * k) + (emaData[i - 1] * (1 - k));
-      emaData.push(nextEMA);
-    }
-    return emaData;
-  }
+    let k = 2 / (period + 1);
+    let emaArray = [data[0]]; // On commence avec le premier prix
 
+    for (let i = 1; i < data.length; i++) {
+      // Formule standard : EMA = (Close - EMA_hier) * k + EMA_hier
+      emaArray.push((data[i] - emaArray[i - 1]) * k + emaArray[i - 1]);
+    }
+    return emaArray;
+  }
+  
   // 2. Calcul de l'Angle de l'EMA200
   function calculateEMASlopeAngle(emaData, lookback = 5) {
     // Vérification : on s'assure qu'on a assez de données et que les valeurs ne sont pas nulles
@@ -657,16 +653,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // MISE À JOUR JAUGE 2 : Angle EMA
   function updateAngleGauge(candles) {
-    const closes = candles.map(c => parseFloat(c.close));
-    const ema200 = calculateEMA(closes, 200);
-    
-    console.log("Dernière valeur EMA200 :", ema200[ema200.length - 1]);
-  
-    const angle = calculateEMASlopeAngle(ema200, 5);  
+    // 1. EXTRACTION & NETTOYAGE : On ne garde que les prix de clôture (nombres)
+    // On s'assure d'utiliser .close ou .value selon votre format 'normalize' 
+    const closes = candles
+      .map(c => (typeof c.close !== 'undefined' ? parseFloat(c.close) : parseFloat(c.value)))
+      .filter(val => !isNaN(val)); // On élimine les valeurs invalides
 
-    // Mapping angle (-90/90) vers pourcentage (0/100)
+    // 2. VÉRIFICATION DE LA TAILLE : 
+    // Il faut au moins la période (200) + quelques bougies pour la pente (5)
+    if (closes.length < 205) {
+      console.warn(`Données insuffisantes pour EMA200: ${closes.length}/205`);
+      document.getElementById('txt-angle-label').innerText = "Loading Data...";
+      return;
+    }
+
+    // 3. CALCUL DE L'EMA200
+    const ema200 = calculateEMA(closes, 200);
+
+    // 4. CALCUL DE L'ANGLE
+    const angle = calculateEMASlopeAngle(ema200, 5);
+
+    // 5. MISE À JOUR VISUELLE
     let percent = ((angle + 90) / 180) * 100;
     let color = "#ff9800", label = "Ranging";
+
     if (angle > 3) { color = "#089981"; label = "Ascending"; }
     else if (angle < -3) { color = "#f23645"; label = "Descending"; }
 
@@ -5450,8 +5460,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener('keydown', function (event) {
     // Si la touche pressée est "Enter" et qu'un symbole est déjà choisi
-    if (event.key === "Enter" && !document.getElementById('validateBtn').disabled) { 
-      window.confirmSelection();  
+    if (event.key === "Enter" && !document.getElementById('validateBtn').disabled) {
+      window.confirmSelection();
     }
   });
 
