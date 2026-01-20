@@ -706,7 +706,7 @@ document.addEventListener("DOMContentLoaded", () => {
        */
       window.updateAngleGauge(candles);  
     
-    } catch (e) {  
+    } catch (e) {    
       console.error("Erreur mise à jour jauges:", e);  
     }  
   };
