@@ -553,7 +553,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * ============================================================
  * CONFIGURATION ET CALCULS TECHNIQUES (LOGIQUE)
  * ============================================================
- */
+ */   
   function calculateEMA(data, period) {  
     if (!data || data.length < period) return [];    
     let k = 2 / (period + 1);
@@ -561,7 +561,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log(`data[0] :`, emaArray);    
 
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 1; i < data.length; i++) {  
       emaArray.push((data[i] - emaArray[i - 1]) * k + emaArray[i - 1]);
     }
   
