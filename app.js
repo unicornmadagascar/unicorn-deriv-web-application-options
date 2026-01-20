@@ -736,7 +736,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.updateAngleGauge(candles);
       }
     } catch (e) {
-      console.error("Erreur:", e);  
+      console.error("Erreur:", e);   
     }
   };  
 
