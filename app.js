@@ -1002,12 +1002,12 @@ document.addEventListener("DOMContentLoaded", () => {
           count: 1000,
           granularity: convertTF(interval),
           style: "candles"
-        } : {
+        } : { 
           ticks_history: symbol,  
           adjust_start_time: 1,
           subscribe: 1,
           end: "latest",
-          count: 300,
+          count: 300, 
           granularity: convertTF(interval),
           style: "ticks"
         };
