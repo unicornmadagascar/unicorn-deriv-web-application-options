@@ -548,6 +548,147 @@ document.addEventListener("DOMContentLoaded", () => {
     return converted;
   }
 
+  /**
+ * ============================================================
+ * CONFIGURATION ET CALCULS TECHNIQUES (LOGIQUE)
+ * ============================================================
+ */
+
+  // 1. Calcul de la Moyenne Mobile Exponentielle (EMA)
+  function calculateEMA(data, period) {
+    const k = 2 / (period + 1);
+    let emaData = [];
+    let sum = 0;
+    for (let i = 0; i < period; i++) sum += data[i];
+    let firstSMA = sum / period;
+    for (let i = 0; i < period - 1; i++) emaData.push(null);
+    emaData.push(firstSMA);
+    for (let i = period; i < data.length; i++) {
+      const nextEMA = (data[i] * k) + (emaData[i - 1] * (1 - k));
+      emaData.push(nextEMA);
+    }
+    return emaData;
+  }
+
+  // 2. Calcul de l'Angle de l'EMA200
+  function calculateEMASlopeAngle(emaData, lookback = 5) {
+    if (emaData.length < lookback + 1 || !emaData[emaData.length - 1]) return 0;
+    const currentEMA = emaData[emaData.length - 1];
+    const prevEMA = emaData[emaData.length - 1 - lookback];
+    const priceChange = currentEMA - prevEMA;
+    // Normalisation pour rendre l'angle cohérent sur tous les actifs
+    const normalizedSlope = (priceChange / prevEMA) * 1000;
+    let angleDeg = Math.atan(normalizedSlope * 10) * (180 / Math.PI);
+    return parseFloat(angleDeg.toFixed(2));
+  }
+
+  // 3. Calcul de l'ATR (Volatilité)
+  function calculateATR(candles, period = 14) {
+    if (candles.length <= period) return { percent: 0 };
+    let trs = [];
+    for (let i = 1; i < candles.length; i++) {
+      const tr = Math.max(
+        candles[i].high - candles[i].low,
+        Math.abs(candles[i].high - candles[i - 1].close),
+        Math.abs(candles[i].low - candles[i - 1].close)
+      );
+      trs.push(tr);
+    }
+    let currentATR = trs.slice(0, period).reduce((a, b) => a + b) / period;
+    for (let i = period; i < trs.length; i++) {
+      currentATR = (currentATR * (period - 1) + trs[i]) / period;
+    }
+    const lastClose = candles[candles.length - 1].close;
+    // Normalisation : On considère qu'un ATR de 0.2% du prix est une volatilité haute
+    let volPercent = Math.min((currentATR / lastClose) * 500, 100);
+    return { percent: parseFloat(volPercent.toFixed(1)) };
+  }
+
+  // 4. Calcul de la Force Bulls vs Bears
+  function calculateBullBearForce(candles, period = 14) {
+    if (candles.length < period) return 50;
+    let bullPower = 0, bearPower = 0;
+    const start = candles.length - period;
+    for (let i = start; i < candles.length; i++) {
+      bullPower += (candles[i].close - candles[i].low);
+      bearPower += (candles[i].high - candles[i].close);
+    }
+    const total = bullPower + bearPower;
+    return total === 0 ? 50 : parseFloat(((bullPower / total) * 100).toFixed(1));
+  }
+
+  /**
+   * ============================================================
+   * MISE À JOUR VISUELLE (INTERFACE)
+   * ============================================================
+   */
+
+  // Fonction universelle pour piloter le SVG (126 = vide, 0 = plein)
+  function setGaugeValue(id, percent, color) {
+    const path = document.getElementById(id);
+    if (!path) return;
+    const offset = 126 - (percent * 126 / 100);
+    path.style.strokeDashoffset = offset;
+    path.style.stroke = color;
+  }
+
+  // MISE À JOUR JAUGE 1 : Tendance
+  function updateTrendGauge(candles) {
+    const bullPercent = calculateBullBearForce(candles, 14);
+    let color = "#ff9800", label = "Neutral";
+    if (bullPercent > 55) { color = "#089981"; label = "Bullish"; }
+    else if (bullPercent < 45) { color = "#f23645"; label = "Bearish"; }
+
+    setGaugeValue('path-trend', bullPercent, color);
+    document.getElementById('txt-trend-val').innerText = bullPercent + "%";
+    document.getElementById('txt-trend-label').innerText = label;
+  }
+
+  // MISE À JOUR JAUGE 2 : Angle EMA
+  function updateAngleGauge(candles) {
+    const closes = candles.map(c => parseFloat(c.close));
+    const ema200 = calculateEMA(closes, 200);
+    const angle = calculateEMASlopeAngle(ema200, 5);
+
+    // Mapping angle (-90/90) vers pourcentage (0/100)
+    let percent = ((angle + 90) / 180) * 100;
+    let color = "#ff9800", label = "Ranging";
+    if (angle > 3) { color = "#089981"; label = "Ascending"; }
+    else if (angle < -3) { color = "#f23645"; label = "Descending"; }
+
+    setGaugeValue('path-angle', percent, color);
+    document.getElementById('txt-angle-val').innerText = angle + "°";
+    document.getElementById('txt-angle-label').innerText = label;
+  }
+
+  // MISE À JOUR JAUGE 3 : Volatilité
+  function updateVolatilityGauge(candles) {
+    const atr = calculateATR(candles, 14);
+    let color = "#1976d2", label = "Quiet";
+    if (atr.percent > 70) { color = "#f23645"; label = "Explosive"; }
+    else if (atr.percent > 35) { color = "#f57c00"; label = "Volatile"; }
+
+    setGaugeValue('path-vol', atr.percent, color);
+    document.getElementById('txt-vol-val').innerText = atr.percent + "%";
+    document.getElementById('txt-vol-label').innerText = label;
+  }
+
+  /**
+   * FONCTION PRINCIPALE À APPELER
+   * @param {Array} candles - Données reçues de l'API Deriv
+   */
+  window.updateAllMarketGauges = function (candles) {
+    if (!candles || candles.length < 2) return;
+
+    try {
+      updateTrendGauge(candles);
+      updateAngleGauge(candles);
+      updateVolatilityGauge(candles);
+    } catch (e) {
+      console.error("Erreur mise à jour jauges:", e);
+    }
+  };
+
   function initChart(currentChartType) {
     const containerHistoryList = document.getElementById("autoHistoryList");
     const container = document.getElementById("chartInner");
@@ -813,7 +954,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // --- DANS VOTRE ONSMESSAGE ---
 
-      // A. Gestion de l'HISTORIQUE (Tableau de bougies)
+      // A. Gestion de l'HISTORIQUE (Initialisation)
       if (msg.msg_type === "candles") {
         const candles = msg.candles;
         if (Array.isArray(candles)) {
@@ -831,6 +972,11 @@ document.addEventListener("DOMContentLoaded", () => {
             // Calcul initial des indicateurs sur tout l'historique
             formattedData.forEach(bar => updateIndicatorData(bar.time, bar));
             renderIndicators();
+
+            // --- AJOUT : Mise à jour initiale des jauges ---
+            if (typeof window.updateAllMarketGauges === 'function') {
+              window.updateAllMarketGauges(cache);
+            }
           }
         }
       }
@@ -841,15 +987,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const lastBar = normalize(ohlc);
 
         if (lastBar && isWsInitialized) {
-          // Mise à jour de Lightweight Charts (gère seul le remplacement ou l'ajout)
+          // Mise à jour de Lightweight Charts
           currentSeries.update(lastBar);
 
-          // Mise à jour du cache local pour vos indicateurs (ZigZag, etc.)
+          // Mise à jour du cache local
           if (cache.length > 0) {
             const lastCacheIndex = cache.length - 1;
 
             if (cache[lastCacheIndex].time === lastBar.time) {
-              // Même bougie (en cours de formation) : on remplace
+              // Même bougie : on remplace
               cache[lastCacheIndex] = lastBar;
             } else {
               // Nouvelle bougie : on ajoute
@@ -858,12 +1004,19 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           }
 
-          // Mise à jour et rendu des indicateurs sur la dernière barre
+          // Mise à jour et rendu des indicateurs
           updateIndicatorData(lastBar.time, lastBar);
           renderIndicators();
 
-          // --- AJOUT : Force le rafraîchissement des dessins et du Volume Profile ---
+          // Force le rafraîchissement des dessins et du Volume Profile
           render();
+
+          // --- AJOUT : Mise à jour des jauges en temps réel ---
+          // On utilise le 'cache' mis à jour car nos fonctions de calcul
+          // (EMA200, ATR, Bull/Bear) ont besoin de l'historique complet présent dans le cache.
+          if (typeof window.updateAllMarketGauges === 'function') {
+            window.updateAllMarketGauges(cache);
+          }  
         }
       }
 
