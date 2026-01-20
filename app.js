@@ -592,7 +592,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const slope = (Math.log(currentEMA) - Math.log(prevEMA)) * 100;
     const sensitivity = 5000;
 
-    let angleRad = Math.atan(slope * sensitivity);
+    let angleRad = Math.atan(slope * sensitivity);  
     let angleDeg = angleRad * (180 / Math.PI);
 
     console.log(`Angle in dégré : ${angleDeg}`);   
