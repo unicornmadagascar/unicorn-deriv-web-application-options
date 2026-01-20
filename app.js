@@ -571,7 +571,7 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let i = 0; i < period - 1; i++) {
       emaArray.push(null);
     }
-    emaArray.push(firstSMA);
+    emaArray.push(firstSMA);  
 
     // 2. Calculer le reste de l'EMA
     let currentEMA;
