@@ -553,75 +553,71 @@ document.addEventListener("DOMContentLoaded", () => {
  * ============================================================
  * CONFIGURATION ET CALCULS TECHNIQUES (LOGIQUE)
  * ============================================================
- */   
-  function calculateEMA(data, period) {  
-    if (!data || data.length < period) return [];    
-    let k = 2 / (period + 1);
-    let emaArray = [data[0]];
+ */
+  function calculateEMA(data, period) {
+    if (!data || data.length < period) return [];
 
-    console.log(`data[0] :`, emaArray);    
+    const k = 2 / (period + 1);
+    let emaArray = [];
 
-    for (let i = 1; i < data.length; i++) {  
-      emaArray.push((data[i] - emaArray[i - 1]) * k + emaArray[i - 1]);
+    // 1. Calculer la première valeur (on utilise une SMA simple pour le début)
+    let sum = 0;
+    for (let i = 0; i < period; i++) {
+      sum += data[i];
     }
-  
-    console.log(`emaArray :`,emaArray);        
-        
-    return emaArray;  
+    let firstSMA = sum / period;
+
+    // On remplit les 'period - 1' premières cases avec null ou la SMA
+    for (let i = 0; i < period - 1; i++) {
+      emaArray.push(null);
+    }
+    emaArray.push(firstSMA);
+
+    // 2. Calculer le reste de l'EMA
+    let currentEMA;
+    for (let i = period; i < data.length; i++) {
+      currentEMA = (data[i] - emaArray[i - 1]) * k + emaArray[i - 1];
+      emaArray.push(currentEMA);
+    }
+
+    return emaArray;
   }
 
-  window.updateAngleGauge = function(candles) {
-    // 1. On attend d'avoir assez de données pour l'EMA200
-    if (!candles || candles.length < 210) {
-      const labEl = document.getElementById('txt-angle-label');
-      if (labEl) labEl.innerText = `Sync... (${candles.length}/210)`;
-      return;
-    }  
-
-    // 2. Extraction des prix de clôture (nombres uniquement)
+  window.updateAngleGauge = function (candles) {
+    // 1. Extraction (votre log confirme que c'est OK)
     const closes = candles.map(c => parseFloat(c.close || c.value)).filter(v => !isNaN(v));
 
-    console.log(`Close candles :`,closes);
+    if (closes.length < 210) return;
 
-    // 3. Calcul de l'EMA200  
-    const ema200 = calculateEMA(closes, 200);
+    // 2. Calcul de l'EMA 200
+    const emaArray = calculateEMA(closes, 200);
 
-    // 4. On prend l'EMA actuelle et celle d'il y a 5 bougies pour calculer la pente
-    const lastEMA = ema200[ema200.length - 1];
-    const prevEMA = ema200[ema200.length - 6]; // '6' pour avoir un écart de 5 bougies
+    // 3. Récupération des points de pente
+    const lastEMA = emaArray[emaArray.length - 1];
+    const prevEMA = emaArray[emaArray.length - 6]; // On regarde 5 bougies en arrière
 
-    if (isNaN(lastEMA) || isNaN(prevEMA)) return;
+    if (lastEMA === null || prevEMA === null) return;
 
-    // 5. Calcul de l'angle réel de la tendance
+    // 4. Calcul de l'angle
     const change = (lastEMA - prevEMA) / prevEMA;
-
-    // Sensibilité pour l'EMA : l'EMA bouge beaucoup plus lentement que le prix,
-    // on utilise donc une sensibilité plus élevée (ex: 1 000 000)
-    const sensitivity = 1000000;
+    const sensitivity = 1000000; // Ajustez ce chiffre si l'aiguille bouge trop ou pas assez
     let angleRad = Math.atan(change * sensitivity);
     let angleDeg = angleRad * (180 / Math.PI);
 
-    // 6. Mise à jour visuelle
+    // LOG DE TEST : Vérifiez ces valeurs dans votre console
+    console.log(`EMA Actuelle: ${lastEMA.toFixed(2)} | Angle: ${angleDeg.toFixed(2)}°`);
+
+    // 5. Mise à jour de la jauge
     const percent = ((angleDeg + 90) / 180) * 100;
 
-    let color = "#ff9800"; // Orange (Neutre)
-    let label = "Trend Flat";
-
-    if (angleDeg > 1.5) {
-      color = "#089981";
-      label = "Bullish Trend";
-    } else if (angleDeg < -1.5) {
-      color = "#f23645";
-      label = "Bearish Trend";
-    }
+    let color = "#ff9800";
+    if (angleDeg > 1.0) color = "#089981";
+    else if (angleDeg < -1.0) color = "#f23645";
 
     setGaugeValue('path-angle', percent, color);
-
+    
     const valEl = document.getElementById('txt-angle-val');
     if (valEl) valEl.innerText = angleDeg.toFixed(1) + "°";
-
-    const labEl = document.getElementById('txt-angle-label');
-    if (labEl) labEl.innerText = label;
   };
 
   // 3. Calcul de l'ATR (Volatilité)
@@ -743,9 +739,9 @@ document.addEventListener("DOMContentLoaded", () => {
         window.updateAngleGauge(candles);
       }
     } catch (e) {
-      console.error("Erreur:", e);   
+      console.error("Erreur:", e);
     }
-  };  
+  };
 
   function initChart(currentChartType) {
     const containerHistoryList = document.getElementById("autoHistoryList");
