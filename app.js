@@ -1022,7 +1022,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 3. Gestion des données Ticks (Area/Line)
       if (msg.msg_type === "history" || msg.msg_type === "tick") {
-        handleTickData(msg);
+        handleTickData(msg);  
         // Note: handleTickData doit appeler renderIndicators() en interne
         render();
       }
