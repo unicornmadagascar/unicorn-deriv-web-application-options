@@ -592,14 +592,14 @@ document.addEventListener("DOMContentLoaded", () => {
     return parseFloat(angleDeg.toFixed(2));
   }
 
-  window.updateAngleGauge = function (candles) {
+  function updateAngleGauge(candles) {
     // 1. Extraction sécurisée des prix (on transforme les objets en nombres purs)
     const closes = candles
       .map(c => {
         const val = (c.close !== undefined) ? c.close : c.value;
         return parseFloat(val);
       })
-      .filter(val => !isNaN(val));
+      .filter(val => !isNaN(val));  
 
     // 2. Vérification critique de la quantité de données
     // L'EMA200 ne peut pas exister mathématiquement avec moins de 200 points
