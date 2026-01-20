@@ -637,7 +637,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (valEl) valEl.innerText = angle.toFixed(1) + "°";
     if (labEl) labEl.innerText = labelText;
-  };
+  }  
 
   // 3. Calcul de l'ATR (Volatilité)
   function calculateATR(candles, period = 50) {  
