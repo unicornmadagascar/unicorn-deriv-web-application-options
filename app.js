@@ -557,78 +557,74 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 1. Calcul de la Moyenne Mobile Exponentielle (EMA)
   function calculateEMA(data, period) {
-    let k = 2 / (period + 1);
-    let emaArray = [data[0]]; // On commence avec le premier prix
+    if (!data || data.length < period) return [];
 
-    console.log(`Le premier prix : ${emaArray}`);
+    let k = 2 / (period + 1);
+    // On s'assure que la valeur de départ est un nombre valide
+    let seedValue = parseFloat(data[0]);
+    if (isNaN(seedValue)) return [];
+
+    let emaArray = [seedValue];
 
     for (let i = 1; i < data.length; i++) {
-      // Formule standard : EMA = (Close - EMA_hier) * k + EMA_hier
-      emaArray.push((data[i] - emaArray[i - 1]) * k + emaArray[i - 1]);
+      let currentPrice = parseFloat(data[i]);
+      if (isNaN(currentPrice)) {
+        emaArray.push(emaArray[i - 1]); // On répète la dernière valeur si erreur
+      } else {
+        emaArray.push((currentPrice - emaArray[i - 1]) * k + emaArray[i - 1]);
+      }
     }
     return emaArray;
   }
 
   // 2. Calcul de l'Angle de l'EMA200
   function calculateEMASlopeAngle(emaData, lookback = 10) {
-    // 1. Vérification de la présence de données valides
     if (!emaData || emaData.length < lookback + 1) return 0;
 
     const currentEMA = emaData[emaData.length - 1];
     const prevEMA = emaData[emaData.length - 1 - lookback];
 
-    // Sécurité si les valeurs sont nulles ou NaN
-    if (!currentEMA || !prevEMA) return 0;
+    // Si l'une des deux valeurs est invalide, on ne calcule pas
+    if (isNaN(currentEMA) || isNaN(prevEMA) || prevEMA === 0) return 0;
 
-    // 2. Calcul de la pente en pourcentage de variation logarithmique
-    // Cela rend l'angle indépendant de la valeur nominale du prix
     const slope = (Math.log(currentEMA) - Math.log(prevEMA)) * 100;
-
-    // 3. Sensibilité (Multiplicateur)
-    // On augmente ici la force pour que l'aiguille bouge de façon visible  
     const sensitivity = 5000;
-    let angleRad = Math.atan(slope * sensitivity);
-    let angleDeg = angleRad * (180 / Math.PI);  
 
-    // 4. Limiter l'angle entre -90 et 90
-    return parseFloat(angleDeg.toFixed(2));
+    let angleRad = Math.atan(slope * sensitivity);
+    let angleDeg = angleRad * (180 / Math.PI);
+
+    // On s'assure que le résultat final est un nombre, sinon 0
+    return isNaN(angleDeg) ? 0 : parseFloat(angleDeg.toFixed(2));
   }
 
   window.updateAngleGauge = function (candles) {
-    // Extraction des prix
-    const closes = candles.map(c => parseFloat(c.close || c.value)).filter(v => !isNaN(v));
-
-    // VERIFICATION N°1 : Nombre de bougies
-    if (closes.length < 210) {
-      console.warn("EMA 200 : Pas assez de bougies dans le cache (" + closes.length + "/210)");
+    if (!candles || candles.length < 205) {
+      // Au démarrage, on affiche "Initialisation" au lieu de NaN
+      const valEl = document.getElementById('txt-angle-val');
+      if (valEl) valEl.innerText = "--";
       return;
     }
 
-    // Calcul de l'EMA 200
-    const ema200 = calculateEMA(closes, 200);
+    // Extraction propre des prix de clôture
+    const closes = candles.map(c => {
+      const val = (c.close !== undefined) ? c.close : c.value;
+      return parseFloat(val);
+    }).filter(v => !isNaN(v));
 
-    // Calcul de l'angle
+    const ema200 = calculateEMA(closes, 200);
     const angle = calculateEMASlopeAngle(ema200, 10);
 
-    // VERIFICATION N°2 : L'angle est-il calculé ?
-    // console.log("Debug Angle:", angle);
+    // Sécurité finale : si l'angle est NaN, on l'arrête ici
+    if (isNaN(angle)) return;
 
-    // Mapping visuel pour le SVG
     const percent = ((angle + 90) / 180) * 100;
 
-    let color = "#ff9800"; // Orange (Neutre)
+    let color = "#ff9800";
     let label = "Ranging";
 
-    // Seuils d'activation (plus sensibles)
-    if (angle > 1.5) {
-      color = "#089981"; // Vert
-      label = "Bullish Slope";
-    } else if (angle < -1.5) {
-      color = "#f23645"; // Rouge
-      label = "Bearish Slope";
-    }
+    if (angle > 1.5) { color = "#089981"; label = "Ascending"; }
+    else if (angle < -1.5) { color = "#f23645"; label = "Descending"; }
 
-    // Application au HTML
     setGaugeValue('path-angle', percent, color);
 
     const valEl = document.getElementById('txt-angle-val');
@@ -1002,12 +998,12 @@ document.addEventListener("DOMContentLoaded", () => {
           count: 1000,
           granularity: convertTF(interval),
           style: "candles"
-        } : { 
-          ticks_history: symbol,  
+        } : {
+          ticks_history: symbol,
           adjust_start_time: 1,
           subscribe: 1,
           end: "latest",
-          count: 300, 
+          count: 300,
           granularity: convertTF(interval),
           style: "ticks"
         };
