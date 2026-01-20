@@ -565,13 +565,13 @@ document.addEventListener("DOMContentLoaded", () => {
     return emaArray;
   }
 
-  window.updateAngleGauge = function (candles) {
+  window.updateAngleGauge = function(candles) {
     // 1. On attend d'avoir assez de données pour l'EMA200
     if (!candles || candles.length < 210) {
       const labEl = document.getElementById('txt-angle-label');
       if (labEl) labEl.innerText = `Sync... (${candles.length}/210)`;
       return;
-    }
+    }  
 
     // 2. Extraction des prix de clôture (nombres uniquement)
     const closes = candles.map(c => parseFloat(c.close || c.value)).filter(v => !isNaN(v));
