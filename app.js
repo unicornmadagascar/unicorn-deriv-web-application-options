@@ -567,7 +567,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
     console.log(`emaArray : ${emaArray}`);     
   
-    return emaArray;
+    return emaArray;  
   }
 
   window.updateAngleGauge = function(candles) {
