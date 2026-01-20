@@ -608,7 +608,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`EMA Actuelle: ${lastEMA.toFixed(2)} | Angle: ${angleDeg.toFixed(2)}°`);
 
     // 5. Mise à jour de la jauge
-    const percent = ((angleDeg + 90) / 180) * 100;
+    const percent = ((angleDeg + 90) / 180) * 100;  
 
     let color = "#ff9800";
     if (angleDeg > 1.0) color = "#089981";   
