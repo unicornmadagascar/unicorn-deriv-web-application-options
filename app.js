@@ -1017,7 +1017,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (typeof window.updateAllMarketGauges === 'function') {
             window.updateAllMarketGauges(cache);  
           }  
-        }
+        }  
       }
 
       // 3. Gestion des données Ticks (Area/Line)
