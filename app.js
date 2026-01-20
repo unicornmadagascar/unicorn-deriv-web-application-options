@@ -653,7 +653,7 @@ document.addEventListener("DOMContentLoaded", () => {
       trs.push(tr);
     }
 
-    let currentATR = trs.slice(0, period).reduce((a, b) => a + b) / period;
+    let currentATR = trs.slice(0, period).reduce((a, b) => a + b) / period;  
     for (let i = period; i < trs.length; i++) {
       currentATR = (currentATR * (period - 1) + trs[i]) / period;
     }
