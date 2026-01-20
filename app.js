@@ -578,7 +578,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const closes = candles.map(c => {
       const val = (c.close !== undefined) ? c.close : c.value;  
       return parseFloat(val);
-    }).filter(v => !isNaN(v));  
+    }).filter(v => !isNaN(v));    
 
     if (closes.length < 210) return;
 
