@@ -608,8 +608,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const label = document.getElementById('txt-angle-label');
       if (label) label.innerText = "Calcul... " + Math.floor((closes.length / 205) * 100) + "%";
       return; 
-    }
-
+    }   
+    
     // 3. Calculs
     const ema200 = calculateEMA(closes, 200);
     const angle = calculateEMASlopeAngle(ema200, 5);
