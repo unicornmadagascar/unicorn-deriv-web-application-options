@@ -735,7 +735,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On arrondit l'affichage pour éviter les chiffres qui défilent trop vite
     document.getElementById('txt-vol-val').innerText = Math.round(smoothedVol) + "%";
     document.getElementById('txt-vol-label').innerText = label;
-  }
+  } 
 
   /**
    * FONCTION PRINCIPALE À APPELER
