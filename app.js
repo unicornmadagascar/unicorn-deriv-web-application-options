@@ -5460,7 +5460,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById('modalOverlay');
     // Si la cible du clic est exactement l'overlay (et pas le contenu interne)
     if (event.target === modal) {
-      window.closeModal();
+      window.closeModal(); 
     }
   };  
 
