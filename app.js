@@ -584,8 +584,7 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .filter(Number.isFinite);
   }
-
-
+ 
   window.updateAngleGauge = function (candles) {
 
     const closes = extractClosesFromCandles(candles);
