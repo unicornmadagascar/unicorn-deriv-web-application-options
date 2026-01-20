@@ -5455,7 +5455,7 @@ document.addEventListener("DOMContentLoaded", () => {
   openBtn.onclick = () => modal_symbol.style.display = 'flex';
   document.getElementById('litleclosebtn').onclick = () => modal_symbol.style.display = 'none';
   document.getElementById('symbolclosebtn').onclick = () => modal_symbol.style.display = 'none';  
-
+  
   // On récupère le bouton par son ID
   const validateBtn = document.getElementById('validateBtn');
   validateBtn.addEventListener('click', () => { window.confirmSelection(); });
