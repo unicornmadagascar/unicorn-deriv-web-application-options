@@ -612,7 +612,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let color = "#ff9800";
     if (angleDeg > 1.0) color = "#089981";  
-    else if (angleDeg < -1.0) color = "#f23645";  
+    else if (angleDeg < -1.0) color = "#f23645";    
 
     setGaugeValue('path-angle', percent, color);
     
