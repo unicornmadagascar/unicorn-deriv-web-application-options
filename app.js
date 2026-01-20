@@ -555,7 +555,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * ============================================================
  */
   function calculateEMA(data, period) {
-    if (!Array.isArray(data) || data.length === 0) return [];
+    if (!Array.isArray(data) || data.length === 0) return [];  
 
     const k = 2 / (period + 1);
     let emaArray = [];
