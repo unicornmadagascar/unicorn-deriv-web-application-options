@@ -736,6 +736,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('txt-vol-val').innerText = Math.round(smoothedVol) + "%";
     document.getElementById('txt-vol-label').innerText = label;
   }
+  
   /**
    * FONCTION PRINCIPALE À APPELER
    * @param {Array} candles - Données reçues de l'API Deriv
@@ -744,9 +745,18 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!candles || candles.length < 2) return;
 
     try {
+      // Ces deux-là fonctionnent avec peu de bougies
       updateTrendGauge(candles);
-      window.updateAngleGauge(candles);
       updateVolatilityGauge(candles);
+
+      // L'angle nécessite un historique important (EMA 200)
+      if (candles.length >= 200) {
+        window.updateAngleGauge(candles);
+      } else {
+        // Optionnel : afficher un message d'attente sur la jauge d'angle
+        const labEl = document.getElementById('txt-angle-label');
+        if (labEl) labEl.innerText = `Loading (${candles.length}/200)`;
+      }
     } catch (e) {
       console.error("Erreur mise à jour jauges:", e);
     }
