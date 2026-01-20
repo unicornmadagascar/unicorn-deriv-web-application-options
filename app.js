@@ -630,7 +630,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 6. Mise à jour du HTML (Vérifiez bien ces IDs dans votre HTML)
-    setGaugeValue('path-angle', percent, color);
+    setGaugeValue('path-angle', percent, color); 
 
     const valEl = document.getElementById('txt-angle-val');
     const labEl = document.getElementById('txt-angle-label');
