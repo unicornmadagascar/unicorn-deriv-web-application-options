@@ -559,13 +559,13 @@ document.addEventListener("DOMContentLoaded", () => {
     let k = 2 / (period + 1);
     let emaArray = [data[0]]; // On commence avec le premier prix
 
-    console.log(`le premier prix : ${emaArray}`);
+    console.log(`Le premier prix : ${emaArray}`);
 
     for (let i = 1; i < data.length; i++) {
       // Formule standard : EMA = (Close - EMA_hier) * k + EMA_hier
       emaArray.push((data[i] - emaArray[i - 1]) * k + emaArray[i - 1]);
     }
-    return emaArray; 
+    return emaArray;  
   }   
   
   // 2. Calcul de l'Angle de l'EMA200
