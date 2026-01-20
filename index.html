@@ -3031,6 +3031,107 @@
       cursor: pointer;
       font-weight: 600;
     }
+
+    /*--------------- JAUGES ----------------*/
+    /* Grid Layout */
+    .indicators-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      padding: 20px;
+      background-color: #131722;
+      /* Dark TradingView Theme */
+    }
+
+    .indicator-card {
+      background: #1e222d;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      border: 1px solid #363a45;
+    }
+
+    .indicator-header {
+      color: #d1d4dc;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Gauge SVG Styling */
+    .gauge-container {
+      position: relative;
+      width: 100%;
+      max-width: 220px;
+      /* Taille augmentée */
+      margin: 0 auto;
+    }
+
+    .half-circle-gauge {
+      width: 100%;
+    }
+
+    .gauge-bg {
+      fill: none;
+      stroke: #363a45;
+      stroke-width: 8;
+    }
+
+    .gauge-fill {
+      fill: none;
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 126;
+      /* Longueur totale du demi-cercle */
+      transition: stroke-dashoffset 0.8s ease-out, stroke 0.5s ease;
+    }
+
+    /* Text in Center */
+    .gauge-center-text {
+      position: absolute;
+      bottom: 5px;
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-val {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #ffffff;
+    }
+
+    .sub-label {
+      font-size: 0.75rem;
+      color: #868993;
+    }
+
+    /* Footer labels */
+    .indicator-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-size: 0.7rem;
+      color: #5d606b;
+      font-weight: bold;
+    }
+
+    .label-bear {
+      color: #ff4444;
+    }
+
+    .label-bull {
+      color: #00c805;
+    }
+
+    @media (max-width: 768px) {
+      .indicators-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 
@@ -3040,7 +3141,7 @@
     <div id="controls">
       <button id="openPickerBtn" class="btn-main-action">Symbols</button>
       <button id="connectBtn">Connect</button>
-    </div>   
+    </div>
   </header>
 
   <div class="tv-modal-overlay" id="modalOverlay">
@@ -3048,7 +3149,7 @@
       <div class="tv-modal-header">
         <span>Select an instrument</span>
         <button class="close-icon" onclick="closeModal()">&times;</button>
-      </div>  
+      </div>
 
       <div class="tv-modal-body">
         <div class="search-container">
@@ -3074,7 +3175,7 @@
           <label>Symbols available</label>
           <div id="symbolGrid" class="symbol-grid rounded-container">
           </div>
-        </div>  
+        </div>
       </div>
 
       <div class="tv-modal-footer">
@@ -3085,7 +3186,66 @@
   </div>
 
   <section class="widget-section full-width" id="gold-info-section">
-    <div id="gold-info-container" class="tradingview-widget-container"></div>
+    <div id="gold-info-container" class="tradingview-widget-container indicators-grid">
+
+      <div class="indicator-card">
+        <div class="indicator-header">Trend Strength (Smoothed)</div>
+        <div class="gauge-container">
+          <svg viewBox="0 0 100 55" class="half-circle-gauge">
+            <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50" />
+            <path id="path-trend" class="gauge-fill" d="M 10 50 A 40 40 0 0 1 90 50"
+              style="stroke-dashoffset: 126; stroke: #ff4444;" />
+          </svg>
+          <div class="gauge-center-text">
+            <span id="txt-trend-val" class="main-val">0%</span>
+            <span id="txt-trend-label" class="sub-label">Neutral</span>
+          </div>
+        </div>
+        <div class="indicator-footer">
+          <span class="label-bear">BEARS</span>
+          <span class="label-bull">BULLS</span>
+        </div>
+      </div>
+
+      <div class="indicator-card">
+        <div class="indicator-header">EMA 200 Slope Angle</div>
+        <div class="gauge-container">
+          <svg viewBox="0 0 100 55" class="half-circle-gauge">
+            <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50" />
+            <path id="path-angle" class="gauge-fill" d="M 10 50 A 40 40 0 0 1 90 50"
+              style="stroke-dashoffset: 63; stroke: #ff9800;" />
+          </svg>
+          <div class="gauge-center-text">
+            <span id="txt-angle-val" class="main-val">0°</span>
+            <span id="txt-angle-label" class="sub-label">Ranging</span>
+          </div>
+        </div>
+        <div class="indicator-footer">
+          <span>DESCENDING</span>
+          <span>ASCENDING</span>
+        </div>
+      </div>
+
+      <div class="indicator-card">
+        <div class="indicator-header">Market Volatility</div>
+        <div class="gauge-container">
+          <svg viewBox="0 0 100 55" class="half-circle-gauge">
+            <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50" />
+            <path id="path-vol" class="gauge-fill" d="M 10 50 A 40 40 0 0 1 90 50"
+              style="stroke-dashoffset: 126; stroke: #2196f3;" />
+          </svg>
+          <div class="gauge-center-text">
+            <span id="txt-vol-val" class="main-val">Low</span>
+            <span id="txt-vol-label" class="sub-label">Smooth</span>
+          </div>
+        </div>
+        <div class="indicator-footer">
+          <span>QUIET</span>
+          <span>EXPLOSIVE</span>
+        </div>
+      </div>
+
+    </div>
   </section>
 
   <!-- Panneau complet de contrôle sous le chart -->
@@ -3646,7 +3806,7 @@
         "showSymbolLogo": true,
         "displayMode": "adaptive"
       }
-    ); 
+    );
 
     createTradingViewEmbed(
       'gold-info-container',
@@ -3658,7 +3818,7 @@
         "locale": "en",
         "width": "50%"
       }
-    );  
+    );
 
     // Toggle panel
     const controlPanelToggle = document.getElementById("controlPanelToggle");
