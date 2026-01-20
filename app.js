@@ -562,7 +562,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 👉 Initialisation avec la première valeur (standard en trading live)
     let ema = data[0];
-    emaArray.push(ema);
+    emaArray.push(ema);  
 
     for (let i = 1; i < data.length; i++) {
       ema = (data[i] - ema) * k + ema;
