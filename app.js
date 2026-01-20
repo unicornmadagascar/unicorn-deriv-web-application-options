@@ -599,7 +599,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const val = (c.close !== undefined) ? c.close : c.value;
         return parseFloat(val);
       })
-      .filter(val => !isNaN(val));  
+      .filter(val => !isNaN(val));
 
     // 2. Vérification critique de la quantité de données
     // L'EMA200 ne peut pas exister mathématiquement avec moins de 200 points
@@ -607,9 +607,9 @@ document.addEventListener("DOMContentLoaded", () => {
       console.warn(`Angle EMA200 : Données insuffisantes (${closes.length}/205)`);
       const label = document.getElementById('txt-angle-label');
       if (label) label.innerText = "Calcul... " + Math.floor((closes.length / 205) * 100) + "%";
-      return; 
-    }   
-    
+      return;
+    }
+
     // 3. Calculs
     const ema200 = calculateEMA(closes, 200);
     const angle = calculateEMASlopeAngle(ema200, 5);
@@ -640,7 +640,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // 3. Calcul de l'ATR (Volatilité)
-  function calculateATR(candles, period = 14) {
+  function calculateATR(candles, period = 14) { 
     if (candles.length <= period) return { percent: 0 };
 
     let trs = [];
@@ -648,24 +648,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const tr = Math.max(
         candles[i].high - candles[i].low,
         Math.abs(candles[i].high - candles[i - 1].close),
-        Math.abs(candles[i].low - candles[i - 1].close)  
+        Math.abs(candles[i].low - candles[i - 1].close)
       );
       trs.push(tr);
     }
 
-    let currentATR = trs.slice(0, period).reduce((a, b) => a + b) / period;  
+    let currentATR = trs.slice(0, period).reduce((a, b) => a + b) / period;
     for (let i = period; i < trs.length; i++) {
-      currentATR = (currentATR * (period - 1) + trs[i]) / period;  
+      currentATR = (currentATR * (period - 1) + trs[i]) / period;
     }
 
-    const lastClose = candles[candles.length - 1].close;  
+    const lastClose = candles[candles.length - 1].close;
+    const baseRatio = (currentATR / lastClose) * 100;
 
-    // --- ZONE DE RÉGLAGE DE LA SENSIBILITÉ ---
-    const baseRatio = (currentATR / lastClose) * 100; // Variation en %
-
-    // Multiplicateur augmenté : testez 1500 ou 2000 pour une sensibilité extrême
-    // On utilise Math.sqrt pour que la jauge soit très réactive au début
-    let volPercent = Math.sqrt(baseRatio) * 800;
+    // --- RÉGLAGE : Sensibilité réduite ---
+    // On passe de 1500 à 1000 pour calmer l'amplitude
+    let volPercent = Math.sqrt(baseRatio) * 1000;
 
     return {
       percent: Math.min(volPercent, 100).toFixed(1)
@@ -717,31 +715,32 @@ document.addEventListener("DOMContentLoaded", () => {
     const atr = calculateATR(candles, 14);
     const targetPercent = parseFloat(atr.percent);
 
-    // --- LOGIQUE DE LISSAGE (SMOOTHING) ---
-    // Facteur de lissage : 0.1 = très lent/fluide, 0.5 = nerveux mais stable
-    const smoothingFactor = 0.2;
+    // --- RÉGLAGE : Lissage beaucoup plus fort ---
+    // 0.05 signifie que l'aiguille ne parcourt que 5% de la distance vers la cible à chaque tick.
+    // Cela crée un mouvement très fluide et "lourd".
+    const smoothingFactor = 0.05;
 
-    // Formule : (Valeur Cible - Valeur Actuelle) * Facteur
     smoothedVol = smoothedVol + (targetPercent - smoothedVol) * smoothingFactor;
 
     let color = "#1976d2";
     let label = "Quiet";
 
-    if (smoothedVol > 65) {
+    // Seuils de couleurs un peu plus larges pour éviter les changements brusques
+    if (smoothedVol > 70) {
       color = "#f23645";
       label = "High Volatility";
     }
-    else if (smoothedVol > 25) {
+    else if (smoothedVol > 30) {
       color = "#f57c00";
       label = "Rising Volatility";
     }
 
-    // On utilise la valeur lissée pour l'affichage
     setGaugeValue('path-vol', smoothedVol, color);
-    document.getElementById('txt-vol-val').innerText = smoothedVol.toFixed(1) + "%";
+
+    // On arrondit l'affichage pour éviter les chiffres qui défilent trop vite
+    document.getElementById('txt-vol-val').innerText = Math.round(smoothedVol) + "%";
     document.getElementById('txt-vol-label').innerText = label;
   }
-
   /**
    * FONCTION PRINCIPALE À APPELER
    * @param {Array} candles - Données reçues de l'API Deriv
