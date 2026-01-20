@@ -597,7 +597,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const prevEMA = emaArray[emaArray.length - 6]; // On regarde 5 bougies en arrière
 
     console.log(`lastEMA :`,lastEMA);
-    console.log(`prevEMA :`,prevEMA);
+    console.log(`prevEMA :`,prevEMA);  
     
     if (lastEMA === null || prevEMA === null) return;  
     
