@@ -558,7 +558,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!Array.isArray(data) || data.length === 0) return [];  
 
     const k = 2 / (period + 1);
-    let emaArray = [];
+    let emaArray = [];  
 
     // 👉 Initialisation avec la première valeur (standard en trading live)
     let ema = data[0];
@@ -566,7 +566,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     for (let i = 1; i < data.length; i++) {
       ema = (data[i] - ema) * k + ema;
-      emaArray.push(ema);  
+      emaArray.push(ema);    
     }  
 
     return emaArray;    
