@@ -5456,7 +5456,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById('litleclosebtn').onclick = () => modal_symbol.style.display = 'none';
   document.getElementById('symbolclosebtn').onclick = () => modal_symbol.style.display = 'none';
 
-  window.onclick = function (event) {
+  window.onclick = function (event) { 
     const modal = document.getElementById('modalOverlay');
     // Si la cible du clic est exactement l'overlay (et pas le contenu interne)
     if (event.target === modal) {
