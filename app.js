@@ -616,7 +616,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const valEl = document.getElementById("txt-angle-val");
     const labelEl = document.getElementById("txt-angle-label");
-
+  
     if (valEl) valEl.innerText = angleDeg.toFixed(1) + "°";
 
     if (labelEl) {
