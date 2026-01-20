@@ -599,7 +599,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`lastEMA :`,lastEMA);
     console.log(`prevEMA :`,prevEMA);  
     
-    if (lastEMA === null || prevEMA === null) return;  
+    if (lastEMA === null || prevEMA === null) return;   
     
     // 4. Calcul de l'angle  
     const change = (lastEMA - prevEMA) / prevEMA;
