@@ -585,7 +585,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. Calcul
     const emaArray = calculateEMA(closes, 200);
 
-    console.log(`EMA ARRAY :`,emaArray); 
+    console.log(`EMA ARRAY :`,emaArray);   
 
     // 3. Récupération des deux derniers points
     let lastEMA = emaArray[emaArray.length - 1];
