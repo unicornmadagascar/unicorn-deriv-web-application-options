@@ -602,13 +602,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const closes = candles.map(c => parseFloat(c.close || c.value)).filter(v => !isNaN(v));
 
     // 2. Sécurité : On attend d'avoir assez de données pour l'EMA 200
-    if (closes.length < 205) return;
+    if (closes.length < 205) return;  
 
     // 3. Calcul de l'EMA
     const emaArray = calculateEMA(closes, 200);  
 
     // 4. Récupération des deux points  
-    let lastEMA = emaArray[emaArray.length - 1];
+    let lastEMA = emaArray[emaArray.length - 1];  
     let prevEMA = emaArray[emaArray.length - 11];
 
     // --- CORRECTION CRITIQUE : Extraction de la valeur si c'est un objet ---
