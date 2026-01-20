@@ -602,7 +602,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const change = (lastEMA - prevEMA) / prevEMA;
     const sensitivity = 1000000; // Ajustez ce chiffre si l'aiguille bouge trop ou pas assez
     let angleRad = Math.atan(change * sensitivity);
-    let angleDeg = angleRad * (180 / Math.PI);
+    let angleDeg = angleRad * (180 / Math.PI);  
 
     // LOG DE TEST : Vérifiez ces valeurs dans votre console
     console.log(`EMA Actuelle: ${lastEMA.toFixed(2)} | Angle: ${angleDeg.toFixed(2)}°`);
