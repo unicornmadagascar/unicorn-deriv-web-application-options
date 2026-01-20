@@ -554,7 +554,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * CONFIGURATION ET CALCULS TECHNIQUES (LOGIQUE)
  * ============================================================
  */
-  function calculateEMA(data, period) {
+  function calculateEMA(data, period) {  
     if (!data || data.length < period) return [];    
     let k = 2 / (period + 1);
     let emaArray = [data[0]];
