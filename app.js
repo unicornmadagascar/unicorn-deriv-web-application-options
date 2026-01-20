@@ -665,7 +665,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Multiplicateur augmenté : testez 1500 ou 2000 pour une sensibilité extrême
     // On utilise Math.sqrt pour que la jauge soit très réactive au début
-    let volPercent = Math.sqrt(baseRatio) * 1500;
+    let volPercent = Math.sqrt(baseRatio) * 800;
 
     return {
       percent: Math.min(volPercent, 100).toFixed(1)
