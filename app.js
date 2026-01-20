@@ -581,6 +581,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. Extraction des prix de clôture (nombres uniquement)
     const closes = candles.map(c => parseFloat(c.close || c.value)).filter(v => !isNaN(v));
 
+    console.log(`Close candles :`,closes);
+
     // 3. Calcul de l'EMA200
     const ema200 = calculateEMA(closes, 200);
 
