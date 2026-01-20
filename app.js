@@ -559,7 +559,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let k = 2 / (period + 1);
     let emaArray = [data[0]];
 
-    console.log(`data[0] : ${emaArray}`); 
+    console.log(`data[0] : ${emaArray}`);  
 
     for (let i = 1; i < data.length; i++) {
       emaArray.push((data[i] - emaArray[i - 1]) * k + emaArray[i - 1]);
