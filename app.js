@@ -596,7 +596,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const lastEMA = emaArray[emaArray.length - 1];
     const prevEMA = emaArray[emaArray.length - 6]; // On regarde 5 bougies en arrière
 
-    if (lastEMA === null || prevEMA === null) return;
+    if (lastEMA === null || prevEMA === null) return;  
 
     // 4. Calcul de l'angle
     const change = (lastEMA - prevEMA) / prevEMA;
