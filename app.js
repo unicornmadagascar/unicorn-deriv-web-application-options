@@ -659,7 +659,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }  
 
     const lastClose = candles[candles.length - 1].close;
-    const baseRatio = (currentATR / lastClose) * 100;
+    const baseRatio = (currentATR / lastClose) * 100;  
   
     // --- RÉGLAGE : Sensibilité réduite ---
     // On passe de 1500 à 1000 pour calmer l'amplitude
