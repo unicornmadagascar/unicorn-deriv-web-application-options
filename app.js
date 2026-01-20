@@ -569,16 +569,16 @@ document.addEventListener("DOMContentLoaded", () => {
       // Formule mathématique pure (Nombre - Nombre) * Nombre + Nombre
       const nextEMA = (currentPrice - emaArray[i - 1]) * k + emaArray[i - 1];
       emaArray.push(nextEMA);
-    }
+    } 
     return emaArray;  
   }
 
   window.updateAngleGauge = function (candles) {
     // 1. Extraction stricte en nombres
     const closes = candles.map(c => {
-      const val = (c.close !== undefined) ? c.close : c.value;
+      const val = (c.close !== undefined) ? c.close : c.value;  
       return parseFloat(val);
-    }).filter(v => !isNaN(v));
+    }).filter(v => !isNaN(v));  
 
     if (closes.length < 210) return;
 
