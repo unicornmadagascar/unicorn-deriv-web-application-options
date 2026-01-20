@@ -662,7 +662,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     console.log("Dernière valeur EMA200 :", ema200[ema200.length - 1]);
   
-    const angle = calculateEMASlopeAngle(ema200, 5);
+    const angle = calculateEMASlopeAngle(ema200, 5);  
 
     // Mapping angle (-90/90) vers pourcentage (0/100)
     let percent = ((angle + 90) / 180) * 100;
