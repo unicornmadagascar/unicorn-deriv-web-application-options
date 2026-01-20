@@ -573,60 +573,71 @@ document.addEventListener("DOMContentLoaded", () => {
       if (isNaN(currentPrice)) {
         emaArray.push(emaArray[i - 1]); // On répète la dernière valeur si erreur
       } else {
-        emaArray.push((currentPrice - emaArray[i - 1]) * k + emaArray[i - 1]);
+        emaArray.push((currentPrice - emaArray[i - 1]) * k + emaArray[i - 1]); 
       }
     }
     return emaArray;
   }
 
   // 2. Calcul de l'Angle de l'EMA200
-  function calculateEMASlopeAngle(emaData, lookback = 10) {
-    if (!emaData || emaData.length < lookback + 1) return 0;
+  function calculateEMASlopeAngle(data, isArray = true) {
+    const current = isArray ? data[data.length - 1] : data.current;
+    const previous = isArray ? data[data.length - 11] : data.previous;
 
-    const currentEMA = emaData[emaData.length - 1];
-    const prevEMA = emaData[emaData.length - 1 - lookback];
+    if (isNaN(current) || isNaN(previous) || previous === 0) return 0;
 
-    if (!currentEMA || !prevEMA || isNaN(currentEMA) || isNaN(prevEMA)) return 0;
+    // Calcul de la pente relative (en %) pour s'adapter à tous les prix
+    const slope = (current - previous) / previous;
 
-    // 1. Calculer la variation brute
-    const diff = currentEMA - prevEMA;
-
-    // 2. NORMALISATION CRITIQUE
-    // On divise la différence par le prix actuel pour obtenir un % de variation
-    // Puis on multiplie par un facteur de sensibilité très élevé (ex: 10000)
-    const slope = (diff / prevEMA) * 10000;
-
-    // 3. Calcul de l'angle
-    // Si l'angle est toujours à 0, augmentez le 50 ci-dessous à 100 ou 200
-    let angleRad = Math.atan(slope * 50);
+    // Multiplicateur pour rendre l'angle visible (Ajustez 100000 si besoin)
+    const sensitivity = 100000;
+    let angleRad = Math.atan(slope * sensitivity);
     let angleDeg = angleRad * (180 / Math.PI);
 
     return parseFloat(angleDeg.toFixed(2));
   }
 
   window.updateAngleGauge = function (candles) {
+    // 1. Extraction des prix en nombres
     const closes = candles.map(c => parseFloat(c.close || c.value)).filter(v => !isNaN(v));
 
+    // 2. Sécurité : On attend d'avoir assez de données
     if (closes.length < 205) return;
 
-    const ema200 = calculateEMA(closes, 200);
-    const angle = calculateEMASlopeAngle(ema200, 10);
+    // 3. Calcul de l'EMA (Retourne un tableau de nombres)
+    const emaArray = calculateEMA(closes, 200);
 
-    // --- TEST DE DEBUG DANS LA CONSOLE ---
-    const lastEMA = ema200[ema200.length - 1];
-    const prevEMA = ema200[ema200.length - 11];
-    console.info(`EMA Actuelle: ${lastEMA} | Précédente: ${prevEMA} | Angle: ${angle}°`);
+    // 4. Récupération des deux points pour la pente
+    // On prend la valeur actuelle et celle d'il y a 10 bougies (lookback)
+    const lastEMA = emaArray[emaArray.length - 1];
+    const prevEMA = emaArray[emaArray.length - 11];
 
-    const percent = ((angle + 90) / 180) * 100;  
+    // Vérification de sécurité pour éviter le NaN
+    if (lastEMA === undefined || prevEMA === undefined) return;
 
-    let color = "#ff9800";
-    if (angle > 0.5) color = "#089981";  
-    else if (angle < -0.5) color = "#f23645";
+    // 5. Calcul de l'angle
+    // On envoie directement les nombres à notre fonction de calcul
+    const angle = calculateEMASlopeAngle({ current: lastEMA, previous: prevEMA }, false);
 
-    setGaugeValue('path-angle', percent, color);  
+    // DEBUG CONSOLE (Vous devriez voir des nombres réels ici)
+    console.info(`EMA: ${lastEMA.toFixed(2)} | Prev: ${prevEMA.toFixed(2)} | Angle: ${angle}°`);
 
-    const valEl = document.getElementById('txt-angle-val');  
-    if (valEl) valEl.innerText = angle.toFixed(2) + "°";  
+    // 6. Mise à jour de la jauge
+    const percent = ((angle + 90) / 180) * 100;
+
+    let color = "#ff9800"; // Neutre
+    if (angle > 0.15) color = "#089981"; // Haussier
+    else if (angle < -0.15) color = "#f23645"; // Baissier
+
+    setGaugeValue('path-angle', percent, color);
+
+    const valEl = document.getElementById('txt-angle-val');
+    if (valEl) valEl.innerText = angle.toFixed(2) + "°";
+
+    const labEl = document.getElementById('txt-angle-label');
+    if (labEl) {
+      labEl.innerText = angle > 0.15 ? "Ascending" : (angle < -0.15 ? "Descending" : "Ranging");
+    }
   };
 
   // 3. Calcul de l'ATR (Volatilité)
