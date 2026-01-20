@@ -5441,11 +5441,11 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ===================== SYMBOLS POPUP =========================== */
 
   openBtn.onclick = () => modal_symbol.style.display = 'flex';
+  document.getElementById('.close-icon').onclick = () => modal_symbol.style.display = 'none';
+  document.getElementById('.btn-close').onclick = () => modal_symbol.style.display = 'none';
 
   // On récupère le bouton par son ID
   const validateBtn = document.getElementById('validateBtn');
-
-  // On lui attache la fonction au clic
   validateBtn.addEventListener('click', () => { window.confirmSelection(); });
 
   document.addEventListener('keydown', function (event) {
