@@ -616,7 +616,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setGaugeValue('path-angle', percent, color);
     
-    const valEl = document.getElementById('txt-angle-val');
+    const valEl = document.getElementById('txt-angle-val'); 
     if (valEl) valEl.innerText = angleDeg.toFixed(1) + "°";  
   };
 
