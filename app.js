@@ -594,7 +594,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let angleRad = Math.atan(slope * sensitivity);
     let angleDeg = angleRad * (180 / Math.PI);  
 
-    return parseFloat(angleDeg.toFixed(2)); 
+    return parseFloat(angleDeg.toFixed(2));  
   }  
 
   window.updateAngleGauge = function (candles) {  
