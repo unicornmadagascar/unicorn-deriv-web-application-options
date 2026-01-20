@@ -583,7 +583,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log(`Close candles :`,closes);
 
-    // 3. Calcul de l'EMA200
+    // 3. Calcul de l'EMA200  
     const ema200 = calculateEMA(closes, 200);
 
     // 4. On prend l'EMA actuelle et celle d'il y a 5 bougies pour calculer la pente
