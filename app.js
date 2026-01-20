@@ -565,7 +565,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let emaArray = [firstValue];
 
     for (let i = 1; i < data.length; i++) {
-      const currentPrice = parseFloat(data[i]);
+      const currentPrice = parseFloat(data[i]);  
       // Formule mathématique pure (Nombre - Nombre) * Nombre + Nombre
       const nextEMA = (currentPrice - emaArray[i - 1]) * k + emaArray[i - 1];
       emaArray.push(nextEMA);
