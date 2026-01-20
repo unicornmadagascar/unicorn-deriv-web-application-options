@@ -570,7 +570,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const nextEMA = (currentPrice - emaArray[i - 1]) * k + emaArray[i - 1];
       emaArray.push(nextEMA);
     } 
-    return emaArray;  
+    return emaArray;     
   }
 
   window.updateAngleGauge = function (candles) {
