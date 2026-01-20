@@ -3186,8 +3186,6 @@
   </div>
 
   <section class="widget-section full-width" id="gold-info-section">
-    <div id="gold-info-container" class="tradingview-widget-container indicators-grid">
-
       <div class="indicator-card">
         <div class="indicator-header">Trend Strength (Smoothed)</div>
         <div class="gauge-container">
@@ -3764,61 +3762,6 @@
         overlay.classList.add('hidden');
       }
     }
-
-    // TRADINGVIEW WIDGET
-    function createTradingViewEmbed(containerId, src, config, creditHtml) {
-      const container = document.getElementById(containerId);
-      if (!container) return;
-
-      const placeholder = document.createElement('div');
-      placeholder.className = 'tradingview-widget-container__widget';
-      container.appendChild(placeholder);
-
-      const s = document.createElement('script');
-      s.type = 'text/javascript';
-      s.async = true;
-      s.src = src;
-      s.text = JSON.stringify(config);
-      container.appendChild(s);
-
-      if (creditHtml) {
-        const cr = document.createElement('div');
-        cr.className = 'tradingview-widget-copyright';
-        cr.innerHTML = creditHtml;
-        container.appendChild(cr);
-      }
-    }
-
-    // --- 1) Ticker Tape ---
-    createTradingViewEmbed('ticker-container',
-      'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js',
-      {
-        "symbols": [
-          { "proName": "FX:GBPUSD", "title": "S&P 500 Index" },
-          { "proName": "OANDA:XAUUSD", "title": "Gold to USD" },
-          { "proName": "FX_IDC:EURUSD", "title": "EUR to USD" },
-          { "proName": "BITSTAMP:BTCUSD", "title": "Bitcoin" },
-          { "proName": "BITSTAMP:ETHUSD", "title": "Ethereum" }
-        ],
-        "colorTheme": "light",
-        "locale": "en",
-        "isTransparent": false,
-        "showSymbolLogo": true,
-        "displayMode": "adaptive"
-      }
-    );
-
-    createTradingViewEmbed(
-      'gold-info-container',
-      'https://s3.tradingview.com/external-embedding/embed-widget-symbol-info.js',
-      {
-        "symbol": "OANDA:XAUUSD",
-        "colorTheme": "light",
-        "isTransparent": false,
-        "locale": "en",
-        "width": "50%"
-      }
-    );
 
     // Toggle panel
     const controlPanelToggle = document.getElementById("controlPanelToggle");
