@@ -565,7 +565,7 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let i = 0; i < period; i++) {
       sum += data[i];
     }
-    let firstSMA = sum / period;
+    let firstSMA = sum / period;  
 
     // On remplit les 'period - 1' premières cases avec null ou la SMA
     for (let i = 0; i < period - 1; i++) {
