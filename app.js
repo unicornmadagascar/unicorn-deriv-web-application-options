@@ -588,7 +588,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On augmente ici la force pour que l'aiguille bouge de façon visible  
     const sensitivity = 5000;
     let angleRad = Math.atan(slope * sensitivity);
-    let angleDeg = angleRad * (180 / Math.PI);
+    let angleDeg = angleRad * (180 / Math.PI);  
 
     // 4. Limiter l'angle entre -90 et 90
     return parseFloat(angleDeg.toFixed(2));
