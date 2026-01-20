@@ -606,7 +606,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const clamped = Math.max(-maxAngle, Math.min(maxAngle, angleDeg));
 
     const percent = ((clamped + maxAngle) / (2 * maxAngle)) * 100;
-
+    
     // 🎨 Couleur
     let color = "#ff9800";
     if (angleDeg > 2) color = "#089981";
