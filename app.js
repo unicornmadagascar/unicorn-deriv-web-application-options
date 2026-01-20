@@ -619,7 +619,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On envoie directement les nombres à notre fonction de calcul
     const angle = calculateEMASlopeAngle({ current: lastEMA, previous: prevEMA }, false);
 
-    // DEBUG CONSOLE (Vous devriez voir des nombres réels ici)
+    // DEBUG CONSOLE (Vous devriez voir des nombres réels ici)  
     console.info(`EMA: ${lastEMA.toFixed(2)} | Prev: ${prevEMA.toFixed(2)} | Angle: ${angle}°`);
 
     // 6. Mise à jour de la jauge
