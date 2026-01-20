@@ -5464,7 +5464,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Si la touche pressée est "Enter" et qu'un symbole est déjà choisi
     if (event.key === "Enter" && !document.getElementById('validateBtn').disabled) {
       window.confirmSelection();
-    }  
+    }   
   });
 
   /* ===================== GRAPHICAL OBJECTS =========================== */
