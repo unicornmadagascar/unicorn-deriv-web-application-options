@@ -705,10 +705,10 @@ document.addEventListener("DOMContentLoaded", () => {
        * car nous calculons maintenant l'angle direct sur les derniers prix.
        */
       window.updateAngleGauge(candles);
-  
+    
     } catch (e) {  
       console.error("Erreur mise à jour jauges:", e);
-    }
+    }  
   };
 
   function initChart(currentChartType) {
