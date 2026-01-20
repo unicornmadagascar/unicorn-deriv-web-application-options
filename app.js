@@ -558,75 +558,68 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!data || data.length < period) return [];
 
     const k = 2 / (period + 1);
-    let emaArray = [];
+    // On s'assure que le point de départ est un nombre pur
+    let firstValue = parseFloat(data[0]);
+    if (isNaN(firstValue)) return [];
 
-    // 1. Calculer la première valeur (on utilise une SMA simple pour le début)
-    let sum = 0;
-    for (let i = 0; i < period; i++) {
-      sum += data[i];
+    let emaArray = [firstValue];
+
+    for (let i = 1; i < data.length; i++) {
+      const currentPrice = parseFloat(data[i]);
+      // Formule mathématique pure (Nombre - Nombre) * Nombre + Nombre
+      const nextEMA = (currentPrice - emaArray[i - 1]) * k + emaArray[i - 1];
+      emaArray.push(nextEMA);
     }
-    let firstSMA = sum / period;  
-
-    // On remplit les 'period - 1' premières cases avec null ou la SMA
-    for (let i = 0; i < period - 1; i++) {
-      emaArray.push(null);
-    }
-    emaArray.push(firstSMA);  
-
-    // 2. Calculer le reste de l'EMA
-    let currentEMA;
-    for (let i = period; i < data.length; i++) {
-      currentEMA = (data[i] - emaArray[i - 1]) * k + emaArray[i - 1];
-      emaArray.push(currentEMA);
-    }
-
     return emaArray;
   }
 
   window.updateAngleGauge = function (candles) {
-    // 1. Extraction (votre log confirme que c'est OK)
-    const closes = candles.map(c => parseFloat(c.close || c.value)).filter(v => !isNaN(v));
+    // 1. Extraction stricte en nombres
+    const closes = candles.map(c => {
+      const val = (c.close !== undefined) ? c.close : c.value;
+      return parseFloat(val);
+    }).filter(v => !isNaN(v));
 
     if (closes.length < 210) return;
 
-    // 2. Calcul de l'EMA 200
+    // 2. Calcul
     const emaArray = calculateEMA(closes, 200);
 
-    console.log(`EMA ARRAY :`,emaArray);  
+    // 3. Récupération des deux derniers points
+    let lastEMA = emaArray[emaArray.length - 1];
+    let prevEMA = emaArray[emaArray.length - 6];
 
-    // 3. Récupération des points de pente
-    const lastEMA = emaArray[emaArray.length - 1];   
-    const prevEMA = emaArray[emaArray.length - 6]; // On regarde 5 bougies en arrière
+    // --- FORCE LE TYPE NOMBRE (Anti-Objet) ---
+    if (lastEMA && typeof lastEMA === 'object') lastEMA = lastEMA.value;
+    if (prevEMA && typeof prevEMA === 'object') prevEMA = prevEMA.value;
 
-    console.log(`lastEMA :`,lastEMA);
-    console.log(`prevEMA :`,prevEMA);  
-    
-    if (lastEMA === null || prevEMA === null) return;   
-    
-    // 4. Calcul de l'angle  
+    // 4. Vérification finale avant calcul de l'angle
+    if (typeof lastEMA !== 'number' || isNaN(lastEMA) || isNaN(prevEMA)) {
+      console.error("EMA calculée invalide (NaN)");
+      return;
+    }
+
+    // 5. Calcul de l'angle
     const change = (lastEMA - prevEMA) / prevEMA;
-    const sensitivity = 1000000; // Ajustez ce chiffre si l'aiguille bouge trop ou pas assez
-    let angleRad = Math.atan(change * sensitivity);  
-    let angleDeg = angleRad * (180 / Math.PI);   
+    const sensitivity = 1500000;
+    const angleRad = Math.atan(change * sensitivity);
+    const angleDeg = angleRad * (180 / Math.PI);
 
-    // LOG DE TEST : Vérifiez ces valeurs dans votre console
-    console.log(`EMA Actuelle: ${lastEMA.toFixed(2)} | Angle: ${angleDeg.toFixed(2)}°`);
-
-    // 5. Mise à jour de la jauge
-    const percent = ((angleDeg + 90) / 180) * 100;  
-
+    // 6. Mise à jour de la jauge
+    const percent = ((angleDeg + 90) / 180) * 100;
     let color = "#ff9800";
-    if (angleDeg > 1.0) color = "#089981";     
-    else if (angleDeg < -1.0) color = "#f23645";    
+    if (angleDeg > 1.0) color = "#089981";
+    else if (angleDeg < -1.0) color = "#f23645";
 
-    setGaugeValue('path-angle', percent, color);  
-    
-    const valEl = document.getElementById('txt-angle-val'); 
-    if (valEl) valEl.innerText = angleDeg.toFixed(1) + "°";  
+    setGaugeValue('path-angle', percent, color);
+
+    // Sécurité .toFixed() : on s'assure que c'est bien un nombre
+    const valEl = document.getElementById('txt-angle-val');
+    if (valEl) valEl.innerText = Number(angleDeg).toFixed(1) + "°";
   };
-
+  
   // 3. Calcul de l'ATR (Volatilité)
-  function calculateATR(candles, period = 50) {  
+  function calculateATR(candles, period = 50) {
     if (candles.length <= period) return { percent: 0 };
 
     let trs = [];
