@@ -566,8 +566,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     for (let i = 1; i < data.length; i++) {
       ema = (data[i] - ema) * k + ema;
-      emaArray.push(ema);
-    }
+      emaArray.push(ema);  
+    }  
 
     return emaArray;  
   }
