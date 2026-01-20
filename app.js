@@ -617,7 +617,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const prevEMA = ema200[ema200.length - 11];
     console.info(`EMA Actuelle: ${lastEMA} | Précédente: ${prevEMA} | Angle: ${angle}°`);
 
-    const percent = ((angle + 90) / 180) * 100;
+    const percent = ((angle + 90) / 180) * 100;  
 
     let color = "#ff9800";
     if (angle > 0.5) color = "#089981";  
@@ -625,7 +625,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setGaugeValue('path-angle', percent, color);  
 
-    const valEl = document.getElementById('txt-angle-val');
+    const valEl = document.getElementById('txt-angle-val');  
     if (valEl) valEl.innerText = angle.toFixed(2) + "°";
   };
 
