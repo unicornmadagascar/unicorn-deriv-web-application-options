@@ -595,7 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let angleDeg = angleRad * (180 / Math.PI);  
 
     return parseFloat(angleDeg.toFixed(2)); 
-  }
+  }  
 
   window.updateAngleGauge = function (candles) {  
     // 1. Extraction des prix en nombres
