@@ -565,9 +565,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // Formule standard : EMA = (Close - EMA_hier) * k + EMA_hier
       emaArray.push((data[i] - emaArray[i - 1]) * k + emaArray[i - 1]);
     }
-    return emaArray;  
-  }   
-  
+    return emaArray;
+  }
+
   // 2. Calcul de l'Angle de l'EMA200
   function calculateEMASlopeAngle(emaData, lookback = 5) {
     // Vérification : on s'assure qu'on a assez de données et que les valeurs ne sont pas nulles
@@ -5454,8 +5454,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   openBtn.onclick = () => modal_symbol.style.display = 'flex';
   document.getElementById('litleclosebtn').onclick = () => modal_symbol.style.display = 'none';
-  document.getElementById('symbolclosebtn').onclick = () => modal_symbol.style.display = 'none';  
-  
+  document.getElementById('symbolclosebtn').onclick = () => modal_symbol.style.display = 'none';
+
+  window.onclick = function (event) {
+    const modal = document.getElementById('modalOverlay');
+    // Si la cible du clic est exactement l'overlay (et pas le contenu interne)
+    if (event.target === modal) {
+      window.closeModal();
+    }
+  };
+
   // On récupère le bouton par son ID
   const validateBtn = document.getElementById('validateBtn');
   validateBtn.addEventListener('click', () => { window.confirmSelection(); });
@@ -5464,7 +5472,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Si la touche pressée est "Enter" et qu'un symbole est déjà choisi
     if (event.key === "Enter" && !document.getElementById('validateBtn').disabled) {
       window.confirmSelection();
-    }   
+    }
   });
 
   /* ===================== GRAPHICAL OBJECTS =========================== */
