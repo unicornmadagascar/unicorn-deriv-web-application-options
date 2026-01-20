@@ -569,7 +569,7 @@ document.addEventListener("DOMContentLoaded", () => {
       emaArray.push(ema);
     }
 
-    return emaArray;
+    return emaArray;  
   }
 
   window.updateAngleGauge = function (candles) {
