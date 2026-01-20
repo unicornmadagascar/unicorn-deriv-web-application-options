@@ -1003,7 +1003,7 @@ document.addEventListener("DOMContentLoaded", () => {
           granularity: convertTF(interval),
           style: "candles"
         } : {
-          ticks_history: symbol,
+          ticks_history: symbol,  
           adjust_start_time: 1,
           subscribe: 1,
           end: "latest",
