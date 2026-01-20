@@ -601,7 +601,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     if (lastEMA === null || prevEMA === null) return;  
     
-    // 4. Calcul de l'angle
+    // 4. Calcul de l'angle  
     const change = (lastEMA - prevEMA) / prevEMA;
     const sensitivity = 1000000; // Ajustez ce chiffre si l'aiguille bouge trop ou pas assez
     let angleRad = Math.atan(change * sensitivity);  
