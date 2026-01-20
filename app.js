@@ -736,7 +736,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('txt-vol-val').innerText = Math.round(smoothedVol) + "%";
     document.getElementById('txt-vol-label').innerText = label;  
   } 
-
+  
   /**
    * FONCTION PRINCIPALE À APPELER
    * @param {Array} candles - Données reçues de l'API Deriv
