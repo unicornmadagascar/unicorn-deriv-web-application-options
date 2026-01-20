@@ -572,13 +572,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 2. Calcul de l'Angle de l'EMA200
   function calculateEMASlopeAngle(emaData, lookback = 5) {
-    if (emaData.length < lookback + 1 || !emaData[emaData.length - 1]) return 0;
+    // Vérification : on s'assure qu'on a assez de données et que les valeurs ne sont pas nulles
+    if (emaData.length < lookback + 1 || emaData[emaData.length - 1] === null || emaData[emaData.length - 1 - lookback] === null) {
+      return 0;
+    }
+
     const currentEMA = emaData[emaData.length - 1];
     const prevEMA = emaData[emaData.length - 1 - lookback];
+
+    // Calcul de la variation en pourcentage (indépendant du prix de l'actif)
     const priceChange = currentEMA - prevEMA;
-    // Normalisation pour rendre l'angle cohérent sur tous les actifs
-    const normalizedSlope = (priceChange / prevEMA) * 1000;
-    let angleDeg = Math.atan(normalizedSlope * 10) * (180 / Math.PI);
+    const slope = (priceChange / prevEMA) * 100;
+
+    // Ajustement de la sensibilité : 
+    // Multipliez par un facteur plus grand (ex: 500) si l'aiguille ne bouge pas assez
+    const sensitivity = 500;
+    let angleRad = Math.atan(slope * sensitivity);
+    let angleDeg = angleRad * (180 / Math.PI);
+
     return parseFloat(angleDeg.toFixed(2));
   }
 
@@ -648,6 +659,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateAngleGauge(candles) {
     const closes = candles.map(c => parseFloat(c.close));
     const ema200 = calculateEMA(closes, 200);
+    
+    console.log("Dernière valeur EMA200 :", ema200[ema200.length - 1]);
+
     const angle = calculateEMASlopeAngle(ema200, 5);
 
     // Mapping angle (-90/90) vers pourcentage (0/100)
@@ -1015,14 +1029,14 @@ document.addEventListener("DOMContentLoaded", () => {
           // On utilise le 'cache' mis à jour car nos fonctions de calcul
           // (EMA200, ATR, Bull/Bear) ont besoin de l'historique complet présent dans le cache.
           if (typeof window.updateAllMarketGauges === 'function') {
-            window.updateAllMarketGauges(cache);  
-          }  
-        }  
+            window.updateAllMarketGauges(cache);
+          }
+        }
       }
 
       // 3. Gestion des données Ticks (Area/Line)
       if (msg.msg_type === "history" || msg.msg_type === "tick") {
-        handleTickData(msg);  
+        handleTickData(msg);
         // Note: handleTickData doit appeler renderIndicators() en interne
         render();
       }
@@ -1035,7 +1049,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (c.is_sold === 0) {
           activeContracts[id] = Number(c.profit || 0);
         }
-        // Contrat fermé → suppression
+        // Contrat fermé → suppression  
         else {
           delete activeContracts[id];
         }
