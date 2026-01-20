@@ -5453,9 +5453,9 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ===================== SYMBOLS POPUP =========================== */
 
   openBtn.onclick = () => modal_symbol.style.display = 'flex';
-  document.getElementById('litleclosebtn').onclick = () => modal_symbol.style.display = 'none';
-  document.getElementById('symbolclosebtn').onclick = () => modal_symbol.style.display = 'none';
-
+  document.getElementById("litleclosebtn").onclick = () => modal_symbol.style.display = 'none';
+  document.getElementById("symbolclosebtn").onclick = () => modal_symbol.style.display = 'none';
+  
   window.onclick = function (event) { 
     const modal = document.getElementById('modalOverlay');
     // Si la cible du clic est exactement l'overlay (et pas le contenu interne)
