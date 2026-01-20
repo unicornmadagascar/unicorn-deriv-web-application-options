@@ -647,7 +647,7 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let i = 1; i < candles.length; i++) {
       const tr = Math.max(
         candles[i].high - candles[i].low,
-        Math.abs(candles[i].high - candles[i - 1].close),
+        Math.abs(candles[i].high - candles[i - 1].close),  
         Math.abs(candles[i].low - candles[i - 1].close)
       );
       trs.push(tr);
