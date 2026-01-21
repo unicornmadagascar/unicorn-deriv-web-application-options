@@ -649,12 +649,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const lastClose = candles[candles.length - 1].close;
-    const baseRatio = (currentATR / lastClose) * 100;
+    const baseRatio = (currentATR / lastClose) * 100;  
 
     // Réglage de l'amplitude : on utilise un multiplicateur plus bas (600) 
     // pour éviter que la jauge ne sature trop vite à 100%
     let volPercent = Math.sqrt(baseRatio) * 600;
-
+   
     return {
       percent: Math.min(volPercent, 100).toFixed(1)
     };  
