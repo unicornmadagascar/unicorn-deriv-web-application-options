@@ -2389,7 +2389,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;  
     }
 
-    // Utilisation de html2canvas
+    // Utilisation de html2canvas  
     html2canvas(elementToCapture, {
       backgroundColor: null, // Préserve la transparence si nécessaire
       useCORS: true,         // Utile si vous chargez des ressources externes
