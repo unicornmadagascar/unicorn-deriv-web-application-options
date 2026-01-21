@@ -2579,41 +2579,82 @@
     }
 
     /* ML */
+    /* L'Overlay : Fond flouté qui couvre tout l'écran */
     #overlayML {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      display: none;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
       justify-content: center;
       align-items: center;
       z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.5s ease;
     }
 
+    /* Conteneur principal */
+    .countdown-container {
+      position: relative;
+      width: 320px;
+      height: 320px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Le Chiffre : Style original optimisé */
     #countdown {
-      font-size: 100px;
-      font-weight: bold;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      font-size: 9rem;
+      font-weight: 800;
       color: #ffffff;
-      animation: pulse 1s infinite;
+      text-shadow: 0 0 30px rgba(255, 255, 255, 0.4),
+        0 0 60px rgba(8, 153, 129, 0.2);
+      user-select: none;
+      z-index: 10;
+      transform: scale(1);
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    @keyframes pulse {
-      0% {
-        transform: scale(1);
-        opacity: 1;
-      }
+    /* Le SVG Circulaire */
+    .countdown-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+      /* Début en haut à 12h */
+    }
 
-      50% {
-        transform: scale(1.2);
-        opacity: 0.7;
-      }
+    /* Rail du cercle */
+    .countdown-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.1);
+      stroke-width: 4;
+    }
 
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
+    /* Barre de progression animée */
+    #countdown-bar {
+      fill: none;
+      stroke: #089981;
+      /* Vert trading */
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-dasharray: 283;
+      /* Circonférence */
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+    }
+
+    /* Animation de pulsation déclenchée en JS */
+    .pulse-tick {
+      transform: scale(1.2);
     }
 
     /* ================= TRADE HISTORY STYLES ================= */
@@ -3463,11 +3504,17 @@
   </div>
 
   <div id="overlayML">
-    <div id="countdown">5</div>
+    <div class="countdown-container">
+      <svg class="countdown-svg" viewBox="0 0 100 100">
+        <circle class="countdown-bg" cx="50" cy="50" r="45"></circle>
+        <circle id="countdown-bar" cx="50" cy="50" r="45"></circle>
+      </svg>
+      <div id="countdown">5</div>
+    </div>
   </div>
 
   <!-- Bouton pour afficher / cacher le panneau -->
-  <button id="controlPanelToggle">⚙️ Show Controls</button>  
+  <button id="controlPanelToggle">⚙️ Show Controls</button>
 
   <div id="settingsPopup" class="popup-overlay">
     <div class="popup-box">

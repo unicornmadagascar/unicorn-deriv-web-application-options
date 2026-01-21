@@ -1488,27 +1488,63 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 500);
   }
 
-  function startMLCountdown() {
-    console.log("🤖 ML STARTED");
+  /**
+ * Lance le compte à rebours moderne
+ * @param {number} duration - Durée en secondes
+ */
+  function startCountdown(duration = 5) {
+    const display = document.getElementById('countdown');
+    const bar = document.getElementById('countdown-bar');
+    const overlay = document.getElementById('overlayML');
 
-    let count = 5;
-    countdownEl.textContent = count;
-    overlayML.style.display = "flex";
+    if (!display || !bar || !overlay) return;
+
+    const totalLength = 283; // Correspond au stroke-dasharray
+    let timer = duration;
+
+    // Réinitialisation visuelle
+    overlay.style.display = 'flex';
+    overlay.style.opacity = '1';
+    display.innerText = timer;
+    bar.style.stroke = "#089981";
+    bar.style.strokeDashoffset = 0;
 
     const interval = setInterval(() => {
-      count--;
-      countdownEl.textContent = count;
+      // 1. Calcul de la progression du cercle
+      // On calcule l'offset pour que le cercle se vide
+      const progress = (timer / duration);
+      const offset = totalLength - (progress * totalLength);
+      bar.style.strokeDashoffset = offset;
 
-      if (count === 0) {
-        clearInterval(interval);
-        countdownEl.textContent = "GO 🚀";
-
-        setTimeout(() => {
-          overlayML.style.display = "none";
-        }, 700);
+      // 2. Changement de couleur (Alerte à 2 secondes)
+      if (timer <= 2) {
+        bar.style.stroke = "#f23645"; // Rouge
       }
+
+      // 3. Animation de pulsation du chiffre
+      display.classList.add('pulse-tick');
+      setTimeout(() => display.classList.remove('pulse-tick'), 200);
+
+      // 4. Gestion de la fin
+      if (timer <= 0) {
+        clearInterval(interval);
+        // On s'assure que le cercle est bien vide à la fin
+        bar.style.strokeDashoffset = totalLength;
+
+        // Disparition fluide
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+          overlay.style.display = 'none';
+        }, 500);
+      }
+
+      display.innerText = timer;
+      timer--;
     }, 1000);
   }
+
+  // Exemple d'utilisation :
+  // startCountdown(5);
 
   // ======================= MAIN HANDLER =======================
   function handleMLSignal(data) {
@@ -5072,7 +5108,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // === Automation Toggle ===
   startbtn.onclick = () => {
-    setTimeout(startMLCountdown, 7000);
+    startCountdown(5);
     startSignalPipeline((data) => {
       console.log(
         `[${new Date(data.time * 1000).toLocaleTimeString()}]`,
@@ -5531,9 +5567,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const dot = document.createElement('span');
     dot.className = 'status-dot';
     this.prepend(dot);
-  });   
+  });
 
-  stopbtn.addEventListener('click', function () {  
+  stopbtn.addEventListener('click', function () {
     // On retire l'effet quand on arrête   
     startbtn.classList.remove('active');
     startbtn.innerHTML = '<span class="status-dot"></span> Start Automation';
