@@ -771,19 +771,9 @@
       align-items: center;
       justify-content: center;
       min-height: 38px;
-      /* Responsive : les boutons s'ajustent à la largeur */
-      white-space: nowrap;  
-      /* CHANGEMENT ICI */  
       flex: 0 0 auto;
-      /* Le bouton ne s'étire plus pour remplir le vide */
-      min-width: 140px;
-      /* On définit une largeur minimale fixe pour tous */
-      max-width: 200px;
-      /* On limite leur extension maximale */  
-      overflow: hidden;  
-      /* Cache ce qui dépasse si le texte est trop long */
-      text-overflow: ellipsis;
-      /* Ajoute "..." si vraiment le texte est trop grand */
+      /* Responsive : les boutons s'ajustent à la largeur */
+      white-space: nowrap;
     }
 
     /* Effet au survol (Hover) */
@@ -2599,8 +2589,7 @@
       background: rgba(0, 0, 0, 0.75);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      display: none;
-      /* CACHÉ PAR DÉFAUT */
+      display: none; /* CACHÉ PAR DÉFAUT */
       justify-content: center;
       align-items: center;
       z-index: 9999;
