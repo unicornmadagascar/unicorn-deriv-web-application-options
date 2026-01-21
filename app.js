@@ -616,7 +616,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 4. Mise à jour visuelle (Progressions circulaires) 
     // On force un minimum de 2% pour que le segment rouge reste visible même à -90°
     const visualPercent = Math.max(2, percent);
-    setGaugeValue("path-angle", visualPercent, color);  
+    setGaugeValue("path-angle", visualPercent, color);
 
     // 5. Affichage des textes
     document.getElementById("txt-angle-val").innerText = angleDeg.toFixed(1) + "°";
@@ -624,17 +624,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const labelEl = document.getElementById("txt-angle-label");
     if (labelEl) {
       labelEl.innerText = angleDeg > 1.5 ? "STRONG BULLISH" :
-        angleDeg < -1.5 ? "STRONG BEARISH" : "STABLE";  
+        angleDeg < -1.5 ? "STRONG BEARISH" : "STABLE";
     }
-  };   
+  };
 
   // 3. Calcul de l'ATR (Volatilité)
-  function calculateATR(candles, period = 100) {
+  function calculateATR(candles, period = 100) { // Période augmentée à 100 pour plus de stabilité
     if (candles.length <= period) return { percent: 0 };
 
     let trs = [];
     for (let i = 1; i < candles.length; i++) {
-      const tr = Math.max( 
+      const tr = Math.max(
         candles[i].high - candles[i].low,
         Math.abs(candles[i].high - candles[i - 1].close),
         Math.abs(candles[i].low - candles[i - 1].close)
@@ -642,6 +642,7 @@ document.addEventListener("DOMContentLoaded", () => {
       trs.push(tr);
     }
 
+    // Calcul de l'ATR avec la méthode de l'EMA (Wilder's Smoothing)
     let currentATR = trs.slice(0, period).reduce((a, b) => a + b) / period;
     for (let i = period; i < trs.length; i++) {
       currentATR = (currentATR * (period - 1) + trs[i]) / period;
@@ -650,9 +651,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const lastClose = candles[candles.length - 1].close;
     const baseRatio = (currentATR / lastClose) * 100;
 
-    // --- RÉGLAGE : Sensibilité réduite ---
-    // On passe de 1500 à 1000 pour calmer l'amplitude
-    let volPercent = Math.sqrt(baseRatio) * 1000;
+    // Réglage de l'amplitude : on utilise un multiplicateur plus bas (600) 
+    // pour éviter que la jauge ne sature trop vite à 100%
+    let volPercent = Math.sqrt(baseRatio) * 600;
 
     return {
       percent: Math.min(volPercent, 100).toFixed(1)
@@ -702,31 +703,34 @@ document.addEventListener("DOMContentLoaded", () => {
   // MISE À JOUR JAUGE 2 : Angle EMA
   function updateVolatilityGauge(candles) {
     const atr = calculateATR(candles, 100);
-    const targetPercent = parseFloat(atr.percent);   
+    const targetPercent = parseFloat(atr.percent);
 
-    // --- RÉGLAGE : Lissage beaucoup plus fort ---
-    // 0.05 signifie que l'aiguille ne parcourt que 5% de la distance vers la cible à chaque tick.
-    // Cela crée un mouvement très fluide et "lourd".
-    const smoothingFactor = 0.05;
+    // --- LISSAGE ULTRA-STABLE ---
+    // 0.01 = L'aiguille est très "lourde", elle filtre tout le bruit du marché.
+    const smoothingFactor = 0.01;
+
+    // Si c'est le premier appel, on initialise directement pour éviter de partir de 0
+    if (smoothedVol === 0) smoothedVol = targetPercent;
 
     smoothedVol = smoothedVol + (targetPercent - smoothedVol) * smoothingFactor;
 
-    let color = "#1976d2";
-    let label = "Quiet";
+    let color = "#1976d2"; // Bleu (Calme)
+    let label = "Quiet Market";
 
-    // Seuils de couleurs un peu plus larges pour éviter les changements brusques
-    if (smoothedVol > 70) {
-      color = "#f23645";
+    // Seuils de couleurs lissés
+    if (smoothedVol > 65) {
+      color = "#f23645"; // Rouge
       label = "High Volatility";
     }
-    else if (smoothedVol > 30) {
-      color = "#f57c00";
-      label = "Rising Volatility";
+    else if (smoothedVol > 35) {
+      color = "#f57c00"; // Orange
+      label = "Moderate Volatility";
     }
 
+    // Mise à jour visuelle de la jauge
     setGaugeValue('path-vol', smoothedVol, color);
 
-    // On arrondit l'affichage pour éviter les chiffres qui défilent trop vite
+    // Affichage texte : on utilise Math.round pour éviter que les chiffres changent sans arrêt
     document.getElementById('txt-vol-val').innerText = Math.round(smoothedVol) + "%";
     document.getElementById('txt-vol-label').innerText = label;
   }
@@ -739,15 +743,23 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!candles || candles.length < 2) return;
 
     try {
+      // 1. Tendance (Bulls/Bears) - Toujours actif
       updateTrendGauge(candles);
-      updateVolatilityGauge(candles);
-      window.updateAngleGauge(candles);
-      // L'angle EMA200 a besoin de son historique
-      if (candles.length >= 210) {
 
+      // 2. Volatilité (Lissée) - Toujours actif
+      updateVolatilityGauge(candles);
+
+      // 3. Angle EMA200 - Nécessite l'historique complet
+      if (candles.length >= 210) {
+        window.updateAngleGauge(candles);
+      } else {
+        // Optionnel : indique le chargement de l'EMA200
+        const angleLabel = document.getElementById('txt-angle-label');
+        if (angleLabel) angleLabel.innerText = "SYNCING EMA...";
       }
+
     } catch (e) {
-      console.error("Erreur:", e);
+      console.error("Erreur générale des jauges:", e);
     }
   };
 
