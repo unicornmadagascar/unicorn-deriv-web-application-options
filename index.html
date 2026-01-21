@@ -2143,6 +2143,48 @@
       /* Rouge plus foncé au survol */
     }
 
+    /* Alignement horizontal des deux groupes de date */
+    .trade-dates {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    } 
+
+    /* Style de chaque bloc Label + Input */
+    .date-group {
+      display: flex;
+      flex-direction: column;
+      /* Label au dessus de l'input */
+      gap: 4px;
+    }
+
+    .date-group label {
+      font-size: 12px;
+      font-weight: bold;
+      color: #555;
+      text-transform: uppercase;
+    }
+
+    /* Réduction de la largeur des inputs */
+    .date-group input[type="date"] {
+      width: 140px;
+      /* Largeur réduite et fixe */
+      padding: 5px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 13px;
+      color: #333;
+      outline: none;
+      background-color: #f9f9f9;
+    }
+
+    .date-group input[type="date"]:focus {
+      border-color: #1976d2;
+      background-color: #fff;
+      box-shadow: 0 0 3px rgba(25, 118, 210, 0.2);
+    }
+
     #panel h1 {
       width: 100%;
       text-align: left;
@@ -3544,13 +3586,13 @@
           <label>Accounts</label>
           <div class="account-actions">
             <select id="accountSelect">
-              <option value="">Select Account Type</option> 
+              <option value="">Select Account Type</option>
             </select>
             <button id="deleteSelectedAccount" title="Supprimer">🗑️</button>
           </div>
-        </div> 
+        </div>
 
-        <div class="trade-dates">  
+        <div class="trade-dates">
           <div class="date-group">
             <label>Start Date</label>
             <input type="date" id="startDate" value="2025-10-01">
