@@ -554,7 +554,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * CONFIGURATION ET CALCULS TECHNIQUES (LOGIQUE)
  * ============================================================
  */
-  function calculateEMA(data, period) {
+  function calculateEMAValues(data, period) {
     if (!Array.isArray(data) || data.length === 0) return [];
 
     const k = 2 / (period + 1);
@@ -572,30 +572,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function extractClosesFromCandles(candles) {
-    return candles  
-      .map(c => {  
-        // Deriv candle standard
-        if (c.close !== undefined) return Number(c.close);  
-
-        // fallback tick
-        if (c.value !== undefined && typeof c.value === "number") return c.value;
-
-        return NaN;  
-      })
-      .filter(Number.isFinite);  
+    return candles
+      .map(c => Number(c.close ?? c.value))
+      .filter(Number.isFinite);
   }
- 
-  window.updateAngleGauge = function (candles) {
 
-    const closes = extractClosesFromCandles(candles);  
+  window.updateAngleGauge = function (candles) { 
 
-    console.log(`Closes :`, closes);  
-
+    const closes = extractClosesFromCandles(candles);
     if (closes.length < 210) return;
 
-    const ema = calculateEMA(closes, 200);
-
-    console.log(`EMA :`, ema);
+    const ema = calculateEMAValues(closes, 200);
 
     const lastEMA = ema[ema.length - 1];
     const prevEMA = ema[ema.length - 6];
@@ -609,10 +596,10 @@ document.addEventListener("DOMContentLoaded", () => {
       Math.atan(deltaEMA / lookback) * (180 / Math.PI);
 
     console.log(
-      `EMA200: ${lastEMA.toFixed(2)} | Angle: ${angleDeg.toFixed(2)}°`
+      `EMA200=${lastEMA.toFixed(2)} | Angle=${angleDeg.toFixed(2)}°`
     );
 
-    // --- Jauge ---
+    // --- jauge ---
     const maxAngle = 45;
     const clamped = Math.max(-maxAngle, Math.min(maxAngle, angleDeg));
     const percent = ((clamped + maxAngle) / (2 * maxAngle)) * 100;
@@ -623,15 +610,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setGaugeValue("path-angle", percent, color);
 
-    const valEl = document.getElementById("txt-angle-val");
-    const labelEl = document.getElementById("txt-angle-label");
+    document.getElementById("txt-angle-val").innerText =
+      angleDeg.toFixed(1) + "°";
 
-    if (valEl) valEl.innerText = angleDeg.toFixed(1) + "°";
-    if (labelEl) {
-      if (angleDeg > 2) labelEl.innerText = "ASCENDING";
-      else if (angleDeg < -2) labelEl.innerText = "DESCENDING";
-      else labelEl.innerText = "RANGING";
-    }
+    document.getElementById("txt-angle-label").innerText =
+      angleDeg > 2 ? "ASCENDING" :
+        angleDeg < -2 ? "DESCENDING" :
+          "RANGING";
   };
 
   // 3. Calcul de l'ATR (Volatilité)
@@ -741,7 +726,7 @@ document.addEventListener("DOMContentLoaded", () => {
    * FONCTION PRINCIPALE À APPELER
    * @param {Array} candles - Données reçues de l'API Deriv
    */
-  window.updateAllMarketGauges = function (candles) { 
+  window.updateAllMarketGauges = function (candles) {
     if (!candles || candles.length < 2) return;
 
     try {
@@ -750,18 +735,18 @@ document.addEventListener("DOMContentLoaded", () => {
       window.updateAngleGauge(candles);
       // L'angle EMA200 a besoin de son historique
       if (candles.length >= 210) {
-       
+
       }
     } catch (e) {
-      console.error("Erreur:", e);   
+      console.error("Erreur:", e);
     }
-  };  
+  };
 
   function initChart(currentChartType) {
     const containerHistoryList = document.getElementById("autoHistoryList");
     const container = document.getElementById("chartInner");
     if (!container) {
-      console.error("Conteneur de graphique introuvable !");  
+      console.error("Conteneur de graphique introuvable !");
       return;
     }
 
