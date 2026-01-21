@@ -2373,7 +2373,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       return {
         time: candle.time,
-        upper: sma + (stdDevMultiplier * stdDev),
+        upper: sma + (stdDevMultiplier * stdDev), 
         middle: sma,
         lower: sma - (stdDevMultiplier * stdDev)  
       };
