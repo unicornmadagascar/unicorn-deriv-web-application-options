@@ -605,14 +605,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const clamped = Math.max(-limit, Math.min(limit, angleDeg));
     const percent = ((clamped + limit) / (2 * limit)) * 100;
 
-    // Couleurs basées sur l'inclinaison réelle
+    // Couleurs basées sur l'inclinaison réelle  
     let color = "#ff9800"; // Neutre (Orange)
     if (angleDeg > 1.0) color = "#089981";      // Haussier (Vert)
     else if (angleDeg < -1.0) color = "#f23645"; // Baissier (Rouge)
 
     // Envoi à votre fonction setGaugeValue
     setGaugeValue("path-angle", percent, color);
-
+  
     // Mise à jour des textes
     const valEl = document.getElementById("txt-angle-val");
     if (valEl) valEl.innerText = angleDeg.toFixed(1) + "°";
