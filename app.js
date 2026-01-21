@@ -2338,8 +2338,8 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // BB 
-  function initBollingerSeries() {  
-    if (!chart) return;  
+  function initBollingerSeries() {
+    if (!chart) return;
     // Création du nuage (Area) en premier pour qu'il soit en arrière-plan
     areaSeriesBB = chart.addAreaSeries({
       topColor: 'rgba(8, 153, 129, 0.05)',
@@ -2347,11 +2347,11 @@ document.addEventListener("DOMContentLoaded", () => {
       lineVisible: false,
       lastValueVisible: false,
     });
-  
-    const lineOptions = {  
-      lineWidth: 1,  
+
+    const lineOptions = {
+      lineWidth: 1,
       lastValueVisible: false,
-      priceLineVisible: false 
+      priceLineVisible: false
     };
 
     // Création des 3 lignes
@@ -2363,7 +2363,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /**
  * 2. MOTEUR DE CALCUL MATHÉMATIQUE
  */
-  function calculateBollingerData(data, period = 20, stdDevMultiplier = 2) {
+  function calculateBollingerData(data, period = 20, stdDevMultiplier = 2) {  
     return data.map((candle, i) => {
       if (i < period) return null;
       const slice = data.slice(i - period + 1, i + 1).map(d => d.close);
@@ -2383,7 +2383,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /**
  * 3. SYSTÈME AUDIO (Générateur d'oscillateur)
  */
-  function playAlertSound() { 
+  function playAlertSound() {
     try {
       const context = new (window.AudioContext || window.webkitAudioContext)();
       const osc = context.createOscillator();
@@ -2412,7 +2412,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Gestion du Triangle (Tendance du gonflement)
     if (currentBW > lastBandwidth + 0.001) {
-      trendSpan.innerHTML = " ▲"; trendSpan.style.color = "#089981";  
+      trendSpan.innerHTML = " ▲"; trendSpan.style.color = "#089981";
     } else if (currentBW < lastBandwidth - 0.001) {
       trendSpan.innerHTML = " ▼"; trendSpan.style.color = "#f23645";
     }
@@ -2421,7 +2421,7 @@ document.addEventListener("DOMContentLoaded", () => {
     label.style.display = 'flex';
     if (currentBW > 0.50) {
       iconSpan.innerText = "🔥";
-      label.className = "chart-badge market-hot";  
+      label.className = "chart-badge market-hot";
       if (!hasAlerted) { playAlertSound(); hasAlerted = true; }
     } else if (currentBW < 0.15) {
       iconSpan.innerText = "❄️";
@@ -2435,49 +2435,23 @@ document.addEventListener("DOMContentLoaded", () => {
     lastBandwidth = currentBW;
   }
 
-  /**
- * 5. FONCTION TRIGGER (Appelée par le bouton)
- */
-  window.enableBands = function (btnElement) {
+ window.enableBands = function(btnElement) {
     bandsEnabled = !bandsEnabled;
 
-    // SI LE BOUTON EST DÉSACTIVÉ (false)
     if (!bandsEnabled) {
-      // 1. On vide les données des graphiques (les lignes disparaissent)
-      upperLine.setData([]);
-      middleLine.setData([]);
-      lowerLine.setData([]);
-      areaSeriesBB.setData([]);
-
-      // 2. On cache l'étiquette (le badge avec la flamme/flocon)
-      const label = document.getElementById('volatility-label');
-      if (label) label.style.display = 'none';
-
-      // 3. On réinitialise l'apparence du bouton
-      btnElement.style.backgroundColor = "white";
-      btnElement.style.color = "#475569";
-      btnElement.style.borderColor = "#e2e8f0";
-
-      // 4. On stoppe les alertes sonores futures
-      hasAlerted = false;
-
-      return; // ON ARRÊTE LA FONCTION ICI
+        // RESET : On vide tout quand on éteint
+        [upperLine, middleLine, lowerLine, areaSeriesBB].forEach(s => s.setData([]));
+        document.getElementById('volatility-label').style.display = 'none';
+        btnElement.style.backgroundColor = "white";
+        btnElement.style.color = "#475569";
+        hasAlerted = false;
+        lastBandwidth = 0;
+    } else {
+        // ACTIVER : Le style change, et 'renderIndicators' fera le reste au prochain cycle
+        btnElement.style.backgroundColor = "#089981";
+        btnElement.style.color = "white";
     }
-
-    btnElement.style.backgroundColor = "#089981";
-    btnElement.style.color = "white";
-
-    // 'candleData' doit être votre tableau de données source
-    const results = calculateBollingerData(candleData);
-
-    upperLine.setData(results.map(r => ({ time: r.time, value: r.upper })));
-    middleLine.setData(results.map(r => ({ time: r.time, value: r.middle })));
-    lowerLine.setData(results.map(r => ({ time: r.time, value: r.lower })));
-    areaSeriesBB.setData(results.map(r => ({ time: r.time, value: r.upper, bottomPrice: r.lower })));
-
-    const last = results[results.length - 1];
-    updateVolatilityUI(last.upper, last.lower, last.middle);
-  }
+}
 
   // --- INITIALISATION (À appeler une seule fois au chargement ou au 1er clic) ---
   function initMaSeries() {
@@ -2548,30 +2522,41 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. Sécurités de base
     if (!isWsInitialized || priceDataZZ.length < 2) return;
 
-    // 2. Utilisation de requestAnimationFrame pour la fluidité (60 FPS)
+    // 2. Utilisation de requestAnimationFrame
     requestAnimationFrame(() => {
+
       // --- ZIGZAG ---
-      // Le ZigZag est coûteux en calcul, on vérifie bien son état
       if (isZigZagActive && typeof refreshZigZag === "function") {
-        try {
-          refreshZigZag();
-        } catch (e) {
-          console.error("Erreur lors du rafraîchissement du ZigZag:", e);
-        }
+        try { refreshZigZag(); } catch (e) { console.error("ZigZag Error:", e); }
       }
 
       // --- MOYENNES MOBILES (MA) ---
-      // On ne les met à jour que si au moins une période est active
       if (activePeriods && activePeriods.length > 0 && typeof updateMAs === "function") {
-        try {
-          updateMAs();
-        } catch (e) {
-          console.error("Erreur lors de la mise à jour des MA:", e);
-        }
+        try { updateMAs(); } catch (e) { console.error("MA Error:", e); }
       }
 
-      // --- AUTRES INDICATEURS (Ex: RSI, Bollinger) ---
-      // Vous pouvez ajouter d'autres conditions ici
+      // --- BOLLINGER BANDS (AJOUT ICI) ---
+      // On vérifie si l'indicateur a été activé par votre bouton
+      if (bandsEnabled) {
+        try {
+          // On réutilise la logique de calcul sur vos données de prix actuelles
+          const results = calculateBollingerData(priceDataZZ); // ou priceData selon votre variable
+
+          if (results.length > 0) {
+            // Mise à jour des graphiques
+            upperLine.setData(results.map(r => ({ time: r.time, value: r.upper })));
+            middleLine.setData(results.map(r => ({ time: r.time, value: r.middle })));
+            lowerLine.setData(results.map(r => ({ time: r.time, value: r.lower })));
+            areaSeriesBB.setData(results.map(r => ({ time: r.time, value: r.upper, bottomPrice: r.lower })));
+
+            // Mise à jour de l'interface (Label, Flamme, Son)
+            const last = results[results.length - 1];
+            updateVolatilityUI(last.upper, last.lower, last.middle);
+          }
+        } catch (e) {
+          console.error("Erreur lors de la mise à jour de Bollinger:", e);
+        }
+      }
     });
   }
 
