@@ -5565,7 +5565,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On insère à nouveau le point car innerText l'écrase
     const dot = document.createElement('span');
     dot.className = 'status-dot';
-    this.prepend(dot);
+    this.prepend(dot);  
   });
 
   stopbtn.addEventListener('click', function () {
