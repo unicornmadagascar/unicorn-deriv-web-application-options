@@ -1125,7 +1125,6 @@ document.addEventListener("DOMContentLoaded", () => {
           delete activeContracts[id];
         }
 
-        updateGlobalPnL();
         updateDonutCharts();
       }
 
@@ -1223,77 +1222,6 @@ document.addEventListener("DOMContentLoaded", () => {
     wsOpenLines.onclose = () => {
       setTimeout(() => Openpositionlines(currentSeries), 5000);
     };
-  }
-
-  function updateGlobalPnL() {
-    const container = document.getElementById("pnl-container");
-    const pnlSpan = document.getElementById("total-pnl");
-    const arrowSpan = document.getElementById("pnl-arrow");
-    const closeAllBtn = document.getElementById("closeAll");
-
-    if (!container || !pnlSpan || !arrowSpan) return;
-
-    const activeIds = Object.keys(activeContracts);
-
-    // 1️⃣ Visibilité
-    if (activeIds.length === 0) {
-      container.style.display = "none";
-      lastTotalPnL = 0;
-      if (closeAllBtn) {
-        closeAllBtn.style.animation = "none";
-        closeAllBtn.innerText = "Close All";
-      }
-      return;
-    } else {
-      container.style.display = "flex";
-    }
-
-    // 2️⃣ Calcul PnL total
-    let currentTotal = 0;
-    activeIds.forEach(id => {
-      currentTotal += activeContracts[id];
-    });
-
-    // 3️⃣ Flèche tendance
-    if (currentTotal > lastTotalPnL) {
-      arrowSpan.innerText = " ▲";
-      arrowSpan.style.color = "#00ffa3";
-    } else if (currentTotal < lastTotalPnL) {
-      arrowSpan.innerText = " ▼";
-      arrowSpan.style.color = "#ff3d60";
-    }
-
-    // 4️⃣ Affichage PnL
-    pnlSpan.innerText = currentTotal.toFixed(2);
-    pnlSpan.style.color = currentTotal >= 0 ? "#00ffa3" : "#ff3d60";
-
-    // 5️⃣ Flash visuel
-    if (currentTotal !== lastTotalPnL) {
-      container.style.transition = "box-shadow 0.2s ease";
-      container.style.boxShadow =
-        currentTotal > lastTotalPnL
-          ? "0 0 15px rgba(0,255,163,0.5)"
-          : "0 0 15px rgba(255,61,96,0.5)";
-
-      setTimeout(() => {
-        container.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
-      }, 200);
-    }
-
-    // 6️⃣ Bouton Close All
-    if (closeAllBtn) {
-      const count = activeIds.length;
-      if (count > 5) {
-        closeAllBtn.style.animation = "pulse-red 1s infinite";
-        closeAllBtn.innerText = `Close All (${count})`;
-      } else {
-        closeAllBtn.style.animation = "none";
-        closeAllBtn.innerText = "Close All";
-      }
-    }
-
-    // 7️⃣ Sauvegarde
-    lastTotalPnL = currentTotal;
   }
 
   /**
@@ -3755,9 +3683,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         case "proposal_open_contract":
           // C'est ici que la table reçoit ses données en temps réel
-          if (typeof handleContractDetails === 'function' && typeof updateGlobalPnL === 'function') {
+          if (typeof handleContractDetails === 'function') {
             handleContractDetails(data);
-            updateGlobalPnL();
           }
           break;
 
