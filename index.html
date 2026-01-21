@@ -608,44 +608,6 @@
       background: #3b82f6;
     }
 
-    /* Style du badge PnL */
-    #pnl-container {
-      position: absolute;
-      top: 25px;
-      /* Ajusté pour être à l'intérieur du margin de 12px */
-      right: 35px;
-      /* Ajusté pour ne pas couvrir l'échelle des prix */
-      z-index: 9999;
-      font-family: sans-serif;
-      font-weight: bold;
-      background: rgba(0, 0, 0, 0.75);
-      /* Fond sombre pour contraste sur graphique blanc */
-      padding: 8px 15px;
-      border-radius: 6px;
-      color: #fff;
-      pointer-events: none;
-      /* Permet de cliquer sur le graphique à travers le texte */
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    }
-
-    #total-pnl {
-      font-size: 1.2em;
-    }
-
-    #pnl-arrow {
-      font-size: 1.1em;
-      transition: all 0.2s ease;
-    }
-
-    .pnl-label {
-      font-size: 0.75em;
-      opacity: 0.8;
-      margin-right: 5px;
-    }
-
     /* Style du Tooltip (déjà fourni mais rappelé pour cohérence) */
     #chart-tooltip {
       position: absolute;
@@ -3768,13 +3730,6 @@
     <div id="chartArea">
 
       <div id="toast-container"></div>
-
-      <div id="pnl-container">
-        <span class="pnl-label">PnL Global:</span>
-        <span id="total-pnl">0.00</span>
-        <span id="pnl-arrow"></span>
-        <span class="pnl-currency">$</span>
-      </div>
 
       <div id="chartInner"></div>
       <div id="chart-tooltip"></div>

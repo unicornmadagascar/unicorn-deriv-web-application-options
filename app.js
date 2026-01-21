@@ -2451,7 +2451,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function takeSniperScreenshot(name) {
-    html2canvas(document.getElementById('chartContainer')).then(canvas => {
+    html2canvas(document.getElementById('chartInner')).then(canvas => {
       const link = document.createElement('a');
       link.download = `SNIPER_${name}_${Date.now()}.png`;
       link.href = canvas.toDataURL();
