@@ -1537,7 +1537,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 500); // Attend la fin de la transition d'opacité
       }
 
-      display.innerText = timer;  
+      display.innerText = timer;    
       timer--;
     }, 1000);
   }
