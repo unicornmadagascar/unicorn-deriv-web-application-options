@@ -2369,7 +2369,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const slice = data.slice(i - period + 1, i + 1).map(d => d.close);
       const sma = slice.reduce((a, b) => a + b, 0) / period;
       const variance = slice.map(v => Math.pow(v - sma, 2)).reduce((a, b) => a + b, 0) / period;
-      const stdDev = Math.sqrt(variance);
+      const stdDev = Math.sqrt(variance);  
 
       return {
         time: candle.time, 
