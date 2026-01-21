@@ -702,7 +702,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // MISE À JOUR JAUGE 2 : Angle EMA
   function updateVolatilityGauge(candles) {
     const atr = calculateATR(candles, 100);
-    const targetPercent = parseFloat(atr.percent); 
+    const targetPercent = parseFloat(atr.percent);   
 
     // --- RÉGLAGE : Lissage beaucoup plus fort ---
     // 0.05 signifie que l'aiguille ne parcourt que 5% de la distance vers la cible à chaque tick.
