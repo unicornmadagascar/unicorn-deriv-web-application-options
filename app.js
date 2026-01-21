@@ -2338,8 +2338,8 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // BB 
-  function initBollingerSeries() {
-    if (!chart) return;
+  function initBollingerSeries() {  
+    if (!chart) return;  
     // Création du nuage (Area) en premier pour qu'il soit en arrière-plan
     areaSeriesBB = chart.addAreaSeries({
       topColor: 'rgba(8, 153, 129, 0.05)',
