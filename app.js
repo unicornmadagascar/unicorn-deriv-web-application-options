@@ -2386,7 +2386,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!elementToCapture) {
       console.error("Erreur : L'élément chartArea est introuvable.");
-      return;
+      return;  
     }
 
     // Utilisation de html2canvas
