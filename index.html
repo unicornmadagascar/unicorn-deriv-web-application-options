@@ -1315,43 +1315,56 @@
       transform: scale(1.2);
     }
 
-    /* Le cadre principal qui entoure les deux cercles */
     #contractsPanel .donuts-wrapper {
       display: flex;
-      justify-content: center;
-      gap: 20px;
-      padding: 15px;
+      justify-content: space-between;
+      /* Écarte les cercles aux extrémités */
+      align-items: center;
+      width: 100%;
+      /* Prend toute la largeur */
+      box-sizing: border-box;
+      padding: 20px 60px;
+      /* Large marge sur les côtés pour l'équilibre */
       border: 1px solid #e0e0e0;
-      /* Couleur du cadre */
-      border-radius: 8px;
-      /* Angles arrondis */
-      background-color: #fcfcfc;
-      /* Un léger fond pour faire ressortir le cadre */
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-      /* Ombre légère pour le relief */
-      max-width: fit-content;
-      /* Ajuste la largeur au contenu */
-      margin: 10px 0;
+      border-radius: 12px;
+      background-color: #ffffff;
+      margin: 20px 0;
+      position: relative;
+      /* Nécessaire pour positionner la ligne centrale */
     }
 
-    /* Style individuel des cartes (optionnel, pour séparer visuellement) */
+    /* La ligne de séparation verticale au milieu */
+    #contractsPanel .donuts-wrapper::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 20%;
+      bottom: 20%;
+      width: 1px;
+      background-color: #eeeeee;
+      /* Couleur discrète pour la séparation */
+    }
+
     #contractsPanel .donut-card {
+      flex: 1;
+      /* Distribue l'espace équitablement */
       text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
-    /* Taille des SVG pour qu'ils rentrent bien dans le cadre */
     #contractsPanel .donut-svg {
-      width: 100px;
-      height: 100px;
-    }  
-  
-    #contractsPanel .donut-info { 
-      margin-top: 8px;
-      font-size: 14px;  
-      font-weight: bold;    
+      width: 110px;
+      height: 110px;
+    }
+
+    #contractsPanel .donut-info {
+      margin-top: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     #contractsPanel .donut-bg {
