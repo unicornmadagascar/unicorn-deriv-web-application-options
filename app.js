@@ -1532,7 +1532,7 @@ document.addEventListener("DOMContentLoaded", () => {
           overlay.style.display = 'none';
 
           // Lancer votre logique d'automatisation ici après le décompte
-          console.log("Automation démarrée !");
+          console.log("Automation démarrée !");  
 
         }, 500); // Attend la fin de la transition d'opacité
       }
