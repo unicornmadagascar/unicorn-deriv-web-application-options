@@ -634,7 +634,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let trs = [];
     for (let i = 1; i < candles.length; i++) {
-      const tr = Math.max(
+      const tr = Math.max( 
         candles[i].high - candles[i].low,
         Math.abs(candles[i].high - candles[i - 1].close),
         Math.abs(candles[i].low - candles[i - 1].close)
@@ -702,7 +702,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // MISE À JOUR JAUGE 2 : Angle EMA
   function updateVolatilityGauge(candles) {
     const atr = calculateATR(candles, 100);
-    const targetPercent = parseFloat(atr.percent);
+    const targetPercent = parseFloat(atr.percent); 
 
     // --- RÉGLAGE : Lissage beaucoup plus fort ---
     // 0.05 signifie que l'aiguille ne parcourt que 5% de la distance vers la cible à chaque tick.
