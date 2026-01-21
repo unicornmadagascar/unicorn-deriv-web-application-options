@@ -5100,7 +5100,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // === 🔘 SÉLECTIONNER / DÉSÉLECTIONNER TOUT ===
   document.addEventListener("change", (e) => {
-    if (e.target.id === "selectAll") {
+    if (e.target.id === "selectAll") {  
       const checked = e.target.checked;
       document.querySelectorAll(".rowSelect").forEach(cb => cb.checked = checked);
     }
