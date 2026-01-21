@@ -2382,7 +2382,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /**
  * 3. SYSTÈME AUDIO (Générateur d'oscillateur)
  */
-  function playAlertSound() {
+  function playAlertSound() { 
     try {
       const context = new (window.AudioContext || window.webkitAudioContext)();
       const osc = context.createOscillator();
