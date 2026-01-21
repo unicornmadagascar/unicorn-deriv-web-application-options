@@ -2372,8 +2372,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const stdDev = Math.sqrt(variance);
 
       return {
-        time: candle.time,
-        upper: sma + (stdDevMultiplier * stdDev), 
+        time: candle.time, 
+        upper: sma + (stdDevMultiplier * stdDev),  
         middle: sma,
         lower: sma - (stdDevMultiplier * stdDev)  
       };
