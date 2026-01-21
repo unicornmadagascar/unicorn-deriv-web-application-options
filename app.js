@@ -624,7 +624,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const labelEl = document.getElementById("txt-angle-label");
     if (labelEl) {
       labelEl.innerText = angleDeg > 1.5 ? "STRONG BULLISH" :
-        angleDeg < -1.5 ? "STRONG BEARISH" : "STABLE";
+        angleDeg < -1.5 ? "STRONG BEARISH" : "STABLE";  
     }
   };  
 
