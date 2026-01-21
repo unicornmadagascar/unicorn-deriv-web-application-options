@@ -656,7 +656,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return {
       percent: Math.min(volPercent, 100).toFixed(1)
-    };
+    };  
   }
 
   // 4. Calcul de la Force Bulls vs Bears
