@@ -582,16 +582,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
         return NaN;  
       })
-      .filter(Number.isFinite);
+      .filter(Number.isFinite);  
   }
  
   window.updateAngleGauge = function (candles) {
 
-    const closes = extractClosesFromCandles(candles);
+    const closes = extractClosesFromCandles(candles);  
+
+    console.log(`Closes :`, closes);  
 
     if (closes.length < 210) return;
 
     const ema = calculateEMA(closes, 200);
+
+    console.log(`EMA :`,ema);
 
     const lastEMA = ema[ema.length - 1];
     const prevEMA = ema[ema.length - 6];
