@@ -5531,10 +5531,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const dot = document.createElement('span');
     dot.className = 'status-dot';
     this.prepend(dot);
-  });  
+  });   
 
-  stopbtn.addEventListener('click', function () {
-    // On retire l'effet quand on arrête  
+  stopbtn.addEventListener('click', function () {  
+    // On retire l'effet quand on arrête   
     startbtn.classList.remove('active');
     startbtn.innerHTML = '<span class="status-dot"></span> Start Automation';
   });
