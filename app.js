@@ -620,7 +620,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const labelEl = document.getElementById("txt-angle-label");
     if (labelEl) {
       labelEl.innerText = angleDeg > 1.0 ? "ASCENDING" :
-        angleDeg < -1.0 ? "DESCENDING" : "RANGING";
+        angleDeg < -1.0 ? "DESCENDING" : "RANGING"; 
     }
   };   
 
