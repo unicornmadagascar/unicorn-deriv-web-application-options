@@ -579,8 +579,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.updateAngleGauge = function (candles) { 
 
-    const closes = extractClosesFromCandles(candles);
-    if (closes.length < 210) return;
+    const closes = extractClosesFromCandles(candles);  
+    if (closes.length < 210) return;  
   
     const ema = calculateEMAValues(closes, 200);
 
