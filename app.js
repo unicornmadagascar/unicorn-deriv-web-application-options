@@ -572,10 +572,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function extractClosesFromCandles(candles) {
-    return candles
-      .map(c => {
+    return candles  
+      .map(c => {  
         // Deriv candle standard
-        if (c.close !== undefined) return Number(c.close);
+        if (c.close !== undefined) return Number(c.close);  
 
         // fallback tick
         if (c.value !== undefined && typeof c.value === "number") return c.value;
