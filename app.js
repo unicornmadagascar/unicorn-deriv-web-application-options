@@ -2361,7 +2361,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
- * 2. MOTEUR DE CALCUL MATHÉMATIQUE
+ * 2. MOTEUR DE CALCUL MATHÉMATIQUE  
  */
   function calculateBollingerData(data, period = 20, stdDevMultiplier = 2) {  
     return data.map((candle, i) => {
@@ -2375,7 +2375,7 @@ document.addEventListener("DOMContentLoaded", () => {
         time: candle.time,
         upper: sma + (stdDevMultiplier * stdDev),
         middle: sma,
-        lower: sma - (stdDevMultiplier * stdDev)
+        lower: sma - (stdDevMultiplier * stdDev)  
       };
     }).filter(d => d !== null);
   }
