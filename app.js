@@ -2560,7 +2560,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('volatility-label').style.display = 'none';
       btnElement.style.backgroundColor = "white";
       btnElement.style.color = "#475569";
-      hasAlerted = false;
+      hasAlerted = false;  
       lastBandwidth = 0;
     } else {
       // ACTIVER : Le style change, et 'renderIndicators' fera le reste au prochain cycle
