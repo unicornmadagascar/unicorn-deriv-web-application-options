@@ -755,7 +755,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (e) {
       console.error("Erreur:", e);   
     }
-  };
+  };  
 
   function initChart(currentChartType) {
     const containerHistoryList = document.getElementById("autoHistoryList");
