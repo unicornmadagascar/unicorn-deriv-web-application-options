@@ -761,7 +761,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const containerHistoryList = document.getElementById("autoHistoryList");
     const container = document.getElementById("chartInner");
     if (!container) {
-      console.error("Conteneur de graphique introuvable !");
+      console.error("Conteneur de graphique introuvable !");  
       return;
     }
 
