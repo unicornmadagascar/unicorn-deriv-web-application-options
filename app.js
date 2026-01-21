@@ -622,7 +622,7 @@ document.addEventListener("DOMContentLoaded", () => {
       labelEl.innerText = angleDeg > 1.0 ? "ASCENDING" :
         angleDeg < -1.0 ? "DESCENDING" : "RANGING";
     }
-  };  
+  };   
 
   // 3. Calcul de l'ATR (Volatilité)
   function calculateATR(candles, period = 50) {
