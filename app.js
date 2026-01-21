@@ -903,6 +903,8 @@ document.addEventListener("DOMContentLoaded", () => {
       initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200 via le nouveau chart
     }
 
+    initBollingerSeries();  // Bollinger Bands INITIALIZATION
+
     // 1. Réinitialisation de la mémoire des contrats
     activeContractsData = {};
     activeContracts = {};
@@ -2337,8 +2339,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // BB 
   function initBollingerSeries(chart) {
-    if (!chart) return;
-
+    // Création du nuage (Area) en premier pour qu'il soit en arrière-plan
     areaSeriesBB = chart.addAreaSeries({
       topColor: 'rgba(8, 153, 129, 0.05)',
       bottomColor: 'rgba(8, 153, 129, 0.05)',
@@ -2346,10 +2347,16 @@ document.addEventListener("DOMContentLoaded", () => {
       lastValueVisible: false,
     });
 
-    const lineOptions = { lineWidth: 1, lastValueVisible: false, priceLineVisible: false };
-    upperLine = chart.addLineSeries({ ...lineOptions, color: 'rgba(8, 153, 129, 0.4)', title: 'Upper' });
-    middleLine = chart.addLineSeries({ ...lineOptions, color: 'rgba(148, 163, 184, 0.3)', title: 'Basis' });
-    lowerLine = chart.addLineSeries({ ...lineOptions, color: 'rgba(242, 54, 69, 0.4)', title: 'Lower' });
+    const lineOptions = {
+      lineWidth: 1,
+      lastValueVisible: false,
+      priceLineVisible: false
+    };
+
+    // Création des 3 lignes
+    upperLine = chart.addLineSeries({ ...lineOptions, color: 'rgba(8, 153, 129, 0.4)' });
+    middleLine = chart.addLineSeries({ ...lineOptions, color: 'rgba(148, 163, 184, 0.3)' });
+    lowerLine = chart.addLineSeries({ ...lineOptions, color: 'rgba(242, 54, 69, 0.4)' });
   }
 
   /**
@@ -2430,30 +2437,30 @@ document.addEventListener("DOMContentLoaded", () => {
   /**
  * 5. FONCTION TRIGGER (Appelée par le bouton)
  */
-  function enableBands(btnElement) {
+  window.enableBands = function (btnElement) {
     bandsEnabled = !bandsEnabled;
 
     // SI LE BOUTON EST DÉSACTIVÉ (false)
     if (!bandsEnabled) {
-        // 1. On vide les données des graphiques (les lignes disparaissent)
-        upperLine.setData([]);
-        middleLine.setData([]);
-        lowerLine.setData([]);
-        areaSeries.setData([]);
+      // 1. On vide les données des graphiques (les lignes disparaissent)
+      upperLine.setData([]);
+      middleLine.setData([]);
+      lowerLine.setData([]);
+      areaSeriesBB.setData([]);
 
-        // 2. On cache l'étiquette (le badge avec la flamme/flocon)
-        const label = document.getElementById('volatility-label');
-        if (label) label.style.display = 'none';
+      // 2. On cache l'étiquette (le badge avec la flamme/flocon)
+      const label = document.getElementById('volatility-label');
+      if (label) label.style.display = 'none';
 
-        // 3. On réinitialise l'apparence du bouton
-        btnElement.style.backgroundColor = "white";
-        btnElement.style.color = "#475569";
-        btnElement.style.borderColor = "#e2e8f0";
+      // 3. On réinitialise l'apparence du bouton
+      btnElement.style.backgroundColor = "white";
+      btnElement.style.color = "#475569";
+      btnElement.style.borderColor = "#e2e8f0";
 
-        // 4. On stoppe les alertes sonores futures
-        hasAlerted = false;  
-        
-        return; // ON ARRÊTE LA FONCTION ICI
+      // 4. On stoppe les alertes sonores futures
+      hasAlerted = false;
+
+      return; // ON ARRÊTE LA FONCTION ICI
     }
 
     btnElement.style.backgroundColor = "#089981";
@@ -2465,7 +2472,7 @@ document.addEventListener("DOMContentLoaded", () => {
     upperLine.setData(results.map(r => ({ time: r.time, value: r.upper })));
     middleLine.setData(results.map(r => ({ time: r.time, value: r.middle })));
     lowerLine.setData(results.map(r => ({ time: r.time, value: r.lower })));
-    areaSeries.setData(results.map(r => ({ time: r.time, value: r.upper, bottomPrice: r.lower })));
+    areaSeriesBB.setData(results.map(r => ({ time: r.time, value: r.upper, bottomPrice: r.lower })));
 
     const last = results[results.length - 1];
     updateVolatilityUI(last.upper, last.lower, last.middle);
