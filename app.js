@@ -753,7 +753,7 @@ document.addEventListener("DOMContentLoaded", () => {
        
       }
     } catch (e) {
-      console.error("Erreur:", e);  
+      console.error("Erreur:", e);   
     }
   };
 
