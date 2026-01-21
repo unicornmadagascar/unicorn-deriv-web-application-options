@@ -2351,7 +2351,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const lineOptions = {
       lineWidth: 1,  
       lastValueVisible: false,
-      priceLineVisible: false
+      priceLineVisible: false 
     };
 
     // Création des 3 lignes
