@@ -2372,7 +2372,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function calculateEMABB(data, period = 200) {  
-    if (data.length < period) return [];
+    if (data.length < period) return [];  
 
     let k = 2 / (period + 1); // Facteur de lissage
     let emaData = [];
@@ -2381,7 +2381,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let sum = 0;
     for (let i = 0; i < period; i++) {
       sum += data[i].close;
-    }
+    }  
     let prevEma = sum / period;
 
     // Calcul itératif pour le reste des données
