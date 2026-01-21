@@ -745,81 +745,86 @@
       gap: 12px;
     }
 
-    #controlFormPanel button {
-      height: 42px;
-      padding: 0 16px;
-      border: none;
+    /* Conteneur flexible */
+    #controlFormPanel .button-grid-container {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      /* Permet aux boutons de revenir à la ligne sur mobile */
+      padding: 10px;
+    }
+
+    /* Style de base des boutons (Fond Blanc) */
+    #controlFormPanel .btn {
+      background-color: #ffffff;
+      color: #475569;
+      /* Gris bleuté pro */
+      border: 1px solid #e2e8f0;
       border-radius: 8px;
+      /* Bordures bien arrondies */
+      padding: 8px 16px;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      flex: 1 1 auto;
+      /* Responsive : les boutons s'ajustent à la largeur */
+      white-space: nowrap;
     }
 
-    #controlFormPanel button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+    /* Effet au survol (Hover) */
+    #controlFormPanel .btn:hover {
+      background-color: #f8fafc;
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+      /* Petit effet de levée */
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
-    #STOP {
-      background-color: white;
-      color: #4d4747;
+    /* Effet au clic */
+    #controlFormPanel .btn:active { 
+      transform: translateY(0);
     }
 
-    #START {
-      background-color: white;
-      color: #4d4747;
+    /* --- Variantes de couleurs pour les actions clés --- */
+
+    /* Vert pour Start et Buy */
+    #controlFormPanel .btn-start,
+    .btn-buy {
+      color: #089981;
+      border-color: #089981;
     }
 
-    #openPopupBtn__ {
-      background-color: white;
-      color: #4d4747;
+    #controlFormPanel .btn-start:hover,
+    .btn-buy:hover {
+      background-color: #f0fdf4;
     }
 
-    #openCashierBtn {
-      background-color: white;
-      color: #4d4747;
+    /* Rouge pour Stop, Sell et Close All */
+    #controlFormPanel .btn-stop,
+    .btn-sell {
+      color: #f23645;
+      border-color: #f23645;
     }
 
-    #openPopup {
-      background-color: white;
-      color: #4d4747;
+    #controlFormPanel .btn-stop:hover,
+    .btn-sell:hover {
+      background-color: #fef2f2;
     }
 
-    #buyBtn {
-      background-color: white;
-      color: #4d4747;
+    /* Responsive : sur très petits écrans, on peut forcer 2 colonnes */
+    @media (max-width: 480px) {
+      .btn {
+        flex: 1 1 calc(50% - 10px);
+        /* 2 boutons par ligne sur mobile */
+        font-size: 12px;
+      }
     }
 
-    #sellBtn {
-      background-color: white;
-      color: #4d4747;
-    }
-
-    #reverseBtn {
-      background-color: white;
-      color: #4d4747;
-    }
-
-    #closeWinning {
-      background-color: white;
-      color: #4d4747;
-    }
-
-    #closeLosing {
-      background-color: white;
-      color: #4d4747;
-    }
-
-    #closeAll {
-      background-color: white;
-      color: #4d4747;
-    }
-
-    #DatasettingPopup {
-      background-color: white;
-      color: #4d4747;
-    }
 
     /* Overlay sombre */
     /* Overlay flouté pour focaliser sur le popup */
@@ -1137,17 +1142,17 @@
       color: #94a3b8;
       /* Votre couleur de texte actuelle */
       font-size: 0.75rem;
-      text-transform: uppercase;   
-      letter-spacing: 0.05em;     
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       padding: 12px;
       border-bottom: 2px solid #f1f5f9;
-      text-align: left;       
-      white-space: nowrap;    
+      text-align: left;
+      white-space: nowrap;
     }
-   
-    #contractsPanel .trade-table tbody tr {    
-      background: #ffffff;  
-      transition: all 0.2s ease;  
+
+    #contractsPanel .trade-table tbody tr {
+      background: #ffffff;
+      transition: all 0.2s ease;
     }
 
     #contractsPanel .trade-table tbody tr:hover {
@@ -2632,8 +2637,8 @@
       vertical-align: middle;
     }
 
-    #tradeHistoryTable__ td:hover {  
-      transform: translateX(5px);  
+    #tradeHistoryTable__ td:hover {
+      transform: translateX(5px);
       background: #f8fafc;
     }
 
@@ -3380,19 +3385,19 @@
   <div id="controlFormPanel">
     <div>
       <!-- Left buttons -->
-      <div style="display:flex; gap:12px; flex-wrap:wrap;">
-        <button class="open-btn" id="START">Start Automation</button>
-        <button id="STOP">Stop Automation</button>
-        <button id="openPopupBtn__" class="open-btn">Indicators</button>
-        <button id="openCashierBtn">Cashier</button>
-        <button id="buyBtn">BUY</button>
-        <button id="sellBtn">SELL</button>
-        <button id="reverseBtn">Reverse Position</button>
-        <button id="closeWinning">Close Winning</button>
-        <button id="closeLosing">Close Losing</button>
-        <button id="closeAll">Close All</button>
-        <button id="openPopup">Chart Types</button>
-        <button id="DatasettingPopup">Trade setting</button>
+      <div class="button-grid-container">
+        <button id="START" class="btn btn-start"><span class="status-dot"></span>Start Automation</button>
+        <button id="STOP" class="btn btn-stop">Stop Automation</button>
+        <button id="openPopupBtn__" class="btn">Indicators</button>
+        <button id="openCashierBtn" class="btn">Cashier</button>
+        <button id="buyBtn" class="btn btn-buy">BUY</button>
+        <button id="sellBtn" class="btn btn-sell">SELL</button>
+        <button id="reverseBtn" class="btn">Reverse Position</button>
+        <button id="closeWinning" class="btn">Close Winning</button>
+        <button id="closeLosing" class="btn">Close Losing</button>
+        <button id="closeAll" class="btn btn-stop">Close All</button>
+        <button id="openPopup" class="btn">Chart Types</button>
+        <button id="DatasettingPopup" class="btn">Trade setting</button>
         <div id="accountInfo" style="
             margin-left: 200px;
             font-weight: 500;

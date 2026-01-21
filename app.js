@@ -649,15 +649,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const lastClose = candles[candles.length - 1].close;
-    const baseRatio = (currentATR / lastClose) * 100;  
+    const baseRatio = (currentATR / lastClose) * 100;
 
     // Réglage de l'amplitude : on utilise un multiplicateur plus bas (600) 
     // pour éviter que la jauge ne sature trop vite à 100%
     let volPercent = Math.sqrt(baseRatio) * 600;
-   
+
     return {
       percent: Math.min(volPercent, 100).toFixed(1)
-    };  
+    };
   }
 
   // 4. Calcul de la Force Bulls vs Bears
@@ -5521,6 +5521,22 @@ document.addEventListener("DOMContentLoaded", () => {
     if (event.key === "Enter" && !document.getElementById('validateBtn').disabled) {
       window.confirmSelection();
     }
+  });
+
+  startbtn.addEventListener('click', function () {
+    // On ajoute la classe 'active' pour lancer l'animation
+    this.classList.add('active');
+    this.innerText = "Automation Running...";
+    // On insère à nouveau le point car innerText l'écrase
+    const dot = document.createElement('span');
+    dot.className = 'status-dot';
+    this.prepend(dot);
+  });
+
+  stopbtn.addEventListener('click', function () {
+    // On retire l'effet quand on arrête
+    startbtn.classList.remove('active');
+    startbtn.innerHTML = '<span class="status-dot"></span> Start Automation';
   });
 
   /* ===================== GRAPHICAL OBJECTS =========================== */
