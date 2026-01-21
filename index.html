@@ -9,6 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.14.0"></script>
   <script src="https://cdn.jsdelivr.net/npm/ml5@0.12.2/dist/ml5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <script defer src="app.js"></script>
@@ -3382,8 +3383,8 @@
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
       white-space: nowrap;
       /* Empêche le retour à la ligne */
-    } 
-  
+    }
+
     /* Style automatique si le parent ou le body a la classe .dark-mode */
     .dark-mode .chart-badge {
       background: rgba(30, 41, 59, 0.95);
@@ -3504,6 +3505,47 @@
         opacity: 0.3;
       }
     }
+
+    #sniper-btn {
+      background: none;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 8px;
+      padding: 2px 4px;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #sniper-btn.armed {
+      background-color: #ef4444;
+      /* Rouge Sniper */
+      border-color: #b91c1c;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+      animation: pulse-sniper 1s infinite;
+    }
+
+    @keyframes pulse-sniper {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.1);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .dark-mode #sniper-btn {
+      border-color: #475569;
+    }
+
   </style>
 </head>
 
@@ -3743,6 +3785,9 @@
         <div id="lockFiboItem" class="menu-item">Verrouiller Fibo</div>
       </div>
       <div id="volatility-label" class="chart-badge">
+        <button id="sniper-btn" onclick="toggleSniperMode(event)" title="Activer le Sniper Mode">
+          🎯
+        </button>
         <span id="vol-icon" style="margin-right: 5px;"></span>
         Vol: <span id="vol-value">0.00%</span>
         <span id="vol-trend" style="margin-left: 5px; font-size: 10px;"></span>

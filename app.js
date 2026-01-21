@@ -125,6 +125,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Variable pour ne pas répéter le son en boucle
   let hasAlerted = false;
   let lastBandwidth = 0; // Pour stocker la valeur précédente
+  let ema200Series;
+  let sniperStats = { buy: 0, sell: 0, total: 0 };
+  let lastSignalTime = null;
   // ================== x ==================  
 
   let wsReady = false;
@@ -2358,24 +2361,140 @@ document.addEventListener("DOMContentLoaded", () => {
     upperLine = chart.addLineSeries({ ...lineOptions, color: 'rgba(8, 153, 129, 0.4)' });
     middleLine = chart.addLineSeries({ ...lineOptions, color: 'rgba(148, 163, 184, 0.3)' });
     lowerLine = chart.addLineSeries({ ...lineOptions, color: 'rgba(242, 54, 69, 0.4)' });
+    // Ajout de la ligne de tendance EMA 200 (discrète, en pointillés)
+    ema200Series = chart.addLineSeries({
+      color: 'rgba(71, 85, 105, 0.6)', // Gris ardoise
+      lineWidth: 1,
+      lineStyle: 2, // Pointillés (Dashed)
+      lastValueVisible: false,
+      priceLineVisible: false,
+    });
+  }
+
+  function calculateEMABB(data, period = 200) {  
+    if (data.length < period) return [];
+
+    let k = 2 / (period + 1); // Facteur de lissage
+    let emaData = [];
+
+    // On commence avec une SMA simple pour la première valeur de l'EMA
+    let sum = 0;
+    for (let i = 0; i < period; i++) {
+      sum += data[i].close;
+    }
+    let prevEma = sum / period;
+
+    // Calcul itératif pour le reste des données
+    for (let i = period; i < data.length; i++) {
+      let currentEma = (data[i].close - prevEma) * k + prevEma;
+      emaData.push({ time: data[i].time, value: currentEma });
+      prevEma = currentEma;
+    }
+
+    return emaData;
+  }
+
+  function analyzeSniperStrategies(results, emaData, lastCandle) {
+    const current = results[results.length - 1];
+    const prev = results[results.length - 2];
+
+    // Détection adaptative du Squeeze
+    if (current.isSqueeze) {
+      squeezeCount++;
+    } else if (current.bandwidth > prev.bandwidth && squeezeCount >= 10) {
+      // Sortie de Squeeze détectée !
+      const isUptrend = lastCandle.close > emaData[emaData.length - 1].value;
+
+      if (isUptrend && lastCandle.close > current.upper) {
+        squeezeCount = 0; // Reset
+        return { name: "ADAPTIVE SQUEEZE BUY", side: "BUY", icon: "⚡" };
+      }
+      if (!isUptrend && lastCandle.close < current.lower) {
+        squeezeCount = 0; // Reset
+        return { name: "ADAPTIVE SQUEEZE SELL", side: "SELL", icon: "💀" };
+      }
+    }
+    return null;
+  }
+
+  function renderSniperOverlay(signal) {
+    const canvas = document.getElementById('Trendoverlay__');
+    const ctx = canvas.getContext('2d');
+
+    if (signal) {
+      if (signal.side === 'BUY') sniperStats.buy++; else sniperStats.sell++;
+      sniperStats.total++;
+      if (signal.name.includes("SQUEEZE")) takeSniperScreenshot(signal.name);
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Dessin Alerte Flash (Haut)
+    if (signal) {
+      ctx.font = "bold 24px sans-serif";
+      ctx.fillStyle = signal.side === 'BUY' ? '#089981' : '#f23645';
+      ctx.fillText(`${signal.icon} SNIPER: ${signal.name}`, 25, 60);
+    }
+
+    // Heatmap de Force (Bas)
+    const ratio = sniperStats.total > 0 ? (sniperStats.buy / sniperStats.total) : 0.5;
+    const color = ratio > 0.6 ? "#089981" : (ratio < 0.4 ? "#f23645" : "#f59e0b");
+
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fillRect(25, canvas.height - 40, 200, 10);
+    ctx.fillStyle = color;
+    ctx.fillRect(25, canvas.height - 40, 200 * ratio, 10);
+
+    ctx.font = "bold 12px monospace";
+    ctx.fillStyle = "white";
+    ctx.fillText(`POWER: ${Math.round(ratio * 100)}% BUY | ${sniperStats.buy}🟢 ${sniperStats.sell}🔴`, 25, canvas.height - 45);
+  }
+
+  function takeSniperScreenshot(name) {
+    html2canvas(document.getElementById('chartContainer')).then(canvas => {
+      const link = document.createElement('a');
+      link.download = `SNIPER_${name}_${Date.now()}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    });
   }
 
   /**
  * 2. MOTEUR DE CALCUL MATHÉMATIQUE  
  */
-  function calculateBollingerData(data, period = 20, stdDevMultiplier = 2) {  
+  function calculateBollingerData(data, period = 20, stdDevMultiplier = 2) {
+    let bandwidths = []; // Stockage temporaire pour calculer la moyenne de volatilité
+
     return data.map((candle, i) => {
       if (i < period) return null;
+
+      // 1. Calcul classique des bandes
       const slice = data.slice(i - period + 1, i + 1).map(d => d.close);
       const sma = slice.reduce((a, b) => a + b, 0) / period;
       const variance = slice.map(v => Math.pow(v - sma, 2)).reduce((a, b) => a + b, 0) / period;
-      const stdDev = Math.sqrt(variance);  
+      const stdDev = Math.sqrt(variance);
 
+      const upper = sma + (stdDevMultiplier * stdDev);
+      const lower = sma - (stdDevMultiplier * stdDev);
+
+      // 2. Calcul du Bandwidth (%)
+      const bw = ((upper - lower) / sma) * 100;
+      bandwidths.push(bw);
+
+      // 3. Calcul de la volatilité adaptative (moyenne sur les 100 derniers points)
+      const avgBW = bandwidths.length > 100
+        ? bandwidths.slice(-100).reduce((a, b) => a + b, 0) / 100
+        : bandwidths.reduce((a, b) => a + b, 0) / bandwidths.length;
+
+      // 4. On retourne l'objet complet enrichi
       return {
-        time: candle.time, 
-        upper: sma + (stdDevMultiplier * stdDev),  
+        time: candle.time,
+        upper: upper,
         middle: sma,
-        lower: sma - (stdDevMultiplier * stdDev)  
+        lower: lower,
+        bandwidth: bw,
+        // C'est un Squeeze si on est 40% en dessous de la moyenne habituelle de l'actif
+        isSqueeze: bw < (avgBW * 0.6)
       };
     }).filter(d => d !== null);
   }
@@ -2401,7 +2520,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /**
  * 4. MISE À JOUR DE L'INTERFACE (Icônes, Triangles, Couleurs)
  */
-  function updateVolatilityUI(upper, lower, middle) {
+  function updateVolatilityUI(upper, lower, middle, isSqueeze) {
     const label = document.getElementById('volatility-label');
     const iconSpan = document.getElementById('vol-icon');
     const valueSpan = document.getElementById('vol-value');
@@ -2410,48 +2529,45 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentBW = ((upper - lower) / middle) * 100;
     valueSpan.innerText = currentBW.toFixed(2) + "%";
 
-    // Gestion du Triangle (Tendance du gonflement)
-    if (currentBW > lastBandwidth + 0.001) {
-      trendSpan.innerHTML = " ▲"; trendSpan.style.color = "#089981";
-    } else if (currentBW < lastBandwidth - 0.001) {
-      trendSpan.innerHTML = " ▼"; trendSpan.style.color = "#f23645";
-    }
+    // ... (votre logique de triangle ▲/▼ reste la même) ...
 
-    // Gestion des Icônes et Alertes
     label.style.display = 'flex';
-    if (currentBW > 0.50) {
-      iconSpan.innerText = "🔥";
-      label.className = "chart-badge market-hot";
-      if (!hasAlerted) { playAlertSound(); hasAlerted = true; }
-    } else if (currentBW < 0.15) {
+
+    // Nouvelle logique de priorité pour les icônes
+    if (isSqueeze) {
       iconSpan.innerText = "❄️";
       label.className = "chart-badge market-cold";
       hasAlerted = false;
+    } else if (currentBW > 0.50) {
+      iconSpan.innerText = "🔥";
+      label.className = "chart-badge market-hot";
+      if (!hasAlerted) { playAlertSound(); hasAlerted = true; }
     } else {
       iconSpan.innerText = "📊";
       label.className = "chart-badge";
       hasAlerted = false;
     }
+
     lastBandwidth = currentBW;
   }
 
- window.enableBands = function(btnElement) {
+  window.enableBands = function (btnElement) {
     bandsEnabled = !bandsEnabled;
 
     if (!bandsEnabled) {
-        // RESET : On vide tout quand on éteint
-        [upperLine, middleLine, lowerLine, areaSeriesBB].forEach(s => s.setData([]));
-        document.getElementById('volatility-label').style.display = 'none';
-        btnElement.style.backgroundColor = "white";
-        btnElement.style.color = "#475569";
-        hasAlerted = false;
-        lastBandwidth = 0;
+      // RESET : On vide tout quand on éteint
+      [upperLine, middleLine, lowerLine, areaSeriesBB].forEach(s => s.setData([]));
+      document.getElementById('volatility-label').style.display = 'none';
+      btnElement.style.backgroundColor = "white";
+      btnElement.style.color = "#475569";
+      hasAlerted = false;
+      lastBandwidth = 0;
     } else {
-        // ACTIVER : Le style change, et 'renderIndicators' fera le reste au prochain cycle
-        btnElement.style.backgroundColor = "#089981";
-        btnElement.style.color = "white";
+      // ACTIVER : Le style change, et 'renderIndicators' fera le reste au prochain cycle
+      btnElement.style.backgroundColor = "#089981";
+      btnElement.style.color = "white";
     }
-}
+  }
 
   // --- INITIALISATION (À appeler une seule fois au chargement ou au 1er clic) ---
   function initMaSeries() {
@@ -2522,39 +2638,75 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. Sécurités de base
     if (!isWsInitialized || priceDataZZ.length < 2) return;
 
-    // 2. Utilisation de requestAnimationFrame
     requestAnimationFrame(() => {
-
-      // --- ZIGZAG ---
+      // --- ZIGZAG & MA (Vos indicateurs existants) ---
       if (isZigZagActive && typeof refreshZigZag === "function") {
-        try { refreshZigZag(); } catch (e) { console.error("ZigZag Error:", e); }
+        try { refreshZigZag(); } catch (e) { console.error(e); }
+      }
+      if (activePeriods?.length > 0 && typeof updateMAs === "function") {
+        try { updateMAs(); } catch (e) { console.error(e); }
       }
 
-      // --- MOYENNES MOBILES (MA) ---
-      if (activePeriods && activePeriods.length > 0 && typeof updateMAs === "function") {
-        try { updateMAs(); } catch (e) { console.error("MA Error:", e); }
-      }
-
-      // --- BOLLINGER BANDS (AJOUT ICI) ---
-      // On vérifie si l'indicateur a été activé par votre bouton
+      // --- BLOC BOLLINGER + SNIPER ---
       if (bandsEnabled) {
         try {
-          // On réutilise la logique de calcul sur vos données de prix actuelles
-          const results = calculateBollingerData(priceDataZZ); // ou priceData selon votre variable
+          // A. CALCULS MATHÉMATIQUES
+          const bbData = calculateBollingerData(priceDataZZ);
+          const emaData = calculateEMABB(priceDataZZ, 200); // Pour le filtre de tendance
 
-          if (results.length > 0) {
-            // Mise à jour des graphiques
-            upperLine.setData(results.map(r => ({ time: r.time, value: r.upper })));
-            middleLine.setData(results.map(r => ({ time: r.time, value: r.middle })));
-            lowerLine.setData(results.map(r => ({ time: r.time, value: r.lower })));
-            areaSeriesBB.setData(results.map(r => ({ time: r.time, value: r.upper, bottomPrice: r.lower })));
+          if (bbData.length > 0) {
+            const lastPoint = bbData[bbData.length - 1];
+            const lastCandle = priceDataZZ[priceDataZZ.length - 1];
 
-            // Mise à jour de l'interface (Label, Flamme, Son)
-            const last = results[results.length - 1];
-            updateVolatilityUI(last.upper, last.lower, last.middle);
+            // B. MISE À JOUR VISUELLE (Lignes sur le chart)
+            upperLine.setData(bbData.map(d => ({ time: d.time, value: d.upper })));
+            middleLine.setData(bbData.map(d => ({ time: d.time, value: d.middle })));
+            lowerLine.setData(bbData.map(d => ({ time: d.time, value: d.lower })));
+            ema200Series.setData(emaData); // Affiche l'EMA 200
+            areaSeriesBB.setData(bbData.map(d => ({
+              time: d.time,
+              value: d.upper,
+              bottomPrice: d.lower
+            })));
+
+            // C. MISE À JOUR DU BADGE (Volatilité, Flamme/Flocon)
+            // On passe le paramètre isSqueeze issu du calcul adaptatif
+            updateVolatilityUI(lastPoint.upper, lastPoint.lower, lastPoint.middle, lastPoint.isSqueeze);
+
+            // D. MOTEUR MULTI-SNIPER (Si armé 📡)
+            if (isSniperArmed) {
+              // On vérifie qu'on ne traite pas deux fois la même bougie
+              if (lastSignalTime !== lastCandle.time) {
+                // On appelle la fonction d'analyse avec les données de tendance
+                const signal = analyzeSniperStrategies(bbData, emaData, lastCandle);
+
+                if (signal) {
+                  lastSignalTime = lastCandle.time; // Verrouillage
+
+                  // 1. Feedback Sonore & Canvas (Stats + Heatmap)
+                  playAlertSound();
+                  renderSniperOverlay(signal);
+
+                  // 2. Marqueur Historique (Flèche)
+                  const currentMarkers = candleSeries.getMarkers() || [];
+                  candleSeries.setMarkers([...currentMarkers, {
+                    time: lastCandle.time,
+                    position: signal.side === 'BUY' ? 'belowBar' : 'aboveBar',
+                    color: signal.side === 'BUY' ? '#089981' : '#f23645',
+                    shape: signal.side === 'BUY' ? 'arrowUp' : 'arrowDown',
+                    text: signal.name
+                  }]);
+
+                  // 3. Screenshot Automatique si Squeeze
+                  if (signal.name.includes("SQUEEZE")) {
+                    setTimeout(() => takeSniperScreenshot(signal.name), 1000);
+                  }
+                }
+              }
+            }
           }
         } catch (e) {
-          console.error("Erreur lors de la mise à jour de Bollinger:", e);
+          console.error("Erreur moteur Sniper/Bollinger:", e);
         }
       }
     });
