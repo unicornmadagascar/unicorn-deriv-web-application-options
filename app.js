@@ -595,7 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const ema = calculateEMA(closes, 200);
 
-    console.log(`EMA :`,ema);
+    console.log(`EMA :`, ema);
 
     const lastEMA = ema[ema.length - 1];
     const prevEMA = ema[ema.length - 6];
