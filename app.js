@@ -616,7 +616,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 4. Mise à jour visuelle (Progressions circulaires) 
     // On force un minimum de 2% pour que le segment rouge reste visible même à -90°
     const visualPercent = Math.max(2, percent);
-    setGaugeValue("path-angle", visualPercent, color);
+    setGaugeValue("path-angle", visualPercent, color);  
 
     // 5. Affichage des textes
     document.getElementById("txt-angle-val").innerText = angleDeg.toFixed(1) + "°";
