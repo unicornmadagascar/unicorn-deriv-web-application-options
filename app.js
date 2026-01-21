@@ -2378,7 +2378,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let emaData = [];
 
     // On commence avec une SMA simple pour la première valeur de l'EMA
-    let sum = 0;
+    let sum = 0;  
     for (let i = 0; i < period; i++) {
       sum += data[i].close;
     }  
