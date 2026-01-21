@@ -747,10 +747,10 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       updateTrendGauge(candles);
       updateVolatilityGauge(candles);
-
+      window.updateAngleGauge(candles);
       // L'angle EMA200 a besoin de son historique
       if (candles.length >= 210) {
-        window.updateAngleGauge(candles);
+       
       }
     } catch (e) {
       console.error("Erreur:", e);  
