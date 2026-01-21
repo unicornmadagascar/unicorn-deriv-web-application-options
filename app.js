@@ -581,7 +581,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const closes = extractClosesFromCandles(candles);
     if (closes.length < 210) return;
-
+  
     const ema = calculateEMAValues(closes, 200);
 
     const lastEMA = ema[ema.length - 1];
