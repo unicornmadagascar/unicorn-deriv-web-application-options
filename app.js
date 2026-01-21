@@ -2420,7 +2420,7 @@ document.addEventListener("DOMContentLoaded", () => {
     label.style.display = 'flex';
     if (currentBW > 0.50) {
       iconSpan.innerText = "🔥";
-      label.className = "chart-badge market-hot";
+      label.className = "chart-badge market-hot";  
       if (!hasAlerted) { playAlertSound(); hasAlerted = true; }
     } else if (currentBW < 0.15) {
       iconSpan.innerText = "❄️";
