@@ -2381,7 +2381,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let sum = 0;  
     for (let i = 0; i < period; i++) {
       sum += data[i].close;
-    }  
+    }    
     let prevEma = sum / period;
 
     // Calcul itératif pour le reste des données
@@ -2566,7 +2566,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // ACTIVER : Le style change, et 'renderIndicators' fera le reste au prochain cycle
       btnElement.style.backgroundColor = "#089981";
       btnElement.style.color = "white";
-    }
+    }  
   }
 
   // --- INITIALISATION (À appeler une seule fois au chargement ou au 1er clic) ---
