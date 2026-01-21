@@ -126,8 +126,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let hasAlerted = false;
   let lastBandwidth = 0; // Pour stocker la valeur précédente
   let ema200Series;
-  let sniperStats = { buy: 0, sell: 0, total: 0 };
+  let isSniperArmed = false;
   let lastSignalTime = null;
+  let squeezeCount = 0;
+  let sniperStats = { buy: 0, sell: 0, total: 0 };
   // ================== x ==================  
 
   let wsReady = false;
@@ -2296,20 +2298,21 @@ document.addEventListener("DOMContentLoaded", () => {
       lineStyle: 2, // Pointillés (Dashed)
       lastValueVisible: false,
       priceLineVisible: false,
+      visible: false,
     });
   }
 
-  function calculateEMABB(data, period = 200) {  
-    if (data.length < period) return [];  
+  function calculateEMABB(data, period = 200) {
+    if (data.length < period) return [];
 
     let k = 2 / (period + 1); // Facteur de lissage
     let emaData = [];
 
     // On commence avec une SMA simple pour la première valeur de l'EMA
-    let sum = 0;  
+    let sum = 0;
     for (let i = 0; i < period; i++) {
       sum += data[i].close;
-    }    
+    }
     let prevEma = sum / period;
 
     // Calcul itératif pour le reste des données
@@ -2488,13 +2491,13 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('volatility-label').style.display = 'none';
       btnElement.style.backgroundColor = "white";
       btnElement.style.color = "#475569";
-      hasAlerted = false;  
+      hasAlerted = false;
       lastBandwidth = 0;
     } else {
       // ACTIVER : Le style change, et 'renderIndicators' fera le reste au prochain cycle
       btnElement.style.backgroundColor = "#089981";
       btnElement.style.color = "white";
-    }  
+    }
   }
 
   // --- INITIALISATION (À appeler une seule fois au chargement ou au 1er clic) ---
@@ -3702,7 +3705,7 @@ document.addEventListener("DOMContentLoaded", () => {
           console.error("❌ Erreur API :", data.error.message);
           break;
       }
-   
+
       Openpositionlines(currentSeries);
     };
 
