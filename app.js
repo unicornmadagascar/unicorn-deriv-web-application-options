@@ -3702,7 +3702,7 @@ document.addEventListener("DOMContentLoaded", () => {
           console.error("❌ Erreur API :", data.error.message);
           break;
       }
-
+   
       Openpositionlines(currentSeries);
     };
 
