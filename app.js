@@ -2347,9 +2347,9 @@ document.addEventListener("DOMContentLoaded", () => {
       lineVisible: false,
       lastValueVisible: false,
     });
-
+  
     const lineOptions = {
-      lineWidth: 1,
+      lineWidth: 1,  
       lastValueVisible: false,
       priceLineVisible: false
     };
