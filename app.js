@@ -741,7 +741,7 @@ document.addEventListener("DOMContentLoaded", () => {
    * FONCTION PRINCIPALE À APPELER
    * @param {Array} candles - Données reçues de l'API Deriv
    */
-  window.updateAllMarketGauges = function (candles) {
+  window.updateAllMarketGauges = function (candles) { 
     if (!candles || candles.length < 2) return;
 
     try {
@@ -753,7 +753,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.updateAngleGauge(candles);
       }
     } catch (e) {
-      console.error("Erreur:", e);
+      console.error("Erreur:", e);  
     }
   };
 
