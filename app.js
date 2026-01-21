@@ -1302,7 +1302,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Rafraîchit les indicateurs (MA, ZigZag) sur le nouveau point
       renderIndicators();
-      updateGlobalPnL();
       Openpositionlines(currentSeries);
     }
   }
@@ -2381,12 +2380,34 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.fillText(`POWER: ${Math.round(ratio * 100)}% BUY | ${sniperStats.buy}🟢 ${sniperStats.sell}🔴`, 25, canvas.height - 45);
   }
 
-  function takeSniperScreenshot(name) {
-    html2canvas(document.getElementById('chartInner')).then(canvas => {
+  function takeSniperScreenshot(strategyName) {
+    // On cible le parent qui contient le graphique ET l'overlay
+    const elementToCapture = document.getElementById('chartArea');
+
+    if (!elementToCapture) {
+      console.error("Erreur : L'élément chartArea est introuvable.");
+      return;
+    }
+
+    // Utilisation de html2canvas
+    html2canvas(elementToCapture, {
+      backgroundColor: null, // Préserve la transparence si nécessaire
+      useCORS: true,         // Utile si vous chargez des ressources externes
+      logging: false         // Désactive les logs dans la console
+    }).then(canvas => {
+      const date = new Date();
+      const timestamp = `${date.getHours()}h${date.getMinutes()}`;
+      const filename = `SNIPER_${strategyName}_${timestamp}.png`;
+
+      // Création du lien de téléchargement
       const link = document.createElement('a');
-      link.download = `SNIPER_${name}_${Date.now()}.png`;
-      link.href = canvas.toDataURL();
+      link.download = filename;
+      link.href = canvas.toDataURL("image/png");
       link.click();
+
+      console.log(`📸 Capture réussie : ${filename}`);
+    }).catch(err => {
+      console.error("Erreur lors de la capture d'écran :", err);
     });
   }
 
@@ -3026,7 +3047,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 2. Trouver le plus Haut et plus Bas de la période
     let highest = -Infinity;
-    let lowest = Infinity;   
+    let lowest = Infinity;
     data.forEach(bar => {
       if (bar.high > highest) highest = bar.high;
       if (bar.low < lowest) lowest = bar.low;
