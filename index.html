@@ -786,7 +786,7 @@
     }
 
     /* Effet au clic */
-    #controlFormPanel .btn:active { 
+    #controlFormPanel .btn:active {
       transform: translateY(0);
     }
 
@@ -825,8 +825,55 @@
       }
     }
 
+    /* Le point de base */
+    #controlFormPanel .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #089981;
+      border-radius: 50%;
+      margin-right: 8px;
+      display: inline-block;
+      position: relative;
+    }
 
-    /* Overlay sombre */
+    /* L'animation de pulsation (onde lumineuse) */
+    #controlFormPanel .btn-start.active .status-dot::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #089981;
+      border-radius: 50%;
+      animation: pulse-green 2s infinite;
+    }
+
+    @keyframes pulse-green {
+      0% {
+        transform: scale(1);
+        opacity: 0.8;
+      }
+
+      70% {
+        transform: scale(2.5);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 0;
+      }
+    }
+
+    /* Changement d'apparence quand le bouton est actif */
+    #controlFormPanel .btn-start.active {
+      background-color: #f0fdf4 !important;
+      border-color: #089981 !important;
+      box-shadow: 0 0 10px rgba(8, 153, 129, 0.2);
+    }
+
+
     /* Overlay flouté pour focaliser sur le popup */
     .popup-overlay {
       position: fixed;
@@ -3420,7 +3467,7 @@
   </div>
 
   <!-- Bouton pour afficher / cacher le panneau -->
-  <button id="controlPanelToggle">⚙️ Show Controls</button>
+  <button id="controlPanelToggle">⚙️ Show Controls</button>  
 
   <div id="settingsPopup" class="popup-overlay">
     <div class="popup-box">
