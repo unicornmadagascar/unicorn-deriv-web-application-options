@@ -613,7 +613,7 @@ document.addEventListener("DOMContentLoaded", () => {
       color = "#f23645"; // Rouge (Baisse)
     }
 
-    // 4. Mise à jour visuelle (Progressions circulaires)
+    // 4. Mise à jour visuelle (Progressions circulaires) 
     // On force un minimum de 2% pour que le segment rouge reste visible même à -90°
     const visualPercent = Math.max(2, percent);
     setGaugeValue("path-angle", visualPercent, color);
@@ -626,7 +626,7 @@ document.addEventListener("DOMContentLoaded", () => {
       labelEl.innerText = angleDeg > 1.5 ? "STRONG BULLISH" :
         angleDeg < -1.5 ? "STRONG BEARISH" : "STABLE";  
     }
-  };  
+  };   
 
   // 3. Calcul de l'ATR (Volatilité)
   function calculateATR(candles, period = 50) {
