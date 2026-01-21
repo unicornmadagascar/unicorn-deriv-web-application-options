@@ -3026,7 +3026,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 2. Trouver le plus Haut et plus Bas de la période
     let highest = -Infinity;
-    let lowest = Infinity;
+    let lowest = Infinity;   
     data.forEach(bar => {
       if (bar.high > highest) highest = bar.high;
       if (bar.low < lowest) lowest = bar.low;
