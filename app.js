@@ -5115,7 +5115,7 @@ document.addEventListener("DOMContentLoaded", () => {
         data.signal,
         data.price,
         data.prob
-      );
+      );  
     });
 
     startControlPipeline();
