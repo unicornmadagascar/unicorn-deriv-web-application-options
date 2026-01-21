@@ -2411,7 +2411,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Gestion du Triangle (Tendance du gonflement)
     if (currentBW > lastBandwidth + 0.001) {
-      trendSpan.innerHTML = " ▲"; trendSpan.style.color = "#089981";
+      trendSpan.innerHTML = " ▲"; trendSpan.style.color = "#089981";  
     } else if (currentBW < lastBandwidth - 0.001) {
       trendSpan.innerHTML = " ▼"; trendSpan.style.color = "#f23645";
     }
