@@ -3361,27 +3361,32 @@
     .chart-badge {
       position: absolute;
       top: 10px;
-      right: 10px;
+      /* On ajuste le retrait pour sortir de la zone de prix (Price Scale) */
+      /* 95px est généralement suffisant pour ne pas toucher les chiffres */
+      right: 95px;
+
       z-index: 10;
       padding: 6px 12px;
       border-radius: 6px;
       font-family: 'Inter', sans-serif;
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 600;
       display: none;
+      align-items: center;
       pointer-events: none;
 
-      /* Couleurs par défaut (Clair) */
+      /* Style visuel */
       background: rgba(255, 255, 255, 0.9);
       color: #1e293b;
       border: 1px solid #e2e8f0;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      white-space: nowrap;
+      /* Empêche le retour à la ligne */
     }
 
     /* Style automatique si le parent ou le body a la classe .dark-mode */
     .dark-mode .chart-badge {
-      background: rgba(30, 41, 59, 0.9);
+      background: rgba(30, 41, 59, 0.95);
       /* Bleu nuit sombre */
       color: #f8fafc;
       border: 1px solid #475569;
