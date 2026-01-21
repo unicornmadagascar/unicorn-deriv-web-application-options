@@ -577,49 +577,52 @@ document.addEventListener("DOMContentLoaded", () => {
       .filter(Number.isFinite);
   }
 
-  window.updateAngleGauge = function (candles) { 
+  window.updateAngleGauge = function (candles) {
+    const closes = extractClosesFromCandles(candles);
+    if (closes.length < 210) return;
 
-    const closes = extractClosesFromCandles(candles);  
-    if (closes.length < 210) return;  
-  
     const ema = calculateEMAValues(closes, 200);
 
-    console.log("ema :", ema);
-
     const lastEMA = ema[ema.length - 1];
-    const prevEMA = ema[ema.length - 6];
+    const prevEMA = ema[ema.length - 6]; // Comparaison sur 5 bougies d'écart
 
     if (!Number.isFinite(lastEMA) || !Number.isFinite(prevEMA)) return;
 
-    const deltaEMA = lastEMA - prevEMA;
-    const lookback = 5;
+    // --- NORMALISATION POUR L'EMA ---
+    // On calcule la variation en pourcentage du prix
+    const slope = (lastEMA - prevEMA) / prevEMA;
 
-    const angleDeg =
-      Math.atan(deltaEMA / lookback) * (180 / Math.PI);
+    // Sensibilité élevée car l'EMA200 est très lente
+    // 10 000 est un bon point de départ pour les indices synthétiques
+    const sensitivity = 10000;
 
-    console.log(
-      `EMA200=${lastEMA.toFixed(2)} | Angle=${angleDeg.toFixed(2)}°`
-    );
+    const angleDeg = Math.atan(slope * sensitivity) * (180 / Math.PI);
 
-    // --- jauge ---
-    const maxAngle = 45;
-    const clamped = Math.max(-maxAngle, Math.min(maxAngle, angleDeg));
-    const percent = ((clamped + maxAngle) / (2 * maxAngle)) * 100;
+    // --- MAPPING POUR LE SVG (0 à 100) ---
+    // On définit que -45° est le minimum (0%) et +45° le maximum (100%)
+    // Le 0° (plat) sera exactement à 50% (milieu de la jauge)
+    const limit = 45;
+    const clamped = Math.max(-limit, Math.min(limit, angleDeg));
+    const percent = ((clamped + limit) / (2 * limit)) * 100;
 
-    let color = "#ff9800";
-    if (angleDeg > 2) color = "#089981";
-    else if (angleDeg < -2) color = "#f23645";
+    // Couleurs basées sur l'inclinaison réelle
+    let color = "#ff9800"; // Neutre (Orange)
+    if (angleDeg > 1.0) color = "#089981";      // Haussier (Vert)
+    else if (angleDeg < -1.0) color = "#f23645"; // Baissier (Rouge)
 
+    // Envoi à votre fonction setGaugeValue
     setGaugeValue("path-angle", percent, color);
 
-    document.getElementById("txt-angle-val").innerText =
-      angleDeg.toFixed(1) + "°";
+    // Mise à jour des textes
+    const valEl = document.getElementById("txt-angle-val");
+    if (valEl) valEl.innerText = angleDeg.toFixed(1) + "°";
 
-    document.getElementById("txt-angle-label").innerText =
-      angleDeg > 2 ? "ASCENDING" :
-        angleDeg < -2 ? "DESCENDING" :
-          "RANGING";
-  };
+    const labelEl = document.getElementById("txt-angle-label");
+    if (labelEl) {
+      labelEl.innerText = angleDeg > 1.0 ? "ASCENDING" :
+        angleDeg < -1.0 ? "DESCENDING" : "RANGING";
+    }
+  };  
 
   // 3. Calcul de l'ATR (Volatilité)
   function calculateATR(candles, period = 50) {
