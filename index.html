@@ -771,18 +771,18 @@
       align-items: center;
       justify-content: left;
       min-height: 38px;
-      flex: 0 0 auto;   
-      /* Responsive : les boutons s'ajustent à la largeur */  
+      flex: 0 0 auto;
+      /* Responsive : les boutons s'ajustent à la largeur */
       white-space: nowrap;
-    }   
+    }
 
     /* Effet au survol (Hover) */
-    #controlFormPanel .btn:hover {      
+    #controlFormPanel .btn:hover {
       background-color: #f8fafc;
       border-color: #cbd5e1;
       transform: translateY(-1px);
       /* Petit effet de levée */
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);  
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
     /* Effet au clic */
@@ -2589,7 +2589,8 @@
       background: rgba(0, 0, 0, 0.75);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      display: none; /* CACHÉ PAR DÉFAUT */
+      display: none;
+      /* CACHÉ PAR DÉFAUT */
       justify-content: center;
       align-items: center;
       z-index: 9999;
@@ -3353,6 +3354,151 @@
       /* Une transition courte (0.3s) suffit car le JS gère déjà la fluidité */
       transition: stroke-dashoffset 0.3s ease-out;
     }
+
+    /* BB */
+
+    /* Style de base (Mode Clair) */
+    .chart-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      display: none;
+      pointer-events: none;
+
+      /* Couleurs par défaut (Clair) */
+      background: rgba(255, 255, 255, 0.9);
+      color: #1e293b;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+
+    /* Style automatique si le parent ou le body a la classe .dark-mode */
+    .dark-mode .chart-badge {
+      background: rgba(30, 41, 59, 0.9);
+      /* Bleu nuit sombre */
+      color: #f8fafc;
+      border: 1px solid #475569;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    /* On garde les couleurs de texte pour les valeurs de volatilité */
+    #vol-value {
+      font-weight: 700;
+    }
+
+    @keyframes pulse-alert {
+      from {
+        box-shadow: 0 0 0px rgba(8, 153, 129, 0);
+        border-color: #e2e8f0;
+      }
+
+      to {
+        box-shadow: 0 0 15px rgba(8, 153, 129, 0.5);
+        border-color: #089981;
+        background-color: #f0fdf4;
+      }
+    }
+
+    @keyframes alert-glow {
+      from {
+        box-shadow: 0 0 5px rgba(8, 153, 129, 0.2);
+        border-color: #e2e8f0;
+      }
+
+      to {
+        box-shadow: 0 0 15px rgba(8, 153, 129, 0.6);
+        border-color: #089981;
+      }
+    }
+
+    /* Animation de pulsation pour la flamme */
+    #vol-icon {
+      display: inline-block;
+      transition: transform 0.3s ease;
+    }
+
+    .market-hot #vol-icon {
+      animation: flame-burn 0.8s infinite alternate;
+    }
+
+    @keyframes flame-burn {
+      from {
+        transform: scale(1);
+        filter: drop-shadow(0 0 2px orange);
+      }
+
+      to {
+        transform: scale(1.3);
+        filter: drop-shadow(0 0 5px red);
+      }
+    }
+
+    /* Animation de la flamme 🔥 */
+    .market-hot {
+      border-color: #089981 !important;
+      background: rgba(240, 253, 244, 0.95) !important;
+      animation: pulse-hot 0.8s infinite alternate;
+    }
+
+    .market-hot #vol-icon {
+      animation: flame-burn 0.5s infinite alternate;
+    }
+
+    /* Style pour le Squeeze ❄️ */
+    .market-cold {
+      border-color: #f57c00 !important;
+      background: rgba(255, 247, 237, 0.95) !important;
+    }
+
+    @keyframes flame-burn {
+      from {
+        transform: scale(1);
+        filter: drop-shadow(0 0 2px orange);
+      }
+
+      to {
+        transform: scale(1.4);
+        filter: drop-shadow(0 0 8px red);
+      }
+    }
+
+    @keyframes pulse-hot {
+      from {
+        box-shadow: 0 0 5px rgba(8, 153, 129, 0.2);
+      }
+
+      to {
+        box-shadow: 0 0 15px rgba(8, 153, 129, 0.5);
+      }
+    }
+
+    #vol-trend {
+      display: inline-block;
+      transition: transform 0.2s ease;
+      font-weight: bold;
+    }
+
+    /* Optionnel : Animation si la volatilité gonfle très vite */
+    .market-hot #vol-trend {
+      animation: blink-trend 0.5s infinite alternate;
+    }
+
+    @keyframes blink-trend {
+      from {
+        opacity: 1;
+      }
+
+      to {
+        opacity: 0.3;
+      }
+    }
   </style>
 </head>
 
@@ -3591,6 +3737,11 @@
         <div id="visibilityItem" class="menu-item">Masquer tout</div>
         <div id="lockFiboItem" class="menu-item">Verrouiller Fibo</div>
       </div>
+      <div id="volatility-label" class="chart-badge">
+        <span id="vol-icon" style="margin-right: 5px;"></span>
+        Vol: <span id="vol-value">0.00%</span>
+        <span id="vol-trend" style="margin-left: 5px; font-size: 10px;"></span>
+      </div>
 
     </div>
   </div>
@@ -3633,6 +3784,7 @@
         <button id="ma200" onclick="toggleMA(200, this)">MA 200 : OFF</button>
         <button id="ZigZag" onclick="toggleZigZag(this)">ZigZag 14 : OFF</button>
         <button class="btn-drawing" onclick="enableFibonacci(this)">Fibonacci Levels</button>
+        <button class="btn-drawing" onclick="enableBands(this)">Bollinger Bands</button>
 
         <!-- Objets graphiques -->
         <button class="btn-drawing" onclick="enableTrendline(this)">Trendline</button>

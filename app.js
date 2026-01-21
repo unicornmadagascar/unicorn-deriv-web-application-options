@@ -119,6 +119,12 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedSymbolLocated = null;
   let selectedSymbolconverted = null;
   let smoothedVol = 0; // Mémoire de la position précédente
+  let areaSeriesBB;
+  let upperLine, middleLine, lowerLine;
+  let bandsEnabled = false;
+  // Variable pour ne pas répéter le son en boucle
+  let hasAlerted = false;
+  let lastBandwidth = 0; // Pour stocker la valeur précédente
   // ================== x ==================  
 
   let wsReady = false;
@@ -1505,7 +1511,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Petit délai pour laisser le temps au navigateur de voir le "display: flex" 
     // avant de lancer l'animation d'opacité
     setTimeout(() => {
-      overlay.style.opacity = '1';  
+      overlay.style.opacity = '1';
     }, 10);
 
     display.innerText = timer;
@@ -1532,12 +1538,12 @@ document.addEventListener("DOMContentLoaded", () => {
           overlay.style.display = 'none';
 
           // Lancer votre logique d'automatisation ici après le décompte
-          console.log("Automation démarrée !");  
+          console.log("Automation démarrée !");
 
         }, 500); // Attend la fin de la transition d'opacité
       }
 
-      display.innerText = timer;    
+      display.innerText = timer;
       timer--;
     }, 1000);
   }
@@ -2328,6 +2334,142 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
   };
+
+  // BB 
+  function initBollingerSeries(chart) {
+    if (!chart) return;
+
+    areaSeriesBB = chart.addAreaSeries({
+      topColor: 'rgba(8, 153, 129, 0.05)',
+      bottomColor: 'rgba(8, 153, 129, 0.05)',
+      lineVisible: false,
+      lastValueVisible: false,
+    });
+
+    const lineOptions = { lineWidth: 1, lastValueVisible: false, priceLineVisible: false };
+    upperLine = chart.addLineSeries({ ...lineOptions, color: 'rgba(8, 153, 129, 0.4)', title: 'Upper' });
+    middleLine = chart.addLineSeries({ ...lineOptions, color: 'rgba(148, 163, 184, 0.3)', title: 'Basis' });
+    lowerLine = chart.addLineSeries({ ...lineOptions, color: 'rgba(242, 54, 69, 0.4)', title: 'Lower' });
+  }
+
+  /**
+ * 2. MOTEUR DE CALCUL MATHÉMATIQUE
+ */
+  function calculateBollingerData(data, period = 20, stdDevMultiplier = 2) {
+    return data.map((candle, i) => {
+      if (i < period) return null;
+      const slice = data.slice(i - period + 1, i + 1).map(d => d.close);
+      const sma = slice.reduce((a, b) => a + b, 0) / period;
+      const variance = slice.map(v => Math.pow(v - sma, 2)).reduce((a, b) => a + b, 0) / period;
+      const stdDev = Math.sqrt(variance);
+
+      return {
+        time: candle.time,
+        upper: sma + (stdDevMultiplier * stdDev),
+        middle: sma,
+        lower: sma - (stdDevMultiplier * stdDev)
+      };
+    }).filter(d => d !== null);
+  }
+
+  /**
+ * 3. SYSTÈME AUDIO (Générateur d'oscillateur)
+ */
+  function playAlertSound() {
+    try {
+      const context = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = context.createOscillator();
+      const gain = context.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.5);
+      osc.connect(gain);
+      gain.connect(context.destination);
+      osc.start();
+      osc.stop(context.currentTime + 0.5);
+    } catch (e) { console.error("Audio blocké par le navigateur"); }
+  }
+
+  /**
+ * 4. MISE À JOUR DE L'INTERFACE (Icônes, Triangles, Couleurs)
+ */
+  function updateVolatilityUI(upper, lower, middle) {
+    const label = document.getElementById('volatility-label');
+    const iconSpan = document.getElementById('vol-icon');
+    const valueSpan = document.getElementById('vol-value');
+    const trendSpan = document.getElementById('vol-trend');
+
+    const currentBW = ((upper - lower) / middle) * 100;
+    valueSpan.innerText = currentBW.toFixed(2) + "%";
+
+    // Gestion du Triangle (Tendance du gonflement)
+    if (currentBW > lastBandwidth + 0.001) {
+      trendSpan.innerHTML = " ▲"; trendSpan.style.color = "#089981";
+    } else if (currentBW < lastBandwidth - 0.001) {
+      trendSpan.innerHTML = " ▼"; trendSpan.style.color = "#f23645";
+    }
+
+    // Gestion des Icônes et Alertes
+    label.style.display = 'flex';
+    if (currentBW > 0.50) {
+      iconSpan.innerText = "🔥";
+      label.className = "chart-badge market-hot";
+      if (!hasAlerted) { playAlertSound(); hasAlerted = true; }
+    } else if (currentBW < 0.15) {
+      iconSpan.innerText = "❄️";
+      label.className = "chart-badge market-cold";
+      hasAlerted = false;
+    } else {
+      iconSpan.innerText = "📊";
+      label.className = "chart-badge";
+      hasAlerted = false;
+    }
+    lastBandwidth = currentBW;
+  }
+
+  /**
+ * 5. FONCTION TRIGGER (Appelée par le bouton)
+ */
+  function enableBands(btnElement) {
+    bandsEnabled = !bandsEnabled;
+
+    // SI LE BOUTON EST DÉSACTIVÉ (false)
+    if (!bandsEnabled) {
+        // 1. On vide les données des graphiques (les lignes disparaissent)
+        upperLine.setData([]);
+        middleLine.setData([]);
+        lowerLine.setData([]);
+        areaSeries.setData([]);
+
+        // 2. On cache l'étiquette (le badge avec la flamme/flocon)
+        const label = document.getElementById('volatility-label');
+        if (label) label.style.display = 'none';
+
+        // 3. On réinitialise l'apparence du bouton
+        btnElement.style.backgroundColor = "white";
+        btnElement.style.color = "#475569";
+        btnElement.style.borderColor = "#e2e8f0";
+
+        // 4. On stoppe les alertes sonores futures
+        hasAlerted = false;  
+        
+        return; // ON ARRÊTE LA FONCTION ICI
+    }
+
+    btnElement.style.backgroundColor = "#089981";
+    btnElement.style.color = "white";
+
+    // 'candleData' doit être votre tableau de données source
+    const results = calculateBollingerData(candleData);
+
+    upperLine.setData(results.map(r => ({ time: r.time, value: r.upper })));
+    middleLine.setData(results.map(r => ({ time: r.time, value: r.middle })));
+    lowerLine.setData(results.map(r => ({ time: r.time, value: r.lower })));
+    areaSeries.setData(results.map(r => ({ time: r.time, value: r.upper, bottomPrice: r.lower })));
+
+    const last = results[results.length - 1];
+    updateVolatilityUI(last.upper, last.lower, last.middle);
+  }
 
   // --- INITIALISATION (À appeler une seule fois au chargement ou au 1er clic) ---
   function initMaSeries() {
@@ -5565,7 +5707,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On insère à nouveau le point car innerText l'écrase
     const dot = document.createElement('span');
     dot.className = 'status-dot';
-    this.prepend(dot);  
+    this.prepend(dot);
   });
 
   stopbtn.addEventListener('click', function () {
