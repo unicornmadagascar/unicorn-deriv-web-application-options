@@ -1497,45 +1497,44 @@ document.addEventListener("DOMContentLoaded", () => {
     const bar = document.getElementById('countdown-bar');
     const overlay = document.getElementById('overlayML');
 
-    if (!display || !bar || !overlay) return;
-
-    const totalLength = 283; // Correspond au stroke-dasharray
+    const totalLength = 283;
     let timer = duration;
 
-    // Réinitialisation visuelle
+    // --- PHASE 1 : APPARITION ---
     overlay.style.display = 'flex';
-    overlay.style.opacity = '1';
+    // Petit délai pour laisser le temps au navigateur de voir le "display: flex" 
+    // avant de lancer l'animation d'opacité
+    setTimeout(() => {
+      overlay.style.opacity = '1';  
+    }, 10);
+
     display.innerText = timer;
     bar.style.stroke = "#089981";
     bar.style.strokeDashoffset = 0;
 
     const interval = setInterval(() => {
-      // 1. Calcul de la progression du cercle
-      // On calcule l'offset pour que le cercle se vide
       const progress = (timer / duration);
       const offset = totalLength - (progress * totalLength);
       bar.style.strokeDashoffset = offset;
 
-      // 2. Changement de couleur (Alerte à 2 secondes)
-      if (timer <= 2) {
-        bar.style.stroke = "#f23645"; // Rouge
-      }
+      if (timer <= 2) bar.style.stroke = "#f23645";
 
-      // 3. Animation de pulsation du chiffre
-      display.classList.add('pulse-tick');
-      setTimeout(() => display.classList.remove('pulse-tick'), 200);
+      // Animation de pulse sur le chiffre
+      display.style.transform = "scale(1.2)";
+      setTimeout(() => display.style.transform = "scale(1)", 200);
 
-      // 4. Gestion de la fin
       if (timer <= 0) {
         clearInterval(interval);
-        // On s'assure que le cercle est bien vide à la fin
-        bar.style.strokeDashoffset = totalLength;
 
-        // Disparition fluide
+        // --- PHASE 2 : DISPARITION ---
         overlay.style.opacity = '0';
         setTimeout(() => {
           overlay.style.display = 'none';
-        }, 500);
+
+          // Lancer votre logique d'automatisation ici après le décompte
+          console.log("Automation démarrée !");
+
+        }, 500); // Attend la fin de la transition d'opacité
       }
 
       display.innerText = timer;
@@ -5100,7 +5099,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // === 🔘 SÉLECTIONNER / DÉSÉLECTIONNER TOUT ===
   document.addEventListener("change", (e) => {
-    if (e.target.id === "selectAll") {  
+    if (e.target.id === "selectAll") {
       const checked = e.target.checked;
       document.querySelectorAll(".rowSelect").forEach(cb => cb.checked = checked);
     }
@@ -5115,7 +5114,7 @@ document.addEventListener("DOMContentLoaded", () => {
         data.signal,
         data.price,
         data.prob
-      );  
+      );
     });
 
     startControlPipeline();
