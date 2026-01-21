@@ -2083,13 +2083,64 @@
 
     /*---------------------------------------------*/
 
-    #accountSelect option {
+    /* #accountSelect option {
       border-radius: 8px;
       border: 1px solid #e1dddd;
       background: #fafafa;
       color: #212325;
       font-size: 14px;
       cursor: pointer;
+    } */
+
+    /* Conteneur pour l'alignement horizontal */
+    .account-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      /* Espace entre le select et le bouton */
+      max-width: 250px;
+      /* Limite la largeur totale du groupe */
+    }
+
+    /* Style du menu déroulant */
+    #accountSelect {
+      flex: 1;
+      /* Permet au select de prendre l'espace disponible */
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      background-color: #fff;
+      cursor: pointer;
+      min-width: 150px;
+      /* Largeur minimale pour rester lisible */
+      outline: none;
+    }
+
+    #accountSelect:focus {
+      border-color: #1976d2;
+      /* Couleur assortie à vos jauges */
+    }
+
+    /* Style du bouton supprimer */
+    #deleteSelectedAccount {
+      background-color: #f23645;
+      /* Rouge pour la suppression */
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #deleteSelectedAccount:hover {
+      background-color: #c22b37;
+      /* Rouge plus foncé au survol */
     }
 
     #panel h1 {
