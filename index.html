@@ -1315,25 +1315,43 @@
       transform: scale(1.2);
     }
 
-    /* Alignement des cercles (Donuts) */
+    /* Le cadre principal qui entoure les deux cercles */
     #contractsPanel .donuts-wrapper {
       display: flex;
-      justify-content: space-around;
-      /* Met les deux cercles côte à côte */
-      align-items: center;
-      flex-wrap: wrap;
-      /* Permet de passer à la ligne sur mobile */
-      width: 100%;
+      justify-content: center;
+      gap: 20px;
+      padding: 15px;
+      border: 1px solid #e0e0e0;
+      /* Couleur du cadre */
+      border-radius: 8px;
+      /* Angles arrondis */
+      background-color: #fcfcfc;
+      /* Un léger fond pour faire ressortir le cadre */
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      /* Ombre légère pour le relief */
+      max-width: fit-content;
+      /* Ajuste la largeur au contenu */
+      margin: 10px 0;
     }
 
+    /* Style individuel des cartes (optionnel, pour séparer visuellement) */
     #contractsPanel .donut-card {
       text-align: center;
-      width: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
+    /* Taille des SVG pour qu'ils rentrent bien dans le cadre */
     #contractsPanel .donut-svg {
       width: 100px;
       height: 100px;
+    }
+  
+    #contractsPanel .donut-info {
+      margin-top: 8px;
+      font-size: 14px;
+      font-weight: bold;
     }
 
     #contractsPanel .donut-bg {
@@ -1363,13 +1381,6 @@
       font-weight: bold;
       text-anchor: middle;
       fill: #1e293b;
-    }
-
-    #contractsPanel .donut-info {
-      text-align: center;
-      font-size: 14px;
-      font-weight: 600;
-      margin-top: 5px;
     }
 
     #contractsPanel .row-selected {
@@ -2083,15 +2094,6 @@
 
     /*---------------------------------------------*/
 
-    /* #accountSelect option {
-      border-radius: 8px;
-      border: 1px solid #e1dddd;
-      background: #fafafa;
-      color: #212325;
-      font-size: 14px;
-      cursor: pointer;
-    } */
-
     /* Conteneur pour l'alignement horizontal */
     .account-actions {
       display: flex;
@@ -2147,18 +2149,18 @@
     .trade-dates {
       display: flex;
       gap: 15px;
-      margin-bottom: 15px;    
-    } 
+      margin-bottom: 15px;
+    }
 
     /* Style de chaque bloc Label + Input */
-    .date-group {  
+    .date-group {
       display: flex;
       flex-direction: column;
-      /* Label au dessus de l'input */  
+      /* Label au dessus de l'input */
       gap: 4px;
-    } 
-   
-    .date-group label {  
+    }
+
+    .date-group label {
       font-size: 12px;
       font-weight: bold;
       color: #555;
