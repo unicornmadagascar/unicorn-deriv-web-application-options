@@ -124,12 +124,12 @@ document.addEventListener("DOMContentLoaded", () => {
   let bandsEnabled = false;
   // Variable pour ne pas répéter le son en boucle
   let hasAlerted = false;
-  let lastBandwidth = 0; // Pour stocker la valeur précédente
   let ema200Series;
   let isSniperArmed = false;
   let lastSignalTime = null;
   let squeezeCount = 0;
   let sniperStats = { buy: 0, sell: 0, total: 0 };
+  let lastBandwidth = 0; // Doit être globale
   // ================== x ==================  
 
   let wsReady = false;
@@ -2380,13 +2380,13 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.fillText(`POWER: ${Math.round(ratio * 100)}% BUY | ${sniperStats.buy}🟢 ${sniperStats.sell}🔴`, 25, canvas.height - 45);
   }
 
-  function takeSniperScreenshot(strategyName) {  
+  function takeSniperScreenshot(strategyName) {
     // On cible le parent qui contient le graphique ET l'overlay
     const elementToCapture = document.getElementById('chartArea');
 
     if (!elementToCapture) {
       console.error("Erreur : L'élément chartArea est introuvable.");
-      return;  
+      return;
     }
 
     // Utilisation de html2canvas  
@@ -2406,7 +2406,7 @@ document.addEventListener("DOMContentLoaded", () => {
       link.click();
 
       console.log(`📸 Capture réussie : ${filename}`);
-      showToast(`📸 Screenshot created : ${filename}`,'info');
+      showToast(`📸 Screenshot created : ${filename}`, 'info');
     }).catch(err => {
       console.error("Erreur lors de la capture d'écran :", err);
     });
@@ -2479,28 +2479,43 @@ document.addEventListener("DOMContentLoaded", () => {
     const valueSpan = document.getElementById('vol-value');
     const trendSpan = document.getElementById('vol-trend');
 
+    // 1. Calcul du Bandwidth actuel
     const currentBW = ((upper - lower) / middle) * 100;
     valueSpan.innerText = currentBW.toFixed(2) + "%";
 
-    // ... (votre logique de triangle ▲/▼ reste la même) ...
+    // 2. Gestion des Flèches (Sensibilité augmentée à 0.0001)
+    if (currentBW > lastBandwidth + 0.0001) {
+      trendSpan.innerHTML = " ▲";
+      trendSpan.style.color = "#089981"; // Vert tradingview
+    } else if (currentBW < lastBandwidth - 0.0001) {
+      trendSpan.innerHTML = " ▼";
+      trendSpan.style.color = "#f23645"; // Rouge tradingview
+    }
 
+    // 3. Gestion des États (Squeeze vs Hot vs Normal)
     label.style.display = 'flex';
 
-    // Nouvelle logique de priorité pour les icônes
     if (isSqueeze) {
+      // Priorité au Squeeze (Bleu/Froid)
       iconSpan.innerText = "❄️";
       label.className = "chart-badge market-cold";
-      hasAlerted = false;
+      hasAlerted = false; // Reset pour la prochaine explosion
     } else if (currentBW > 0.50) {
+      // Marché Volatil (Rouge/Chaud)
       iconSpan.innerText = "🔥";
       label.className = "chart-badge market-hot";
-      if (!hasAlerted) { playAlertSound(); hasAlerted = true; }
+      if (!hasAlerted) {
+        playAlertSound();
+        hasAlerted = true;
+      }
     } else {
+      // Marché Normal
       iconSpan.innerText = "📊";
       label.className = "chart-badge";
       hasAlerted = false;
     }
 
+    // 4. SAUVEGARDE pour la prochaine comparaison
     lastBandwidth = currentBW;
   }
 
@@ -2641,14 +2656,14 @@ document.addEventListener("DOMContentLoaded", () => {
                   renderSniperOverlay(signal);
 
                   // 2. Marqueur Historique (Flèche)
-                  const currentMarkers = candleSeries.getMarkers() || [];
-                  candleSeries.setMarkers([...currentMarkers, {
+                  const currentMarkers = currentSeries.getMarkers() || [];
+                  currentSeries.setMarkers([...currentMarkers, {
                     time: lastCandle.time,
                     position: signal.side === 'BUY' ? 'belowBar' : 'aboveBar',
                     color: signal.side === 'BUY' ? '#089981' : '#f23645',
                     shape: signal.side === 'BUY' ? 'arrowUp' : 'arrowDown',
                     text: signal.name
-                  }]);
+                  }]);  
 
                   // 3. Screenshot Automatique si Squeeze
                   if (signal.name.includes("SQUEEZE")) {
