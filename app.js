@@ -2381,7 +2381,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return {
         name: isTrend ? "SNIPER SELL" : "REVERSAL SELL",
         side: "SELL",
-        icon: isTrend ? "📉" : "🎯"
+        icon: isTrend ? "📉" : "🎯"  
       };
     }
 
