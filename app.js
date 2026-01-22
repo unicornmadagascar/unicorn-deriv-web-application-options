@@ -2346,25 +2346,32 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function analyzeSniperStrategies(results, emaData, lastCandle) {
+    if (results.length < 5 || emaData.length < 1) return null;
+
     const current = results[results.length - 1];
     const prev = results[results.length - 2];
+    const currentEMA = emaData[emaData.length - 1].value;
+    const price = lastCandle.close;
 
-    // Détection adaptative du Squeeze
+    // DEBUG : Affichez les valeurs réelles dans la console
+    console.log(`--- Scan Sniper ---`);
+    console.log(`Prix: ${price} | EMA200: ${currentEMA.toFixed(2)}`);
+    console.log(`Squeeze: ${current.isSqueeze} | BW: ${current.bandwidth.toFixed(3)}`);
+
+    const isUptrend = price > currentEMA;
+
+    // Condition SQUEEZE
     if (current.isSqueeze) {
-      squeezeCount++;
-    } else if (current.bandwidth > prev.bandwidth && squeezeCount >= 10) {
-      // Sortie de Squeeze détectée !
-      const isUptrend = lastCandle.close > emaData[emaData.length - 1].value;
-
-      if (isUptrend && lastCandle.close > current.upper) {
-        squeezeCount = 0; // Reset
-        return { name: "ADAPTIVE SQUEEZE BUY", side: "BUY", icon: "⚡" };
-      }
-      if (!isUptrend && lastCandle.close < current.lower) {
-        squeezeCount = 0; // Reset
-        return { name: "ADAPTIVE SQUEEZE SELL", side: "SELL", icon: "💀" };
-      }
+      // Le squeeze est actif, on attend l'explosion
+      return null;
     }
+
+    // Si on sort du squeeze (bw augmente)
+    if (current.bandwidth > prev.bandwidth) {
+      if (isUptrend && price > current.upper) return { name: "SQUEEZE BUY", side: "BUY", icon: "🚀" };
+      if (!isUptrend && price < current.lower) return { name: "SQUEEZE SELL", side: "SELL", icon: "📉" };
+    }
+
     return null;
   }
 
@@ -5924,13 +5931,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Détection des poignées d'ancrage (15px de rayon)
       if (Math.hypot(x - xF, y - yP) < 15) {
-        activeHandle = 'FIBO_POC';  
+        activeHandle = 'FIBO_POC';
         isFiboLocked = true; // Si on touche manuellement, on verrouille l'automatisme
         hit = true;
       }
       else if (Math.hypot(x - xF, y - yE) < 15) {
         activeHandle = 'FIBO_EXT';
-        isFiboLocked = true;  
+        isFiboLocked = true;
         hit = true;
       }
     }
