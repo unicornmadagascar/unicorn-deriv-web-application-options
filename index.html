@@ -3485,7 +3485,7 @@
       background: none;
       border: 1px solid #cbd5e1;
       border-radius: 4px;
-      cursor: pointer !important;  
+      cursor: pointer !important;
       /* Force le curseur main */
       margin-right: 8px;
       padding: 2px 4px;
@@ -3535,7 +3535,45 @@
     .dark-mode #sniper-btn {
       border-color: #475569;
     }
-        
+
+    #sniper-alert-badge {
+      display: none;
+      /* Caché par défaut */
+      margin-left: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 11px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      animation: slideInRight 0.3s ease-out;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* Couleurs selon le type de signal */
+    .badge-buy {
+      background-color: #089981;
+      color: white;
+      border: 1px solid #056656;
+    }
+
+    .badge-sell {
+      background-color: #f23645;
+      color: white;
+      border: 1px solid #b22833;
+    }
   </style>
 </head>
 
@@ -3774,6 +3812,8 @@
         <span id="vol-icon" style="margin-right: 5px;"></span>
         Vol: <span id="vol-value">0.00%</span>
         <span id="vol-trend" style="margin-left: 5px; font-size: 10px;"></span>
+
+        <div id="sniper-alert-badge"></div>
       </div>
 
     </div>

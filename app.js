@@ -2390,39 +2390,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return null;
   }
 
-  function renderSniperOverlay(signal) {
-    const canvas = document.getElementById('Trendoverlay__');
-    const ctx = canvas.getContext('2d');
-
-    if (signal) {
-      if (signal.side === 'BUY') sniperStats.buy++; else sniperStats.sell++;
-      sniperStats.total++;
-      if (signal.name.includes("SQUEEZE")) takeSniperScreenshot(signal.name);
-    }
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Dessin Alerte Flash (Haut)
-    if (signal) {
-      ctx.font = "bold 24px sans-serif";
-      ctx.fillStyle = signal.side === 'BUY' ? '#089981' : '#f23645';
-      ctx.fillText(`${signal.icon} SNIPER: ${signal.name}`, 25, 60);
-    }
-
-    // Heatmap de Force (Bas)
-    const ratio = sniperStats.total > 0 ? (sniperStats.buy / sniperStats.total) : 0.5;
-    const color = ratio > 0.6 ? "#089981" : (ratio < 0.4 ? "#f23645" : "#f59e0b");
-
-    ctx.fillStyle = "rgba(0,0,0,0.5)";
-    ctx.fillRect(25, canvas.height - 40, 200, 10);
-    ctx.fillStyle = color;
-    ctx.fillRect(25, canvas.height - 40, 200 * ratio, 10);
-
-    ctx.font = "bold 12px monospace";
-    ctx.fillStyle = "white";
-    ctx.fillText(`POWER: ${Math.round(ratio * 100)}% BUY | ${sniperStats.buy}🟢 ${sniperStats.sell}🔴`, 25, canvas.height - 45);
-  }
-
   function takeSniperScreenshot(strategyName) {
     // On cible le parent qui contient le graphique ET l'overlay
     const elementToCapture = document.getElementById('chartArea');
@@ -2585,6 +2552,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function showFloatingSignal(signal) {
+    const alertBadge = document.getElementById('sniper-alert-badge');
+    if (!alertBadge) return;
+
+    // Configuration du contenu
+    alertBadge.innerHTML = `${signal.icon} ${signal.name}`;
+    alertBadge.className = signal.side === 'BUY' ? 'badge-buy' : 'badge-sell';
+    alertBadge.style.display = 'inline-block';
+
+    // Disparition automatique après 8 secondes (durée d'une opportunité)
+    setTimeout(() => {
+      alertBadge.style.opacity = '0';
+      setTimeout(() => {
+        alertBadge.style.display = 'none';
+        alertBadge.style.opacity = '1';
+      }, 500);
+    }, 8000);
+  }
+
   // --- INITIALISATION (À appeler une seule fois au chargement ou au 1er clic) ---
   function initMaSeries() {
     if (!chart) return;
@@ -2705,7 +2691,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   // 1. Feedback
                   playAlertSound();
-                  if (typeof renderSniperOverlay === "function") renderSniperOverlay(signal);
+                  if (typeof showFloatingSignal === "function") showFloatingSignal(signal);
 
                   // 2. NOUVEAU SYSTÈME DE MARQUEURS (Solution au TypeError)
                   const newMarker = {
@@ -2713,11 +2699,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     position: signal.side === 'BUY' ? 'belowBar' : 'aboveBar',
                     color: signal.side === 'BUY' ? '#089981' : '#f23645',
                     shape: signal.side === 'BUY' ? 'arrowUp' : 'arrowDown',
-                    text: signal.name  
+                    text: signal.name
                   };
-   
+
                   // On ajoute le nouveau marqueur à l'historique global
-                  allMarkers.push(newMarker);  
+                  allMarkers.push(newMarker);
 
                   // On envoie TOUT le tableau à la série
                   // Note: 'currentSeries' doit être le nom de votre variable addCandlestickSeries
@@ -2732,9 +2718,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           }
         } catch (e) {
-          console.error("Erreur moteur Sniper/Bollinger:", e);   
+          console.error("Erreur moteur Sniper/Bollinger:", e);
         }
-      }  
+      }
     });
   }
 
