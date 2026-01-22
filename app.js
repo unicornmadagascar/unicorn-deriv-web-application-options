@@ -5930,7 +5930,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       else if (Math.hypot(x - xF, y - yE) < 15) {
         activeHandle = 'FIBO_EXT';
-        isFiboLocked = true;
+        isFiboLocked = true;  
         hit = true;
       }
     }
