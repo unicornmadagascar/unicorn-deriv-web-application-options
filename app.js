@@ -2379,7 +2379,7 @@ document.addEventListener("DOMContentLoaded", () => {
           side: "SELL",
           icon: !isUptrend ? "📉" : "⚠️"
         };
-      }
+      }  
     }  
 
     return null;  
