@@ -2698,7 +2698,7 @@ document.addEventListener("DOMContentLoaded", () => {
               const currentCandleTime = lastCandle.time;
 
               if (lastSignalTime !== currentCandleTime) {
-                // APPEL DE L'ANALYSE  
+                // APPEL DE L'ANALYSE   
                 const signal = analyzeSniperStrategies(bbData, emaData, lastCandle);
 
                 if (signal) {
