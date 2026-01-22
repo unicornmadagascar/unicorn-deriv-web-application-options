@@ -2741,13 +2741,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // On crée les 3 séries d'un coup, mais elles restent vides au début
     maSeries = {
-      20: chart.addLineSeries({ color: '#2962FF', lineWidth: 2, priceLineVisible: false, lastValueVisible: false }),
-      50: chart.addLineSeries({ color: '#9c27b0', lineWidth: 2, priceLineVisible: false, lastValueVisible: false }),
-      200: chart.addLineSeries({ color: '#ff9800', lineWidth: 2, priceLineVisible: false, lastValueVisible: false })
+      20: chart.addLineSeries({ color: '#2962FF', lineWidth: 2, title: 'EMA 20', priceLineVisible: false, lastValueVisible: false }),
+      50: chart.addLineSeries({ color: '#9c27b0', lineWidth: 2, title: 'EMA 50', priceLineVisible: false, lastValueVisible: false }),
+      200: chart.addLineSeries({ color: '#ff9800', lineWidth: 2, title: 'EMA 200', priceLineVisible: false, lastValueVisible: false })
     };
   }
 
-  // --- LOGIQUE DES BOUTONS (Appelée depuis le HTML) ---  
+  // --- LOGIQUE DES BOUTONS (Appelée depuis le HTML) ---   
   window.toggleMA = function (period, button) {
     if (!chart) return;
 
