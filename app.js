@@ -3009,7 +3009,7 @@ document.addEventListener("DOMContentLoaded", () => {
           lastValueVisible: false,
           title: 'ZigZag' // Apparaît au survol ou dans la légende
         });
-      }
+      }  
 
       // On rend la série visible au cas où elle aurait été cachée
       zigzagSeries.applyOptions({ visible: true });
@@ -3021,7 +3021,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       btn.innerText = "ZZ"; // Reste "ZZ" mais perd la couleur bleue
 
-      if (zigzagSeries) {
+      if (zigzagSeries) {  
         // Option 1 : On cache la série (plus performant)
         zigzagSeries.applyOptions({ visible: false });   
 
