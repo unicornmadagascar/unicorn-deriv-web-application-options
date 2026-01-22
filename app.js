@@ -2897,7 +2897,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     text: `${signal.name} (${volSign}${volRatio}%)`
                   };
 
-                  allMarkers.push(newMarker);
+                  allMarkers.push(newMarker);  
                   currentSeries.setMarkers(allMarkers);
 
                   // --- 5. SCREENSHOT ---
