@@ -2662,14 +2662,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // --- BLOC BOLLINGER + SNIPER ---
-      if (bandsEnabled) {
+      if (bandsEnabled) {  
         try {
           // A. CALCULS MATHÉMATIQUES
           const bbData = calculateBollingerData(priceDataZZ);
           // Assurez-vous que le nom est bien calculateEMA (ou calculateEMABB selon votre script)
           const emaData = calculateEMA(priceDataZZ, 200);  
 
-          if (bbData.length > 0) {   
+          if (bbData.length > 0) {    
             const lastPoint = bbData[bbData.length - 1];  
             const lastCandle = priceDataZZ[priceDataZZ.length - 1];
 
