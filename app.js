@@ -918,19 +918,6 @@ document.addEventListener("DOMContentLoaded", () => {
     activeContractsData = {};
     activeContracts = {};
     lastTotalPnL = 0; // On remet aussi la mémoire de tendance à zéro
-
-    // 2. Réinitialisation visuelle du compteur PnL
-    const pnlDisplay = document.getElementById("total-pnl");
-    const arrowDisplay = document.getElementById("pnl-arrow");
-
-    if (pnlDisplay) {
-      pnlDisplay.innerText = "0.00";  
-      pnlDisplay.style.color = "#fff"; // On remet en blanc (neutre)  
-    }
-
-    if (arrowDisplay) {
-      arrowDisplay.innerText = ""; // On enlève la flèche (haut ou bas)
-    }
   }
 
   function styleType(currentChartType) {
