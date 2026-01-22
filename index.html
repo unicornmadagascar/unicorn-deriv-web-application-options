@@ -3321,27 +3321,23 @@
     /* BB */
 
     #volatility-label {
-      /* Garde le flex pour l'alignement interne des icônes */
       display: none;
       align-items: center;
       gap: 10px;
       padding: 8px 15px;
-      background: white; 
-      color: rgba(15, 15, 15, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;  
-  
-      /* POSITIONNEMENT À DROITE */
+      background: #ffffff;
+      /* Fond blanc pur */
+      color: #131722 !important;
+      /* Texte gris foncé/noir pour le contraste */
+      border: 1px solid #d1d4dc;
+      /* Bordure grise légère */
+      border-radius: 8px;
       position: absolute;
       top: 10px;
-      /* Distance du haut */
       right: 60px;
-      /* Distance de la droite (laisse de la place pour l'échelle de prix) */
       z-index: 100;
-      /* S'assure qu'il passe au-dessus du graphique */
-
-      pointer-events: auto;
-      /* Permet de cliquer sur les boutons */  
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      /* Ombre légère pour le relief */
     }
 
     .show-label {
