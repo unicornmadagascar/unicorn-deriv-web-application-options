@@ -2363,7 +2363,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Condition SQUEEZE
     if (current.isSqueeze) {
       // Le squeeze est actif, on attend l'explosion
-      return null;
+      return null;  
     }
 
     // Si on sort du squeeze (bw augmente)
