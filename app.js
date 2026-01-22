@@ -2648,6 +2648,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 // On appelle la fonction d'analyse avec les données de tendance
                 const signal = analyzeSniperStrategies(bbData, emaData, lastCandle);
 
+                console.log("SIGNAL :", signal);  
+
                 if (signal) {
                   lastSignalTime = lastCandle.time; // Verrouillage
 
