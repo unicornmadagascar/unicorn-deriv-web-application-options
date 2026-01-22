@@ -2707,7 +2707,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   // On envoie TOUT le tableau à la série
                   // Note: 'currentSeries' doit être le nom de votre variable addCandlestickSeries
-                  currentSeries.setMarkers(allMarkers);
+                  currentSeries.setMarkers(allMarkers); 
 
                   // 3. Screenshot
                   if (signal.name.includes("SQUEEZE") || signal.name.includes("SNIPER")) {
