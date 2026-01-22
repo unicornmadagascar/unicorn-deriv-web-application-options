@@ -2324,6 +2324,25 @@ document.addEventListener("DOMContentLoaded", () => {
     return emaData;
   }
 
+  window.toggleSniperMode = function (event) {
+    event.stopPropagation(); // Empêche d'autres clics simultanés
+    
+    // Inversion de l'état : si c'était false, ça devient true.
+    isSniperArmed = !isSniperArmed; 
+    
+    const btn = document.getElementById('sniper-btn');
+    
+    if (isSniperArmed) {
+        btn.classList.add('armed');
+        btn.innerHTML = "📡"; // On change l'icône pour montrer que le radar SCANNE
+        console.log("Radar activé");
+    } else {
+        btn.classList.remove('armed');
+        btn.innerHTML = "🎯"; // On revient à la cible
+        console.log("Radar désactivé");
+    }
+}
+
   function analyzeSniperStrategies(results, emaData, lastCandle) {
     const current = results[results.length - 1];
     const prev = results[results.length - 2];
