@@ -2834,7 +2834,7 @@ document.addEventListener("DOMContentLoaded", () => {
             middleLine.setData(bbData.map(d => ({ time: d.time, value: d.middle })));
             lowerLine.setData(bbData.map(d => ({ time: d.time, value: d.lower })));
 
-            if (emaData.length > 0) {
+            if (emaData.length > 0) {  
               ema200Series.setData(emaData);  
             }      
 
