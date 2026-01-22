@@ -926,10 +926,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentChartType === "candlestick") { style_type = "candles"; }
     else { style_type = "ticks"; }
 
-    return style_type;
+    return style_type;  
   }
 
-  function convertTF(currentInterval) {
+  function convertTF(currentInterval) {  
     switch (currentInterval) {
       case "1m": return 60;
       case "2m": return 120;
