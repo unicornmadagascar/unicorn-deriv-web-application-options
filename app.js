@@ -3814,7 +3814,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Si même le parent n'est pas là, on ne peut rien faire
         return;
       }
-    }   
+    }    
 
     // Supprime la ligne si le contrat est vendu  
     if (c.is_sold) {
