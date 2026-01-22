@@ -2711,14 +2711,14 @@ document.addEventListener("DOMContentLoaded", () => {
                   if (typeof renderSniperOverlay === "function") renderSniperOverlay(signal);
 
                   // 2. Marqueur sur le graphique
-                  const existingMarkers = candleSeries.getMarkers() || [];
-                  candleSeries.setMarkers([...existingMarkers, {
+                  const existingMarkers = currentSeries.getMarkers() || [];
+                  currentSeries.setMarkers([...existingMarkers, {
                     time: currentCandleTime,
                     position: signal.side === 'BUY' ? 'belowBar' : 'aboveBar',
                     color: signal.side === 'BUY' ? '#089981' : '#f23645',
                     shape: signal.side === 'BUY' ? 'arrowUp' : 'arrowDown',
                     text: signal.name
-                  }]);
+                  }]);  
 
                   // 3. Screenshot
                   if (signal.name.includes("SQUEEZE") || signal.name.includes("SNIPER")) {
