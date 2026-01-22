@@ -3814,7 +3814,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (tr) tr.remove();
       console.log(`✅ Contract ${c.contract_id} closed.`);
       return;
-    }
+    }  
   
     // Objet formaté pour ton tableau
     const trade = {
