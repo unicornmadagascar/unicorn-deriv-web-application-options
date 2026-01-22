@@ -2720,7 +2720,7 @@ document.addEventListener("DOMContentLoaded", () => {
     link.style.visibility = 'hidden';
 
     document.body.appendChild(link);
-    link.click();
+    link.click();  
     document.body.removeChild(link);
   }
   
