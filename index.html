@@ -3330,8 +3330,13 @@
       align-items: center;
     }
 
+    .show-label {
+      display: flex !important;
+      opacity: 1 !important;
+    }
+
     /* Style de base (Mode Clair) */
-    .chart-badge {
+    #volatility-label .chart-badge {
       position: absolute;
       top: 10px;
       /* On ajuste le retrait pour sortir de la zone de prix (Price Scale) */
@@ -3390,12 +3395,12 @@
     /* Animation de pulsation pour la flamme */
     #vol-icon {
       display: inline-block;
-      transition: transform 0.3s ease;  
+      transition: transform 0.3s ease;
     }
 
     .market-hot #vol-icon {
       animation: flame-burn 0.8s infinite alternate;
-    }    
+    }
 
     @keyframes flame-burn {
       from {
@@ -3627,7 +3632,6 @@
       /* Devient rouge au survol */
       transform: scale(1.1);
     }
-
   </style>
 </head>
 
