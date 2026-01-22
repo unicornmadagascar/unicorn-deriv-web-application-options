@@ -2814,75 +2814,65 @@
 
     /* Fond de l'overlay (assombrissement de l'arrière-plan) */
     /* Le conteneur principal (Barre latérale) */
+    /* La barre latérale flottante */
     #indicatorOverlay.overlay_ {
       position: absolute;
-      top: 50%;
-      left: 15px;
-      /* Un peu d'espace avec le bord gauche */
-      transform: translateY(-50%);
-      z-index: 1000;
+      bottom: 50px;
+      /* Ajustez selon la hauteur du logo TradingView */
+      left: 10px;
+      z-index: 100;
       display: block !important;
       background: transparent;
+      width: auto;
+      height: auto;
     }
 
     .side-toolbar {
       background: #ffffff;
-      /* CADRE ARRONDIS DU CONTENEUR */
-      border-radius: 12px;
-      padding: 10px;
+      border: 1px solid #d1d4dc;
+      border-radius: 10px;
+      padding: 6px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      border: 1px solid #e0e3eb;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-      /* Ombre douce pour le relief */
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
-    /* Style des BOUTONS BLANCS */
+    /* Style des boutons blancs arrondis */
     #indicatorOverlay button {
-      width: 44px;
-      height: 44px;
-      background-color: #ffffff;
-      /* Fond blanc pur */
+      width: 38px;
+      height: 38px;
+      background: #ffffff;
       border: 1px solid #e0e3eb;
-      /* Bordure très légère */
-      border-radius: 10px;
-      /* Boutons arrondis */
+      border-radius: 8px;
       color: #475569;
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 10px;
+      font-weight: bold;
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
     }
 
-    /* Effet au survol (Hover) */
     #indicatorOverlay button:hover {
       border-color: #2196F3;
       color: #2196F3;
-      background-color: #f8fbff;
-      transform: scale(1.05);
-      /* Petit effet de zoom au survol */
+      background: #f8fbff;
     }
 
-    /* Style quand le bouton est ACTIVÉ (ON) */
+    /* Classe active (quand l'indicateur est ON) */
     #indicatorOverlay button.active {
       background-color: #2196F3;
-      /* Fond bleu quand actif */
       color: #ffffff;
-      /* Texte blanc quand actif */
       border-color: #1e88e5;
-      box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3);
     }
 
     .separator {
       width: 80%;
       border: 0;
-      border-top: 1px solid #f1f5f9;
-      margin: 5px auto;
+      border-top: 1px solid #f1f5f9;  
+      margin: 2px auto;
     }
 
     /* Animation de succès pour le bouton */
