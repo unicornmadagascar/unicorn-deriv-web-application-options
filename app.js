@@ -130,6 +130,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let squeezeCount = 0;
   let sniperStats = { buy: 0, sell: 0, total: 0 };
   let lastBandwidth = 0; // Doit être globale
+  // 1. Déplacez ceci en dehors de la fonction pour garder la mémoire de l'historique
+  let globalBandwidths = [];
   // ================== x ==================  
 
   let wsReady = false;
@@ -2353,23 +2355,31 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentEMA = emaData[emaData.length - 1].value;
     const price = lastCandle.close;
 
-    // DEBUG : Affichez les valeurs réelles dans la console
-    console.log(`--- Scan Sniper ---`);
-    console.log(`Prix: ${price} | EMA200: ${currentEMA.toFixed(2)}`);
-    console.log(`Squeeze: ${current.isSqueeze} | BW: ${current.bandwidth.toFixed(3)}`);
+    // Détermination de la tendance pour information
+    const isUptrend = price > currentEMA;
 
-    const isUptrend = price > currentEMA;  
-
-    // Condition SQUEEZE
-    if (current.isSqueeze) {
-      // Le squeeze est actif, on attend l'explosion  
-      return null;  
-    }
-
-    // Si on sort du squeeze (bw augmente)  
+    // 1. Détection de la SORTIE de Squeeze (Bandwidth qui remonte)
     if (current.bandwidth > prev.bandwidth) {
-      if (isUptrend && price > current.upper) return { name: "SQUEEZE BUY", side: "BUY", icon: "🚀" };
-      if (!isUptrend && price < current.lower) return { name: "SQUEEZE SELL", side: "SELL", icon: "📉" };
+
+      // CASSURE HAUTE
+      if (price > current.upper) {
+        // Si on veut être STRICT, on garde "if (isUptrend && ...)"
+        // Ici, on autorise le signal mais on précise s'il est "Trend" ou "Counter"
+        return {
+          name: isUptrend ? "SQUEEZE BUY (Trend)" : "SQUEEZE BUY (Reversal)",
+          side: "BUY",
+          icon: isUptrend ? "🚀" : "⚠️"
+        };
+      }
+
+      // CASSURE BASSE
+      if (price < current.lower) {
+        return {
+          name: !isUptrend ? "SQUEEZE SELL (Trend)" : "SQUEEZE SELL (Reversal)",
+          side: "SELL",
+          icon: !isUptrend ? "📉" : "⚠️"
+        };
+      }
     }
 
     return null;
@@ -2444,38 +2454,43 @@ document.addEventListener("DOMContentLoaded", () => {
  * 2. MOTEUR DE CALCUL MATHÉMATIQUE  
  */
   function calculateBollingerData(data, period = 20, stdDevMultiplier = 2) {
-    let bandwidths = []; // Stockage temporaire pour calculer la moyenne de volatilité
+    globalBandwidths = []; // Reset local pour recalculer proprement sur tout le set
 
     return data.map((candle, i) => {
       if (i < period) return null;
 
-      // 1. Calcul classique des bandes
+      // 1. Calcul optimisé (SMA)
       const slice = data.slice(i - period + 1, i + 1).map(d => d.close);
       const sma = slice.reduce((a, b) => a + b, 0) / period;
-      const variance = slice.map(v => Math.pow(v - sma, 2)).reduce((a, b) => a + b, 0) / period;
+
+      // 2. Variance et Écart-type
+      const variance = slice.reduce((a, b) => a + Math.pow(b - sma, 2), 0) / period;
       const stdDev = Math.sqrt(variance);
 
       const upper = sma + (stdDevMultiplier * stdDev);
       const lower = sma - (stdDevMultiplier * stdDev);
 
-      // 2. Calcul du Bandwidth (%)
+      // 3. Bandwidth (%)
       const bw = ((upper - lower) / sma) * 100;
-      bandwidths.push(bw);
+      globalBandwidths.push(bw);
 
-      // 3. Calcul de la volatilité adaptative (moyenne sur les 100 derniers points)
-      const avgBW = bandwidths.length > 100
-        ? bandwidths.slice(-100).reduce((a, b) => a + b, 0) / 100
-        : bandwidths.reduce((a, b) => a + b, 0) / bandwidths.length;
+      // 4. Calcul de la moyenne adaptative (Moyenne mobile de la largeur)
+      // On prend les 100 derniers BW calculés
+      const history = globalBandwidths.slice(-100);
+      const avgBW = history.reduce((a, b) => a + b, 0) / history.length;
 
-      // 4. On retourne l'objet complet enrichi
+      // 5. LOGIQUE SQUEEZE RECTIFIÉE (Ultra-Sensible)
+      // On passe de 0.6 à 0.85 pour détecter le squeeze plus facilement
+      const isSqueeze = bw < (avgBW * 0.85);
+
       return {
         time: candle.time,
         upper: upper,
         middle: sma,
         lower: lower,
         bandwidth: bw,
-        // C'est un Squeeze si on est 40% en dessous de la moyenne habituelle de l'actif
-        isSqueeze: bw < (avgBW * 0.6)
+        avgBandwidth: avgBW,
+        isSqueeze: isSqueeze
       };
     }).filter(d => d !== null);
   }
