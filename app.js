@@ -2836,7 +2836,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (emaData.length > 0) {
               ema200Series.setData(emaData);  
-            }  
+            }      
 
             areaSeriesBB.setData(bbData.map(d => ({
               time: d.time,
