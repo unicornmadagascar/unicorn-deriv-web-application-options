@@ -2851,10 +2851,10 @@ document.addEventListener("DOMContentLoaded", () => {
               if (lastSignalTime !== currentCandleTime) {
                 const signal = analyzeSniperStrategies(bbData, emaData, lastCandle);
 
-                if (signal) {  
+                if (signal) {
                   // --- 1. CALCUL DU RATIO DE VOLUME SÉCURISÉ ---
                   // On vérifie 'volume' ou 'v' selon votre source de données  
-                  const getVol = (c) => c.volume ?? c.v ?? 0;  
+                  const getVol = (c) => c.volume ?? c.v ?? 0;
 
                   const volumeSlice = priceDataZZ.slice(-21, -1).map(c => getVol(c)); // 20 bougies précédentes
                   const currentVolume = getVol(lastCandle);
@@ -2885,20 +2885,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     logSignalToStorage(signal, volRatio);
                   }
 
-                  playAlertSound();  
+                  playAlertSound();
 
                   // --- 4. MARQUEURS SUR LE GRAPHIQUE ---
                   const volSign = volRatio >= 0 ? '+' : '';
-                  const newMarker = {  
-                    time: currentCandleTime, 
+                  const newMarker = {
+                    time: currentCandleTime,
                     position: signal.side === 'BUY' ? 'belowBar' : 'aboveBar',
                     color: volRatio > 100 ? '#ffeb3b' : (signal.side === 'BUY' ? '#089981' : '#f23645'),
                     shape: signal.side === 'BUY' ? 'arrowUp' : 'arrowDown',
                     text: `${signal.name} (${volSign}${volRatio}%)`
                   };
 
-                  allMarkers.push(newMarker);  
-                  currentSeries.setMarkers(allMarkers);  
+                  allMarkers.push(newMarker);
+                  currentSeries.setMarkers(allMarkers);
 
                   // --- 5. SCREENSHOT ---
                   if (signal.name.includes("SQUEEZE") && volRatio > 0) {
@@ -2911,12 +2911,12 @@ document.addEventListener("DOMContentLoaded", () => {
               const canvas = document.getElementById('Trendoverlay__');
               if (canvas) {
                 const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);    
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
               }
             }
-          }  
-        } catch (e) {  
-          console.error("Erreur moteur Sniper/Bollinger:", e);  
+          }
+        } catch (e) {
+          console.error("Erreur moteur Sniper/Bollinger:", e);
         }
       }
     });
@@ -3802,6 +3802,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const autoTradeBody = document.getElementById("autoTradeBody");
 
+    // --- SÉCURITÉ : On vérifie si le tableau existe avant de continuer ---
+    if (!autoTradeBody) {
+      console.error("Erreur : L'élément #autoTradeBody est introuvable dans le HTML.");
+      return;
+    }
+
     // Supprime la ligne si le contrat est vendu
     if (c.is_sold) {
       const tr = autoTradeBody.querySelector(`[data-contract='${c.contract_id}']`);
@@ -3814,17 +3820,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const trade = {
       time: new Date(c.date_start * 1000).toLocaleTimeString(),
       contract_id: c.contract_id,
-      symbol: c.underlying || c.symbol,
+      symbol: c.underlying || c.symbol || "Inconnu",
       type: c.contract_type === "MULTUP" ? "MULTUP" : "MULTDOWN",
       stake: c.buy_price || 0,
       multiplier: c.multiplier || "-",
       entry_spot: c.entry_tick_display_value ?? "-",
       tp: c.take_profit ?? "-",
       sl: c.stop_loss ?? "-",
-      profit:
-        c.profit !== undefined
-          ? (c.profit >= 0 ? `+${c.profit.toFixed(2)}` : c.profit.toFixed(2))
-          : "-"
+      profit: c.profit !== undefined ? parseFloat(c.profit).toFixed(2) : "0.00"
     };
 
     // Vérifie si déjà présent
@@ -3834,34 +3837,47 @@ document.addEventListener("DOMContentLoaded", () => {
       // 🔹 Création d’une nouvelle ligne
       tr = document.createElement("tr");
       tr.dataset.contract = c.contract_id;
+
+      // On définit la couleur du profit
+      const profitColor = parseFloat(trade.profit) >= 0 ? '#089981' : '#f23645';
+      const profitSign = parseFloat(trade.profit) > 0 ? "+" : "";
+
       tr.innerHTML = `  
-        <td><input type="checkbox" class="rowSelect"></td>   
-        <td>${trade.time}</td>
-        <td>${trade.contract_id}</td>
-        <td>${trade.symbol.toString()}</td>
-        <td class="${trade.type === "MULTUP" ? "MULTUP" : "MULTDOWN"}">${trade.type}</td>
-        <td>${Number(trade.stake).toFixed(2)}</td>
-        <td>${trade.multiplier}</td>
-        <td>${trade.entry_spot}</td>
-        <td>${trade.tp}</td>
-        <td>${trade.sl}</td>
-        <td style="color:${trade.profit >= 0 ? 'blue' : 'red'};">${(trade.profit > 0 ? "+" : "") + trade.profit}</td> 
-        <td>
+      <td><input type="checkbox" class="rowSelect"></td>   
+      <td>${trade.time}</td>
+      <td>${trade.contract_id}</td>
+      <td>${trade.symbol}</td>
+      <td class="${trade.type}">${trade.type}</td>
+      <td>${Number(trade.stake).toFixed(2)}</td>
+      <td>${trade.multiplier}</td>
+      <td>${trade.entry_spot}</td>
+      <td>${trade.tp}</td>
+      <td>${trade.sl}</td>
+      <td style="color:${profitColor}; font-weight:bold;">${profitSign}${trade.profit}</td> 
+      <td>
         <button class="deleteRowBtn" 
-          style="background:#ef4444; border:none; color:white; border-radius:4px; padding:2px 6px; cursor:pointer;">
+          style="background:#ef4444; border:none; color:white; border-radius:4px; padding:2px 10px; cursor:pointer;">
           Close
         </button>
-        </td>
-      `;
+      </td>
+    `;
       autoTradeBody.appendChild(tr);
     } else {
-      // 🔄 Mise à jour en temps réel du profit
-      tr.cells[10].textContent = trade.profit;
+      // 🔄 Mise à jour en temps réel de la cellule Profit (index 10)
+      const profitCell = tr.cells[10];
+      const val = parseFloat(trade.profit);
+      profitCell.textContent = (val > 0 ? "+" : "") + trade.profit;
+      profitCell.style.color = val >= 0 ? '#089981' : '#f23645';
     }
 
-    updateTotalStats();
-    updateDonutCharts();
-    Openpositionlines(currentSeries);
+    // Mise à jour des autres fonctions globales
+    if (typeof updateTotalStats === "function") updateTotalStats();
+    if (typeof updateDonutCharts === "function") updateDonutCharts();
+
+    // Important : On vérifie si currentSeries existe pour les lignes sur le chart
+    if (typeof Openpositionlines === "function" && typeof currentSeries !== "undefined") {
+      Openpositionlines(currentSeries);
+    }
   }
 
   /**
@@ -3951,6 +3967,9 @@ document.addEventListener("DOMContentLoaded", () => {
       wsplContracts.send(JSON.stringify({ authorize: TOKEN }));
     };
 
+    wsplContracts.onclose = () => setTimout(connectDeriv_table, 500);
+    wsplContracts.onerror = (e) => { wsContracts.close(); setTimout(connectDeriv_table, 500); };
+
     // --- ÉVÉNEMENT : RÉCEPTION DES MESSAGES ---
     wsplContracts.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
@@ -3972,7 +3991,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         case "portfolio":
           if (typeof handlePortfolio === 'function') {
-            handlePortfolio(data);
+            handlePortfolio(data);  
           }
           break;
 
