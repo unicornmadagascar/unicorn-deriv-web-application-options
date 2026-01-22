@@ -2383,7 +2383,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }  
 
     return null;  
-  }
+  }  
 
   function renderSniperOverlay(signal) {
     const canvas = document.getElementById('Trendoverlay__');
