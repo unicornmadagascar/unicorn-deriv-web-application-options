@@ -3023,14 +3023,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (zigzagSeries) {
         // Option 1 : On cache la série (plus performant)
-        zigzagSeries.applyOptions({ visible: false });
+        zigzagSeries.applyOptions({ visible: false });   
 
         // Option 2 : On vide si vous voulez vraiment libérer la mémoire
         zigzagSeries.setData([]);
-        zigzagSeries.setMarkers([]);
+        zigzagSeries.setMarkers([]);  
       }
     }
-  };
+  };  
 
   function refreshZigZag() {
     // 1. Vérifications de sécurité
