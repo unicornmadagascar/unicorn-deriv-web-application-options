@@ -2333,7 +2333,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const btn = document.getElementById('sniper-btn');
     
     if (isSniperArmed) {
-        btn.classList.add('armed');
+        btn.classList.add('armed');  
         btn.innerHTML = "📡"; // On change l'icône pour montrer que le radar SCANNE
         console.log("Radar activé");
     } else {
