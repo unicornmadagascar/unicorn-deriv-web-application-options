@@ -2671,17 +2671,20 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.fillText(text, x, y + (boxHeight / 2));
   }
 
-  function logSignalToStorage(signal, volRatio) {
+  // Ajoutez 'candle' comme 3ème paramètre
+  function logSignalToStorage(signal, volRatio, candle) {
     let logs = JSON.parse(localStorage.getItem('sniper_logs')) || [];
+
+    // Sécurité : on vérifie si la bougie existe
+    const entryPrice = candle ? (candle.close || candle.c || 0) : 0;
 
     const entry = {
       date: new Date().toLocaleString(),
-      asset: currentSymbol || 'Asset',
+      asset: typeof currentSymbol !== "undefined" ? currentSymbol : 'Asset',
       signal: signal.name,
       side: signal.side,
-      // On s'assure que c'est bien un nombre avant d'ajouter le symbole %
       volume: (isNaN(volRatio) ? 0 : volRatio) + '%',
-      price: lastCandle.close
+      price: entryPrice
     };
 
     logs.unshift(entry);
@@ -2882,7 +2885,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   // --- 3. JOURNALISATION (LOG) ---
                   if (typeof logSignalToStorage === "function") {
-                    logSignalToStorage(signal, volRatio);
+                    // PASSAGE DES 3 ARGUMENTS : le signal, le ratio et la bougie actuelle
+                    logSignalToStorage(signal, volRatio, lastCandle);
                   }
 
                   playAlertSound();
@@ -3813,14 +3817,14 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         // Si même le parent n'est pas là, on ne peut rien faire
         return;
-      }  
-    }    
+      }
+    }
 
     // Supprime la ligne si le contrat est vendu  
     if (c.is_sold) {
       const tr = autoTradeBody.querySelector(`[data-contract='${c.contract_id}']`);
       if (tr) tr.remove();
-      console.log(`✅ Contract ${c.contract_id} closed.`);  
+      console.log(`✅ Contract ${c.contract_id} closed.`);
       return;
     }
 
