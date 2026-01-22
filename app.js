@@ -2596,58 +2596,147 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 10000); // Affichage pendant 10 secondes
   }
 
-  function drawSniperTooltip(signal, time) {
+  function drawSniperTooltip(signal, time, volRatio = 0) {
     const canvas = document.getElementById('Trendoverlay__');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
-    // 1. Nettoyage du canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // 2. Conversion du temps et du prix en coordonnées Pixel
     const x = chart.timeScale().timeToCoordinate(time);
-    // On place l'infobulle soit en haut soit en bas selon le signal
-    const y = signal.side === 'BUY' ? 100 : canvas.height - 150;
+    const y = signal.side === 'BUY' ? 80 : canvas.height - 150;
 
     if (x === null) return;
 
-    const text = ` ${signal.icon} ${signal.name} `;
+    const volText = volRatio > 0 ? ` (VOL +${volRatio}%)` : ` (VOL ${volRatio}%)`;
+    const text = `${signal.icon} ${signal.name}${volText}`;
+
     ctx.font = 'bold 13px Inter, Arial';
     const textWidth = ctx.measureText(text).width;
-    const padding = 8;
+    const padding = 12;
     const boxWidth = textWidth + (padding * 2);
-    const boxHeight = 30;
-    const radius = 15; // Arrondi complet (style pilule)
+    const boxHeight = 34;
+    const radius = 17;
 
-    // --- DESSIN DE LA LIGNE VERTICALE ---
+    // --- LOGIQUE DYNAMIQUE DE LA LIGNE VERTICALE ---
     ctx.beginPath();
-    ctx.setLineDash([4, 4]);
-    ctx.strokeStyle = signal.side === 'BUY' ? '#089981' : '#f23645';
-    ctx.lineWidth = 2;
+
+    if (volRatio > 150) {
+      // VOLUME EXTRÊME : Ligne pleine, épaisse et dorée
+      ctx.setLineDash([]);
+      ctx.strokeStyle = '#ffeb3b';
+      ctx.lineWidth = 4;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = '#ffeb3b';
+    } else if (volRatio > 50) {
+      // VOLUME FORT : Ligne pleine, épaisseur normale
+      ctx.setLineDash([]);
+      ctx.strokeStyle = signal.side === 'BUY' ? '#089981' : '#f23645';
+      ctx.lineWidth = 2;
+      ctx.shadowBlur = 0;
+    } else {
+      // VOLUME FAIBLE/MOYEN : Ligne pointillée, discrète
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.shadowBlur = 0;
+    }
+
     ctx.moveTo(x, 0);
     ctx.lineTo(x, canvas.height);
     ctx.stroke();
+
+    // Reset des effets pour ne pas affecter l'infobulle
     ctx.setLineDash([]);
+    ctx.shadowBlur = 0;
 
-    // --- DESSIN DU CADRE ARRONDI (INFOBULLE) ---
+    // --- DESSIN DE L'INFOBULLE ---
     const boxX = x - (boxWidth / 2);
-    const boxY = y;
-
     ctx.fillStyle = signal.side === 'BUY' ? '#089981' : '#f23645';
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
 
-    // Tracer le rectangle arrondi
+    // Bordure spéciale si volume > 150%
+    if (volRatio > 150) {
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+    }
+
     ctx.beginPath();
-    ctx.roundRect(boxX, boxY, boxWidth, boxHeight, radius);
+    ctx.roundRect(boxX, y, boxWidth, boxHeight, radius);
     ctx.fill();
+    if (volRatio > 150) ctx.stroke();
 
-    // --- DESSIN DU TEXTE ---
-    ctx.shadowBlur = 0; // On enlève l'ombre pour le texte
+    // --- TEXTE ---
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(text, x, boxY + (boxHeight / 2));
+    ctx.fillText(text, x, y + (boxHeight / 2));
+  }
+
+  function logSignalToStorage(signal, volRatio) {
+    // 1. Récupérer l'historique existant ou créer un tableau vide
+    let logs = JSON.parse(localStorage.getItem('sniper_logs')) || [];
+
+    // 2. Créer l'entrée du log
+    const entry = {
+      date: new Date().toLocaleString(),
+      timestamp: Date.now(),
+      asset: currentSymbol || 'Inconnu', // Assurez-vous d'avoir cette variable
+      signal: signal.name,
+      side: signal.side,
+      volume: volRatio + '%',
+      price: priceDataZZ[priceDataZZ.length - 1].close
+    };
+
+    // 3. Ajouter au début du tableau (le plus récent en premier)
+    logs.unshift(entry);
+
+    // 4. Limiter à 100 entrées pour ne pas saturer le navigateur
+    if (logs.length > 100) logs.pop();
+
+    // 5. Sauvegarder
+    localStorage.setItem('sniper_logs', JSON.stringify(logs));
+  }
+
+  function exportLogsToCSV() {
+    const logs = JSON.parse(localStorage.getItem('sniper_logs')) || [];
+    if (logs.length === 0) {
+      alert("Le journal est vide. En attente de signaux...");
+      return;
+    }
+
+    // En-têtes avec séparateur point-virgule (standard Excel Europe)
+    let csvContent = "Date;Actif;Signal;Cote;Volume;Prix\n";
+
+    logs.forEach(log => {
+      csvContent += `${log.date};${log.asset};${log.signal};${log.side};${log.volume};${log.price}\n`;
+    });
+
+    // Création du fichier téléchargeable
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Journal_Sniper_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`);
+    link.style.visibility = 'hidden';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function clearSniperLogs() {
+    if (confirm("Voulez-vous vraiment effacer tout l'historique du journal ?")) {
+      // Vider le localStorage
+      localStorage.removeItem('sniper_logs');
+
+      // Optionnel : Vider aussi les marqueurs visuels sur le graphique
+      allMarkers = [];
+      if (typeof currentSeries !== "undefined") {
+        currentSeries.setMarkers([]);
+      }
+
+      alert("Journal réinitialisé avec succès.");
+    }
   }
 
   // --- INITIALISATION (À appeler une seule fois au chargement ou au 1er clic) ---
@@ -2728,7 +2817,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try { updateMAs(); } catch (e) { console.error(e); }
       }
 
-      // --- BLOC BOLLINGER + SNIPER ---
+      // --- BLOC BOLLINGER + SNIPER (Version Finale Optimisée) ---
       if (bandsEnabled) {
         try {
           // A. CALCULS MATHÉMATIQUES
@@ -2739,7 +2828,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const lastPoint = bbData[bbData.length - 1];
             const lastCandle = priceDataZZ[priceDataZZ.length - 1];
 
-            // B. MISE À JOUR VISUELLE (LIGNES)
+            // B. MISE À JOUR VISUELLE (LIGNES SUR LE GRAPHIQUE)
             upperLine.setData(bbData.map(d => ({ time: d.time, value: d.upper })));
             middleLine.setData(bbData.map(d => ({ time: d.time, value: d.middle })));
             lowerLine.setData(bbData.map(d => ({ time: d.time, value: d.lower })));
@@ -2754,7 +2843,7 @@ document.addEventListener("DOMContentLoaded", () => {
               bottomPrice: d.lower
             })));
 
-            // C. MISE À JOUR DU BADGE VOLATILITÉ
+            // C. MISE À JOUR DU BADGE VOLATILITÉ (UI)
             updateVolatilityUI(lastPoint.upper, lastPoint.lower, lastPoint.middle, lastPoint.isSqueeze);
 
             // D. MOTEUR MULTI-SNIPER
@@ -2765,44 +2854,54 @@ document.addEventListener("DOMContentLoaded", () => {
                 const signal = analyzeSniperStrategies(bbData, emaData, lastCandle);
 
                 if (signal) {
-                  console.log(`%c 🔥 SIGNAL DÉTECTÉ: ${signal.name}`, "color: #089981; font-weight: bold;");
+                  // --- CALCUL DU RATIO DE VOLUME ---
+                  const volumeSlice = priceDataZZ.slice(-20).map(c => c.volume);
+                  const avgVolume = volumeSlice.reduce((a, b) => a + b, 0) / volumeSlice.length;
+                  const currentVolume = lastCandle.volume;
+                  const volRatio = Math.round(((currentVolume / avgVolume) - 1) * 100);
 
-                  lastSignalTime = currentCandleTime; // Verrouillage immédiat de la bougie
+                  lastSignalTime = currentCandleTime; // Verrouillage immédiat
 
-                  // 1. FEEDBACK VISUEL (INFOBULLE + LIGNE VERTICALE + BADGE)
-                  // Dessine l'infobulle arrondie et le laser vertical sur le chart
+                  // 1. FEEDBACK VISUEL GRAPHIQUE (Infobulle + Laser Vertical)
                   if (typeof drawSniperTooltip === "function") {
-                    drawSniperTooltip(signal, currentCandleTime);
+                    drawSniperTooltip(signal, currentCandleTime, volRatio);
                   }
 
-                  // Affiche le badge flottant à côté de "Volatility"
+                  // 2. FEEDBACK VISUEL UI (Badge flottant à côté de Volatilité)
                   if (typeof showFloatingSignal === "function") {
                     showFloatingSignal(signal);
                   }
 
-                  // 2. FEEDBACK SONORE
+                  // 3. JOURNALISATION (Stockage local pour export CSV)
+                  if (typeof logSignalToStorage === "function") {
+                    logSignalToStorage(signal, volRatio);
+                  }
+
+                  // 4. FEEDBACK SONORE
                   playAlertSound();
 
-                  // 3. MARQUEURS HISTORIQUES (FLÈCHES)
+                  // 5. MARQUEURS HISTORIQUES (Flèches colorées selon Volume)
                   const newMarker = {
                     time: currentCandleTime,
                     position: signal.side === 'BUY' ? 'belowBar' : 'aboveBar',
-                    color: signal.side === 'BUY' ? '#089981' : '#f23645',
+                    color: volRatio > 100 ? '#ffeb3b' : (signal.side === 'BUY' ? '#089981' : '#f23645'),
                     shape: signal.side === 'BUY' ? 'arrowUp' : 'arrowDown',
-                    text: signal.name
+                    text: `${signal.name} (${volRatio > 0 ? '+' : ''}${volRatio}%)`
                   };
 
                   allMarkers.push(newMarker);
                   currentSeries.setMarkers(allMarkers);
 
-                  // 4. SCREENSHOT AUTOMATIQUE
-                  if (signal.name.includes("SQUEEZE") || signal.name.includes("SNIPER")) {
-                    setTimeout(() => takeSniperScreenshot(signal.name), 1000);
+                  // 6. SCREENSHOT AUTOMATIQUE FILTRÉ
+                  // On ne déclenche le screenshot que pour les SQUEEZE confirmés par un volume positif
+                  if (signal.name.includes("SQUEEZE") && volRatio > 0) {
+                    console.log(`📸 Screenshot : Squeeze validé (Volume: ${volRatio}%)`);
+                    setTimeout(() => takeSniperScreenshot(`${signal.name}_VOL_${volRatio}`), 1000);
                   }
                 }
               }
             } else {
-              // Si le sniper n'est pas armé, on s'assure que le canvas est propre
+              // Nettoyage du canvas si le sniper est désactivé
               const canvas = document.getElementById('Trendoverlay__');
               if (canvas) {
                 const ctx = canvas.getContext('2d');

@@ -3614,6 +3614,29 @@
     .badge-flash-sell {
       animation: flash-red 0.8s infinite ease-in-out;
     }
+
+    .btn-export:hover {
+      filter: grayscale(0%) !important;
+      transform: scale(1.2);
+    }
+
+    /* Style pour le badge de volatilité pour accueillir les boutons */
+    .chart-badge {
+      display: flex;
+      align-items: center;
+      padding: 5px 12px;
+      background: rgba(20, 20, 20, 0.85);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-reset:hover {
+      opacity: 1 !important;
+      color: #f23645;
+      /* Devient rouge au survol */
+      transform: scale(1.1);
+    }
+    
   </style>
 </head>
 
@@ -3852,7 +3875,10 @@
         <span id="vol-icon" style="margin-right: 5px;"></span>
         Vol: <span id="vol-value">0.00%</span>
         <span id="vol-trend" style="margin-left: 5px; font-size: 10px;"></span>
-
+        <button class="btn-export" onclick="exportLogsToCSV()" title="Exporter le journal CSV"
+          style="margin-left: 10px; background: none; border: none; cursor: pointer; filter: grayscale(100%); transition: 0.3s;">📥</button>
+        <button class="btn-reset" onclick="clearSniperLogs()" title="Effacer le journal"
+          style="margin-left: 5px; background: none; border: none; cursor: pointer; opacity: 0.6; transition: 0.3s;">🗑️</button>
         <div id="sniper-alert-badge"></div>
       </div>
 
@@ -4260,22 +4286,22 @@
     // TRADINGVIEW WIDGET
     function createTradingViewEmbed(containerId, src, config, creditHtml) {
       const container = document.getElementById(containerId);
-      if (!container) return;    
+      if (!container) return;
 
       const placeholder = document.createElement('div');
       placeholder.className = 'tradingview-widget-container__widget';
-      container.appendChild(placeholder);   
+      container.appendChild(placeholder);
 
-      const s = document.createElement('script');  
+      const s = document.createElement('script');
       s.type = 'text/javascript';
       s.async = true;
-      s.src = src;  
-      s.text = JSON.stringify(config);    
-      container.appendChild(s);    
+      s.src = src;
+      s.text = JSON.stringify(config);
+      container.appendChild(s);
 
       if (creditHtml) {
         const cr = document.createElement('div');
-        cr.className = 'tradingview-widget-copyright';  
+        cr.className = 'tradingview-widget-copyright';
         cr.innerHTML = creditHtml;
         container.appendChild(cr);
       }
