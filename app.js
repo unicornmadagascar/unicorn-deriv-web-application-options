@@ -2672,27 +2672,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function logSignalToStorage(signal, volRatio) {
-    // 1. Récupérer l'historique existant ou créer un tableau vide
     let logs = JSON.parse(localStorage.getItem('sniper_logs')) || [];
 
-    // 2. Créer l'entrée du log
     const entry = {
       date: new Date().toLocaleString(),
-      timestamp: Date.now(),
-      asset: currentSymbol || 'Inconnu', // Assurez-vous d'avoir cette variable
+      asset: currentSymbol || 'Asset',
       signal: signal.name,
       side: signal.side,
-      volume: volRatio + '%',
-      price: priceDataZZ[priceDataZZ.length - 1].close
+      // On s'assure que c'est bien un nombre avant d'ajouter le symbole %
+      volume: (isNaN(volRatio) ? 0 : volRatio) + '%',
+      price: lastCandle.close
     };
 
-    // 3. Ajouter au début du tableau (le plus récent en premier)
     logs.unshift(entry);
-
-    // 4. Limiter à 100 entrées pour ne pas saturer le navigateur
     if (logs.length > 100) logs.pop();
-
-    // 5. Sauvegarder
     localStorage.setItem('sniper_logs', JSON.stringify(logs));
   }
 
@@ -2845,7 +2838,7 @@ document.addEventListener("DOMContentLoaded", () => {
             areaSeriesBB.setData(bbData.map(d => ({
               time: d.time,
               value: d.upper,
-              bottomPrice: d.lower  
+              bottomPrice: d.lower
             })));
 
             // C. MISE À JOUR DU BADGE VOLATILITÉ (UI)
@@ -2859,54 +2852,62 @@ document.addEventListener("DOMContentLoaded", () => {
                 const signal = analyzeSniperStrategies(bbData, emaData, lastCandle);
 
                 if (signal) {
-                  // --- CALCUL DU RATIO DE VOLUME ---
-                  const volumeSlice = priceDataZZ.slice(-20).map(c => c.volume);
-                  const avgVolume = volumeSlice.reduce((a, b) => a + b, 0) / volumeSlice.length;
-                  const currentVolume = lastCandle.volume;
-                  const volRatio = Math.round(((currentVolume / avgVolume) - 1) * 100);
+                  // --- 1. CALCUL DU RATIO DE VOLUME SÉCURISÉ ---
+                  // On vérifie 'volume' ou 'v' selon votre source de données
+                  const getVol = (c) => c.volume ?? c.v ?? 0;
 
-                  lastSignalTime = currentCandleTime; // Verrouillage immédiat
+                  const volumeSlice = priceDataZZ.slice(-21, -1).map(c => getVol(c)); // 20 bougies précédentes
+                  const currentVolume = getVol(lastCandle);
 
-                  // 1. FEEDBACK VISUEL GRAPHIQUE (Infobulle + Laser Vertical)
+                  let volRatio = 0;
+                  if (volumeSlice.length > 0) {
+                    const avgVolume = volumeSlice.reduce((a, b) => a + b, 0) / volumeSlice.length;
+                    // Si l'avg est > 0, on calcule, sinon 0 pour éviter division par zéro
+                    volRatio = avgVolume > 0 ? Math.round(((currentVolume / avgVolume) - 1) * 100) : 0;
+                  }
+
+                  // Sécurité ultime contre les valeurs non numériques
+                  if (isNaN(volRatio) || !isFinite(volRatio)) volRatio = 0;
+
+                  lastSignalTime = currentCandleTime;
+
+                  // --- 2. FEEDBACKS VISUELS ---
                   if (typeof drawSniperTooltip === "function") {
                     drawSniperTooltip(signal, currentCandleTime, volRatio);
                   }
 
-                  // 2. FEEDBACK VISUEL UI (Badge flottant à côté de Volatilité)
                   if (typeof showFloatingSignal === "function") {
                     showFloatingSignal(signal);
                   }
 
-                  // 3. JOURNALISATION (Stockage local pour export CSV)
+                  // --- 3. JOURNALISATION (LOG) ---
                   if (typeof logSignalToStorage === "function") {
                     logSignalToStorage(signal, volRatio);
                   }
 
-                  // 4. FEEDBACK SONORE
                   playAlertSound();
 
-                  // 5. MARQUEURS HISTORIQUES (Flèches colorées selon Volume)
+                  // --- 4. MARQUEURS SUR LE GRAPHIQUE ---
+                  const volSign = volRatio >= 0 ? '+' : '';
                   const newMarker = {
                     time: currentCandleTime,
                     position: signal.side === 'BUY' ? 'belowBar' : 'aboveBar',
                     color: volRatio > 100 ? '#ffeb3b' : (signal.side === 'BUY' ? '#089981' : '#f23645'),
                     shape: signal.side === 'BUY' ? 'arrowUp' : 'arrowDown',
-                    text: `${signal.name} (${volRatio > 0 ? '+' : ''}${volRatio}%)`
+                    text: `${signal.name} (${volSign}${volRatio}%)`
                   };
 
                   allMarkers.push(newMarker);
                   currentSeries.setMarkers(allMarkers);
 
-                  // 6. SCREENSHOT AUTOMATIQUE FILTRÉ
-                  // On ne déclenche le screenshot que pour les SQUEEZE confirmés par un volume positif
+                  // --- 5. SCREENSHOT ---
                   if (signal.name.includes("SQUEEZE") && volRatio > 0) {
-                    console.log(`📸 Screenshot : Squeeze validé (Volume: ${volRatio}%)`);
-                    setTimeout(() => takeSniperScreenshot(`${signal.name}_VOL_${volRatio}`), 1000);
+                    setTimeout(() => takeSniperScreenshot(`${signal.name}_V${volRatio}`), 1000);
                   }
                 }
               }
             } else {
-              // Nettoyage du canvas si le sniper est désactivé
+              // Si le sniper est désactivé, on nettoie le laser du graphique
               const canvas = document.getElementById('Trendoverlay__');
               if (canvas) {
                 const ctx = canvas.getContext('2d');
