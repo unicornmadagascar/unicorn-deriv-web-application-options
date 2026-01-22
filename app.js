@@ -2708,7 +2708,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   // 1. Feedback
                   playAlertSound();
-                  if (typeof renderSniperOverlay === "function") renderSniperOverlay(signal);
+                  if (typeof renderSniperOverlay === "function") renderSniperOverlay(signal);  
 
                   // 2. Marqueur sur le graphique  
                   const existingMarkers = currentSeries.getMarkers() || [];
