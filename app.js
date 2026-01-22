@@ -2353,37 +2353,40 @@ document.addEventListener("DOMContentLoaded", () => {
     const current = results[results.length - 1];
     const prev = results[results.length - 2];
     const currentEMA = emaData[emaData.length - 1].value;
+
     const price = lastCandle.close;
+    const high = lastCandle.high;
+    const low = lastCandle.low;
 
-    // Détermination de la tendance pour information
-    const isUptrend = price > currentEMA;
+    // Seuil de proximité (0.01% de marge pour considérer qu'on "touche" la bande)
+    const margin = current.middle * 0.0001;
 
-    // 1. Détection de la SORTIE de Squeeze (Bandwidth qui remonte)
-    if (current.bandwidth > prev.bandwidth) {
+    // --- LOGIQUE DE DÉTECTION ---
 
-      // CASSURE HAUTE
-      if (price > current.upper) {
-        // Si on veut être STRICT, on garde "if (isUptrend && ...)"
-        // Ici, on autorise le signal mais on précise s'il est "Trend" ou "Counter"
-        return {
-          name: isUptrend ? "SQUEEZE BUY (Trend)" : "SQUEEZE BUY (Reversal)",
-          side: "BUY",
-          icon: isUptrend ? "🚀" : "⚠️"
-        };
-      }
+    // 1. SIGNAL D'ACHAT (BUY)
+    // On déclenche si le HAUT de la bougie touche ou dépasse la bande supérieure
+    if (high >= (current.upper - margin)) {
+      const isTrend = price > currentEMA;
+      return {
+        name: isTrend ? "SNIPER BUY" : "REVERSAL BUY",
+        side: "BUY",
+        icon: isTrend ? "🚀" : "🎯"
+      };
+    }
 
-      // CASSURE BASSE
-      if (price < current.lower) {
-        return {
-          name: !isUptrend ? "SQUEEZE SELL (Trend)" : "SQUEEZE SELL (Reversal)",
-          side: "SELL",
-          icon: !isUptrend ? "📉" : "⚠️"
-        };
-      }  
-    }  
+    // 2. SIGNAL DE VENTE (SELL)
+    // On déclenche si le BAS de la bougie touche ou dépasse la bande inférieure
+    if (low <= (current.lower + margin)) {
+      const isTrend = price < currentEMA;
+      return {
+        name: isTrend ? "SNIPER SELL" : "REVERSAL SELL",
+        side: "SELL",
+        icon: isTrend ? "📉" : "🎯"
+      };
+    }
 
     return null;  
-  }  
+  }
 
   function renderSniperOverlay(signal) {
     const canvas = document.getElementById('Trendoverlay__');
