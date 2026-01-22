@@ -2826,7 +2826,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const label = document.getElementById('volatility-label');
             if (label && label.style.display === 'none') {
-              label.classList.add('show-label');
+              label.classList.add('show-label');  
             }
 
             // B. MISE À JOUR VISUELLE (LIGNES SUR LE GRAPHIQUE)
