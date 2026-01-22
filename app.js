@@ -2885,7 +2885,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     logSignalToStorage(signal, volRatio);
                   }
 
-                  playAlertSound();
+                  playAlertSound();  
 
                   // --- 4. MARQUEURS SUR LE GRAPHIQUE ---
                   const volSign = volRatio >= 0 ? '+' : '';
