@@ -2889,8 +2889,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   // --- 4. MARQUEURS SUR LE GRAPHIQUE ---
                   const volSign = volRatio >= 0 ? '+' : '';
-                  const newMarker = {
-                    time: currentCandleTime,
+                  const newMarker = {  
+                    time: currentCandleTime, 
                     position: signal.side === 'BUY' ? 'belowBar' : 'aboveBar',
                     color: volRatio > 100 ? '#ffeb3b' : (signal.side === 'BUY' ? '#089981' : '#f23645'),
                     shape: signal.side === 'BUY' ? 'arrowUp' : 'arrowDown',
