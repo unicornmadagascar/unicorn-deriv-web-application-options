@@ -6026,7 +6026,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("calendarBody").addEventListener("change", (e) => {
     if (e.target.type === 'checkbox') {
       // On récupère le timestamp depuis l'ID du TR parent
-      const row = e.target.closest('tr');
+      const row = e.target.closest('tr');  
       const timestamp = row ? row.getAttribute('data-timestamp') : null;
 
       if (timestamp) {
