@@ -3618,7 +3618,6 @@
     .badge-flash-sell {
       animation: flash-red 0.6s infinite !important;
     }
-    
   </style>
 </head>
 
@@ -4261,6 +4260,25 @@
         overlay.classList.add('hidden');
       }
     }
+
+    // --- 1) Ticker Tape ---
+    createTradingViewEmbed('ticker-container',
+      'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js',
+      {
+        "symbols": [
+          { "proName": "FX:GBPUSD", "title": "S&P 500 Index" },
+          { "proName": "OANDA:XAUUSD", "title": "Gold to USD" },
+          { "proName": "FX_IDC:EURUSD", "title": "EUR to USD" },
+          { "proName": "BITSTAMP:BTCUSD", "title": "Bitcoin" },
+          { "proName": "BITSTAMP:ETHUSD", "title": "Ethereum" }
+        ],
+        "colorTheme": "light",
+        "locale": "en",
+        "isTransparent": false,
+        "showSymbolLogo": true,
+        "displayMode": "adaptive"
+      }
+    );
 
     // Toggle panel
     const controlPanelToggle = document.getElementById("controlPanelToggle");
