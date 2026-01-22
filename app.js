@@ -3802,15 +3802,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let autoTradeBody = document.getElementById("autoTradeBody");
 
-    // SI LE BODY N'EXISTE PAS ENCORE, ON FORCE L'INIT
+    // SÉCURITÉ : On ne recrée la table QUE si elle n'existe vraiment pas dans le DOM
     if (!autoTradeBody) {
-      console.log("Table non trouvée, tentative d'initialisation...");
-      initTable();
-      autoTradeBody = document.getElementById("autoTradeBody");
-
-      // Si après l'init ça ne marche toujours pas, on sort pour éviter le crash
-      if (!autoTradeBody) return;
-    }
+      // On vérifie si le conteneur parent existe avant d'init
+      if (document.getElementById("autoHistoryList")) {
+        console.log("🛠️ Première initialisation de la table...");
+        initTable();
+        // On récupère la référence fraîchement créée
+        autoTradeBody = document.getElementById("autoTradeBody");
+      } else {
+        // Si même le parent n'est pas là, on ne peut rien faire
+        return;
+      }
+    }  
 
     // Supprime la ligne si le contrat est vendu
     if (c.is_sold) {
