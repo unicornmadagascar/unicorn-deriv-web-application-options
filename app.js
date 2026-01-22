@@ -2710,10 +2710,10 @@ document.addEventListener("DOMContentLoaded", () => {
                   playAlertSound();
                   if (typeof renderSniperOverlay === "function") renderSniperOverlay(signal);
 
-                  // 2. Marqueur sur le graphique
+                  // 2. Marqueur sur le graphique  
                   const existingMarkers = currentSeries.getMarkers() || [];
-                  currentSeries.setMarkers([...existingMarkers, {
-                    time: currentCandleTime,
+                  currentSeries.setMarkers([...existingMarkers, {  
+                    time: currentCandleTime, 
                     position: signal.side === 'BUY' ? 'belowBar' : 'aboveBar',
                     color: signal.side === 'BUY' ? '#089981' : '#f23645',
                     shape: signal.side === 'BUY' ? 'arrowUp' : 'arrowDown',
