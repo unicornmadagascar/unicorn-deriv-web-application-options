@@ -3813,14 +3813,14 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         // Si même le parent n'est pas là, on ne peut rien faire
         return;
-      }
+      }  
     }    
 
     // Supprime la ligne si le contrat est vendu  
     if (c.is_sold) {
       const tr = autoTradeBody.querySelector(`[data-contract='${c.contract_id}']`);
       if (tr) tr.remove();
-      console.log(`✅ Contract ${c.contract_id} closed.`);
+      console.log(`✅ Contract ${c.contract_id} closed.`);  
       return;
     }
 
