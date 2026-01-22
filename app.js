@@ -2380,7 +2380,7 @@ document.addEventListener("DOMContentLoaded", () => {
           icon: !isUptrend ? "📉" : "⚠️"
         };
       }
-    }
+    }  
 
     return null;  
   }
