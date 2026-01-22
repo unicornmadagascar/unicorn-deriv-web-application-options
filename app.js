@@ -132,6 +132,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let lastBandwidth = 0; // Doit être globale
   // 1. Déplacez ceci en dehors de la fonction pour garder la mémoire de l'historique
   let globalBandwidths = [];
+  // 1. Ajoutez cette variable tout en haut de votre script avec les autres
+  let allMarkers = [];
   // ================== x ==================  
 
   let wsReady = false;
@@ -2662,15 +2664,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // --- BLOC BOLLINGER + SNIPER ---
-      if (bandsEnabled) {  
+      if (bandsEnabled) {
         try {
-          // A. CALCULS MATHÉMATIQUES
           const bbData = calculateBollingerData(priceDataZZ);
-          // Assurez-vous que le nom est bien calculateEMA (ou calculateEMABB selon votre script)
-          const emaData = calculateEMA(priceDataZZ, 200);  
+          const emaData = calculateEMA(priceDataZZ, 200);
 
-          if (bbData.length > 0) {    
-            const lastPoint = bbData[bbData.length - 1];  
+          if (bbData.length > 0) {
+            const lastPoint = bbData[bbData.length - 1];
             const lastCandle = priceDataZZ[priceDataZZ.length - 1];
 
             // B. MISE À JOUR VISUELLE
@@ -2678,7 +2678,6 @@ document.addEventListener("DOMContentLoaded", () => {
             middleLine.setData(bbData.map(d => ({ time: d.time, value: d.middle })));
             lowerLine.setData(bbData.map(d => ({ time: d.time, value: d.lower })));
 
-            // On ne met l'EMA que si on a assez de données (200 points)
             if (emaData.length > 0) {
               ema200Series.setData(emaData);
             }
@@ -2694,31 +2693,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // D. MOTEUR MULTI-SNIPER
             if (isSniperArmed) {
-              // Sécurité : on compare les secondes si le format est différent
               const currentCandleTime = lastCandle.time;
 
               if (lastSignalTime !== currentCandleTime) {
-                // APPEL DE L'ANALYSE   
                 const signal = analyzeSniperStrategies(bbData, emaData, lastCandle);
 
                 if (signal) {
                   console.log(`%c 🔥 SIGNAL DÉTECTÉ: ${signal.name}`, "color: #089981; font-weight: bold;");
 
-                  lastSignalTime = currentCandleTime; // Verrouillage de la bougie  
+                  lastSignalTime = currentCandleTime; // Verrouillage immédiat
 
                   // 1. Feedback
                   playAlertSound();
-                  if (typeof renderSniperOverlay === "function") renderSniperOverlay(signal);  
+                  if (typeof renderSniperOverlay === "function") renderSniperOverlay(signal);
 
-                  // 2. Marqueur sur le graphique    
-                  const existingMarkers = currentSeries.getMarkers() || [];
-                  currentSeries.setMarkers([...existingMarkers, {  
-                    time: currentCandleTime, 
+                  // 2. NOUVEAU SYSTÈME DE MARQUEURS (Solution au TypeError)
+                  const newMarker = {
+                    time: currentCandleTime,
                     position: signal.side === 'BUY' ? 'belowBar' : 'aboveBar',
                     color: signal.side === 'BUY' ? '#089981' : '#f23645',
-                    shape: signal.side === 'BUY' ? 'arrowUp' : 'arrowDown', 
+                    shape: signal.side === 'BUY' ? 'arrowUp' : 'arrowDown',
                     text: signal.name
-                  }]);  
+                  };
+
+                  // On ajoute le nouveau marqueur à l'historique global
+                  allMarkers.push(newMarker);
+
+                  // On envoie TOUT le tableau à la série
+                  // Note: 'currentSeries' doit être le nom de votre variable addCandlestickSeries
+                  currentSeries.setMarkers(allMarkers);
 
                   // 3. Screenshot
                   if (signal.name.includes("SQUEEZE") || signal.name.includes("SNIPER")) {
