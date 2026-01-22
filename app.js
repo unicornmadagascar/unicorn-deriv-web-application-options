@@ -2380,7 +2380,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.fillText(`POWER: ${Math.round(ratio * 100)}% BUY | ${sniperStats.buy}🟢 ${sniperStats.sell}🔴`, 25, canvas.height - 45);
   }
 
-  function takeSniperScreenshot(strategyName) {
+  function takeSniperScreenshot(strategyName) {  
     // On cible le parent qui contient le graphique ET l'overlay
     const elementToCapture = document.getElementById('chartArea');
 
@@ -2406,6 +2406,7 @@ document.addEventListener("DOMContentLoaded", () => {
       link.click();
 
       console.log(`📸 Capture réussie : ${filename}`);
+      showToast(`📸 Screenshot created : ${filename}`,'info');
     }).catch(err => {
       console.error("Erreur lors de la capture d'écran :", err);
     });
