@@ -2696,7 +2696,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem('sniper_logs', JSON.stringify(logs));
   }
 
-  function exportLogsToCSV() {
+  window.exportLogsToCSV = function () {
     const logs = JSON.parse(localStorage.getItem('sniper_logs')) || [];
     if (logs.length === 0) {
       alert("Le journal est vide. En attente de signaux...");
@@ -2723,8 +2723,8 @@ document.addEventListener("DOMContentLoaded", () => {
     link.click();
     document.body.removeChild(link);
   }
-
-  function clearSniperLogs() {
+  
+  window.clearSniperLogs = function () {
     if (confirm("Voulez-vous vraiment effacer tout l'historique du journal ?")) {
       // Vider le localStorage
       localStorage.removeItem('sniper_logs');
