@@ -2571,7 +2571,7 @@ document.addEventListener("DOMContentLoaded", () => {
         alertBadge.classList.add(flashClass);
       }
 
-      alertBadge.style.display = 'inline-block';
+      alertBadge.style.display = 'inline-block';  
     });
 
     // Auto-hide après 8s
