@@ -2720,10 +2720,10 @@ document.addEventListener("DOMContentLoaded", () => {
     link.style.visibility = 'hidden';
 
     document.body.appendChild(link);
-    link.click();  
+    link.click();
     document.body.removeChild(link);
   }
-  
+
   window.clearSniperLogs = function () {
     if (confirm("Voulez-vous vraiment effacer tout l'historique du journal ?")) {
       // Vider le localStorage
@@ -2827,6 +2827,11 @@ document.addEventListener("DOMContentLoaded", () => {
           if (bbData.length > 0) {
             const lastPoint = bbData[bbData.length - 1];
             const lastCandle = priceDataZZ[priceDataZZ.length - 1];
+            
+            const label = document.getElementById('volatility-label');
+            if (label && label.style.display === 'none') {
+              label.classList.add('show-label');
+            }
 
             // B. MISE À JOUR VISUELLE (LIGNES SUR LE GRAPHIQUE)
             upperLine.setData(bbData.map(d => ({ time: d.time, value: d.upper })));
