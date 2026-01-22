@@ -6035,7 +6035,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const eventObj = allEvents.find(ev => ev.release_date.toString() === timestamp);
         if (eventObj) {
           eventObj.checked = e.target.checked;
-        }
+        }  
 
         // 2. Lancement de la mise à jour visuelle du graphique
         updateChartMarkers();
