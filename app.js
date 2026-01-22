@@ -2556,18 +2556,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const alertBadge = document.getElementById('sniper-alert-badge');
     if (!alertBadge) return;
 
-    // Configuration du contenu
-    alertBadge.innerHTML = `${signal.icon} ${signal.name}`;
-    alertBadge.className = signal.side === 'BUY' ? 'badge-buy' : 'badge-sell';
-    alertBadge.style.display = 'inline-block';
+    // Reset
+    alertBadge.style.display = 'none';
+    alertBadge.classList.remove('badge-flash-buy', 'badge-flash-sell');
+    alertBadge.innerHTML = '';  
 
-    // Disparition automatique après 8 secondes (durée d'une opportunité)
-    setTimeout(() => {
-      alertBadge.style.opacity = '0';
-      setTimeout(() => {
-        alertBadge.style.display = 'none';
-        alertBadge.style.opacity = '1';
-      }, 500);
+    requestAnimationFrame(() => {
+      alertBadge.innerHTML = `${signal.icon} ${signal.name}`;
+      alertBadge.className = signal.side === 'BUY' ? 'badge-buy' : 'badge-sell';
+
+      // AJOUT : Si c'est un Squeeze, on fait clignoter !
+      if (signal.name.includes("SQUEEZE")) {
+        const flashClass = signal.side === 'BUY' ? 'badge-flash-buy' : 'badge-flash-sell';
+        alertBadge.classList.add(flashClass);
+      }
+
+      alertBadge.style.display = 'inline-block';
+    });
+
+    // Auto-hide après 8s
+    if (window.signalTimer) clearTimeout(window.signalTimer);
+    window.signalTimer = setTimeout(() => {
+      alertBadge.style.display = 'none';
     }, 8000);
   }
 
@@ -2703,11 +2713,11 @@ document.addEventListener("DOMContentLoaded", () => {
                   };
 
                   // On ajoute le nouveau marqueur à l'historique global
-                  allMarkers.push(newMarker);  
+                  allMarkers.push(newMarker);
 
                   // On envoie TOUT le tableau à la série
                   // Note: 'currentSeries' doit être le nom de votre variable addCandlestickSeries
-                  currentSeries.setMarkers(allMarkers); 
+                  currentSeries.setMarkers(allMarkers);
 
                   // 3. Screenshot
                   if (signal.name.includes("SQUEEZE") || signal.name.includes("SNIPER")) {

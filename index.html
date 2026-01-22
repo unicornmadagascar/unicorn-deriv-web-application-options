@@ -3574,6 +3574,51 @@
       color: white;
       border: 1px solid #b22833;
     }
+
+    /* Animation de clignotement d'alerte */
+    @keyframes flash-red {
+      0% {
+        opacity: 1;
+        box-shadow: 0 0 15px rgba(242, 54, 69, 0.8);
+      }
+
+      50% {
+        opacity: 0.6;
+        box-shadow: 0 0 5px rgba(242, 54, 69, 0.2);
+      }
+
+      100% {
+        opacity: 1;
+        box-shadow: 0 0 15px rgba(242, 54, 69, 0.8);
+      }
+    }
+
+    @keyframes flash-green {
+      0% {
+        opacity: 1;
+        box-shadow: 0 0 15px rgba(8, 153, 129, 0.8);
+      }
+
+      50% {
+        opacity: 0.6;
+        box-shadow: 0 0 5px rgba(8, 153, 129, 0.2);
+      }
+
+      100% {
+        opacity: 1;
+        box-shadow: 0 0 15px rgba(8, 153, 129, 0.8);
+      }
+    }
+
+    /* Classes à appliquer dynamiquement */
+    .badge-flash-buy {
+      animation: flash-green 0.6s infinite !important;
+    }
+
+    .badge-flash-sell {
+      animation: flash-red 0.6s infinite !important;
+    }
+    
   </style>
 </head>
 
