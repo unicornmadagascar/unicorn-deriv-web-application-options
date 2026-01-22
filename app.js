@@ -3026,8 +3026,8 @@ document.addEventListener("DOMContentLoaded", () => {
         zigzagSeries.applyOptions({ visible: false });   
 
         // Option 2 : On vide si vous voulez vraiment libérer la mémoire
-        zigzagSeries.setData([]);
-        zigzagSeries.setMarkers([]);  
+        zigzagSeries.setData([]);   
+        zigzagSeries.setMarkers([]);     
       }
     }
   };  
