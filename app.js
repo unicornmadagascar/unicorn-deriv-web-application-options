@@ -3800,12 +3800,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const c = data.proposal_open_contract;
     if (!c || !c.contract_id) return;
 
-    const autoTradeBody = document.getElementById("autoTradeBody");
+    let autoTradeBody = document.getElementById("autoTradeBody");
 
-    // --- SÉCURITÉ : On vérifie si le tableau existe avant de continuer ---
+    // SI LE BODY N'EXISTE PAS ENCORE, ON FORCE L'INIT
     if (!autoTradeBody) {
-      console.error("Erreur : L'élément #autoTradeBody est introuvable dans le HTML.");
-      return;
+      console.log("Table non trouvée, tentative d'initialisation...");
+      initTable();
+      autoTradeBody = document.getElementById("autoTradeBody");
+
+      // Si après l'init ça ne marche toujours pas, on sort pour éviter le crash
+      if (!autoTradeBody) return;
     }
 
     // Supprime la ligne si le contrat est vendu
@@ -3814,11 +3818,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (tr) tr.remove();
       console.log(`✅ Contract ${c.contract_id} closed.`);
       return;
-    }  
-  
+    }
+
     // Objet formaté pour ton tableau
     const trade = {
-      time: new Date(c.date_start * 1000).toLocaleTimeString(), 
+      time: new Date(c.date_start * 1000).toLocaleTimeString(),
       contract_id: c.contract_id,
       symbol: c.underlying || c.symbol || "Inconnu",
       type: c.contract_type === "MULTUP" ? "MULTUP" : "MULTDOWN",
@@ -3991,7 +3995,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         case "portfolio":
           if (typeof handlePortfolio === 'function') {
-            handlePortfolio(data);  
+            handlePortfolio(data);
           }
           break;
 
