@@ -2713,7 +2713,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     position: signal.side === 'BUY' ? 'belowBar' : 'aboveBar',
                     color: signal.side === 'BUY' ? '#089981' : '#f23645',
                     shape: signal.side === 'BUY' ? 'arrowUp' : 'arrowDown',
-                    text: signal.name
+                    text: signal.name  
                   };
 
                   // On ajoute le nouveau marqueur à l'historique global
