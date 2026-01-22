@@ -2840,7 +2840,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             areaSeriesBB.setData(bbData.map(d => ({  
               time: d.time,
-              value: d.upper,
+              value: d.upper,  
               bottomPrice: d.lower
             })));
 
