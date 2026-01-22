@@ -5924,7 +5924,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Détection des poignées d'ancrage (15px de rayon)
       if (Math.hypot(x - xF, y - yP) < 15) {
-        activeHandle = 'FIBO_POC';
+        activeHandle = 'FIBO_POC';  
         isFiboLocked = true; // Si on touche manuellement, on verrouille l'automatisme
         hit = true;
       }
