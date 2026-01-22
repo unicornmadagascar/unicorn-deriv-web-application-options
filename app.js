@@ -2366,7 +2366,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return null;  
     }
 
-    // Si on sort du squeeze (bw augmente)
+    // Si on sort du squeeze (bw augmente)  
     if (current.bandwidth > prev.bandwidth) {
       if (isUptrend && price > current.upper) return { name: "SQUEEZE BUY", side: "BUY", icon: "🚀" };
       if (!isUptrend && price < current.lower) return { name: "SQUEEZE SELL", side: "SELL", icon: "📉" };
