@@ -2814,12 +2814,14 @@
 
     /* Fond de l'overlay (assombrissement de l'arrière-plan) */
     /* Le conteneur principal (Barre latérale) */
-    /* La barre latérale flottante */
     #indicatorOverlay.overlay_ {
       position: absolute;
-      bottom: 50px;
-      /* Ajustez selon la hauteur du logo TradingView */
+      /* CENTRAGE VERTICAL À GAUCHE */
+      top: 50%;
       left: 10px;
+      transform: translateY(-50%);
+      /* Décale vers le haut de 50% de sa propre hauteur */
+
       z-index: 100;
       display: block !important;
       background: transparent;
@@ -2830,12 +2832,14 @@
     .side-toolbar {
       background: #ffffff;
       border: 1px solid #d1d4dc;
-      border-radius: 10px;
-      padding: 6px;
+      border-radius: 12px;
+      /* Cadre bien arrondi */
+      padding: 8px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      /* Ombre portée plus douce */
     }
 
     /* Style des boutons blancs arrondis */
@@ -2871,7 +2875,7 @@
     .separator {
       width: 80%;
       border: 0;
-      border-top: 1px solid #f1f5f9;  
+      border-top: 1px solid #f1f5f9;
       margin: 2px auto;
     }
 
