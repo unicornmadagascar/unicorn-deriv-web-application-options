@@ -2715,7 +2715,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     shape: signal.side === 'BUY' ? 'arrowUp' : 'arrowDown',
                     text: signal.name  
                   };
-
+   
                   // On ajoute le nouveau marqueur à l'historique global
                   allMarkers.push(newMarker);
 
