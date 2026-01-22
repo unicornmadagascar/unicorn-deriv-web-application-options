@@ -2326,22 +2326,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.toggleSniperMode = function (event) {
     event.stopPropagation(); // Empêche d'autres clics simultanés
-    
+
     // Inversion de l'état : si c'était false, ça devient true.
-    isSniperArmed = !isSniperArmed; 
-    
+    isSniperArmed = !isSniperArmed;
+
     const btn = document.getElementById('sniper-btn');
-    
+
     if (isSniperArmed) {
-        btn.classList.add('armed');  
-        btn.innerHTML = "📡"; // On change l'icône pour montrer que le radar SCANNE
-        console.log("Radar activé");
+      btn.classList.add('armed');
+      btn.innerHTML = "📡"; // On change l'icône pour montrer que le radar SCANNE
+      console.log("Radar activé");
+      showToast(`📡 Radar activated`, 'info');
     } else {
-        btn.classList.remove('armed');
-        btn.innerHTML = "🎯"; // On revient à la cible
-        console.log("Radar désactivé");
+      btn.classList.remove('armed');
+      btn.innerHTML = "🎯"; // On revient à la cible
+      console.log("Radar désactivé");
+      showToast(`🎯 Radar deactivated`, 'info');
     }
-}
+  }
 
   function analyzeSniperStrategies(results, emaData, lastCandle) {
     const current = results[results.length - 1];
@@ -2667,7 +2669,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // On appelle la fonction d'analyse avec les données de tendance
                 const signal = analyzeSniperStrategies(bbData, emaData, lastCandle);
 
-                console.log("SIGNAL :", signal);  
+                console.log("SIGNAL :", signal);
 
                 if (signal) {
                   lastSignalTime = lastCandle.time; // Verrouillage
@@ -2684,11 +2686,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     color: signal.side === 'BUY' ? '#089981' : '#f23645',
                     shape: signal.side === 'BUY' ? 'arrowUp' : 'arrowDown',
                     text: signal.name
-                  }]);  
+                  }]);
 
                   // 3. Screenshot Automatique si Squeeze
                   if (signal.name.includes("SQUEEZE")) {
-                    setTimeout(() => takeSniperScreenshot(signal.name), 1000);  
+                    setTimeout(() => takeSniperScreenshot(signal.name), 1000);
                   }
                 }
               }
