@@ -2915,7 +2915,7 @@ document.addEventListener("DOMContentLoaded", () => {
               }
             }
           }
-        } catch (e) {
+        } catch (e) {  
           console.error("Erreur moteur Sniper/Bollinger:", e);
         }
       }
