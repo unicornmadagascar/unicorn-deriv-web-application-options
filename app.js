@@ -2556,29 +2556,98 @@ document.addEventListener("DOMContentLoaded", () => {
     const alertBadge = document.getElementById('sniper-alert-badge');
     if (!alertBadge) return;
 
-    // Reset
+    // 1. Reset immédiat : on cache et on retire les animations de clignotement
     alertBadge.style.display = 'none';
     alertBadge.classList.remove('badge-flash-buy', 'badge-flash-sell');
-    alertBadge.innerHTML = '';  
+    alertBadge.innerHTML = '';
 
+    // 2. On utilise requestAnimationFrame pour forcer le navigateur à relancer l'animation CSS
     requestAnimationFrame(() => {
+      // Configuration du contenu et de la couleur de base
       alertBadge.innerHTML = `${signal.icon} ${signal.name}`;
       alertBadge.className = signal.side === 'BUY' ? 'badge-buy' : 'badge-sell';
 
-      // AJOUT : Si c'est un Squeeze, on fait clignoter !
+      // 3. AJOUT : Effet de pulsation si c'est un SQUEEZE
       if (signal.name.includes("SQUEEZE")) {
         const flashClass = signal.side === 'BUY' ? 'badge-flash-buy' : 'badge-flash-sell';
         alertBadge.classList.add(flashClass);
       }
 
-      alertBadge.style.display = 'inline-block';  
+      alertBadge.style.display = 'inline-block';
+      alertBadge.style.opacity = '1';
     });
 
-    // Auto-hide après 8s
+    // 4. Gestion du Timer pour la disparition automatique
+    // On annule le timer précédent s'il y en avait un pour éviter les conflits
     if (window.signalTimer) clearTimeout(window.signalTimer);
+
     window.signalTimer = setTimeout(() => {
-      alertBadge.style.display = 'none';
-    }, 8000);
+      alertBadge.style.opacity = '0'; // Transition douce
+      setTimeout(() => {
+        alertBadge.style.display = 'none';
+
+        // Nettoyage du canvas (infobulle et ligne verticale) en même temps
+        const canvas = document.getElementById('Trendoverlay__');
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }, 500); // On laisse le temps à la transition d'opacité
+    }, 10000); // Affichage pendant 10 secondes
+  }
+
+  function drawSniperTooltip(signal, time) {
+    const canvas = document.getElementById('Trendoverlay__');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    // 1. Nettoyage du canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 2. Conversion du temps et du prix en coordonnées Pixel
+    const x = chart.timeScale().timeToCoordinate(time);
+    // On place l'infobulle soit en haut soit en bas selon le signal
+    const y = signal.side === 'BUY' ? 100 : canvas.height - 150;
+
+    if (x === null) return;
+
+    const text = ` ${signal.icon} ${signal.name} `;
+    ctx.font = 'bold 13px Inter, Arial';
+    const textWidth = ctx.measureText(text).width;
+    const padding = 8;
+    const boxWidth = textWidth + (padding * 2);
+    const boxHeight = 30;
+    const radius = 15; // Arrondi complet (style pilule)
+
+    // --- DESSIN DE LA LIGNE VERTICALE ---
+    ctx.beginPath();
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = signal.side === 'BUY' ? '#089981' : '#f23645';
+    ctx.lineWidth = 2;
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvas.height);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // --- DESSIN DU CADRE ARRONDI (INFOBULLE) ---
+    const boxX = x - (boxWidth / 2);
+    const boxY = y;
+
+    ctx.fillStyle = signal.side === 'BUY' ? '#089981' : '#f23645';
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+
+    // Tracer le rectangle arrondi
+    ctx.beginPath();
+    ctx.roundRect(boxX, boxY, boxWidth, boxHeight, radius);
+    ctx.fill();
+
+    // --- DESSIN DU TEXTE ---
+    ctx.shadowBlur = 0; // On enlève l'ombre pour le texte
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, x, boxY + (boxHeight / 2));
   }
 
   // --- INITIALISATION (À appeler une seule fois au chargement ou au 1er clic) ---
@@ -2662,6 +2731,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- BLOC BOLLINGER + SNIPER ---
       if (bandsEnabled) {
         try {
+          // A. CALCULS MATHÉMATIQUES
           const bbData = calculateBollingerData(priceDataZZ);
           const emaData = calculateEMA(priceDataZZ, 200);
 
@@ -2669,7 +2739,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const lastPoint = bbData[bbData.length - 1];
             const lastCandle = priceDataZZ[priceDataZZ.length - 1];
 
-            // B. MISE À JOUR VISUELLE
+            // B. MISE À JOUR VISUELLE (LIGNES)
             upperLine.setData(bbData.map(d => ({ time: d.time, value: d.upper })));
             middleLine.setData(bbData.map(d => ({ time: d.time, value: d.middle })));
             lowerLine.setData(bbData.map(d => ({ time: d.time, value: d.lower })));
@@ -2684,7 +2754,7 @@ document.addEventListener("DOMContentLoaded", () => {
               bottomPrice: d.lower
             })));
 
-            // C. MISE À JOUR DU BADGE
+            // C. MISE À JOUR DU BADGE VOLATILITÉ
             updateVolatilityUI(lastPoint.upper, lastPoint.lower, lastPoint.middle, lastPoint.isSqueeze);
 
             // D. MOTEUR MULTI-SNIPER
@@ -2697,13 +2767,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (signal) {
                   console.log(`%c 🔥 SIGNAL DÉTECTÉ: ${signal.name}`, "color: #089981; font-weight: bold;");
 
-                  lastSignalTime = currentCandleTime; // Verrouillage immédiat
+                  lastSignalTime = currentCandleTime; // Verrouillage immédiat de la bougie
 
-                  // 1. Feedback
+                  // 1. FEEDBACK VISUEL (INFOBULLE + LIGNE VERTICALE + BADGE)
+                  // Dessine l'infobulle arrondie et le laser vertical sur le chart
+                  if (typeof drawSniperTooltip === "function") {
+                    drawSniperTooltip(signal, currentCandleTime);
+                  }
+
+                  // Affiche le badge flottant à côté de "Volatility"
+                  if (typeof showFloatingSignal === "function") {
+                    showFloatingSignal(signal);
+                  }
+
+                  // 2. FEEDBACK SONORE
                   playAlertSound();
-                  if (typeof showFloatingSignal === "function") showFloatingSignal(signal);
 
-                  // 2. NOUVEAU SYSTÈME DE MARQUEURS (Solution au TypeError)
+                  // 3. MARQUEURS HISTORIQUES (FLÈCHES)
                   const newMarker = {
                     time: currentCandleTime,
                     position: signal.side === 'BUY' ? 'belowBar' : 'aboveBar',
@@ -2712,18 +2792,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     text: signal.name
                   };
 
-                  // On ajoute le nouveau marqueur à l'historique global
                   allMarkers.push(newMarker);
-
-                  // On envoie TOUT le tableau à la série
-                  // Note: 'currentSeries' doit être le nom de votre variable addCandlestickSeries
                   currentSeries.setMarkers(allMarkers);
 
-                  // 3. Screenshot
+                  // 4. SCREENSHOT AUTOMATIQUE
                   if (signal.name.includes("SQUEEZE") || signal.name.includes("SNIPER")) {
                     setTimeout(() => takeSniperScreenshot(signal.name), 1000);
                   }
                 }
+              }
+            } else {
+              // Si le sniper n'est pas armé, on s'assure que le canvas est propre
+              const canvas = document.getElementById('Trendoverlay__');
+              if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
               }
             }
           }

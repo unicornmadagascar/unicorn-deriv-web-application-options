@@ -3538,16 +3538,25 @@
 
     #sniper-alert-badge {
       display: none;
-      /* Caché par défaut */
       margin-left: 10px;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-weight: bold;
-      font-size: 11px;
-      text-transform: uppercase;
-      white-space: nowrap;
-      animation: slideInRight 0.3s ease-out;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      padding: 4px 10px;
+      border-radius: 20px;
+      /* Forme pilule/infobulle */
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      color: white;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .badge-buy {
+      background: linear-gradient(135deg, #089981, #056656);
+    }
+
+    .badge-sell {
+      background: linear-gradient(135deg, #f23645, #b22833);
     }
 
     @keyframes slideInRight {
@@ -3562,62 +3571,50 @@
       }
     }
 
-    /* Couleurs selon le type de signal */
-    .badge-buy {
-      background-color: #089981;
-      color: white;
-      border: 1px solid #056656;
-    }
-
-    .badge-sell {
-      background-color: #f23645;
-      color: white;
-      border: 1px solid #b22833;
-    }
-
     /* Animation de clignotement d'alerte */
-    @keyframes flash-red {
-      0% {
-        opacity: 1;
-        box-shadow: 0 0 15px rgba(242, 54, 69, 0.8);
-      }
-
-      50% {
-        opacity: 0.6;
-        box-shadow: 0 0 5px rgba(242, 54, 69, 0.2);
-      }
-
-      100% {
-        opacity: 1;
-        box-shadow: 0 0 15px rgba(242, 54, 69, 0.8);
-      }
-    }
-
+    /* Animation de pulsation douce pour les signaux Squeeze */
     @keyframes flash-green {
       0% {
-        opacity: 1;
-        box-shadow: 0 0 15px rgba(8, 153, 129, 0.8);
+        box-shadow: 0 0 0px rgba(8, 153, 129, 0);
+        transform: scale(1);
       }
 
       50% {
-        opacity: 0.6;
-        box-shadow: 0 0 5px rgba(8, 153, 129, 0.2);
+        box-shadow: 0 0 15px rgba(8, 153, 129, 0.8);
+        transform: scale(1.05);
       }
 
       100% {
-        opacity: 1;
-        box-shadow: 0 0 15px rgba(8, 153, 129, 0.8);
+        box-shadow: 0 0 0px rgba(8, 153, 129, 0);
+        transform: scale(1);
       }
     }
 
-    /* Classes à appliquer dynamiquement */
+    @keyframes flash-red {
+      0% {
+        box-shadow: 0 0 0px rgba(242, 54, 69, 0);
+        transform: scale(1);
+      }
+
+      50% {
+        box-shadow: 0 0 15px rgba(242, 54, 69, 0.8);
+        transform: scale(1.05);
+      }
+
+      100% {
+        box-shadow: 0 0 0px rgba(242, 54, 69, 0);
+        transform: scale(1);
+      }
+    }
+
     .badge-flash-buy {
-      animation: flash-green 0.6s infinite !important;
+      animation: flash-green 0.8s infinite ease-in-out;
     }
 
     .badge-flash-sell {
-      animation: flash-red 0.6s infinite !important;
+      animation: flash-red 0.8s infinite ease-in-out;
     }
+    
   </style>
 </head>
 
@@ -4259,8 +4256,8 @@
       if (overlay) {
         overlay.classList.add('hidden');
       }
-    }   
-    
+    }
+
     // --- 1) Ticker Tape ---
     createTradingViewEmbed('ticker-container',
       'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js',
