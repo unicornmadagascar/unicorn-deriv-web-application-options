@@ -2717,7 +2717,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   };
    
                   // On ajoute le nouveau marqueur à l'historique global
-                  allMarkers.push(newMarker);
+                  allMarkers.push(newMarker);  
 
                   // On envoie TOUT le tableau à la série
                   // Note: 'currentSeries' doit être le nom de votre variable addCandlestickSeries
