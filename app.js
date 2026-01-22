@@ -2704,7 +2704,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (signal) {
                   console.log(`%c 🔥 SIGNAL DÉTECTÉ: ${signal.name}`, "color: #089981; font-weight: bold;");
 
-                  lastSignalTime = currentCandleTime; // Verrouillage de la bougie
+                  lastSignalTime = currentCandleTime; // Verrouillage de la bougie  
 
                   // 1. Feedback
                   playAlertSound();
