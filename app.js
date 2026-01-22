@@ -2898,7 +2898,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   };
 
                   allMarkers.push(newMarker);  
-                  currentSeries.setMarkers(allMarkers);
+                  currentSeries.setMarkers(allMarkers);  
 
                   // --- 5. SCREENSHOT ---
                   if (signal.name.includes("SQUEEZE") && volRatio > 0) {
