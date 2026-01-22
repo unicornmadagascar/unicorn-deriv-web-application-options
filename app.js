@@ -2358,7 +2358,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`Prix: ${price} | EMA200: ${currentEMA.toFixed(2)}`);
     console.log(`Squeeze: ${current.isSqueeze} | BW: ${current.bandwidth.toFixed(3)}`);
 
-    const isUptrend = price > currentEMA;
+    const isUptrend = price > currentEMA;  
 
     // Condition SQUEEZE
     if (current.isSqueeze) {
