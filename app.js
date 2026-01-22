@@ -2853,7 +2853,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (signal) {
                   // --- 1. CALCUL DU RATIO DE VOLUME SÉCURISÉ ---
-                  // On vérifie 'volume' ou 'v' selon votre source de données
+                  // On vérifie 'volume' ou 'v' selon votre source de données  
                   const getVol = (c) => c.volume ?? c.v ?? 0;
 
                   const volumeSlice = priceDataZZ.slice(-21, -1).map(c => getVol(c)); // 20 bougies précédentes
