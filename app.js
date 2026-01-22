@@ -2670,7 +2670,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const emaData = calculateEMA(priceDataZZ, 200);  
 
           if (bbData.length > 0) {   
-            const lastPoint = bbData[bbData.length - 1];
+            const lastPoint = bbData[bbData.length - 1];  
             const lastCandle = priceDataZZ[priceDataZZ.length - 1];
 
             // B. MISE À JOUR VISUELLE
