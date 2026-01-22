@@ -926,10 +926,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentChartType === "candlestick") { style_type = "candles"; }
     else { style_type = "ticks"; }
 
-    return style_type;  
+    return style_type;
   }
 
-  function convertTF(currentInterval) {  
+  function convertTF(currentInterval) {
     switch (currentInterval) {
       case "1m": return 60;
       case "2m": return 120;
@@ -2738,28 +2738,39 @@ document.addEventListener("DOMContentLoaded", () => {
   window.toggleMA = function (period, button) {
     if (!chart) return;
 
-    // Si on change de symbole, initChart aura mis maSeries à null
+    // Initialisation des séries si nécessaire
     if (maSeries === null) {
       initMaSeries();
     }
 
     const index = activePeriods.indexOf(period);
-    const className = `active-${period}`;
 
     if (index === -1) {
+      // --- ACTIVATION ---
       activePeriods.push(period);
-      button.classList.add(className);
-      button.innerText = `MA ${period} : ON`;
+      button.classList.add('active'); // On utilise la classe générique pour le style blanc/bleu
+      button.innerText = period;      // On affiche juste le chiffre pour rester dans le cadre
+
+      // On s'assure que la série est visible
+      if (maSeries[period]) {
+        maSeries[period].applyOptions({ visible: true });
+      }
     } else {
+      // --- DÉSACTIVATION ---
       activePeriods.splice(index, 1);
-      button.classList.remove(className);
-      button.innerText = `MA ${period} : OFF`;
-      // On efface la ligne immédiatement si on désactive
-      if (maSeries[period]) maSeries[period].setData([]);
+      button.classList.remove('active');
+      button.innerText = period;      // Reste le chiffre, mais change de couleur via le CSS
+
+      // On cache la ligne au lieu de vider les données (plus rapide)
+      if (maSeries[period]) {
+        maSeries[period].applyOptions({ visible: false });
+      }
     }
 
-    // On demande un rendu fluide
-    renderIndicators();
+    // On relance le calcul pour mettre à jour les lignes avec les nouvelles données
+    if (typeof renderIndicators === "function") {
+      renderIndicators();
+    }
   };
 
   function updateMAs() {
@@ -2813,7 +2824,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const label = document.getElementById('volatility-label');
             if (label && label.style.display === 'none') {
-              label.classList.add('show-label');  
+              label.classList.add('show-label');
             }
 
             // B. MISE À JOUR VISUELLE (LIGNES SUR LE GRAPHIQUE)
@@ -2821,13 +2832,13 @@ document.addEventListener("DOMContentLoaded", () => {
             middleLine.setData(bbData.map(d => ({ time: d.time, value: d.middle })));
             lowerLine.setData(bbData.map(d => ({ time: d.time, value: d.lower })));
 
-            if (emaData.length > 0) {  
-              ema200Series.setData(emaData);  
-            }      
+            if (emaData.length > 0) {
+              ema200Series.setData(emaData);
+            }
 
-            areaSeriesBB.setData(bbData.map(d => ({  
+            areaSeriesBB.setData(bbData.map(d => ({
               time: d.time,
-              value: d.upper,  
+              value: d.upper,
               bottomPrice: d.lower
             })));
 
