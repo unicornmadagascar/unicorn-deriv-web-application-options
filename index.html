@@ -2813,153 +2813,76 @@
     }
 
     /* Fond de l'overlay (assombrissement de l'arrière-plan) */
-    .overlay_ {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.4);
-      /* Noir transparent doux */
-      backdrop-filter: blur(4px);
-      /* Effet de flou derrière la popup */
+    /* Le conteneur principal (Barre latérale) */
+    #indicatorOverlay.overlay_ {
+      position: absolute;
+      top: 50%;
+      left: 15px;
+      /* Un peu d'espace avec le bord gauche */
+      transform: translateY(-50%);
+      z-index: 1000;
+      display: block !important;
+      background: transparent;
+    }
+
+    .side-toolbar {
+      background: #ffffff;
+      /* CADRE ARRONDIS DU CONTENEUR */
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border: 1px solid #e0e3eb;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      /* Ombre douce pour le relief */
+    }
+
+    /* Style des BOUTONS BLANCS */
+    #indicatorOverlay button {
+      width: 44px;
+      height: 44px;
+      background-color: #ffffff;
+      /* Fond blanc pur */
+      border: 1px solid #e0e3eb;
+      /* Bordure très légère */
+      border-radius: 10px;
+      /* Boutons arrondis */
+      color: #475569;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
     }
 
-    .hidden {
-      display: none !important;
+    /* Effet au survol (Hover) */
+    #indicatorOverlay button:hover {
+      border-color: #2196F3;
+      color: #2196F3;
+      background-color: #f8fbff;
+      transform: scale(1.05);
+      /* Petit effet de zoom au survol */
     }
 
-    /* La Popup */
-    .popup {
-      background: #ffffff;
-      width: 90%;
-      max-width: 350px;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-      animation: fadeIn 0.3s ease-out;
+    /* Style quand le bouton est ACTIVÉ (ON) */
+    #indicatorOverlay button.active {
+      background-color: #2196F3;
+      /* Fond bleu quand actif */
+      color: #ffffff;
+      /* Texte blanc quand actif */
+      border-color: #1e88e5;
+      box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3);
     }
 
-    /* En-tête de la popup */
-    .popup-header {
-      padding: 15px 20px;
-      background: #f8f9fa;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: #333;
-      font-weight: 600;
-    }
-
-    .close-btn {
-      background: none;
-      border: none;
-      font-size: 18px;
-      color: #999;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-
-    .close-btn:hover {
-      color: #ff4d4d;
-    }
-
-    /* Corps de la popup */
-    .popup-body {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    /* Style des boutons (Fond blanc, ombre douce) */
-    .popup-body button {
-      width: 100%;
-      padding: 12px;
-      background: #ffffff;
-      border: 1px solid #f0f0f0;
-      border-radius: 10px;
-      color: #444;
-      font-weight: 500;
-      cursor: pointer;
-      text-align: left;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-      /* Ombre très légère */
-    }
-
-    /* Effet au survol */
-    .popup-body button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-      border-color: #d1d4dc;
-    }
-
-    /* --- États Actifs (Gérés par vos classes existantes) --- */
-    .popup-body button.active-20 {
-      background: #2962FF !important;
-      color: white;
-      border-color: #2962FF;
-    }
-
-    .popup-body button.active-50 {
-      background: #9c27b0 !important;
-      color: white;
-      border-color: #9c27b0;
-    }
-
-    .popup-body button.active-200 {
-      background: #ff9800 !important;
-      color: white;
-      border-color: #ff9800;
-    }
-
-    .popup-body button.active {
-      background: #88ff00 !important;
-      color: rgb(71, 68, 68);
-      border-color: #88ff00;
-    }
-
-    /* Style pour les boutons d'objets (Trendline, etc.) */
-    .popup-body button:not([id]) {
-      background: #fdfdfd;
-      color: #555;
-      border-left: 4px solid #eee;
-      /* Petite barre décorative à gauche */
-    }
-
-    @keyframes fade²In {
-      from {
-        opacity: 0;
-        transform: scale(0.95);
-      }
-
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    @keyframes pulse-red {
-      0% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(255, 61, 96, 0.7);
-      }
-
-      70% {
-        transform: scale(1.05);
-        box-shadow: 0 0 0 10px rgba(255, 61, 96, 0);
-      }
-
-      100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(255, 61, 96, 0);
-      }
+    .separator {
+      width: 80%;
+      border: 0;
+      border-top: 1px solid #f1f5f9;
+      margin: 5px auto;
     }
 
     /* Animation de succès pour le bouton */
@@ -3334,7 +3257,7 @@
       border-radius: 8px;
       position: absolute;
       top: 10px;
-      right: 60px;     
+      right: 60px;
       z-index: 100;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       /* Ombre légère pour le relief */
@@ -3914,27 +3837,20 @@
   </div>
 
   <!-- OVERLAY -->
-  <div id="indicatorOverlay" class="overlay_ hidden">
-    <div class="popup">
-      <div class="popup-header">
-        <span>Indicateurs & Objets</span>
-        <button class="close-btn" onclick="closePopup()">✖</button>
-      </div>
+  <div id="indicatorOverlay" class="overlay_">
+    <div class="side-toolbar">
+      <button id="ma20" onclick="toggleMA(20, this)">MA 20</button>
+      <button id="ma50" onclick="toggleMA(50, this)">MA 50</button>
+      <button id="ma200" onclick="toggleMA(200, this)">MA 200</button>
+      <button id="ZigZag" onclick="toggleZigZag(this)">ZigZag</button>
 
-      <div class="popup-body">
-        <!-- Indicateurs -->
-        <button id="ma20" onclick="toggleMA(20, this)">MA 20 : OFF</button>
-        <button id="ma50" onclick="toggleMA(50, this)">MA 50 : OFF</button>
-        <button id="ma200" onclick="toggleMA(200, this)">MA 200 : OFF</button>
-        <button id="ZigZag" onclick="toggleZigZag(this)">ZigZag 14 : OFF</button>
-        <button class="btn-drawing" onclick="enableFibonacci(this)">Fibonacci Levels</button>
-        <button class="btn-drawing" onclick="enableBands(this)">Bollinger Bands</button>
+      <hr class="separator">
 
-        <!-- Objets graphiques -->
-        <button class="btn-drawing" onclick="enableTrendline(this)">Trendline</button>
-        <button class="btn-drawing" onclick="enableRectangle(this)">Rectangle</button>
-        <button class="btn-drawing" onclick="enableTPSL(this)">TP / SL</button>
-      </div>
+      <button class="btn-drawing" onclick="enableBands(this)">BB</button>
+      <button class="btn-drawing" onclick="enableFibonacci(this)">Fibo</button>
+      <button class="btn-drawing" onclick="enableTrendline(this)">Trend</button>
+      <button class="btn-drawing" onclick="enableRectangle(this)">Rect</button>
+      <button class="btn-drawing" onclick="enableTPSL(this)">TP/SL</button>
     </div>
   </div>
 
