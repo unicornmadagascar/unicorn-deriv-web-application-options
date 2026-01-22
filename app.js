@@ -2381,11 +2381,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return {
         name: isTrend ? "SNIPER SELL" : "REVERSAL SELL",
         side: "SELL",
-        icon: isTrend ? "📉" : "🎯"  
+        icon: isTrend ? "📉" : "🎯"
       };
     }
 
-    return null;  
+    return null;
   }
 
   function renderSniperOverlay(signal) {
@@ -2666,55 +2666,62 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
           // A. CALCULS MATHÉMATIQUES
           const bbData = calculateBollingerData(priceDataZZ);
-          const emaData = calculateEMABB(priceDataZZ, 200); // Pour le filtre de tendance
+          // Assurez-vous que le nom est bien calculateEMA (ou calculateEMABB selon votre script)
+          const emaData = calculateEMA(priceDataZZ, 200);
 
           if (bbData.length > 0) {
             const lastPoint = bbData[bbData.length - 1];
             const lastCandle = priceDataZZ[priceDataZZ.length - 1];
 
-            // B. MISE À JOUR VISUELLE (Lignes sur le chart)
+            // B. MISE À JOUR VISUELLE
             upperLine.setData(bbData.map(d => ({ time: d.time, value: d.upper })));
             middleLine.setData(bbData.map(d => ({ time: d.time, value: d.middle })));
             lowerLine.setData(bbData.map(d => ({ time: d.time, value: d.lower })));
-            ema200Series.setData(emaData); // Affiche l'EMA 200
+
+            // On ne met l'EMA que si on a assez de données (200 points)
+            if (emaData.length > 0) {
+              ema200Series.setData(emaData);
+            }
+
             areaSeriesBB.setData(bbData.map(d => ({
               time: d.time,
               value: d.upper,
               bottomPrice: d.lower
             })));
 
-            // C. MISE À JOUR DU BADGE (Volatilité, Flamme/Flocon)
-            // On passe le paramètre isSqueeze issu du calcul adaptatif
+            // C. MISE À JOUR DU BADGE
             updateVolatilityUI(lastPoint.upper, lastPoint.lower, lastPoint.middle, lastPoint.isSqueeze);
 
-            // D. MOTEUR MULTI-SNIPER (Si armé 📡)
+            // D. MOTEUR MULTI-SNIPER
             if (isSniperArmed) {
-              // On vérifie qu'on ne traite pas deux fois la même bougie
-              if (lastSignalTime !== lastCandle.time) {
-                // On appelle la fonction d'analyse avec les données de tendance
+              // Sécurité : on compare les secondes si le format est différent
+              const currentCandleTime = lastCandle.time;
+
+              if (lastSignalTime !== currentCandleTime) {
+                // APPEL DE L'ANALYSE
                 const signal = analyzeSniperStrategies(bbData, emaData, lastCandle);
 
-                console.log("SIGNAL :", signal);
-
                 if (signal) {
-                  lastSignalTime = lastCandle.time; // Verrouillage
+                  console.log(`%c 🔥 SIGNAL DÉTECTÉ: ${signal.name}`, "color: #089981; font-weight: bold;");
 
-                  // 1. Feedback Sonore & Canvas (Stats + Heatmap)
+                  lastSignalTime = currentCandleTime; // Verrouillage de la bougie
+
+                  // 1. Feedback
                   playAlertSound();
-                  renderSniperOverlay(signal);
+                  if (typeof renderSniperOverlay === "function") renderSniperOverlay(signal);
 
-                  // 2. Marqueur Historique (Flèche)
-                  const currentMarkers = candleSeries.getMarkers() || [];
-                  candleSeries.setMarkers([...currentMarkers, {
-                    time: lastCandle.time,
+                  // 2. Marqueur sur le graphique
+                  const existingMarkers = candleSeries.getMarkers() || [];
+                  candleSeries.setMarkers([...existingMarkers, {
+                    time: currentCandleTime,
                     position: signal.side === 'BUY' ? 'belowBar' : 'aboveBar',
                     color: signal.side === 'BUY' ? '#089981' : '#f23645',
                     shape: signal.side === 'BUY' ? 'arrowUp' : 'arrowDown',
                     text: signal.name
                   }]);
 
-                  // 3. Screenshot Automatique si Squeeze
-                  if (signal.name.includes("SQUEEZE")) {
+                  // 3. Screenshot
+                  if (signal.name.includes("SQUEEZE") || signal.name.includes("SNIPER")) {
                     setTimeout(() => takeSniperScreenshot(signal.name), 1000);
                   }
                 }
