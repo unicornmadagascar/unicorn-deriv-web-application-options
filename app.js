@@ -2656,8 +2656,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   renderSniperOverlay(signal);
 
                   // 2. Marqueur Historique (Flèche)
-                  const currentMarkers = currentSeries.getMarkers() || [];
-                  currentSeries.setMarkers([...currentMarkers, {
+                  const currentMarkers = candleSeries.getMarkers() || [];
+                  candleSeries.setMarkers([...currentMarkers, {
                     time: lastCandle.time,
                     position: signal.side === 'BUY' ? 'belowBar' : 'aboveBar',
                     color: signal.side === 'BUY' ? '#089981' : '#f23645',
@@ -2667,7 +2667,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   // 3. Screenshot Automatique si Squeeze
                   if (signal.name.includes("SQUEEZE")) {
-                    setTimeout(() => takeSniperScreenshot(signal.name), 1000);
+                    setTimeout(() => takeSniperScreenshot(signal.name), 1000);  
                   }
                 }
               }
