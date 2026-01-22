@@ -2993,29 +2993,41 @@ document.addEventListener("DOMContentLoaded", () => {
   window.toggleZigZag = function (btn) {
     if (!chart) return; // Sécurité : le graphique doit exister
 
+    // Inverse l'état actif (gère la couleur bleue via le CSS .active)
     isZigZagActive = btn.classList.toggle("active");
 
     if (isZigZagActive) {
-      btn.innerText = "ZigZag : ON";
+      // Texte court pour tenir dans le bouton carré arrondi
+      btn.innerText = "ZZ";
 
-      // CRÉATION IMMÉDIATE de la série si elle est absente
+      // CRÉATION de la série si elle est absente
       if (!zigzagSeries) {
         zigzagSeries = chart.addLineSeries({
-          color: '#f39c12',
+          color: '#f39c12', // Orange ZigZag
           lineWidth: 2,
           priceLineVisible: false,
           lastValueVisible: false,
+          title: 'ZigZag' // Apparaît au survol ou dans la légende
         });
       }
 
-      // EXÉCUTION IMMÉDIATE du calcul
-      refreshZigZag();
+      // On rend la série visible au cas où elle aurait été cachée
+      zigzagSeries.applyOptions({ visible: true });
+
+      // EXÉCUTION du calcul
+      if (typeof refreshZigZag === "function") {
+        refreshZigZag();
+      }
     } else {
-      btn.innerText = "ZigZag : OFF";
+      btn.innerText = "ZZ"; // Reste "ZZ" mais perd la couleur bleue
+
       if (zigzagSeries) {
+        // Option 1 : On cache la série (plus performant)
+        zigzagSeries.applyOptions({ visible: false });
+
+        // Option 2 : On vide si vous voulez vraiment libérer la mémoire
         zigzagSeries.setData([]);
         zigzagSeries.setMarkers([]);
-        // Optionnel : on peut supprimer la série ou simplement la laisser vide
       }
     }
   };
@@ -6026,7 +6038,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("calendarBody").addEventListener("change", (e) => {
     if (e.target.type === 'checkbox') {
       // On récupère le timestamp depuis l'ID du TR parent
-      const row = e.target.closest('tr');  
+      const row = e.target.closest('tr');
       const timestamp = row ? row.getAttribute('data-timestamp') : null;
 
       if (timestamp) {
@@ -6035,7 +6047,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const eventObj = allEvents.find(ev => ev.release_date.toString() === timestamp);
         if (eventObj) {
           eventObj.checked = e.target.checked;
-        }  
+        }
 
         // 2. Lancement de la mise à jour visuelle du graphique
         updateChartMarkers();
