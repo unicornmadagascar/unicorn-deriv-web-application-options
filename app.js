@@ -2382,7 +2382,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    return null;
+    return null;  
   }
 
   function renderSniperOverlay(signal) {
