@@ -2822,11 +2822,13 @@
       transform: translateY(-50%);
       /* Décale vers le haut de 50% de sa propre hauteur */
 
-      z-index: 100;
+      z-index: 2000 !important;
+      /* On passe au-dessus de tout le reste */
       display: block !important;
       background: transparent;
       width: auto;
       height: auto;
+
     }
 
     .side-toolbar {
@@ -2836,10 +2838,20 @@
       /* Cadre bien arrondi */
       padding: 8px;
       display: flex;
-      flex-direction: column;  
+      flex-direction: column;
       gap: 8px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);       
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
       /* Ombre portée plus douce */
+      opacity: 0.4;
+      /* Transparente par défaut */
+      transition: opacity 0.3s ease, transform 0.2s ease;
+    }
+
+    .side-toolbar:hover {
+      opacity: 1;
+      /* Devient opaque au survol */
+      transform: scale(1.02);
+      /* S'agrandit légèrement pour montrer qu'elle est active */
     }
 
     /* Style des boutons blancs arrondis */

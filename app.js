@@ -924,8 +924,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const arrowDisplay = document.getElementById("pnl-arrow");
 
     if (pnlDisplay) {
-      pnlDisplay.innerText = "0.00";
-      pnlDisplay.style.color = "#fff"; // On remet en blanc (neutre)
+      pnlDisplay.innerText = "0.00";  
+      pnlDisplay.style.color = "#fff"; // On remet en blanc (neutre)  
     }
 
     if (arrowDisplay) {
