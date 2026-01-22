@@ -2827,7 +2827,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (bbData.length > 0) {
             const lastPoint = bbData[bbData.length - 1];
             const lastCandle = priceDataZZ[priceDataZZ.length - 1];
-            
+
             const label = document.getElementById('volatility-label');
             if (label && label.style.display === 'none') {
               label.classList.add('show-label');
@@ -2845,7 +2845,7 @@ document.addEventListener("DOMContentLoaded", () => {
             areaSeriesBB.setData(bbData.map(d => ({
               time: d.time,
               value: d.upper,
-              bottomPrice: d.lower
+              bottomPrice: d.lower  
             })));
 
             // C. MISE À JOUR DU BADGE VOLATILITÉ (UI)
