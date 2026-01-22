@@ -6020,19 +6020,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // DisconnectDeriv__(); // À utiliser si vous voulez couper le flux après transaction
   };
 
-  /* ================== POP UP FOR INDICATOR ================== */
-  openBtngpt.onclick = () => overlaygemini.classList.remove("hidden");
-
-  function closePopup() {
-    overlaygemini.classList.add("hidden");
-  }
-
-  // Fermer si clic hors popup
-  overlaygemini.addEventListener("click", (e) => {
-    if (e.target === overlaygemini) closePopup();
-  });
-
-  // CALENDAR CALLING EVENT 
+  // CALENDAR CALLING EVENT  
 
   // À placer dans votre bloc d'initialisation
   document.getElementById("calendarBody").addEventListener("change", (e) => {
