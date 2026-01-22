@@ -2838,7 +2838,7 @@ document.addEventListener("DOMContentLoaded", () => {
               ema200Series.setData(emaData);  
             }      
 
-            areaSeriesBB.setData(bbData.map(d => ({
+            areaSeriesBB.setData(bbData.map(d => ({  
               time: d.time,
               value: d.upper,
               bottomPrice: d.lower
