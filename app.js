@@ -3215,7 +3215,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (volBar && volPercent) {
       volBar.style.width = Math.min(percentage, 100) + "%";
       volBar.style.background = percentage >= 100 ? "#2ecc71" : "#3b82f6";  
-      volPercent.innerText = percentage + "%";
+      volPercent.innerText = percentage + "%";  
       volPercent.style.color = "#1e293b"; // Noir/Gris foncé pour fond blanc
     }
 
