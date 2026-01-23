@@ -2884,7 +2884,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const label = document.getElementById('ma-sniper-label');
         if (label) label.style.display = 'flex';
 
-        const btn = document.getElementById('ma-sniper-btn');
+        const btn = document.getElementById('ma-sniper-btn');   
         if (btn) btn.classList.add('armed');
 
         const dot = document.getElementById('ma-signal-dot');
