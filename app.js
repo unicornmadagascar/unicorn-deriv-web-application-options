@@ -2791,7 +2791,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Sécurité : Si le mode sniper était actif, on le coupe proprement
         if (maSniperActive) {
-          window.toggleMASniper();
+          window.toggleMASniper();  
         }
       }
     }
