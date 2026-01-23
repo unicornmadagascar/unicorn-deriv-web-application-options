@@ -2845,7 +2845,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const status = document.getElementById('ma-status-value');
     const dot = document.getElementById('ma-signal-dot');
 
-    if (maSniperActive) {
+    if (maSniperActive) {  
       btn.classList.add('active');
       status.innerText = "SCANNING";
       status.style.color = "#2196F3";
