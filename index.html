@@ -3677,438 +3677,142 @@
     }
 
     /* ------------MA----------------- */
-    #ma-sniper-label {
-      display: none;
-      /* Piloté par JS via toggleMA */
+    .sniper-dynamic-badge {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+      font-family: 'Inter', -apple-system, sans-serif;
+      padding: 12px;
+      min-width: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
       position: absolute;
       top: 15px;
-      /* Distance du haut du graphique */
-      right: 65px;
-      /* Ajusté pour laisser place à l'échelle des prix */
+      right: 15px;
       z-index: 1000;
-      /* Toujours au-dessus des bougies */
-      align-items: center;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(4px);
-      /* Flou artistique derrière le badge */
-      border: 1px solid #e2e8f0;
-      padding: 0 12px;
-      border-radius: 8px;
-      /* Style dashboard plus moderne */
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      min-width: 300px;
-      height: 38px;
-      /* overflow: hidden;  <-- SUPPRIMÉ pour laisser respirer les alertes */
-    }
-
-    /* Style spécifique pour le SELECT */
-    #ma-sensitivity {
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 800;
-      cursor: pointer;
-      color: #475569;
-      padding: 2px 6px;
-      margin-left: 8px;
-      outline: none;
-      transition: all 0.2s;
-    }
-
-    #ma-sensitivity:hover {
-      border-color: #2196F3;
-      color: #2196F3;
-    }
-
-    /* Dot d'état */
-    .status-dot {
-      margin-left: 10px;
-      flex-shrink: 0;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #cbd5e1;
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Zone centrale des messages d'alerte */
-    #ma-sniper-alert-badge {
-      flex-grow: 1;
-      display: flex;
-      justify-content: center;
-      margin: 0 10px;
-      pointer-events: none;
-    }
-
-    /* Message dynamique animé */
-    .ma-sniper-msg {
-      padding: 3px 10px;
-      font-size: 11px;
-      font-weight: 900;
-      border-radius: 5px;
-      white-space: nowrap;
-      background: rgba(255, 255, 255, 0.9);
-      animation: sniperPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    /* Boutons d'action (Export/Reset) */
-    .btn-export,
-    .btn-reset {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      padding: 4px;
-      opacity: 0.5;
-      transition: transform 0.2s, opacity 0.2s;
-    }
-
-    .btn-export:hover,
-    .btn-reset:hover {
-      opacity: 1;
-      transform: scale(1.1);
-    }
-
-    /* Animation d'apparition */
-    @keyframes sniperPop {
-      from {
-        transform: scale(0.8) translateY(5px);
-        opacity: 0;
-      }
-
-      to {
-        transform: scale(1) translateY(0);
-        opacity: 1;
-      }
-    }
-
-    /* Animation de clignotement de la bordure */
-    @keyframes pulse-border {
-      0% {
-        box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.2);
-      }
-
-      50% {
-        box-shadow: 0 0 15px 3px var(--pulse-color);
-      }
-
-      100% {
-        box-shadow: 0 0 0 0px rgba(0, 0, 0, 0);
-      }
-    }
-
-    .flash-buy {
-      --pulse-color: rgba(46, 204, 113, 0.6);
-      border: 2px solid #2ecc71 !important;
-      animation: pulse-border 1.5s infinite;
-    }
-
-    .flash-sell {
-      --pulse-color: rgba(231, 76, 60, 0.6);
-      border: 2px solid #e74c3c !important;
-      animation: pulse-border 1.5s infinite;
-    }
-
-    /* Le conteneur qui empile les badges */
-    #chart-ui-stack {
-      width: auto;
-    }
-
-    /* Style commun pour les badges dans la pile */
-    #sniper-log-modal .chart-badge {
-      display: flex;
-      /* Sera basculé entre 'none' et 'flex' par le JS */
-      align-items: center;
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(4px);
-      border: 1px solid #e2e8f0;
-      padding: 4px 12px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      min-width: 280px;
-      height: 36px;
       transition: all 0.3s ease;
     }
 
-    /* On s'assure que le badge MA est un peu plus compact si besoin */
-    #ma-sniper-label {
-      min-width: 300px;
-    }
-
-    /* Animation de lueur pour les boutons MA actifs ensemble */
-    @keyframes sniper-glow {
-      0% {
-        box-shadow: 0 0 5px rgba(33, 150, 243, 0.4);
-        border-color: #2196F3;
-      }
-
-      50% {
-        box-shadow: 0 0 15px rgba(33, 150, 243, 0.8);
-        border-color: #bbdefb;
-      }
-
-      100% {
-        box-shadow: 0 0 5px rgba(33, 150, 243, 0.4);
-        border-color: #2196F3;
-      }
-    }
-
-    .ma-button.sniper-ready {
-      animation: sniper-glow 2s infinite;
-      background-color: #2196F3 !important;
-      /* Bleu intense */
-      color: white !important;
-      font-weight: 900;
-      border: 1.5px solid #fff;
-    }
-
-    #ma-sniper-btn.armed {
-      background: #2ecc71;
-      box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
-      border-color: #27ae60;
-      transform: scale(1.05);
-    }
-
-    /* Modal & Table */
-    #sniper-log-modal .sniper-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #sniper-log-modal .sniper-modal-content {
-      background: #121212;
-      border: 1px solid #333;
-      width: 90%;
-      max-width: 850px;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-    }
-
-    #sniper-log-modal .sniper-modal-header {
-      padding: 15px;
-      background: #1a1a1a;
+    /* Header: Titre et Select */
+    .sniper-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 10px;
     }
 
-    #sniper-log-modal .table-wrapper {
-      max-height: 450px;
-      overflow-y: auto;
-    }
-
-    #sniper-log-modal table {
-      width: 100%;
-      border-collapse: collapse;
-      color: #ddd;
-    }
-
-    #sniper-log-modal th {
-      position: sticky;
-      top: 0;
-      background: #1a1a1a;
-      padding: 12px;
-      border-bottom: 2px solid #333;
-      text-align: left;
-    }
-
-    #sniper-log-modal td {
-      padding: 12px;
-      border-bottom: 1px solid #222;
-      font-family: 'Roboto Mono', monospace;
-    }
-
-    /* Animations */
-    @keyframes critical-shake {
-      0% {
-        transform: translate(1px, 1px) rotate(0deg);
-      }
-
-      20% {
-        transform: translate(-3px, 0px) rotate(-1deg);
-      }
-
-      40% {
-        transform: translate(3px, 2px) rotate(1deg);
-      }
-
-      100% {
-        transform: translate(1px, -1px) rotate(0deg);
-      }
-    }
-
-    .critical-shake {
-      animation: critical-shake 0.2s infinite;
-      border: 2px solid #ff0000 !important;
-    }
-
-    #ma-sniper-alert-badge {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Animation d'entrée fluide */
-    @keyframes slideInNotif {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Animation de pulsation pour les alertes critiques */
-    @keyframes pulse-red {
-      0% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-      }
-
-      70% {
-        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-      }
-
-      100% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-      }
-    }
-
-    @keyframes pulse-critical {
-      0% {
-        box-shadow: 0 0 0 0 rgba(217, 70, 239, 0.7);
-      }
-
-      70% {
-        box-shadow: 0 0 0 12px rgba(217, 70, 239, 0);
-      }
-
-      100% {
-        box-shadow: 0 0 0 0 rgba(217, 70, 239, 0);
-      }
-    }
-
-    /* Classe de base pour l'infobulle */
-    .ma-sniper-msg {
-      position: absolute;
-      top: 45px;
-      right: 0;
-      background: #ef4444;
-      /* Rouge moderne */
-      color: #ffffff !important;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      white-space: nowrap;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      animation: slideInNotif 0.3s ease-out, pulse-red 2s infinite;
-      z-index: 1100;
+    .sniper-title-group {
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    /* Variante Critique (Fuchsia) */
-    .ma-sniper-msg.critical {
-      background: #d946ef;
-      animation: slideInNotif 0.3s ease-out, pulse-critical 1.5s infinite;
+    .sniper-title {
+      font-weight: 800;
+      font-size: 11px;
+      color: #1e293b;
+      letter-spacing: 0.5px;
     }
 
-    /* Petite flèche */
-    .ma-sniper-msg::after {
-      content: '';
-      position: absolute;
-      top: -6px;
-      right: 20px;
-      border-left: 6px solid transparent;
-      border-right: 6px solid transparent;
-      border-bottom: 6px solid #ef4444;
-    }
-
-    .ma-sniper-msg.critical::after {
-      border-bottom-color: #d946ef;
-    }
-
-    .ma-sniper-msg {
-      /* ... vos styles précédents ... */
-      padding-right: 30px;
-      /* Espace pour la croix */
-      cursor: default;
-    }
-
-    /* Le bouton de fermeture X */
-    .msg-close-btn {
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 50%;
-      width: 16px;
-      height: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .sniper-select {
       font-size: 10px;
+      font-weight: 700;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 2px 4px;
       cursor: pointer;
-      transition: background 0.2s;
     }
 
-    .msg-close-btn:hover {
-      background: rgba(255, 255, 255, 0.4);
-      color: white;
+    /* Monitor Area */
+    .sniper-monitor {
+      background: #f8fafc;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #f1f5f9;
     }
 
-    #sniper-log-modal .sniper-checklist {
+    .monitor-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      align-items: center;
+    }
+
+    .badge-type {
+      font-size: 9px;
+      background: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #475569;
+    }
+
+    .gap-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: #3b82f6;
+    }
+
+    .progress-container {
+      width: 100%;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #3b82f6;
+      width: 0%;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Action Buttons */
+    .sniper-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 8px;
+    }
+
+    .action-btn {
       background: white;
       border: 1px solid #e2e8f0;
-      border-left: 4px solid #ef4444;
-      /* Bordure rouge pour attirer l'oeil */
       border-radius: 6px;
-      padding: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      z-index: 1090;
-      transition: opacity 0.3s ease;
+      padding: 4px 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
     }
 
-    #sniper-log-modal .checklist-item {
-      display: block;
-      font-size: 10px;
-      color: #1e293b;
-      font-weight: 600;
-      margin-bottom: 4px;
-      font-family: 'Inter', sans-serif;
+    .action-btn:hover {
+      background: #f1f5f9;
+      transform: translateY(-1px);
     }
 
-    @keyframes gap-flash {
-      0% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.3;
-      }
-
-      100% {
-        opacity: 1;
-      }
+    .action-btn.danger:hover {
+      background: #fef2f2;
+      border-color: #fecaca;
     }
 
-    .critical-flash {
-      animation: gap-flash 0.5s infinite;
+    /* Status Dot Animation */
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #cbd5e1;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-dot.active {
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
     }
   </style>
 </head>
@@ -4357,39 +4061,39 @@
           </div>
         </div>
 
-        <div id="ma-sniper-label" class="chart-badge" style="display: none; min-width: 170px; padding: 10px; white-space: nowrap; overflow: hidden; align-items: flex-start;">
-          <button id="ma-sniper-btn" onclick="toggleMASniper(event)" title="MA Sniper Mode">🚀</button>
+        <div id="ma-sniper-label" class="sniper-dynamic-badge" style="display: none;">
+          <div class="sniper-header">
+            <div class="sniper-title-group">
+              <button id="ma-sniper-btn" class="pulse-btn" onclick="toggleMASniper(event)"
+                title="Toggle Sniper Mode">🚀</button>
+              <span class="sniper-title">MA SNIPER</span>
+              <span id="ma-signal-dot" class="status-dot"></span>
+              <span id="ma-status-value">OFF</span>
+            </div>
 
-          <span style="font-weight: 700; font-size: 11px; margin-left: 8px; color: #1e293b;">MA Sniper:</span>
+            <select id="ma-sensitivity" class="sniper-select" onchange="updateSensitivity()">
+              <option value="low">SENS: LOW</option>
+              <option value="medium" selected>SENS: MED</option>
+              <option value="high">SENS: HIGH</option>
+            </select>
+          </div>
 
-          <select id="ma-sensitivity" onchange="updateSensitivity()">
-            <option value="low">SENS: LOW</option>
-            <option value="medium" selected>SENS: MED</option>
-            <option value="high">SENS: HIGH</option>
-          </select>
-
-          <span id="ma-status-value" style="font-size: 11px; color: #64748b; margin-left: 5px;">OFF</span>
-          <span id="ma-signal-dot" class="status-dot"></span>
-          <span id="no-vol-warning" style="font-size: 10px; font-weight: 800; color: #64748b; margin-bottom: 4px; text-transform: uppercase;"
-            title="Flux sans volume : validation de force désactivée">
-            ⚠️ NoVol
-          </span>
+          <div id="volume-monitor" class="sniper-monitor">
+            <div class="monitor-info">
+              <span id="no-vol-warning" class="badge-type">DÉTECTION...</span>
+              <span id="volume-percent" class="gap-value">G: 0.000%</span>
+            </div>
+            <div id="volume-bar-container" class="progress-container">
+              <div id="volume-bar" class="progress-fill"></div>
+            </div>
+          </div>
 
           <div id="ma-sniper-alert-badge"></div>
 
-          <div id="volume-monitor">
-            <div id="volume-bar-container"
-              style="width: 50px; height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden;">
-              <div id="volume-bar" style="width: 0%; height: 100%; background: #3b82f6; transition: width 0.3s ease;">
-              </div>
-            </div>
-            <span id="volume-percent">0%</span>
-          </div>
-
-          <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
-            <button class="btn-export" onclick="exportMAModelToCSV()" title="Exporter journal MA">📥</button>
-            <button class="btn-reset" onclick="clearMASniperLogs()" title="Effacer journal MA">🗑️</button>
-            <button id="master-reset-btn" onclick="masterReset()" title="Tout réinitialiser">🧹</button>
+          <div class="sniper-actions">
+            <button class="action-btn" onclick="exportMAModelToCSV()" title="Exporter">📥</button>
+            <button class="action-btn" onclick="clearMASniperLogs()" title="Effacer Logs">🗑️</button>
+            <button class="action-btn danger" onclick="masterReset()" title="Reset Total">🧹</button>
           </div>
         </div>
       </div>
