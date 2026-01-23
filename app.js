@@ -2839,7 +2839,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (typeof renderIndicators === "function") renderIndicators();
-  };  
+  };
 
   window.restoreTradingSession = function () {
     const alertBadge = document.getElementById('ma-sniper-alert-badge');
@@ -2884,7 +2884,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const label = document.getElementById('ma-sniper-label');
         if (label) label.style.display = 'flex';
 
-        const btn = document.getElementById('ma-sniper-btn');   
+        const btn = document.getElementById('ma-sniper-btn');
         if (btn) btn.classList.add('armed');
 
         const dot = document.getElementById('ma-signal-dot');
@@ -3117,13 +3117,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const i = data.length - 1;
     const candle = data[i];
 
-    // Extraction des valeurs EMA
-    const { e20, e50 } = maContext.current;
-    const { e20: prevE20, e50: prevE50 } = maContext.previous;
+    // FIX NAN : On force la conversion en nombre au cas où l'API renvoie des strings
+    const e20 = parseFloat(maContext.current.e20);
+    const e50 = parseFloat(maContext.current.e50);
+    const prevE20 = parseFloat(maContext.previous.e20);
+    const prevE50 = parseFloat(maContext.previous.e50);
+
+    // Sécurité supplémentaire : Si l'un des calculs échoue, on arrête
+    if (isNaN(e20) || isNaN(e50)) return;
 
     // --- MISE À JOUR VISUELLE (BADGE & GAP) ---
     if (typeof window.updateGapMonitor === "function") {
-      // Ajout d'un petit plus : On passe la direction au monitor
+      // Détermination de la flèche ici pour garantir sa transmission
       const direction = e20 > e50 ? "↑" : "↓";
       window.updateGapMonitor(e20, e50, direction);
     }
@@ -3133,28 +3138,21 @@ document.addEventListener("DOMContentLoaded", () => {
     // A. Cooldown : Pas deux signaux sur la même bougie
     if (candle.time === (window.lastProcessedCandleTime || 0)) return;
 
-    // B. Validation Volume / Actif (Adaptatif R_50, Gold, Forex)
+    // B. Validation Volume
     const volumeOk = typeof isVolumeValidated === "function" ? isVolumeValidated(data) : true;
     if (!volumeOk) return;
 
     // --- CALCULS ANALYTIQUES ---
 
-    // Calcul de la Pente (Momentum)
     const slope20 = (e20 - prevE20) / prevE20;
     const slope50 = (e50 - prevE50) / prevE50;
 
-    // Debug Log de précision dans la console
-    if (Math.abs(slope20) > 0.000001) {
-      const currentGap = Math.abs((e20 - e50) / e50 * 100);
-      console.log(`📉 [DEBUG] Slope: ${slope20.toFixed(7)} | Gap: ${currentGap.toFixed(3)}% | Config: ${window.sniperConfig?.label || 'AUTO'}`);
-    }
-
     let signal = null;
 
-    // --- STRATÉGIE A : MOMENTUM ⚡ (Accélération directionnelle) ---
-    // Utilisation des seuils dynamiques selon l'actif
+    // Récupération Config
     const config = window.sniperConfig || { slopeMin: 0.00010, ratio: 1.5 };
 
+    // --- STRATÉGIE A : MOMENTUM ⚡ ---
     const isStrongSlope = Math.abs(slope20) > config.slopeMin;
     const isAccelerating = Math.abs(slope20) > Math.abs(slope50) * config.ratio;
 
@@ -3166,7 +3164,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // --- STRATÉGIE B : CROSSOVER 🔄 (Croisement de tendance) ---
+    // --- STRATÉGIE B : CROSSOVER 🔄 ---
     if (!signal) {
       if (prevE20 <= prevE50 && e20 > e50) {
         signal = { type: 'BUY', subtype: 'CROSS', color: '#2ecc71', icon: '🔄' };
@@ -3175,10 +3173,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // --- STRATÉGIE C : REBOND 🎯 (Test de support/résistance EMA) ---
+    // --- STRATÉGIE C : REBOND 🎯 ---
     if (!signal) {
       const prevCandle = data[i - 1];
-      // Sécurité Rebond : on s'assure qu'il y a un vrai rejet de la moyenne
       if (e20 > e50 && candle.low <= e20 && candle.close > e20 && prevCandle.close > e20) {
         signal = { type: 'BUY', subtype: 'REBOND', color: '#2ecc71', icon: '🎯' };
       } else if (e20 < e50 && candle.high >= e20 && candle.close < e20 && prevCandle.close < e20) {
@@ -3187,16 +3184,82 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- DÉCLENCHEMENT FINAL ---
-    if (signal) {
+    // IMPORTANT : Vérifiez que maSniperActive est bien à TRUE globalement
+    if (signal && window.maSniperActive) {
       window.lastProcessedCandleTime = candle.time;
 
       if (typeof window.triggerMASniperAlert === "function") {
         window.triggerMASniperAlert(signal, candle, e20, e50);
       }
 
-      console.log(`🚀 [SIGNAL] ${signal.type} ${signal.subtype} | Symbole: ${window.currentSymbol || 'N/A'}`);
+      console.log(`🚀 [SIGNAL] ${signal.type} ${signal.subtype}`);
     }
   }
+
+  window.updateGapMonitor = function (e20, e50, direction) {
+    const gapBar = document.getElementById('volume-bar');
+    const gapPercent = document.getElementById('volume-percent');
+    const statusDot = document.getElementById('ma-signal-dot');
+    const statusValue = document.getElementById('ma-status-value');
+
+    // 1. CONVERSION ET SÉCURITÉ (Anti-NaN)
+    const val20 = parseFloat(e20);
+    const val50 = parseFloat(e50);
+
+    if (isNaN(val20) || isNaN(val50) || val50 === 0) {
+      if (gapPercent) gapPercent.innerText = "G: ---%";
+      return;
+    }
+
+    // 2. CALCUL DU GAP
+    const gap = Math.abs(((val20 - val50) / val50) * 100);
+
+    // 3. GESTION DE LA DIRECTION ET DES COULEURS
+    // Si direction n'est pas fourni, on le déduit
+    const realDirection = direction || (val20 > val50 ? "↑" : "↓");
+    const dirColor = val20 > val50 ? "#22c55e" : "#ef4444"; // Vert si e20 > e50, sinon Rouge
+
+    // 4. MISE À JOUR DU TEXTE (HTML pour la couleur de la flèche)
+    if (gapPercent) {
+      gapPercent.innerHTML = `<span style="color: ${dirColor}; font-weight: 800;">${realDirection}</span> G: ${gap.toFixed(3)}%`;
+    }
+
+    // 5. MISE À JOUR DE LA BARRE ET DES ÉTATS VISUELS
+    if (gapBar) {
+      const threshold = window.sniperConfig?.gapThreshold || 1.0;
+      // La barre se remplit à 100% quand on atteint 2x le seuil
+      const progress = Math.min((gap / (threshold * 2)) * 100, 100);
+      gapBar.style.width = progress + "%";
+
+      // Nettoyage des animations
+      gapBar.classList.remove('critical-flash');
+
+      if (gap >= threshold * 1.5) {
+        // ÉTAT CRITIQUE (Surchauffe)
+        gapBar.style.background = '#ef4444';
+        gapBar.classList.add('critical-flash');
+      } else if (gap >= threshold) {
+        // ÉTAT TENSION (Alerte)
+        gapBar.style.background = '#f59e0b';
+      } else {
+        // ÉTAT NORMAL
+        gapBar.style.background = '#3b82f6';
+      }
+    }
+
+    // 6. MISE À JOUR DU STATUT (Point vert/OFF)
+    if (statusDot && statusValue) {
+      if (window.maSniperActive) {
+        statusDot.classList.add('active');
+        statusValue.innerText = "ON";
+        statusValue.style.color = "#22c55e";
+      } else {
+        statusDot.classList.remove('active');
+        statusValue.innerText = "OFF";
+        statusValue.style.color = "#64748b";
+      }
+    }
+  };
 
   function autoAdjustSniperConfig(symbol) {
     if (!symbol) return sniperProfiles.DEFAULT;
@@ -3299,7 +3362,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return percentage >= 80;
   }
 
-  window.updateGapMonitor = function (e20, e50, direction) {  
+  window.updateGapMonitor = function (e20, e50, direction) {
     const gapBar = document.getElementById('volume-bar');
     const gapPercent = document.getElementById('volume-percent');
 
@@ -3352,35 +3415,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const maSniperLabel = document.getElementById('ma-sniper-label');
     const alertBadge = document.getElementById('ma-sniper-alert-badge');
 
-    if (!window.maSniperActive || !maSniperLabel) return;
+    // SÉCURITÉ : On s'assure que les valeurs sont numériques pour éviter le NaN dans les marqueurs
+    const val20 = parseFloat(e20);
+    const val50 = parseFloat(e50);
 
-    // 1. ANALYSE DU GAP DYNAMIQUE (Utilise les seuils de l'actif actuel)
+    if (!window.maSniperActive || !maSniperLabel || isNaN(val20)) return;
+
+    // 1. ANALYSE DU GAP DYNAMIQUE
     const threshold = window.sniperConfig?.gapThreshold || 1.0;
-    const gapValue = Math.abs(((e20 - e50) / e50) * 100);
-    const emaGap = gapValue.toFixed(3); // 3 décimales pour la précision
+    const gapValue = Math.abs(((val20 - val50) / val50) * 100);
+    const emaGap = gapValue.toFixed(3);
 
-    // Seuils adaptatifs : 
-    // Critical = Seuil config (ex: 0.3% sur R_50 ou 0.8% sur Gold)
-    // Locked = 1.5x le seuil (Extension extrême)
     const isCritical = gapValue >= threshold;
     const isLocked = gapValue >= (threshold * 1.5);
 
-    // 2. CONSTRUCTION DU MESSAGE ET DE LA CHECKLIST
+    // 2. CONSTRUCTION DU MESSAGE (Version simplifiée pour éviter les erreurs de rendu)
     if (alertBadge) {
-      let alertClass = "ma-sniper-msg";
-      let icon = signal.icon;
+      let alertClass = isCritical || isLocked ? "ma-sniper-msg critical" : "ma-sniper-msg";
+      let icon = isLocked ? "🚫 LOCK" : (isCritical ? "🔥 " + signal.subtype : signal.icon + " " + signal.subtype);
 
-      if (isLocked) {
-        alertClass += " critical"; // Fuchsia/Rouge pulsé
-        icon = "🚫 LOCK";
-      } else if (isCritical) {
-        alertClass += " critical"; // Orange/Rouge
-        icon = "🔥 " + signal.subtype;
-      } else {
-        icon = signal.icon + " " + signal.subtype;
-      }
-
-      let content = `
+      alertBadge.innerHTML = `
             <div class="${alertClass}" id="current-sniper-alert" style="border-left: 5px solid ${signal.color}">
                 <div class="msg-main-info" onclick="if(window.toggleLogTable) toggleLogTable()" style="cursor:pointer">
                     <span style="font-weight:bold">${icon}</span>
@@ -3388,27 +3442,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
                 <div class="msg-close-btn" onclick="this.parentElement.parentElement.innerHTML=''" style="cursor:pointer">✕</div>
             </div>
-        `;
-
-      if (isCritical || isLocked) {
-        content += `
-                <div class="sniper-checklist" id="current-sniper-checklist" 
-                     style="position: absolute; top: 85px; right: 0; width: 190px; background: rgba(255,255,255,0.95); border: 1px solid #ccc; padding: 8px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000;">
-                    <div style="font-size:10px; font-weight:800; border-bottom:1px solid #ddd; margin-bottom:5px">CHECKLIST SECURITÉ</div>
-                    <div style="font-size:11px; display:flex; flex-direction:column; gap:4px">
-                        <span>⬜ ${isLocked ? 'DANGER: SUR-EXTENSION' : 'VOLATILITÉ ÉLEVÉE'}</span>
-                        <span>⬜ CONFIRMATION PRIX > EMA20</span>
-                        <span>⬜ RISQUE/RECOMPENSE OK ?</span>
+            ${(isCritical || isLocked) ? `
+                <div class="sniper-checklist" style="position: absolute; top: 95px; right: 0; width: 190px; background: white; border: 1px solid #ccc; padding: 10px; z-index: 1000; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                    <div style="font-size:10px; font-weight:900; color: #ef4444; margin-bottom:5px;">⚠️ VÉRIFICATION REQUISE</div>
+                    <div style="font-size:11px; line-height: 1.4;">
+                        ⬜ ${isLocked ? 'EXTRÊME : ATTENDRE' : 'VOLATILITÉ HAUTE'}<br>
+                        ⬜ PRIX CONFIRMÉ ?<br>
+                        ⬜ RR RATIO VALIDE ?
                     </div>
-                </div>
-            `;
-      }
-      alertBadge.innerHTML = content;
+                </div>` : ''}
+        `;
     }
 
-    // 3. EFFETS VISUELS ET SONORES
+    // 3. EFFETS VISUELS
     maSniperLabel.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
-    void maSniperLabel.offsetWidth; // Force le reflow pour relancer les animations
+    void maSniperLabel.offsetWidth;
 
     if (isLocked || isCritical) {
       maSniperLabel.classList.add('critical-shake');
@@ -3417,52 +3465,37 @@ document.addEventListener("DOMContentLoaded", () => {
       if (window.playSniperSound) playSniperSound('SIGNAL');
       if (signal.subtype === 'CROSS') maSniperLabel.classList.add('sniper-shake');
     }
+    maSniperLabel.classList.add(signal.type === 'BUY' ? 'badge-flash-buy' : 'badge-flash-sell');
 
-    const flashClass = signal.type === 'BUY' ? 'badge-flash-buy' : 'badge-flash-sell';
-    maSniperLabel.classList.add(flashClass);
-
-    // 4. NOTIFICATION PUSH (Browser)
-    if (Notification.permission === "granted") {
-      const notifTitle = `${isLocked ? '🚫' : (isCritical ? '🚨' : signal.icon)} ${signal.type} ${signal.subtype}`;
-      const notifBody = `Prix: ${candle.close.toFixed(2)} | Gap: ${emaGap}% | Mode: ${window.sniperConfig?.label || 'Auto'}`;
-      const notif = new Notification(notifTitle, { body: notifBody, silent: true });
-      notif.onclick = () => { window.focus(); notif.close(); };
-      setTimeout(() => notif.close(), 5000);
-    }
-
-    // 5. MARQUEUR SUR LE GRAPHIQUE (TradingView lightweight ou autre)
+    // 4. CRÉATION DU MARQUEUR (C'est ici que les flèches apparaissent sur le chart)
     const newMarker = {
       time: candle.time,
       position: signal.type === 'BUY' ? 'belowBar' : 'aboveBar',
       color: isLocked ? '#ff4d4d' : (isCritical ? '#f59e0b' : signal.color),
       shape: signal.type === 'BUY' ? 'arrowUp' : 'arrowDown',
-      text: `${isLocked ? '🚫' : (isCritical ? '🔥' : '')}${signal.subtype}\n(${emaGap}%)`,
-      size: isLocked ? 4 : (isCritical ? 3 : 2)
+      text: `${isLocked ? '🚫' : (isCritical ? '🔥' : '')}${signal.subtype} (${emaGap}%)`,
+      size: isLocked ? 3 : 2
     };
 
-    if (window.maSniperMarkers) window.maSniperMarkers.push(newMarker);
+    // Initialisation du tableau si nécessaire et ajout
+    if (!window.maSniperMarkers) window.maSniperMarkers = [];
+    window.maSniperMarkers.push(newMarker);
 
-    // 6. SAUVEGARDE ET SYNC
+    // 5. SAUVEGARDE ET SYNCHRONISATION (Crucial pour l'affichage)
     if (typeof window.logMASignalToStorage === "function") {
-      window.logMASignalToStorage({
-        ...signal,
-        isCritical: isCritical,
-        ma20: e20,
-        ma50: e50,
-        gap: emaGap,
-        marker: newMarker
-      }, candle);
+      window.logMASignalToStorage({ ...signal, isCritical, ma20: val20, ma50: val50, gap: emaGap, marker: newMarker }, candle);
     }
 
-    if (typeof syncAllChartMarkers === "function") syncAllChartMarkers();
+    // On force l'affichage immédiat sur le graphique
+    if (typeof window.syncAllChartMarkers === "function") {
+      window.syncAllChartMarkers();
+    }
 
-    // 7. AUTO-RESET
+    // 6. AUTO-RESET
     setTimeout(() => {
-      if (alertBadge && alertBadge.innerHTML.includes(emaGap)) {
-        alertBadge.innerHTML = "";
-      }
+      if (alertBadge && alertBadge.innerHTML.includes(emaGap)) alertBadge.innerHTML = "";
       maSniperLabel.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
-    }, 10000); // Porté à 10s pour laisser le temps de checker l'actif
+    }, 10000);
   };
 
   window.closeSniperAlert = function () {
@@ -3485,18 +3518,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 300);
   };
 
-  function syncAllChartMarkers() {
-    // On crée une copie combinée des deux listes
-    const combined = [...allMarkers, ...maSniperMarkers];
+  window.syncAllChartMarkers = function () {
+    // 1. Protection contre les tableaux non définis
+    const list1 = window.allMarkers || [];
+    const list2 = window.maSniperMarkers || [];
 
-    // On trie par temps (important pour Lightweight Charts)
+    // 2. Fusion et suppression des doublons sur le même timestamp/type
+    // Cela évite d'empiler deux flèches l'une sur l'autre
+    const combined = [...list1, ...list2];
+
+    // 3. Tri chronologique (Crucial pour la stabilité du graphique)
     combined.sort((a, b) => a.time - b.time);
 
-    // On applique l'ensemble au graphique
-    if (currentSeries) {
-      currentSeries.setMarkers(combined);
+    // 4. Application sur la série active
+    // Vérifiez bien que 'currentSeries' est la variable globale de votre graphique
+    if (window.currentSeries) {
+      window.currentSeries.setMarkers(combined);
+    } else {
+      console.warn("⚠️ [Markers] Aucune série active (currentSeries) trouvée pour afficher les marqueurs.");
     }
-  }
+  };
 
   // --- 5. Fonctions Utilitaires (Audio, Logs, Export) ---
   function playSniperSound(type) {
@@ -6670,7 +6711,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (typeof window.updateSymbols === 'function') {
     window.updateSymbols();
   }
-  
+
   window.onload = async () => {
     if (!currentSymbol) return;
     await loadSymbol(currentSymbol, currentInterval, currentChartType);
