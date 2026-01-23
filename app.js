@@ -149,6 +149,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   // Variable pour éviter que le son ne se répète en boucle
   let isSniperSynergyActive = false;
+  // Au début du script
+  window.currentEma20 = 0;
+  window.currentEma50 = 0;
   // ================== x ==================  
 
   let wsReady = false;
@@ -3171,8 +3174,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
- * Vérifie si le volume de la bougie actuelle est significatif
- * par rapport aux bougies précédentes.
+ * Valide le volume si disponible, sinon bascule sur le monitoring du Gap EMA.
+ * S'adapte aux indices synthétiques (R_50), au Forex, aux Cryptos et Actions.
  */
   function isVolumeValidated(data) {
     const period = 20;
@@ -3180,48 +3183,106 @@ document.addEventListener("DOMContentLoaded", () => {
     const volBar = document.getElementById('volume-bar');
     const volPercent = document.getElementById('volume-percent');
 
+    // Sécurité : Si pas assez de données, on autorise le signal par défaut
     if (!data || data.length <= period) return true;
 
     const currentCandle = data[data.length - 1];
 
-    // 1. Détection de la clé de volume (volume, v, zb, etc.)
-    // On exclut 'zb' car c'est un timestamp dans votre flux
-    const volKey = ['volume', 'v', 'tick_volume'].find(key => key in currentCandle);
+    // 1. DÉTECTION AUTOMATIQUE DU VOLUME
+    // On cherche les clés classiques. Note : On exclut 'zb' (timestamp)
+    const volKey = ['volume', 'v', 'tick_volume', 'vol'].find(key =>
+      key in currentCandle && typeof currentCandle[key] === 'number' && currentCandle[key] > 0
+    );
 
-    // 2. GESTION SI PAS DE VOLUME (Votre cas actuel)
+    // --- CAS A : ACTIF SANS VOLUME (Ex: R_50, R_100, Indices Synthétiques) ---
     if (!volKey) {
-      if (warningEl) warningEl.style.display = 'inline';
-
-      // OPTIONNEL : Si pas de volume, on utilise la barre pour afficher le GAP EMA
-      // au lieu de la laisser à 0%
-      if (typeof updateGapMonitor === "function") {
-        // Cette fonction (donnée précédemment) mettra à jour la barre
-        return true;
+      if (warningEl) {
+        warningEl.style.display = 'inline';  
+        warningEl.innerText = "⚡ SYNTH"; // Indique un actif synthétique
       }
+
+      // Si on a les EMA, on utilise la barre pour afficher le GAP à la place
+      if (window.currentEma20 && window.currentEma50) {
+        const e20 = window.currentEma20;
+        const e50 = window.currentEma50;
+        const gap = Math.abs(((e20 - e50) / e50) * 100);
+
+        if (volPercent) volPercent.innerText = `G: ${gap.toFixed(3)}%`;
+        if (volBar) {
+          // Calibration pour indices synthétiques (barre pleine à 0.5% de gap)
+          const progress = Math.min((gap / 0.5) * 100, 100);
+          volBar.style.width = progress + "%";
+          volBar.style.background = gap > 0.3 ? "#f59e0b" : "#3b82f6";
+        }
+      }
+
+      // IMPORTANT : On retourne true car on ne peut pas valider ce qui n'existe pas
       return true;
     }
 
-    // 3. GESTION SI VOLUME PRÉSENT
+    // --- CAS B : ACTIF AVEC VOLUME (Ex: BTC, Actions, Forex avec Tick Vol) ---
     if (warningEl) warningEl.style.display = 'none';
 
-    const currentVolume = currentCandle[volKey] || 0;
+    const currentVolume = currentCandle[volKey];
     const slice = data.slice(-period - 1, -1);
     const avgVolume = slice.reduce((sum, c) => sum + (c[volKey] || 0), 0) / period;
 
     const ratio = avgVolume > 0 ? currentVolume / avgVolume : 1;
     const percentage = Math.round(ratio * 100);
 
-    // --- MISE À JOUR VISUELLE ---
+    // Mise à jour visuelle du Volume
     if (volBar && volPercent) {
       volBar.style.width = Math.min(percentage, 100) + "%";
-      volBar.style.background = percentage >= 100 ? "#2ecc71" : "#3b82f6";  
-      volPercent.innerText = percentage + "%";  
-      volPercent.style.color = "#1e293b"; // Noir/Gris foncé pour fond blanc
+      volBar.style.background = percentage >= 100 ? "#2ecc71" : "#3b82f6"; // Vert si fort, Bleu sinon
+      volPercent.innerText = `V: ${percentage}%`;
+      volPercent.style.color = "#1e293b";
     }
 
-    // On valide si > 80% (plus souple que 100% pour ne pas rater trop de signaux)
+    // Validation : On accepte le signal si le volume est au moins à 80% de sa moyenne
     return percentage >= 80;
   }
+
+  window.updateGapMonitor = function (e20, e50) {
+    const gapBar = document.getElementById('volume-bar');
+    const gapPercent = document.getElementById('volume-percent');
+    const warningEl = document.getElementById('no-vol-warning');
+
+    if (!e20 || !e50 || !gapBar || !gapPercent) return;
+
+    // 1. Calcul du Gap en %
+    const gap = Math.abs(((e20 - e50) / e50) * 100);
+
+    // 2. Mise à jour du texte (format "G: 1.25%")
+    gapPercent.innerText = `G: ${gap.toFixed(2)}%`;
+
+    // 3. Mise à jour de la barre
+    // On considère que 5% de gap est le maximum visuel (100% de la barre)
+    const progress = Math.min((gap / 5) * 100, 100);
+    gapBar.style.width = progress + "%";
+
+    // 4. Logique de couleurs moderne
+    if (gap >= 5) {
+      // Mode LOCK : Rouge vif + Texte Gras
+      gapBar.style.background = '#ef4444';
+      gapPercent.style.color = '#ef4444';
+      gapPercent.style.fontWeight = '800';
+    } else if (gap >= 3) {
+      // Mode CRITIQUE : Orange/Fuchsia
+      gapBar.style.background = '#f59e0b';
+      gapPercent.style.color = '#f59e0b';
+      gapPercent.style.fontWeight = '700';
+    } else {
+      // Mode NORMAL : Bleu professionnel
+      gapBar.style.background = '#3b82f6';
+      gapPercent.style.color = '#1e293b'; // Noir pour lisibilité sur fond blanc
+      gapPercent.style.fontWeight = '600';
+    }
+
+    // 5. Petit bonus : si le gap est très faible (< 0.1%), on montre que c'est neutre
+    if (gap < 0.1) {
+      gapBar.style.background = '#cbd5e1'; // Gris
+    }
+  };
 
   // --- 4. Alerte et Journalisation ---
   window.triggerMASniperAlert = function (signal, candle, e20, e50) {
@@ -3550,6 +3611,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const prevE20 = ema20Data[ema20Data.length - 2];
             const prevE50 = ema50Data[ema50Data.length - 2];
 
+            // --- ICI ON REMPLIT LES VALEURS "INCONNUES" ---
+            window.currentEma20 = lastE20;
+            window.currentEma50 = lastE50;
+
+            // --- MISE À JOUR VISUELLE DU GAP DANS LE BADGE ---
+            // On appelle la fonction de monitoring avec les valeurs actuelles
+            if (typeof updateGapMonitor === "function") {
+              window.updateGapMonitor(lastE20.value, lastE50.value);
+            }
+
             const maContext = {
               current: { e20: lastE20.value, e50: lastE50.value },
               previous: { e20: prevE20.value, e50: prevE50.value }
@@ -3561,6 +3632,10 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) {
           console.error("Erreur MA Sniper Logic:", e);
         }
+      } else {
+        // OPTIONNEL : Si le mode Sniper est OFF, on peut remettre le badge à zéro ou le cacher
+        const gapPercent = document.getElementById('volume-percent');
+        if (gapPercent && !maSniperActive) gapPercent.innerText = "OFF";
       }
 
       // --- BLOC BOLLINGER + SNIPER (Version Finale Optimisée) ---
