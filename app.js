@@ -3478,13 +3478,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const alertBadge = document.getElementById('ma-sniper-alert-badge');
       if (alertBadge) alertBadge.innerHTML = "";
 
-      playSniperSound('RESET');
-    }
-  };
-
-  // Et si vous avez un ancien bouton qui appelle encore clearMASniperLogs :
-  window.clearMASniperLogs = window.DataTableclearMASniperLogs;
-
+      playSniperSound('RESET'); 
+    }  
+  };  
+   
   function updateMAs() {
     if (!maSeries || !chart || !isWsInitialized || priceDataZZ.length === 0) return;
 
