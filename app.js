@@ -2904,7 +2904,7 @@ document.addEventListener("DOMContentLoaded", () => {
       lastProcessedCandleTime = candle.time;
       triggerMASniperAlert(signal, candle, e20, e50);
     }
-  }
+  }  
 
   // --- 4. Alerte et Journalisation ---
   function triggerMASniperAlert(signal, candle, ma20Val, ma50Val) {
