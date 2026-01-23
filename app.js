@@ -3368,7 +3368,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 6. Zone neutre
     if (gap < threshold * 0.1) {
       gapBar.style.background = '#cbd5e1';
-      gapPercent.style.color = '#94a3b8';
+      gapPercent.style.color = '#94a3b8';  
     }  
   };
    
