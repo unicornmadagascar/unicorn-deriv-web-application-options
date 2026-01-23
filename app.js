@@ -2849,7 +2849,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.classList.add('active');
       status.innerText = "SCANNING";
       status.style.color = "#2196F3";
-      dot.style.background = "#2196F3";
+      dot.style.background = "#2196F3";  
       if (audioCtx.state === 'suspended') audioCtx.resume();  
     } else {
       btn.classList.remove('active');
