@@ -3397,6 +3397,40 @@ document.addEventListener("DOMContentLoaded", () => {
     a.click();
   };
 
+  window.DataTableexportMAModelToCSV = function () {
+    const logs = JSON.parse(localStorage.getItem('ma_sniper_logs')) || [];
+    if (!logs.length) return alert("Le journal est vide.");
+
+    // En-tête avec les colonnes exactes de votre stockage
+    let csv = "Date;Signal;Type;Prix;MA20;MA50;Gap %\n";
+
+    csv += logs.map(l => {
+      // Calcul du gap à la volée pour le rapport
+      const gap = l.ma50 !== 0 ? Math.abs(((l.ma20 - l.ma50) / l.ma50) * 100).toFixed(2) : 0;
+
+      // Utilisation du point-virgule (;) pour une meilleure compatibilité Excel France
+      return [
+        l.date,
+        l.type,        // BUY/SELL
+        l.subtype,     // CROSS/REBOND
+        l.price.toFixed(2),
+        l.ma20.toFixed(2),
+        l.ma50.toFixed(2),
+        gap
+      ].join(";");
+    }).join("\n");
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Sniper_Report_${new Date().toLocaleDateString()}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   window.clearMASniperLogs = function () {
     if (confirm("🚨 Effacer le journal MA Sniper et les marqueurs ?")) {
       // 1. Nettoyage du stockage local
@@ -3428,6 +3462,28 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("🧹 Journal et marqueurs MA Sniper réinitialisés.");
     }
   };
+
+  // Définissez la fonction une seule fois de façon robuste
+  window.DataTableclearMASniperLogs = function () {
+    if (confirm("🚨 Tout annuler et effacer l'historique ?")) {
+      // Nettoyage complet
+      localStorage.removeItem('ma_sniper_logs');
+      window.maSniperMarkers = [];
+
+      // Mise à jour de tous les éléments liés
+      if (typeof syncAllChartMarkers === "function") syncAllChartMarkers();
+      if (typeof renderLogTable === "function") renderLogTable();
+
+      // Reset visuel du badge d'alerte
+      const alertBadge = document.getElementById('ma-sniper-alert-badge');
+      if (alertBadge) alertBadge.innerHTML = "";
+
+      playSniperSound('RESET');
+    }
+  };
+
+  // Et si vous avez un ancien bouton qui appelle encore clearMASniperLogs :
+  window.clearMASniperLogs = window.DataTableclearMASniperLogs;
 
   function updateMAs() {
     if (!maSeries || !chart || !isWsInitialized || priceDataZZ.length === 0) return;
