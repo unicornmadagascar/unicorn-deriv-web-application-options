@@ -2920,7 +2920,7 @@ document.addEventListener("DOMContentLoaded", () => {
       text: `${signal.subtype} ${signal.type}`
     };
     maSniperMarkers.push(marker);     
-    if (mainSeries) mainSeries.setMarkers(maSniperMarkers);  
+    if (currentSeries) currentSeries.setMarkers(maSniperMarkers);  
 
     // Affichage dans le badge MA-SNIPER-LABEL
     const badge = document.getElementById('ma-sniper-alert-badge');
