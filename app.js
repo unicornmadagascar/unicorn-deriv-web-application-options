@@ -6743,7 +6743,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (typeof window.updateSymbols === 'function') {
     window.updateSymbols();
   }
-
+  
   window.onload = async () => {
     if (!currentSymbol) return;
     await loadSymbol(currentSymbol, currentInterval, currentChartType);
