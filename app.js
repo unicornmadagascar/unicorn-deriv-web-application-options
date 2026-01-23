@@ -147,6 +147,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let lastProcessedCandleTime = null;
   let sniperConfig = { slopeMin: 0.0001, ratio: 3.0 }; // Mode Medium par défaut
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // Variable pour éviter que le son ne se répète en boucle
+  let isSniperSynergyActive = false;
   // ================== x ==================  
 
   let wsReady = false;
@@ -926,6 +928,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     initBollingerSeries();  // Bollinger Bands INITIALIZATION
+    restoreUserSettings();
 
     // 1. Réinitialisation de la mémoire des contrats
     activeContractsData = {};
@@ -2750,75 +2753,204 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- LOGIQUE DES BOUTONS (Appelée depuis le HTML) ---   
   window.toggleMA = function (period, button) {
     if (!chart) return;
-
-    if (maSeries === null) {
-      initMaSeries();
-    }
+    if (maSeries === null) initMaSeries();
 
     const index = activePeriods.indexOf(period);
-    const maSniperLabel = document.getElementById('ma-sniper-label'); // Cible le badge Sniper
+    const maSniperLabel = document.getElementById('ma-sniper-label');
+    const alertBadge = document.getElementById('ma-sniper-alert-badge');
 
+    // 1. LOGIQUE D'ACTIVATION / DÉSACTIVATION
     if (index === -1) {
-      // --- ACTIVATION ---
       activePeriods.push(period);
       button.classList.add('active');
-      button.innerText = period;
-
-      if (maSeries[period]) {
-        maSeries[period].applyOptions({ visible: true });
-      }
-
-      // --- SPECIFIQUE SNIPER ---
-      // Si l'utilisateur active l'EMA 20, on montre le badge Sniper
-      if (period === 20 && maSniperLabel) {
-        maSniperLabel.style.display = 'flex';
-      }
-
+      if (maSeries[period]) maSeries[period].applyOptions({ visible: true });
     } else {
-      // --- DÉSACTIVATION ---
       activePeriods.splice(index, 1);
       button.classList.remove('active');
-      button.innerText = period;
+      button.classList.remove('sniper-ready');
+      if (maSeries[period]) maSeries[period].applyOptions({ visible: false });
+    }
 
-      if (maSeries[period]) {
-        maSeries[period].applyOptions({ visible: false });
+    // 2. SAUVEGARDE AUTOMATIQUE DES RÉGLAGES
+    localStorage.setItem('active_ma_periods', JSON.stringify(activePeriods));
+
+    // 3. VÉRIFICATION DE LA SYNERGIE 20 & 50
+    const isEma20Active = activePeriods.includes(20);
+    const isEma50Active = activePeriods.includes(50);
+
+    const btn20 = document.querySelector('button[onclick*="20"]');
+    const btn50 = document.querySelector('button[onclick*="50"]');
+
+    if (isEma20Active && isEma50Active) {
+      // --- DUO ACTIF ---
+      if (!isSniperSynergyActive) {
+        playSystemArmedSound(); // Déclenche le son sonar
+        isSniperSynergyActive = true;
       }
 
-      // --- SPECIFIQUE SNIPER ---
-      // Si l'utilisateur coupe l'EMA 20, on cache le badge et on coupe le mode Sniper
-      if (period === 20 && maSniperLabel) {
-        maSniperLabel.style.display = 'none';
+      if (btn20) btn20.classList.add('sniper-ready');
+      if (btn50) btn50.classList.add('sniper-ready');
 
-        // Sécurité : Si le mode sniper était actif, on le coupe proprement
-        if (maSniperActive) {
+      if (maSniperLabel) {
+        maSniperLabel.style.display = 'flex';
+        if (alertBadge) alertBadge.innerHTML = "";
+      }
+    } else {
+      // --- DUO BRISÉ ---
+      isSniperSynergyActive = false;
+      if (btn20) btn20.classList.remove('sniper-ready');
+      if (btn50) btn50.classList.remove('sniper-ready');
+
+      if (maSniperLabel) {
+        if (isEma20Active || isEma50Active) {
+          maSniperLabel.style.display = 'flex';
+          if (alertBadge) {
+            alertBadge.innerHTML = `<span style="color: #64748b; font-size: 9px; font-style: italic;">Activez EMA ${isEma20Active ? '50' : '20'} pour Sniper 🎯</span>`;
+          }
+        } else {
+          maSniperLabel.style.display = 'none';
+        }
+
+        // Si on perd une MA, on coupe le mode Sniper s'il était ON
+        if (typeof maSniperActive !== 'undefined' && maSniperActive) {
           window.toggleMASniper();
         }
       }
     }
 
-    if (typeof renderIndicators === "function") {
-      renderIndicators();
+    if (typeof renderIndicators === "function") renderIndicators();
+  };
+
+  function restoreTradingSession() {
+    // 1. Restaurer les EMA
+    const savedPeriods = localStorage.getItem('active_ma_periods');
+    if (savedPeriods) {
+      const periods = JSON.parse(savedPeriods);
+      periods.forEach(p => {
+        const btn = document.querySelector(`button[onclick*="${p}"]`);
+        if (btn) window.toggleMA(p, btn);
+      });
+    }
+
+    // 2. Restaurer le Sniper (seulement si la 20 et 50 sont là)
+    const wasSniperArmed = localStorage.getItem('ma_sniper_armed') === 'true';
+    if (wasSniperArmed && activePeriods.includes(20) && activePeriods.includes(50)) {
+      // On force l'activation sans passer par le toggle pour éviter les conflits
+      maSniperActive = true;
+      const btn = document.getElementById('ma-sniper-btn');
+      if (btn) btn.classList.add('armed');
+      const dot = document.getElementById('ma-signal-dot');
+      if (dot) dot.style.backgroundColor = '#2ecc71';
+      const statusText = document.getElementById('ma-status-value');
+      if (statusText) statusText.innerText = 'ON';
+    }
+  }
+
+  window.masterReset = function () {
+    if (confirm("🚨 Voulez-vous réinitialiser TOUS les paramètres (EMA, Sniper, Bollinger, Logs) ?")) {
+
+      // 1. Vider le LocalStorage
+      localStorage.clear();
+
+      // 2. Désactiver le mode Sniper
+      maSniperActive = false;
+      isSniperSynergyActive = false;
+
+      // 3. Vider les marqueurs et rafraîchir le graphique
+      allMarkers = [];
+      maSniperMarkers = [];
+      if (typeof syncAllChartMarkers === 'function') {
+        syncAllChartMarkers();
+      }
+
+      // 4. Masquer les lignes EMA sur le graphique
+      if (maSeries) {
+        Object.values(maSeries).forEach(series => {
+          series.applyOptions({ visible: false });
+        });
+      }
+
+      // 5. Réinitialiser visuellement les boutons EMA
+      const allMaButtons = document.querySelectorAll('button[onclick*="toggleMA"]');
+      allMaButtons.forEach(btn => {
+        btn.classList.remove('active', 'sniper-ready');
+      });
+
+      // 6. Réinitialiser les Badges (Sniper et Bollinger)
+      const labels = ['ma-sniper-label', 'volatility-label'];
+      labels.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+
+      // 7. Recharger proprement les variables d'état
+      activePeriods = [];
+
+      // Son de confirmation (Bip descendant)
+      playResetSound();
+
+      alert("Dashboard réinitialisé avec succès.");
     }
   };
 
+  // Petit son de reset pour le feedback
+  function playResetSound() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.3);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.3);
+  }
+
+  function playSystemArmedSound() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.type = 'sine'; // Son pur
+    oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // Note A5
+    oscillator.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.1); // Glissando rapide vers le haut
+
+    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.2);
+  }
+
   // --- ACTIVATION / DÉSACTIVATION ---  
   window.toggleMASniper = function (event) {
+    if (event) event.stopPropagation();
+
+    // Vérification de sécurité EMA (déjà présente)
+    if (!activePeriods.includes(20) || !activePeriods.includes(50)) return;
+
     maSniperActive = !maSniperActive;
+
+    // SAUVEGARDE DE L'ÉTAT
+    localStorage.setItem('ma_sniper_armed', maSniperActive);
+
+    // Mise à jour visuelle du bouton et du point
     const btn = document.getElementById('ma-sniper-btn');
-    const status = document.getElementById('ma-status-value');
     const dot = document.getElementById('ma-signal-dot');
+    const statusText = document.getElementById('ma-status-value');
 
     if (maSniperActive) {
-      btn.classList.add('active');
-      status.innerText = "SCANNING";
-      status.style.color = "#2196F3";
-      dot.style.background = "#2196F3";
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      btn.classList.add('armed');
+      if (dot) dot.style.backgroundColor = '#2ecc71'; // Vert
+      if (statusText) statusText.innerText = 'ON';
     } else {
-      btn.classList.remove('active');
-      status.innerText = "OFF";
-      status.style.color = "#64748b";
-      dot.style.background = "#cbd5e1";
+      btn.classList.remove('armed');
+      if (dot) dot.style.backgroundColor = '#cbd5e1'; // Gris
+      if (statusText) statusText.innerText = 'OFF';
     }
   };
 
@@ -2987,13 +3119,50 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.clearMASniperLogs = function () {
-    if (confirm("Effacer tout le journal MA ?")) {
+    if (confirm("🚨 Effacer le journal MA Sniper et les marqueurs ?")) {
+      // 1. Nettoyage du stockage local
       localStorage.removeItem('ma_sniper_logs');
+
+      // 2. Réinitialisation des marqueurs spécifiques à la MA
       maSniperMarkers = [];
-      if (mainSeries) mainSeries.setMarkers([]);
-      document.getElementById('ma-sniper-alert-badge').innerHTML = "";
+
+      // 3. Synchronisation pour ne garder que les marqueurs BB sur le graphique
+      if (typeof syncAllChartMarkers === "function") {
+        syncAllChartMarkers();
+      }
+
+      // 4. Nettoyage de l'interface utilisateur (Badge)
+      const alertBadge = document.getElementById('ma-sniper-alert-badge');
+      const labelContainer = document.getElementById('ma-sniper-label');
+
+      if (alertBadge) alertBadge.innerHTML = "";
+
+      if (labelContainer) {
+        // On retire les classes de flash (vert/rouge) si elles sont actives
+        labelContainer.classList.remove('flash-buy', 'flash-sell');
+        // On peut aussi ajouter un petit effet de "reset" visuel rapide
+        labelContainer.style.borderColor = "#e2e8f0";
+      }
+
+      // 5. Petit son de confirmation discret (optionnel)
+      playClearSound();
     }
   };
+
+  // Fonction utilitaire pour le son de nettoyage
+  function playClearSound() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.start();  
+    oscillator.stop(audioCtx.currentTime + 0.1);
+  }
 
   function updateMAs() {
     if (!maSeries || !chart || !isWsInitialized || priceDataZZ.length === 0) return;
@@ -6010,6 +6179,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!currentSymbol) return;
     await loadSymbol(currentSymbol, currentInterval, currentChartType);
     setupChartInteractions(chart);
+    restoreUserSettings();
   };
 
   // Simulation : mise à jour toutes les 2 secondes
