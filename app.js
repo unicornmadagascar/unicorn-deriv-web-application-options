@@ -3299,7 +3299,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return percentage >= 80;
   }
 
-  window.updateGapMonitor = function (e20, e50, direction) {
+  window.updateGapMonitor = function (e20, e50, direction) {  
     const gapBar = document.getElementById('volume-bar');
     const gapPercent = document.getElementById('volume-percent');
 
