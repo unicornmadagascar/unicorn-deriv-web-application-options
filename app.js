@@ -2791,7 +2791,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Sécurité : Si le mode sniper était actif, on le coupe proprement
         if (maSniperActive) {
-          toggleMASniper();
+          window.toggleMASniper();
         }
       }
     }
@@ -2801,7 +2801,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // --- ACTIVATION / DÉSACTIVATION ---
+  // --- ACTIVATION / DÉSACTIVATION ---  
   window.toggleMASniper = function (event) {
     maSniperActive = !maSniperActive;
     const btn = document.getElementById('ma-sniper-btn');
