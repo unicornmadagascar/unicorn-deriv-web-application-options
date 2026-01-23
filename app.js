@@ -3158,7 +3158,7 @@ document.addEventListener("DOMContentLoaded", () => {
     oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-    oscillator.connect(gainNode);
+    oscillator.connect(gainNode);  
     gainNode.connect(audioCtx.destination);
     oscillator.start();  
     oscillator.stop(audioCtx.currentTime + 0.1);
