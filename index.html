@@ -3696,39 +3696,18 @@
       transition: all 0.3s ease;
     }
 
-    .pulse-btn {
-      border: none;
-      background: #f1f5f9;
-      border-radius: 8px;
-      padding: 6px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: transform 0.2s ease;
-    }
-
-    .pulse-btn:active {
-      transform: scale(0.9);
-    }
-
     /* Header: Titre et Select */
     .sniper-header {
-      display: grid;
-      grid-template-columns: 35px 1fr 65px;
-      /* Organisation fixe des colonnes */
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 8px;
-      padding: 12px;
-      border-bottom: 1px solid #f1f5f9;
+      gap: 10px;
     }
 
     .sniper-title-group {
       display: flex;
       align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      font-weight: 700;
-      color: #64748b;
-      justify-content: flex-end;
+      gap: 6px;
     }
 
     .sniper-title {
@@ -3772,12 +3751,10 @@
     }
 
     .gap-value {
-      font-family: 'JetBrains Mono', 'Courier New', monospace;
-      font-size: 13px;
-      font-weight: 800;
-      color: #1e293b;
-      min-width: 95px;
-      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: #3b82f6;
     }
 
     .progress-container {
@@ -3806,7 +3783,7 @@
 
     .action-btn {
       background: white;
-      border: 1px solid #e2e8f0;  
+      border: 1px solid #e2e8f0;
       border-radius: 6px;
       padding: 4px 8px;
       cursor: pointer;
@@ -3825,6 +3802,19 @@
     }
 
     /* Status Dot Animation */
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #cbd5e1;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-dot.active {
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
+    }
+
     .sniper-controls-row {
       display: grid;
       grid-template-columns: 40px 1fr 60px;
@@ -3924,53 +3914,8 @@
       }
     }
 
-    /* --- LIGNE DE CONTRÔLES (Rocket, Select, Status) --- */
-    .sniper-header {
-      display: grid;
-      grid-template-columns: 35px 1fr 65px;
-      /* Organisation fixe des colonnes */
-      align-items: center;
-      gap: 8px;
-      padding: 12px;
-      border-bottom: 1px solid #f1f5f9;
-    }
-
     .pulse-btn:active {
       transform: scale(0.9);
-    }
-
-    .sniper-select {
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 4px;
-      background: white;
-      color: #1e293b;
-      cursor: pointer;
-    }
-
-    .sniper-title-group {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      font-weight: 700;
-      color: #64748b;
-      justify-content: flex-end;
-    }
-
-    /* --- ZONE MONITORING (Gap & Barre) --- */
-    .sniper-monitor {
-      padding: 12px;
-      background: #f8fafc;
-    }
-
-    .monitor-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
     }
 
     .badge-type {
@@ -3981,73 +3926,6 @@
       padding: 2px 6px;
       border-radius: 4px;
       text-transform: uppercase;
-    }
-
-    .gap-value {
-      font-family: 'JetBrains Mono', 'Courier New', monospace;
-      font-size: 13px;
-      font-weight: 800;
-      color: #1e293b;
-      min-width: 95px;
-      text-align: right;
-    }
-
-    .progress-container {
-      width: 100%;
-      height: 6px;
-      background: #e2e8f0;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: #3b82f6;
-      width: 0%;
-      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    /* --- ACTIONS FOOTER (Export, Trash, Reset) --- */
-    .sniper-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      padding: 8px 12px;
-      background: #f1f5f9;
-    }
-
-    .action-btn {
-      background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .action-btn:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
-    }
-
-    .action-btn.danger:hover {
-      background: #fee2e2;
-      border-color: #fecaca;
-    }
-
-    /* --- ÉTATS ANIMÉS (Signaux & Alertes) --- */
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      background: #cbd5e1;
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    .status-dot.active {
-      background: #22c55e;
-      box-shadow: 0 0 8px #22c55e;
     }
 
     /* Animation Flash pour BUY / SELL */
@@ -4117,6 +3995,7 @@
         opacity: 1;
       }
     }
+    
   </style>
 </head>
 
