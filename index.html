@@ -3678,135 +3678,142 @@
 
     /* ------------MA----------------- */
     .sniper-dynamic-badge {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 260px;
-      /* Largeur fixe pour éviter les chevauchements */
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(5px);
-      border: 1px solid #d1d5db;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
       border-radius: 12px;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-      z-index: 1001;
-      display: flex;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+      font-family: 'Inter', -apple-system, sans-serif;
+      padding: 12px;
+      min-width: 220px;
+      display: flex;  
       flex-direction: column;
-      padding: 0;
-      /* Géré par les lignes internes */
-      overflow: hidden;
-      user-select: none;
+      gap: 10px;
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      z-index: 1000;
+      transition: all 0.3s ease;
     }
 
-    /* Barre de déplacement */
-    .drag-handle {
-      background: #1e293b;
-      color: white;
-      padding: 6px 10px;
-      cursor: move;
-      text-align: center;
+    /* Header: Titre et Select */
+    .sniper-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sniper-title-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .sniper-title {
-      font-size: 10px;
       font-weight: 800;
-      letter-spacing: 1px;
-    }
-
-    /* Ligne de contrôles principale */
-    .sniper-controls-row {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      padding: 12px;
-      border-bottom: 1px solid #f3f4f6;
+      font-size: 11px;
+      color: #1e293b;
+      letter-spacing: 0.5px;
     }
 
     .sniper-select {
-      border: 1px solid #e5e7eb;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 600;
-      padding: 2px 5px;
-      background: #fff;
-    }
-
-    .status-group {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 2px 4px;
+      cursor: pointer;
     }
 
-    /* Zone Gap Monitor */
-    .sniper-monitor-box {
-      padding: 10px 15px;
-      background: #f9fafb;
+    /* Monitor Area */
+    .sniper-monitor {
+      background: #f8fafc;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #f1f5f9;
     }
 
-    .monitor-header {
+    .monitor-info {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
       align-items: center;
     }
 
-    .gap-text {
-      font-family: 'monospace';
-      font-weight: 800;
-      color: #2563eb;
-      font-size: 13px;
+    .badge-type {
+      font-size: 9px;
+      background: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #475569;
     }
 
-    .asset-label {
-      font-size: 9px;
-      background: #e5e7eb;
-      padding: 1px 5px;
-      border-radius: 3px;
+    .gap-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
       font-weight: 700;
+      color: #3b82f6;
     }
 
     .progress-container {
       width: 100%;
-      height: 8px;
-      background: #e5e7eb;
-      border-radius: 4px;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 10px;
       overflow: hidden;
     }
 
     .progress-fill {
-      width: 0%;
       height: 100%;
       background: #3b82f6;
-      transition: width 0.3s ease;
+      width: 0%;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Pied de badge */
-    .sniper-footer {
+    /* Action Buttons */
+    .sniper-actions {
       display: flex;
       justify-content: flex-end;
-      gap: 8px;
-      padding: 8px 12px;
-      background: #f3f4f6;
+      gap: 6px;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 8px;
     }
 
-    .icon-btn {
-      border: 1px solid #d1d5eb;
+    .action-btn {
       background: white;
-      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 4px 8px;
       cursor: pointer;
-      padding: 3px 6px;
-      transition: 0.2s;
+      transition: all 0.2s;
+      font-size: 14px;
     }
 
-    .icon-btn:hover {
-      background: #e0e7ff;
+    .action-btn:hover {
+      background: #f1f5f9;
+      transform: translateY(-1px);
     }
 
-    .icon-btn.danger:hover {
-      background: #fee2e2;  
+    .action-btn.danger:hover {
+      background: #fef2f2;
+      border-color: #fecaca;
     }
 
+    /* Status Dot Animation */
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #cbd5e1;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-dot.active {
+      background: #22c55e;  
+      box-shadow: 0 0 8px #22c55e;
+    }
   </style>
 </head>
 
@@ -4054,42 +4061,39 @@
           </div>
         </div>
 
-        <div id="ma-sniper-label" class="sniper-dynamic-badge">
-          <div class="drag-handle" id="ma-sniper-drag">
-            <span class="sniper-title">🎯 MA SNIPER MONITOR</span>
-          </div>
-
-          <div class="sniper-controls-row">
-            <button id="ma-sniper-btn" class="pulse-btn" onclick="toggleMASniper(event)">🚀</button>
+        <div id="ma-sniper-label" class="sniper-dynamic-badge" style="display: none;">
+          <div class="sniper-header">
+            <div class="sniper-title-group">
+              <button id="ma-sniper-btn" class="pulse-btn" onclick="toggleMASniper(event)"
+                title="Toggle Sniper Mode">🚀</button>
+              <span class="sniper-title">MA SNIPER</span>
+              <span id="ma-signal-dot" class="status-dot"></span>
+              <span id="ma-status-value">OFF</span>
+            </div>
 
             <select id="ma-sensitivity" class="sniper-select" onchange="updateSensitivity()">
               <option value="low">SENS: LOW</option>
               <option value="medium" selected>SENS: MED</option>
               <option value="high">SENS: HIGH</option>
             </select>
-
-            <div class="status-group">
-              <span id="ma-signal-dot" class="status-dot"></span>
-              <span id="ma-status-value">OFF</span>
-            </div>
           </div>
 
-          <div class="sniper-monitor-box">
-            <div class="monitor-header">
-              <span id="no-vol-warning" class="asset-label">DETECTING...</span>
-              <span id="volume-percent" class="gap-text">G: 0.000%</span>
+          <div id="volume-monitor" class="sniper-monitor">
+            <div class="monitor-info">
+              <span id="no-vol-warning" class="badge-type">DÉTECTION...</span>
+              <span id="volume-percent" class="gap-value">G: 0.000%</span>
             </div>
-            <div class="progress-container">
+            <div id="volume-bar-container" class="progress-container">
               <div id="volume-bar" class="progress-fill"></div>
             </div>
           </div>
 
           <div id="ma-sniper-alert-badge"></div>
 
-          <div class="sniper-footer">
-            <button class="icon-btn" onclick="exportMAModelToCSV()" title="Export CSV">📥</button>
-            <button class="icon-btn" onclick="clearMASniperLogs()" title="Effacer Logs">🗑️</button>
-            <button class="icon-btn danger" onclick="masterReset()" title="Reset Total">🧹</button>
+          <div class="sniper-actions">
+            <button class="action-btn" onclick="exportMAModelToCSV()" title="Exporter">📥</button>
+            <button class="action-btn" onclick="clearMASniperLogs()" title="Effacer Logs">🗑️</button>
+            <button class="action-btn danger" onclick="masterReset()" title="Reset Total">🧹</button>
           </div>
         </div>
       </div>

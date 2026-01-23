@@ -2839,79 +2839,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (typeof renderIndicators === "function") renderIndicators();
-  };
-
-  window.toggleLogTable = function () {
-    const modal = document.getElementById('sniper-log-modal');
-    if (!modal) return;
-
-    if (modal.style.display === 'none') {
-      renderLogTable();
-      modal.style.display = 'flex';
-    } else {
-      modal.style.display = 'none';
-    }
-  };
-
-  window.takeSniperScreenshot = function (signalType) {
-    if (!window.chart) return;
-
-    // 1. Créer un canvas à partir du graphique
-    const canvas = window.chart.takeScreenshot();
-
-    // 2. Transformer le canvas en URL d'image (base64)
-    const screenshotUrl = canvas.toDataURL('image/png');
-
-    // 3. Téléchargement automatique
-    const link = document.createElement('a');
-    const date = new Date().toISOString().replace(/[:.]/g, '-');
-    link.download = `Sniper_${signalType}_${date}.png`;
-    link.href = screenshotUrl;
-    link.click();
-
-    console.log("📸 Screenshot du signal enregistré.");
-  };
-
-  function renderLogTable() {
-    const tbody = document.getElementById('sniper-log-body');
-    const logs = JSON.parse(localStorage.getItem('ma_sniper_logs')) || [];
-    const currentPrice = window.currentPrice || 0; // On récupère le prix actuel du chart
-
-    if (!tbody) return;
-
-    let winCount = 0;
-
-    tbody.innerHTML = logs.reverse().map(log => {
-      const gapValue = Math.abs(((log.ma20 - log.ma50) / log.ma50) * 100).toFixed(2);
-
-      // Calcul de performance simple :
-      // Si BUY et prix actuel > prix signal = WIN
-      // Si SELL et prix actuel < prix signal = WIN
-      let statusHtml = "";
-      if (currentPrice > 0) {
-        const isWin = log.type === 'BUY' ? (currentPrice > log.price) : (currentPrice < log.price);
-        if (isWin) winCount++;
-        statusHtml = isWin ?
-          '<span style="color: #2ecc71; font-weight: bold;">🎯 PROFIT</span>' :
-          '<span style="color: #e74c3c; font-weight: bold;">⌛ ATTENTE/LOSS</span>';
-      }
-
-      return `
-            <tr>
-                <td>${log.date.split(',')[1]}</td>
-                <td style="color: ${log.type === 'BUY' ? '#2ecc71' : '#e74c3c'}">${log.type} ${log.subtype || ''}</td>
-                <td>${log.price.toFixed(2)}</td>
-                <td>${gapValue}%</td>
-                <td>${statusHtml}</td>
-            </tr>
-        `;
-    }).join('');
-
-    // Mise à jour d'un petit compteur de Winrate en haut du tableau
-    const winRate = logs.length > 0 ? ((winCount / logs.length) * 100).toFixed(1) : 0;
-    document.querySelector('.sniper-modal-header h3').innerHTML =
-      `📊 Journal Sniper | Winrate Estimé: ${winRate}%`;
-  }
+  };  
 
   window.restoreTradingSession = function () {
     const alertBadge = document.getElementById('ma-sniper-alert-badge');
@@ -2974,7 +2902,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.maSniperMarkers = logs.map(l => l.marker).filter(m => m !== undefined);
 
         if (typeof syncAllChartMarkers === 'function') {
-          window.syncAllChartMarkers();
+          syncAllChartMarkers();
         }
       }
 
@@ -6737,8 +6665,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialisation
   const badge = document.getElementById("ma-sniper-label");
-  const handle = document.getElementById("ma-sniper-drag");
-  if (badge && handle) makeDraggable(badge, handle);
+  if (badge) makeDraggable(badge, handle);
 
   if (typeof window.updateSymbols === 'function') {
     window.updateSymbols();
