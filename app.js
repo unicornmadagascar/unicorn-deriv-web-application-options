@@ -3111,9 +3111,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 1. Cooldown (Évite les alertes multiples sur la même bougie)
     if (candle.time === lastProcessedCandleTime) return;
+    
+    const volumeOk = isVolumeValidated(data);
+    console.log("Volume :",volumeOk);
 
     // 2. Validation du Volume (Correction de l'erreur ReferenceError)
-    if (!isVolumeValidated(data)) return;
+    if (!volumeOk) return;
 
     // Sécurité sur le contexte MA
     if (!maContext.current || !maContext.previous) return;
@@ -3210,22 +3213,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 2. AFFICHAGE DU MESSAGE ET CHECKLIST
     if (alertBadge) {
+      // 1. Déterminer la classe de style et l'icône
+      let alertClass = "ma-sniper-msg";
+      let icon = signal.icon;
+
+      if (isLocked) {
+        alertClass += " critical"; // Utilise le style pulsé fuchsia/rouge
+        icon = "🚫 LOCK";
+      } else if (isCritical) {
+        alertClass += " critical";
+        icon = "🔥 " + signal.subtype;
+      } else {
+        icon = signal.icon + " " + signal.subtype;
+      }
+
+      // 2. Construire le contenu (Infobulle + Bouton Fermer)
       let content = `
-            <div class="ma-sniper-msg" style="color: ${isLocked ? '#ff4d4d' : signal.color}; border: 2px solid ${isCritical ? signal.color : signal.color + '44'};">
-                ${isLocked ? '🚫 LOCK' : (isCritical ? '🔥' : signal.icon)} ${signal.subtype} | Gap: ${emaGap}%
+        <div class="${alertClass}" id="current-sniper-alert">
+            <div class="msg-main-info" onclick="toggleLogTable()" style="cursor:pointer">
+                <span>${icon} | Gap: ${emaGap}%</span>
+            </div>
+            
+            <div class="msg-close-btn" onclick="closeSniperAlert()">✕</div>
+        </div>
+    `;
+
+      // 3. Ajouter la Checklist sous l'infobulle si Critique/Locked
+      if (isCritical || isLocked) {
+        content += `
+            <div class="sniper-checklist" id="current-sniper-checklist" 
+                 style="position: absolute; top: 85px; right: 0; width: 180px;">
+                <span class="checklist-item">⬜ ${isLocked ? 'DANGER: EXTENSION' : 'CHECK: VOLATILITÉ'}</span>
+                <span class="checklist-item">⬜ RETOUR EMA 20 ?</span>
+                <span class="checklist-item">⬜ STOP LOSS PLACÉ ?</span>
             </div>
         `;
-
-      // Ajout de la Checklist si Critique ou Verrouillé
-      if (isCritical) {
-        content += `
-                <div class="sniper-checklist" style="border-color: ${isLocked ? '#ff4d4d' : '#ff00ff'}">
-                    <span class="checklist-item">⬜ ${isLocked ? 'DANGER : EXTENSION +5%' : 'CHECK : VOLATILITÉ'}</span>
-                    <span class="checklist-item">⬜ ATTENDRE RETOUR EMA 20 ?</span>
-                    <span class="checklist-item">⬜ R/R RATIO VALIDE ?</span>
-                </div>
-            `;
       }
+
       alertBadge.innerHTML = content;
     }
 
@@ -3271,8 +3295,8 @@ document.addEventListener("DOMContentLoaded", () => {
     maSniperMarkers.push(newMarker);
 
     // SAUVEGARDE DANS LES LOGS (Pour restauration future)
-    if (typeof logMASignalToStorage === "function") {
-      logMASignalToStorage({
+    if (typeof window.logMASignalToStorage === "function") {
+      window.logMASignalToStorage({
         ...signal,
         isCritical: isCritical,
         ma20: e20,
@@ -3291,6 +3315,26 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       maSniperLabel.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
     }, 8000); // Temps rallongé à 8s pour lire la checklist
+  };
+
+  window.closeSniperAlert = function () {
+    const alert = document.getElementById('current-sniper-alert');
+    const checklist = document.getElementById('current-sniper-checklist');
+    const maSniperLabel = document.getElementById('ma-sniper-label');
+
+    // Animation de sortie
+    if (alert) alert.style.opacity = '0';
+    if (checklist) checklist.style.opacity = '0';
+
+    setTimeout(() => {
+      if (alert) alert.remove();
+      if (checklist) checklist.remove();
+
+      // Arrêt des secousses visuelles sur le badge blanc
+      if (maSniperLabel) {
+        maSniperLabel.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
+      }
+    }, 300);
   };
 
   function syncAllChartMarkers() {
@@ -3428,7 +3472,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("🧹 Journal et marqueurs MA Sniper réinitialisés.");
     }
   };
-   
+
   function updateMAs() {
     if (!maSeries || !chart || !isWsInitialized || priceDataZZ.length === 0) return;
 
