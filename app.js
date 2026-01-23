@@ -3324,54 +3324,50 @@ document.addEventListener("DOMContentLoaded", () => {
     const gapBar = document.getElementById('volume-bar');
     const gapPercent = document.getElementById('volume-percent');
 
-    if (!e20 || !e50 || !gapBar || !gapPercent) return;
+    // 1. CONVERSION EXPLICITE EN NOMBRE (Force le flottant)
+    const val20 = parseFloat(e20);
+    const val50 = parseFloat(e50);
 
-    // 1. Calcul du Gap et Direction
-    const gap = Math.abs(((e20 - e50) / e50) * 100);
-    const arrow = direction || (e20 > e50 ? "↑" : "↓");
+    // 2. VÉRIFICATION DE VALIDITÉ
+    // Si l'une des valeurs est invalide ou e50 est à 0, on stop pour éviter le NaN
+    if (isNaN(val20) || isNaN(val50) || val50 === 0) {
+      if (gapPercent) gapPercent.innerText = "Calcul...";
+      return;
+    }
 
-    // 2. Seuils dynamiques
+    if (!gapBar || !gapPercent) return;
+
+    // 3. CALCUL DU GAP
+    const gap = Math.abs(((val20 - val50) / val50) * 100);
+    const arrow = direction || (val20 > val50 ? "↑" : "↓");
+
+    // 4. RÉCUPÉRATION CONFIG
     const threshold = window.sniperConfig?.gapThreshold || 1.0;
 
-    // 3. Mise à jour du texte
+    // 5. AFFICHAGE TEXTE (Garanti sans NaN grâce au parseFloat)
     gapPercent.innerText = `${arrow} G: ${gap.toFixed(3)}%`;
 
-    // 4. Progression de la barre
+    // 6. GESTION DE LA BARRE ET DU FLASH
     const maxBarRange = threshold * 2;
     const progress = Math.min((gap / maxBarRange) * 100, 100);
     gapBar.style.width = progress + "%";
 
-    // 5. Gestion des états et de l'animation Flash
-    // On retire l'animation par défaut
+    // Reset du flash
     gapBar.classList.remove('critical-flash');
 
     if (gap >= threshold * 1.5) {
-      // --- MODE ALERTE CRITIQUE ---
-      gapBar.style.background = '#ef4444'; // Rouge vif
+      gapBar.style.background = '#ef4444'; // Rouge
       gapPercent.style.color = '#ef4444';
-      gapPercent.style.fontWeight = '800';
-      // On active le clignotement
       gapBar.classList.add('critical-flash');
-
     } else if (gap >= threshold) {
-      // --- MODE TENSION ---
       gapBar.style.background = '#f59e0b'; // Orange
       gapPercent.style.color = '#f59e0b';
-      gapPercent.style.fontWeight = '700';
     } else {
-      // --- MODE NORMAL ---
       gapBar.style.background = '#3b82f6'; // Bleu
       gapPercent.style.color = '#1e293b';
-      gapPercent.style.fontWeight = '600';
     }
-
-    // 6. Zone neutre
-    if (gap < threshold * 0.1) {
-      gapBar.style.background = '#cbd5e1';
-      gapPercent.style.color = '#94a3b8';  
-    }  
   };
-   
+
   // --- 4. Alerte et Journalisation ---
   window.triggerMASniperAlert = function (signal, candle, e20, e50) {
     const maSniperLabel = document.getElementById('ma-sniper-label');
@@ -3605,14 +3601,38 @@ document.addEventListener("DOMContentLoaded", () => {
     const logs = JSON.parse(localStorage.getItem('ma_sniper_logs')) || [];
     if (!logs.length) return alert("Journal vide.");
 
-    let csv = "Date,Type,Sous-Type,Prix,MA20,MA50\n" +
-      logs.map(l => `${l.date},${l.type},${l.subtype || ''},${l.price},${l.ma20},${l.ma50}`).join("\n");
+    // 1. Utilisation du point-virgule (;) pour une compatibilité Excel maximale en Europe
+    // 2. Nettoyage des données pour éviter les erreurs de formatage
+    const header = "Date;Type;Sous-Type;Prix;MA20;MA50";
+    const rows = logs.map(l => {
+      return [
+        l.date,
+        l.type,
+        l.subtype || '',
+        l.price,
+        l.ma20,
+        l.ma50
+      ].join(";");
+    }).join("\r\n"); // Utilisation de \r\n pour un retour à la ligne Windows propre
 
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const csvContent = header + "\r\n" + rows;
+
+    // 3. Ajout du BOM UTF-8 (\ufeff) pour forcer Excel à lire les accents et le format correctement
+    const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `ma_sniper_${new Date().toISOString().slice(0, 10)}.csv`;
+    const url = URL.createObjectURL(blob);
+    a.href = url;
+    a.download = `ma_sniper_logs_${new Date().toISOString().slice(0, 10)}.csv`;
+
+    document.body.appendChild(a); // Nécessaire pour certains navigateurs
     a.click();
+
+    // Nettoyage
+    setTimeout(() => {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 0);
   };
 
   window.clearMASniperLogs = function () {
