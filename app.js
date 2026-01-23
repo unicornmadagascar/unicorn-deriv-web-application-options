@@ -6704,10 +6704,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initHistoricalTable();
   inithistoricalchart();
 
-  // Initialisation
-  const badge = document.getElementById("ma-sniper-label");
-  if (badge) makeDraggable(badge, handle);
-
   if (typeof window.updateSymbols === 'function') {
     window.updateSymbols();
   }
