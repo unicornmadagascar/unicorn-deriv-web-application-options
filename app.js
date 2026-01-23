@@ -2974,7 +2974,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (mainSeries) mainSeries.setMarkers([]);
       document.getElementById('ma-sniper-alert-badge').innerHTML = "";
     }
-  };
+  };  
 
   function updateMAs() {
     if (!maSeries || !chart || !isWsInitialized || priceDataZZ.length === 0) return;
