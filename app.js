@@ -2966,7 +2966,7 @@ document.addEventListener("DOMContentLoaded", () => {
     a.download = `ma_sniper_${new Date().toLocaleDateString()}.csv`;
     a.click();
   };
-
+  
   window.clearMASniperLogs = function () {
     if (confirm("Effacer tout le journal MA ?")) {
       localStorage.removeItem('ma_sniper_logs');
