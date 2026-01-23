@@ -3218,7 +3218,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // IMPORTANT : On retourne true car on ne peut pas valider ce qui n'existe pas
       return true;
-    }
+    }  
 
     // --- CAS B : ACTIF AVEC VOLUME (Ex: BTC, Actions, Forex avec Tick Vol) ---
     if (warningEl) warningEl.style.display = 'none';
@@ -3241,7 +3241,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Validation : On accepte le signal si le volume est au moins à 80% de sa moyenne
     return percentage >= 80;
   }
-
+   
   window.updateGapMonitor = function (e20, e50) {
     const gapBar = document.getElementById('volume-bar');
     const gapPercent = document.getElementById('volume-percent');
