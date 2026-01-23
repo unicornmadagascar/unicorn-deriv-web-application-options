@@ -3687,8 +3687,6 @@
       /* Ajusté pour laisser place à l'échelle des prix */
       z-index: 1000;
       /* Toujours au-dessus des bougies */
-
-      display: flex;
       align-items: center;
       background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(4px);
@@ -3818,7 +3816,7 @@
     }
 
     /* Style commun pour les badges dans la pile */
-    .chart-badge {
+    #sniper-log-modal .chart-badge {
       display: flex;
       /* Sera basculé entre 'none' et 'flex' par le JS */
       align-items: center;
@@ -3873,7 +3871,7 @@
     }
 
     /* Checklist de sécurité */
-    .sniper-checklist {
+    #sniper-log-modal .sniper-checklist {
       font-size: 10px;
       background: rgba(0, 0, 0, 0.85);
       border-left: 3px solid #ff00ff;
@@ -3885,14 +3883,14 @@
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     }
 
-    .checklist-item {
+    #sniper-log-modal .checklist-item {
       display: block;
       margin-bottom: 3px;
       font-family: monospace;
     }
 
     /* Modal & Table */
-    .sniper-modal {
+    #sniper-log-modal .sniper-modal {
       position: fixed;
       top: 0;
       left: 0;
@@ -3905,7 +3903,7 @@
       justify-content: center;
     }
 
-    .sniper-modal-content {
+    #sniper-log-modal .sniper-modal-content {
       background: #121212;
       border: 1px solid #333;
       width: 90%;
@@ -3915,7 +3913,7 @@
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     }
 
-    .sniper-modal-header {
+    #sniper-log-modal .sniper-modal-header {
       padding: 15px;
       background: #1a1a1a;
       display: flex;
@@ -3972,7 +3970,7 @@
       animation: critical-shake 0.2s infinite;
       border: 2px solid #ff0000 !important;
     }
-    
+
   </style>
 </head>
 
