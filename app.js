@@ -928,7 +928,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     initBollingerSeries();  // Bollinger Bands INITIALIZATION
-    restoreUserSettings();
+    window.restoreTradingSession();
 
     // 1. Réinitialisation de la mémoire des contrats
     activeContractsData = {};
@@ -2784,7 +2784,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isEma20Active && isEma50Active) {
       // --- DUO ACTIF ---
       if (!isSniperSynergyActive) {
-        playSystemArmedSound(); // Déclenche le son sonar
+        playSniperSound('ARMED');; // Déclenche le son sonar
         isSniperSynergyActive = true;
       }
 
@@ -2821,30 +2821,66 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof renderIndicators === "function") renderIndicators();
   };
 
-  function restoreTradingSession() {
+  window.restoreTradingSession = function () {
+    console.log("🔄 Initialisation de la session...");
+
     // 1. Restaurer les EMA
     const savedPeriods = localStorage.getItem('active_ma_periods');
     if (savedPeriods) {
       const periods = JSON.parse(savedPeriods);
       periods.forEach(p => {
-        const btn = document.querySelector(`button[onclick*="${p}"]`);
-        if (btn) window.toggleMA(p, btn);
+        // On cherche le bouton correspondant à la période
+        const btn = document.querySelector(`button[onclick*="toggleMA(${p}"]`);
+        // On appelle toggleMA. Note : assurez-vous que toggleMA ne bloque pas 
+        // si le bouton est déjà visuellement actif.
+        if (btn && !activePeriods.includes(p)) {
+          window.toggleMA(p, btn);
+        }
       });
     }
 
-    // 2. Restaurer le Sniper (seulement si la 20 et 50 sont là)
+    // 2. Restaurer la Sensibilité (SENS: LOW/MED/HIGH)
+    const savedSens = localStorage.getItem('ma_sniper_sensitivity');
+    if (savedSens) {
+      const select = document.getElementById('ma-sensitivity');
+      if (select) {
+        select.value = savedSens;
+        if (typeof updateSensitivity === 'function') updateSensitivity();
+      }
+    }
+
+    // 3. Restaurer le Sniper
     const wasSniperArmed = localStorage.getItem('ma_sniper_armed') === 'true';
-    if (wasSniperArmed && activePeriods.includes(20) && activePeriods.includes(50)) {
-      // On force l'activation sans passer par le toggle pour éviter les conflits
+    const hasSynergy = activePeriods.includes(20) && activePeriods.includes(50);
+
+    if (wasSniperArmed && hasSynergy) {
       maSniperActive = true;
+
+      // Mise à jour visuelle complète du badge
+      const label = document.getElementById('ma-sniper-label');
+      if (label) label.style.display = 'flex';
+
       const btn = document.getElementById('ma-sniper-btn');
       if (btn) btn.classList.add('armed');
+
       const dot = document.getElementById('ma-signal-dot');
       if (dot) dot.style.backgroundColor = '#2ecc71';
+
       const statusText = document.getElementById('ma-status-value');
       if (statusText) statusText.innerText = 'ON';
+
+      console.log("🚀 MA Sniper restauré et armé.");
     }
-  }
+
+    // 4. Restaurer les Marqueurs (Flèches sur le graphique)
+    const savedLogs = localStorage.getItem('ma_sniper_logs');
+    if (savedLogs) {
+      maSniperMarkers = JSON.parse(savedLogs);
+      if (typeof syncAllChartMarkers === 'function') {
+        syncAllChartMarkers();
+      }
+    }
+  };
 
   window.masterReset = function () {
     if (confirm("🚨 Voulez-vous réinitialiser TOUS les paramètres (EMA, Sniper, Bollinger, Logs) ?")) {
@@ -2887,44 +2923,11 @@ document.addEventListener("DOMContentLoaded", () => {
       activePeriods = [];
 
       // Son de confirmation (Bip descendant)
-      playResetSound();
+      playSniperSound('RESET');
 
       alert("Dashboard réinitialisé avec succès.");
     }
   };
-
-  // Petit son de reset pour le feedback
-  function playResetSound() {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-    oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.3);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    oscillator.start();
-    oscillator.stop(audioCtx.currentTime + 0.3);
-  }
-
-  function playSystemArmedSound() {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-
-    oscillator.type = 'sine'; // Son pur
-    oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // Note A5
-    oscillator.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.1); // Glissando rapide vers le haut
-
-    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-
-    oscillator.start();
-    oscillator.stop(audioCtx.currentTime + 0.2);
-  }
 
   // --- ACTIVATION / DÉSACTIVATION ---  
   window.toggleMASniper = function (event) {
@@ -2994,12 +2997,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- 3. Moteur de Détection ---
   function checkMASniperSignal(data, maContext) {
+    if (!data || data.length < 2) return;
+
     const i = data.length - 1;
     const candle = data[i];
 
-    // 1. Cooldown & Volume
+    // 1. Cooldown (Évite les alertes multiples sur la même bougie)
     if (candle.time === lastProcessedCandleTime) return;
+
+    // 2. Validation du Volume (Correction de l'erreur ReferenceError)
     if (!isVolumeValidated(data)) return;
+
+    // Sécurité sur le contexte MA
+    if (!maContext.current || !maContext.previous) return;
 
     const { e20, e50 } = maContext.current;
     const { e20: prevE20, e50: prevE50 } = maContext.previous;
@@ -3010,19 +3020,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let signal = null;
 
-    // A. MOMENTUM ⚡
+    // A. MOMENTUM ⚡ (Accélération de la tendance)
     if (Math.abs(slope20) > sniperConfig.slopeMin && Math.abs(slope20) > Math.abs(slope50) * sniperConfig.ratio) {
-      if (slope20 > 0 && candle.close > e20) signal = { type: 'BUY', subtype: 'MOMENTUM', color: '#2ecc71', icon: '⚡' };
-      else if (slope20 < 0 && candle.close < e20) signal = { type: 'SELL', subtype: 'MOMENTUM', color: '#e74c3c', icon: '⚡' };
+      if (slope20 > 0 && candle.close > e20) {
+        signal = { type: 'BUY', subtype: 'MOMENTUM', color: '#2ecc71', icon: '⚡' };
+      } else if (slope20 < 0 && candle.close < e20) {
+        signal = { type: 'SELL', subtype: 'MOMENTUM', color: '#e74c3c', icon: '⚡' };
+      }
     }
 
-    // B. CROSSOVER 🔄
+    // B. CROSSOVER 🔄 (Croisement EMA 20/50)
     if (!signal) {
-      if (prevE20 <= prevE50 && e20 > e50) signal = { type: 'BUY', subtype: 'CROSS', color: '#2ecc71', icon: '🔄' };
-      else if (prevE20 >= prevE50 && e20 < e50) signal = { type: 'SELL', subtype: 'CROSS', color: '#e74c3c', icon: '🔄' };
+      if (prevE20 <= prevE50 && e20 > e50) {
+        signal = { type: 'BUY', subtype: 'CROSS', color: '#2ecc71', icon: '🔄' };
+      } else if (prevE20 >= prevE50 && e20 < e50) {
+        signal = { type: 'SELL', subtype: 'CROSS', color: '#e74c3c', icon: '🔄' };
+      }
     }
 
-    // C. REBOND 🎯 (Utilise la bougie précédente pour confirmer le rejet)
+    // C. REBOND 🎯 (Test de support/résistance sur EMA 20)
     if (!signal) {
       const prevCandle = data[i - 1];
       if (e20 > e50 && candle.low <= e20 && candle.close > e20 && prevCandle.close > e20) {
@@ -3032,48 +3048,107 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // 3. Déclenchement de l'alerte
     if (signal) {
       lastProcessedCandleTime = candle.time;
+      // Cette fonction gérera le flash du badge et le marqueur (Flèche)
       triggerMASniperAlert(signal, candle, e20, e50);
     }
   }
 
-  // --- 4. Alerte et Journalisation ---
-  function triggerMASniperAlert(signal, candle, ma20Val, ma50Val) {
-    playSniperSound(signal.type);
+  /**
+ * Vérifie si le volume de la bougie actuelle est significatif
+ * par rapport aux bougies précédentes.
+ */
+  function isVolumeValidated(data) {
+    const period = 20;
+    if (!data || data.length <= period) return false;
 
-    const labelContainer = document.getElementById('ma-sniper-label');
+    const currentVolume = data[data.length - 1].volume;
+    const slice = data.slice(-period - 1, -1);
+    const avgVolume = slice.reduce((sum, c) => sum + (c.volume || 0), 0) / period;
+
+    // Calcul du ratio (ex: 1.5 = 150% de la moyenne)
+    const ratio = avgVolume > 0 ? currentVolume / avgVolume : 0;
+    const percentage = Math.round(ratio * 100);
+
+    // --- MISE À JOUR VISUELLE ---
+    const volBar = document.getElementById('volume-bar');
+    const volPercent = document.getElementById('volume-percent');
+
+    if (volBar && volPercent) {
+      // La barre devient rouge si < 100%, verte si >= 100%
+      volBar.style.width = Math.min(percentage, 100) + "%";
+      volBar.style.background = percentage >= 100 ? "#2ecc71" : "#3b82f6";
+      volPercent.innerText = percentage + "%";
+      volPercent.style.color = percentage >= 100 ? "#059669" : "#64748b";
+    }
+
+    // Validation finale (Seuil à 100% de la moyenne)
+    return percentage >= 100;
+  }
+
+  // --- 4. Alerte et Journalisation ---
+  window.triggerMASniperAlert = function (signal, candle, e20, e50) {
+    const maSniperLabel = document.getElementById('ma-sniper-label');
     const alertBadge = document.getElementById('ma-sniper-alert-badge');
 
-    // --- EFFET DE FLASH SUR LE CONTENEUR ---
-    const flashClass = signal.type === 'BUY' ? 'flash-buy' : 'flash-sell';
-    labelContainer.classList.add(flashClass);
+    if (!maSniperActive || !maSniperLabel) return;
 
-    // Marker graphique
-    const maMarker = {
+    // Calcul du Gap en pourcentage entre la 20 et la 50
+    const gapValue = Math.abs(((e20 - e50) / e50) * 100);
+    const emaGap = gapValue.toFixed(2);
+
+    // Seuil de Gap critique (ex: 3%)
+    const isCritical = gapValue > 3.0;
+
+    // 1. AFFICHAGE DU MESSAGE (Dynamique selon l'intensité)
+    if (alertBadge) {
+      alertBadge.innerHTML = `
+            <div class="ma-sniper-msg" style="color: ${signal.color}; border: 2px solid ${isCritical ? signal.color : signal.color + '44'};">
+                ${isCritical ? '🔥' : signal.icon} ${signal.subtype} | Gap: ${emaGap}%
+            </div>
+        `;
+    }
+
+    // 2. EFFETS VISUELS (Nettoyage et Relance)
+    maSniperLabel.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
+    void maSniperLabel.offsetWidth;
+
+    // Flash standard
+    const flashClass = signal.type === 'BUY' ? 'badge-flash-buy' : 'badge-flash-sell';
+    maSniperLabel.classList.add(flashClass);
+
+    // 3. LOGIQUE DE SECOUSSE (SHAKE)
+    if (isCritical) {
+      // Alerte majeure : Gap > 3%
+      maSniperLabel.classList.add('critical-shake');
+      if (typeof playCriticalSound === "function") playSniperSound('CRITICAL');
+    } else if (signal.subtype === 'CROSS') {
+      // Alerte normale : Croisement standard
+      maSniperLabel.classList.add('sniper-shake');
+      playSniperSound('SIGNAL');
+    }
+
+    // 4. MARQUEUR GRAPHIQUE AVEC INFOS DÉTAILLÉES
+    const newMarker = {
       time: candle.time,
       position: signal.type === 'BUY' ? 'belowBar' : 'aboveBar',
-      color: signal.color, // Vert ou Rouge défini dans la détection
-      // On garde arrowUp/arrowDown pour la Tendance
+      color: isCritical ? '#ff00ff' : signal.color, // Magenta si critique pour le repérer de loin
       shape: signal.type === 'BUY' ? 'arrowUp' : 'arrowDown',
-      text: `MA: ${signal.subtype}`,
-      size: 2 // Plus grand pour marquer la direction
+      text: `${isCritical ? '🔥' : ''}${signal.subtype} (G:${emaGap}%)`,
+      size: isCritical ? 3 : 2
     };
-    maSniperMarkers.push(marker);
-    syncAllChartMarkers();
 
-    // Texte de l'alerte
-    alertBadge.innerHTML = `<span class="ma-sniper-msg" style="color:${signal.color};">
-        ${signal.icon} ${signal.subtype} ${signal.type}</span>`;
+    maSniperMarkers.push(newMarker);
+    if (typeof syncAllChartMarkers === "function") syncAllChartMarkers();
 
-    // Nettoyage après 10 secondes
+    // 5. RESET APRÈS 5 SECONDES
     setTimeout(() => {
-      alertBadge.innerHTML = "";
-      labelContainer.classList.remove('flash-buy', 'flash-sell');
-    }, 10000);
-
-    window.logMASignalToStorage({ side: `${signal.subtype}_${signal.type}`, ma20: ma20Val, ma50: ma50Val }, candle);
-  }
+      if (alertBadge) alertBadge.innerHTML = "";
+      maSniperLabel.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
+    }, 5000);
+  };
 
   function syncAllChartMarkers() {
     // On crée une copie combinée des deux listes
@@ -3090,14 +3165,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- 5. Fonctions Utilitaires (Audio, Logs, Export) ---
   function playSniperSound(type) {
-    const osc = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    osc.connect(g); g.connect(audioCtx.destination);
-    osc.frequency.setValueAtTime(type === 'BUY' ? 600 : 400, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(type === 'BUY' ? 900 : 200, audioCtx.currentTime + 0.1);
-    g.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = audioCtx.currentTime;
+
+    const playTone = (freq, start, duration, wave = 'sine', volume = 0.1) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = wave;
+      osc.frequency.setValueAtTime(freq, start);
+      gain.gain.setValueAtTime(volume, start);
+      gain.gain.exponentialRampToValueAtTime(0.01, start + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(start);
+      osc.stop(start + duration);
+    };
+
+    switch (type) {
+      case 'ARMED': // Duo 20/50 activé
+        playTone(880, now, 0.1, 'sine', 0.1);
+        setTimeout(() => playTone(1760, audioCtx.currentTime, 0.1, 'sine', 0.1), 100);
+        break;
+
+      case 'CRITICAL': // Gap > 3% (Sirène)
+        playTone(880, now, 0.15, 'square', 0.1);
+        playTone(660, now + 0.2, 0.2, 'square', 0.1);
+        break;
+
+      case 'SIGNAL': // Signal standard (Bip discret)
+        playTone(1200, now, 0.05, 'sine', 0.05);
+        break;
+
+      case 'RESET': // Nettoyage (Son descendant)
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(110, now + 0.3);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(now + 0.3);
+        break;
+    }
   }
 
   window.logMASignalToStorage = function (data, candle) {
@@ -3158,9 +3269,9 @@ document.addEventListener("DOMContentLoaded", () => {
     oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-    oscillator.connect(gainNode);  
+    oscillator.connect(gainNode);
     gainNode.connect(audioCtx.destination);
-    oscillator.start();  
+    oscillator.start();
     oscillator.stop(audioCtx.currentTime + 0.1);
   }
 
@@ -6179,7 +6290,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!currentSymbol) return;
     await loadSymbol(currentSymbol, currentInterval, currentChartType);
     setupChartInteractions(chart);
-    restoreUserSettings();
+    window.restoreTradingSession();
   };
 
   // Simulation : mise à jour toutes les 2 secondes
