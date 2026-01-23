@@ -3362,54 +3362,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return percentage >= 80;
   }
 
-  window.updateGapMonitor = function (e20, e50, direction) {
-    const gapBar = document.getElementById('volume-bar');
-    const gapPercent = document.getElementById('volume-percent');
-
-    // 1. CONVERSION EXPLICITE EN NOMBRE (Force le flottant)
-    const val20 = parseFloat(e20);
-    const val50 = parseFloat(e50);
-
-    // 2. VÉRIFICATION DE VALIDITÉ
-    // Si l'une des valeurs est invalide ou e50 est à 0, on stop pour éviter le NaN
-    if (isNaN(val20) || isNaN(val50) || val50 === 0) {
-      if (gapPercent) gapPercent.innerText = "Calcul...";
-      return;
-    }
-
-    if (!gapBar || !gapPercent) return;
-
-    // 3. CALCUL DU GAP
-    const gap = Math.abs(((val20 - val50) / val50) * 100);
-    const arrow = direction || (val20 > val50 ? "↑" : "↓");
-
-    // 4. RÉCUPÉRATION CONFIG
-    const threshold = window.sniperConfig?.gapThreshold || 1.0;
-
-    // 5. AFFICHAGE TEXTE (Garanti sans NaN grâce au parseFloat)
-    gapPercent.innerText = `${arrow} G: ${gap.toFixed(3)}%`;
-
-    // 6. GESTION DE LA BARRE ET DU FLASH
-    const maxBarRange = threshold * 2;
-    const progress = Math.min((gap / maxBarRange) * 100, 100);
-    gapBar.style.width = progress + "%";
-
-    // Reset du flash
-    gapBar.classList.remove('critical-flash');
-
-    if (gap >= threshold * 1.5) {
-      gapBar.style.background = '#ef4444'; // Rouge
-      gapPercent.style.color = '#ef4444';
-      gapBar.classList.add('critical-flash');
-    } else if (gap >= threshold) {
-      gapBar.style.background = '#f59e0b'; // Orange
-      gapPercent.style.color = '#f59e0b';
-    } else {
-      gapBar.style.background = '#3b82f6'; // Bleu
-      gapPercent.style.color = '#1e293b';
-    }
-  };
-
   // --- 4. Alerte et Journalisation ---
   window.triggerMASniperAlert = function (signal, candle, e20, e50) {
     const maSniperLabel = document.getElementById('ma-sniper-label');
@@ -3532,8 +3484,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 4. Application sur la série active
     // Vérifiez bien que 'currentSeries' est la variable globale de votre graphique
-    if (window.currentSeries) {
-      window.currentSeries.setMarkers(combined);
+    if (currentSeries) {
+      currentSeries.setMarkers(combined);
     } else {
       console.warn("⚠️ [Markers] Aucune série active (currentSeries) trouvée pour afficher les marqueurs.");
     }
@@ -3853,7 +3805,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     size: 1 // Un peu plus petit pour laisser la flèche MA dominer visuellement
                   };
                   allMarkers.push(newMarker);
-                  syncAllChartMarkers();
+                  window.syncAllChartMarkers();
 
                   // --- 5. SCREENSHOT ---
                   if (signal.name.includes("SQUEEZE") && volRatio > 0) {
