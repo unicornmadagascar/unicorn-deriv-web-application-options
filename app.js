@@ -3011,7 +3011,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }  
 
-      // On rend la série visible au cas où elle aurait été cachée
+      // On rend la série visible au cas où elle aurait été cachée  
       zigzagSeries.applyOptions({ visible: true });
 
       // EXÉCUTION du calcul
