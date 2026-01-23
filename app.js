@@ -2923,7 +2923,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const select = document.getElementById('ma-sensitivity');
         if (select) {
           select.value = savedSens;
-          if (typeof updateSensitivity === 'function') updateSensitivity();
+          if (typeof window.updateSensitivity === 'function') window.updateSensitivity();
         }
       }
 
@@ -2970,12 +2970,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1500); // Délai optimisé
   };
 
-  window.masterReset = function () {  
+  window.masterReset = function () {
     if (confirm("🚨 Voulez-vous réinitialiser TOUS les paramètres (EMA, Sniper, Bollinger, Logs) ?")) {
 
       // 1. Vider le LocalStorage
-      localStorage.clear();  
-   
+      localStorage.clear();
+
       // 2. Désactiver le mode Sniper
       maSniperActive = false;
       isSniperSynergyActive = false;
@@ -3013,7 +3013,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Son de confirmation (Bip descendant)
       playSniperSound('RESET');
 
-      alert("Dashboard réinitialisé avec succès.");  
+      alert("Dashboard réinitialisé avec succès.");
     }
   };
 
@@ -3084,7 +3084,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.toggleMASniper = function (event) {
     if (event) event.stopPropagation();
 
-    maSniperActive = !maSniperActive; 
+    maSniperActive = !maSniperActive;
     const btn = document.getElementById('ma-sniper-btn');
     const status = document.getElementById('ma-status-value');
     const dot = document.getElementById('ma-signal-dot');
@@ -3109,15 +3109,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!data || data.length < 2) return;
 
     const i = data.length - 1;
-    const candle = data[i]; 
-    
-    console.log("DATA CANDLE (checkMASniperSignal) :",candle);  
+    const candle = data[i];
+
+    console.log("DATA CANDLE (checkMASniperSignal) :", candle);
 
     // 1. Cooldown (Évite les alertes multiples sur la même bougie)
     if (candle.time === lastProcessedCandleTime) return;
-    
+
     const volumeOk = isVolumeValidated(data);
-    console.log("Volume :",volumeOk);
+    console.log("Volume :", volumeOk);
 
     // 2. Validation du Volume (Correction de l'erreur ReferenceError)
     if (!volumeOk) return;
@@ -3176,30 +3176,51 @@ document.addEventListener("DOMContentLoaded", () => {
  */
   function isVolumeValidated(data) {
     const period = 20;
-    if (!data || data.length <= period) return false;
-
-    const currentVolume = data[data.length - 1].volume;
-    const slice = data.slice(-period - 1, -1);
-    const avgVolume = slice.reduce((sum, c) => sum + (c.volume || 0), 0) / period;
-
-    // Calcul du ratio (ex: 1.5 = 150% de la moyenne)
-    const ratio = avgVolume > 0 ? currentVolume / avgVolume : 0;
-    const percentage = Math.round(ratio * 100);
-
-    // --- MISE À JOUR VISUELLE ---
+    const warningEl = document.getElementById('no-vol-warning');
     const volBar = document.getElementById('volume-bar');
     const volPercent = document.getElementById('volume-percent');
 
-    if (volBar && volPercent) {
-      // La barre devient rouge si < 100%, verte si >= 100%
-      volBar.style.width = Math.min(percentage, 100) + "%";
-      volBar.style.background = percentage >= 100 ? "#2ecc71" : "#3b82f6";
-      volPercent.innerText = percentage + "%";
-      volPercent.style.color = percentage >= 100 ? "#059669" : "#64748b";
+    if (!data || data.length <= period) return true;
+
+    const currentCandle = data[data.length - 1];
+
+    // 1. Détection de la clé de volume (volume, v, zb, etc.)
+    // On exclut 'zb' car c'est un timestamp dans votre flux
+    const volKey = ['volume', 'v', 'tick_volume'].find(key => key in currentCandle);
+
+    // 2. GESTION SI PAS DE VOLUME (Votre cas actuel)
+    if (!volKey) {
+      if (warningEl) warningEl.style.display = 'inline';
+
+      // OPTIONNEL : Si pas de volume, on utilise la barre pour afficher le GAP EMA
+      // au lieu de la laisser à 0%
+      if (typeof updateGapMonitor === "function") {
+        // Cette fonction (donnée précédemment) mettra à jour la barre
+        return true;
+      }
+      return true;
     }
 
-    // Validation finale (Seuil à 100% de la moyenne)
-    return percentage >= 100;
+    // 3. GESTION SI VOLUME PRÉSENT
+    if (warningEl) warningEl.style.display = 'none';
+
+    const currentVolume = currentCandle[volKey] || 0;
+    const slice = data.slice(-period - 1, -1);
+    const avgVolume = slice.reduce((sum, c) => sum + (c[volKey] || 0), 0) / period;
+
+    const ratio = avgVolume > 0 ? currentVolume / avgVolume : 1;
+    const percentage = Math.round(ratio * 100);
+
+    // --- MISE À JOUR VISUELLE ---
+    if (volBar && volPercent) {
+      volBar.style.width = Math.min(percentage, 100) + "%";
+      volBar.style.background = percentage >= 100 ? "#2ecc71" : "#3b82f6";  
+      volPercent.innerText = percentage + "%";
+      volPercent.style.color = "#1e293b"; // Noir/Gris foncé pour fond blanc
+    }
+
+    // On valide si > 80% (plus souple que 100% pour ne pas rater trop de signaux)
+    return percentage >= 80;
   }
 
   // --- 4. Alerte et Journalisation ---
