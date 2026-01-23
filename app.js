@@ -3202,7 +3202,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // Si on a les EMA, on utilise la barre pour afficher le GAP à la place
-      if (window.currentEma20 && window.currentEma50) {
+      if (window.currentEma20 && window.currentEma50) {   
         const e20 = window.currentEma20;
         const e50 = window.currentEma50;
         const gap = Math.abs(((e20 - e50) / e50) * 100);
