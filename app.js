@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
  */
 
   // --- Initialisation des Variables ---
-  let maSniperActive = false;  
+  let maSniperActive = false;
   let maSniperMarkers = [];
   let lastProcessedCandleTime = null;
   let sniperConfig = { slopeMin: 0.0001, ratio: 3.0 }; // Mode Medium par défaut
@@ -2918,15 +2918,17 @@ document.addEventListener("DOMContentLoaded", () => {
     labelContainer.classList.add(flashClass);
 
     // Marker graphique
-    const marker = {
+    const maMarker = {
       time: candle.time,
       position: signal.type === 'BUY' ? 'belowBar' : 'aboveBar',
-      color: signal.color,
+      color: signal.color, // Vert ou Rouge défini dans la détection
+      // On garde arrowUp/arrowDown pour la Tendance
       shape: signal.type === 'BUY' ? 'arrowUp' : 'arrowDown',
-      text: `${signal.subtype} ${signal.type}`
+      text: `MA: ${signal.subtype}`,
+      size: 2 // Plus grand pour marquer la direction
     };
     maSniperMarkers.push(marker);
-    if (currentSeries) currentSeries.setMarkers(maSniperMarkers);
+    syncAllChartMarkers();
 
     // Texte de l'alerte
     alertBadge.innerHTML = `<span class="ma-sniper-msg" style="color:${signal.color};">
@@ -2939,6 +2941,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 10000);
 
     window.logMASignalToStorage({ side: `${signal.subtype}_${signal.type}`, ma20: ma20Val, ma50: ma50Val }, candle);
+  }
+
+  function syncAllChartMarkers() {
+    // On crée une copie combinée des deux listes
+    const combined = [...allMarkers, ...maSniperMarkers];
+
+    // On trie par temps (important pour Lightweight Charts)
+    combined.sort((a, b) => a.time - b.time);
+
+    // On applique l'ensemble au graphique
+    if (currentSeries) {
+      currentSeries.setMarkers(combined);
+    }
   }
 
   // --- 5. Fonctions Utilitaires (Audio, Logs, Export) ---
@@ -3128,13 +3143,15 @@ document.addEventListener("DOMContentLoaded", () => {
                   const newMarker = {
                     time: currentCandleTime,
                     position: signal.side === 'BUY' ? 'belowBar' : 'aboveBar',
+                    // Couleur : Jaune si Vol > 100%, sinon Vert/Rouge standard
                     color: volRatio > 100 ? '#ffeb3b' : (signal.side === 'BUY' ? '#089981' : '#f23645'),
-                    shape: signal.side === 'BUY' ? 'arrowUp' : 'arrowDown',
-                    text: `${signal.name} (${volSign}${volRatio}%)`
+                    // CHANGEMENT ICI : On utilise 'circle' pour distinguer de la MA
+                    shape: 'circle',
+                    text: `BB: ${signal.name} (${volSign}${volRatio}%)`,
+                    size: 1 // Un peu plus petit pour laisser la flèche MA dominer visuellement
                   };
-
                   allMarkers.push(newMarker);
-                  currentSeries.setMarkers(allMarkers);
+                  syncAllChartMarkers();
 
                   // --- 5. SCREENSHOT ---
                   if (signal.name.includes("SQUEEZE") && volRatio > 0) {
