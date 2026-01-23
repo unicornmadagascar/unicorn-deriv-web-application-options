@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
  */
 
   // --- Initialisation des Variables ---
-  let maSniperActive = false;
+  let maSniperActive = false;  
   let maSniperMarkers = [];
   let lastProcessedCandleTime = null;
   let sniperConfig = { slopeMin: 0.0001, ratio: 3.0 }; // Mode Medium par défaut
@@ -2791,7 +2791,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Sécurité : Si le mode sniper était actif, on le coupe proprement
         if (maSniperActive) {
-          window.toggleMASniper();  
+          window.toggleMASniper();
         }
       }
     }
@@ -2845,12 +2845,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const status = document.getElementById('ma-status-value');
     const dot = document.getElementById('ma-signal-dot');
 
-    if (maSniperActive) {  
+    if (maSniperActive) {
       btn.classList.add('active');
       status.innerText = "SCANNING";
       status.style.color = "#2196F3";
-      dot.style.background = "#2196F3";  
-      if (audioCtx.state === 'suspended') audioCtx.resume();  
+      dot.style.background = "#2196F3";
+      if (audioCtx.state === 'suspended') audioCtx.resume();
     } else {
       btn.classList.remove('active');
       status.innerText = "OFF";
@@ -2904,12 +2904,18 @@ document.addEventListener("DOMContentLoaded", () => {
       lastProcessedCandleTime = candle.time;
       triggerMASniperAlert(signal, candle, e20, e50);
     }
-  }  
+  }
 
   // --- 4. Alerte et Journalisation ---
   function triggerMASniperAlert(signal, candle, ma20Val, ma50Val) {
-    // Son
     playSniperSound(signal.type);
+
+    const labelContainer = document.getElementById('ma-sniper-label');
+    const alertBadge = document.getElementById('ma-sniper-alert-badge');
+
+    // --- EFFET DE FLASH SUR LE CONTENEUR ---
+    const flashClass = signal.type === 'BUY' ? 'flash-buy' : 'flash-sell';
+    labelContainer.classList.add(flashClass);
 
     // Marker graphique
     const marker = {
@@ -2919,22 +2925,20 @@ document.addEventListener("DOMContentLoaded", () => {
       shape: signal.type === 'BUY' ? 'arrowUp' : 'arrowDown',
       text: `${signal.subtype} ${signal.type}`
     };
-    maSniperMarkers.push(marker);     
-    if (currentSeries) currentSeries.setMarkers(maSniperMarkers);  
+    maSniperMarkers.push(marker);
+    if (currentSeries) currentSeries.setMarkers(maSniperMarkers);
 
-    // Affichage dans le badge MA-SNIPER-LABEL
-    const badge = document.getElementById('ma-sniper-alert-badge');
-    badge.innerHTML = `<span class="ma-sniper-msg" style="color:${signal.color}; border-left:3px solid ${signal.color}">
-        ${signal.icon} ${signal.subtype} ${signal.type} @ ${candle.close.toFixed(2)}</span>`;
+    // Texte de l'alerte
+    alertBadge.innerHTML = `<span class="ma-sniper-msg" style="color:${signal.color};">
+        ${signal.icon} ${signal.subtype} ${signal.type}</span>`;
 
-    // Sauvegarde journalisée
-    window.logMASignalToStorage({ side: `${signal.subtype}_${signal.type}`, ma20: ma20Val, ma50: ma50Val }, candle);
-
-    // Nettoyage visuel du badge après 10s
+    // Nettoyage après 10 secondes
     setTimeout(() => {
-      badge.innerHTML = "";
-      document.getElementById('ma-signal-dot').style.background = maSniperActive ? "#2196F3" : "#cbd5e1";
+      alertBadge.innerHTML = "";
+      labelContainer.classList.remove('flash-buy', 'flash-sell');
     }, 10000);
+
+    window.logMASignalToStorage({ side: `${signal.subtype}_${signal.type}`, ma20: ma20Val, ma50: ma50Val }, candle);
   }
 
   // --- 5. Fonctions Utilitaires (Audio, Logs, Export) ---
@@ -2966,7 +2970,7 @@ document.addEventListener("DOMContentLoaded", () => {
     a.download = `ma_sniper_${new Date().toLocaleDateString()}.csv`;
     a.click();
   };
-  
+
   window.clearMASniperLogs = function () {
     if (confirm("Effacer tout le journal MA ?")) {
       localStorage.removeItem('ma_sniper_logs');
@@ -2974,7 +2978,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (mainSeries) mainSeries.setMarkers([]);
       document.getElementById('ma-sniper-alert-badge').innerHTML = "";
     }
-  };  
+  };
 
   function updateMAs() {
     if (!maSeries || !chart || !isWsInitialized || priceDataZZ.length === 0) return;
