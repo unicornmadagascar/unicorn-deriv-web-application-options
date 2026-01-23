@@ -3485,7 +3485,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 4. Application sur la série active
     // Vérifiez bien que 'currentSeries' est la variable globale de votre graphique
     if (currentSeries) {
-      currentSeries.setMarkers(combined);    
+      currentSeries.setMarkers(combined);      
     } else {
       console.warn("⚠️ [Markers] Aucune série active (currentSeries) trouvée pour afficher les marqueurs.");
     }
