@@ -2970,11 +2970,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1500); // Délai optimisé
   };
 
-  window.masterReset = function () {
+  window.masterReset = function () {  
     if (confirm("🚨 Voulez-vous réinitialiser TOUS les paramètres (EMA, Sniper, Bollinger, Logs) ?")) {
 
       // 1. Vider le LocalStorage
-      localStorage.clear();
+      localStorage.clear();  
    
       // 2. Désactiver le mode Sniper
       maSniperActive = false;
