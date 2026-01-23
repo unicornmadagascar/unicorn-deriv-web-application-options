@@ -3191,7 +3191,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // On envoie vers l'alerte visuelle (Infobulle + Pulse)
       if (typeof window.triggerMASniperAlert === "function") {
         window.triggerMASniperAlert(signal, candle, e20, e50);
-      }
+      }  
 
       console.log(`🚀 [SIGNAL] ${signal.type} ${signal.subtype} à ${new Date().toLocaleTimeString()}`);
     }
