@@ -125,6 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Variable pour ne pas répéter le son en boucle
   let hasAlerted = false;
   let ema200Series;
+  let mainSeries;
   let isSniperArmed = false;
   let lastSignalTime = null;
   let squeezeCount = 0;
@@ -134,6 +135,18 @@ document.addEventListener("DOMContentLoaded", () => {
   let globalBandwidths = [];
   // 1. Ajoutez cette variable tout en haut de votre script avec les autres
   let allMarkers = [];
+  /**
+ * SYSTEME MA SNIPER V2.0
+ * Stratégies : Momentum ⚡, Crossover 🔄, Rebond 🎯
+ * Filtres : Volume Relatif (RVOL), Cooldown temporel, Sensibilité ajustable
+ */
+
+  // --- Initialisation des Variables ---
+  let maSniperActive = false;
+  let maSniperMarkers = [];
+  let lastProcessedCandleTime = null;
+  let sniperConfig = { slopeMin: 0.0001, ratio: 3.0 }; // Mode Medium par défaut
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   // ================== x ==================  
 
   let wsReady = false;
@@ -2738,38 +2751,228 @@ document.addEventListener("DOMContentLoaded", () => {
   window.toggleMA = function (period, button) {
     if (!chart) return;
 
-    // Initialisation des séries si nécessaire
     if (maSeries === null) {
       initMaSeries();
     }
 
     const index = activePeriods.indexOf(period);
+    const maSniperLabel = document.getElementById('ma-sniper-label'); // Cible le badge Sniper
 
     if (index === -1) {
       // --- ACTIVATION ---
       activePeriods.push(period);
-      button.classList.add('active'); // On utilise la classe générique pour le style blanc/bleu
-      button.innerText = period;      // On affiche juste le chiffre pour rester dans le cadre
+      button.classList.add('active');
+      button.innerText = period;
 
-      // On s'assure que la série est visible
       if (maSeries[period]) {
         maSeries[period].applyOptions({ visible: true });
       }
+
+      // --- SPECIFIQUE SNIPER ---
+      // Si l'utilisateur active l'EMA 20, on montre le badge Sniper
+      if (period === 20 && maSniperLabel) {
+        maSniperLabel.style.display = 'flex';
+      }
+
     } else {
       // --- DÉSACTIVATION ---
       activePeriods.splice(index, 1);
       button.classList.remove('active');
-      button.innerText = period;      // Reste le chiffre, mais change de couleur via le CSS
+      button.innerText = period;
 
-      // On cache la ligne au lieu de vider les données (plus rapide)
       if (maSeries[period]) {
         maSeries[period].applyOptions({ visible: false });
       }
+
+      // --- SPECIFIQUE SNIPER ---
+      // Si l'utilisateur coupe l'EMA 20, on cache le badge et on coupe le mode Sniper
+      if (period === 20 && maSniperLabel) {
+        maSniperLabel.style.display = 'none';
+
+        // Sécurité : Si le mode sniper était actif, on le coupe proprement
+        if (maSniperActive) {
+          toggleMASniper();
+        }
+      }
     }
 
-    // On relance le calcul pour mettre à jour les lignes avec les nouvelles données
     if (typeof renderIndicators === "function") {
       renderIndicators();
+    }
+  };
+
+  // --- ACTIVATION / DÉSACTIVATION ---
+  window.toggleMASniper = function (event) {
+    maSniperActive = !maSniperActive;
+    const btn = document.getElementById('ma-sniper-btn');
+    const status = document.getElementById('ma-status-value');
+    const dot = document.getElementById('ma-signal-dot');
+
+    if (maSniperActive) {
+      btn.classList.add('active');
+      status.innerText = "SCANNING";
+      status.style.color = "#2196F3";
+      dot.style.background = "#2196F3";
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } else {
+      btn.classList.remove('active');
+      status.innerText = "OFF";
+      status.style.color = "#64748b";
+      dot.style.background = "#cbd5e1";
+    }
+  };
+
+  /**
+ * SYSTEME MA SNIPER V2.0
+ * Stratégies : Momentum ⚡, Crossover 🔄, Rebond 🎯
+ * Filtres : Volume Relatif (RVOL), Cooldown temporel, Sensibilité ajustable
+ */
+  // --- 1. Gestion de la Sensibilité ---
+  window.updateSensitivity = function () {
+    const mode = document.getElementById('ma-sensitivity').value;
+    switch (mode) {
+      case 'low': sniperConfig = { slopeMin: 0.0002, ratio: 4.5 }; break;
+      case 'medium': sniperConfig = { slopeMin: 0.0001, ratio: 3.0 }; break;
+      case 'high': sniperConfig = { slopeMin: 0.00005, ratio: 2.0 }; break;
+    }
+    console.log(`🎯 Sensibilité MA réglée sur : ${mode.toUpperCase()}`);
+  };
+
+  // --- 2. Activation du Sniper ---
+  window.toggleMASniper = function (event) {
+    maSniperActive = !maSniperActive;
+    const btn = document.getElementById('ma-sniper-btn');
+    const status = document.getElementById('ma-status-value');
+    const dot = document.getElementById('ma-signal-dot');
+
+    if (maSniperActive) {
+      btn.classList.add('active');
+      status.innerText = "SCANNING";
+      status.style.color = "#2196F3";
+      dot.style.background = "#2196F3";
+      if (audioCtx.state === 'suspended') audioCtx.resume();  
+    } else {
+      btn.classList.remove('active');
+      status.innerText = "OFF";
+      status.style.color = "#64748b";
+      dot.style.background = "#cbd5e1";
+      document.getElementById('ma-sniper-alert-badge').innerHTML = "";
+    }
+  };
+
+  // --- 3. Moteur de Détection ---
+  function checkMASniperSignal(data, maContext) {
+    const i = data.length - 1;
+    const candle = data[i];
+
+    // 1. Cooldown & Volume
+    if (candle.time === lastProcessedCandleTime) return;
+    if (!isVolumeValidated(data)) return;
+
+    const { e20, e50 } = maContext.current;
+    const { e20: prevE20, e50: prevE50 } = maContext.previous;
+
+    // Calcul Pente (Momentum)
+    const slope20 = (e20 - prevE20) / prevE20;
+    const slope50 = (e50 - prevE50) / prevE50;
+
+    let signal = null;
+
+    // A. MOMENTUM ⚡
+    if (Math.abs(slope20) > sniperConfig.slopeMin && Math.abs(slope20) > Math.abs(slope50) * sniperConfig.ratio) {
+      if (slope20 > 0 && candle.close > e20) signal = { type: 'BUY', subtype: 'MOMENTUM', color: '#2ecc71', icon: '⚡' };
+      else if (slope20 < 0 && candle.close < e20) signal = { type: 'SELL', subtype: 'MOMENTUM', color: '#e74c3c', icon: '⚡' };
+    }
+
+    // B. CROSSOVER 🔄
+    if (!signal) {
+      if (prevE20 <= prevE50 && e20 > e50) signal = { type: 'BUY', subtype: 'CROSS', color: '#2ecc71', icon: '🔄' };
+      else if (prevE20 >= prevE50 && e20 < e50) signal = { type: 'SELL', subtype: 'CROSS', color: '#e74c3c', icon: '🔄' };
+    }
+
+    // C. REBOND 🎯 (Utilise la bougie précédente pour confirmer le rejet)
+    if (!signal) {
+      const prevCandle = data[i - 1];
+      if (e20 > e50 && candle.low <= e20 && candle.close > e20 && prevCandle.close > e20) {
+        signal = { type: 'BUY', subtype: 'REBOND', color: '#2ecc71', icon: '🎯' };
+      } else if (e20 < e50 && candle.high >= e20 && candle.close < e20 && prevCandle.close < e20) {
+        signal = { type: 'SELL', subtype: 'REBOND', color: '#e74c3c', icon: '🎯' };
+      }
+    }
+
+    if (signal) {
+      lastProcessedCandleTime = candle.time;
+      triggerMASniperAlert(signal, candle, e20, e50);
+    }
+  }
+
+  // --- 4. Alerte et Journalisation ---
+  function triggerMASniperAlert(signal, candle, ma20Val, ma50Val) {
+    // Son
+    playSniperSound(signal.type);
+
+    // Marker graphique
+    const marker = {
+      time: candle.time,
+      position: signal.type === 'BUY' ? 'belowBar' : 'aboveBar',
+      color: signal.color,
+      shape: signal.type === 'BUY' ? 'arrowUp' : 'arrowDown',
+      text: `${signal.subtype} ${signal.type}`
+    };
+    maSniperMarkers.push(marker);     
+    if (mainSeries) mainSeries.setMarkers(maSniperMarkers);  
+
+    // Affichage dans le badge MA-SNIPER-LABEL
+    const badge = document.getElementById('ma-sniper-alert-badge');
+    badge.innerHTML = `<span class="ma-sniper-msg" style="color:${signal.color}; border-left:3px solid ${signal.color}">
+        ${signal.icon} ${signal.subtype} ${signal.type} @ ${candle.close.toFixed(2)}</span>`;
+
+    // Sauvegarde journalisée
+    window.logMASignalToStorage({ side: `${signal.subtype}_${signal.type}`, ma20: ma20Val, ma50: ma50Val }, candle);
+
+    // Nettoyage visuel du badge après 10s
+    setTimeout(() => {
+      badge.innerHTML = "";
+      document.getElementById('ma-signal-dot').style.background = maSniperActive ? "#2196F3" : "#cbd5e1";
+    }, 10000);
+  }
+
+  // --- 5. Fonctions Utilitaires (Audio, Logs, Export) ---
+  function playSniperSound(type) {
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.frequency.setValueAtTime(type === 'BUY' ? 600 : 400, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(type === 'BUY' ? 900 : 200, audioCtx.currentTime + 0.1);
+    g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+  }
+
+  window.logMASignalToStorage = function (data, candle) {
+    let logs = JSON.parse(localStorage.getItem('ma_sniper_logs')) || [];
+    logs.push({ date: new Date().toLocaleString(), type: data.side, price: candle.close, ma20: data.ma20, ma50: data.ma50, time: candle.time });
+    if (logs.length > 200) logs.shift();
+    localStorage.setItem('ma_sniper_logs', JSON.stringify(logs));
+  };
+
+  window.exportMAModelToCSV = function () {
+    const logs = JSON.parse(localStorage.getItem('ma_sniper_logs')) || [];
+    if (!logs.length) return alert("Journal vide.");
+    let csv = "Date,Type,Prix,MA20,MA50\n" + logs.map(l => `${l.date},${l.type},${l.price},${l.ma20},${l.ma50}`).join("\n");
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `ma_sniper_${new Date().toLocaleDateString()}.csv`;
+    a.click();
+  };
+
+  window.clearMASniperLogs = function () {
+    if (confirm("Effacer tout le journal MA ?")) {
+      localStorage.removeItem('ma_sniper_logs');
+      maSniperMarkers = [];
+      if (mainSeries) mainSeries.setMarkers([]);
+      document.getElementById('ma-sniper-alert-badge').innerHTML = "";
     }
   };
 
@@ -2809,6 +3012,33 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       if (activePeriods?.length > 0 && typeof updateMAs === "function") {
         try { updateMAs(); } catch (e) { console.error(e); }
+      }
+
+      // --- NOUVEAU : BLOC MA SNIPER STRATEGY ---
+      // On vérifie si le mode est ON et si on a assez de bougies pour l'EMA 50
+      if (maSniperActive && priceDataZZ.length >= 50) {
+        try {
+          const ema20Data = calculateEMA(priceDataZZ, 20);
+          const ema50Data = calculateEMA(priceDataZZ, 50);
+
+          // Sécurité : Vérifier que calculateEMA a retourné assez de points
+          if (ema20Data.length >= 2 && ema50Data.length >= 2) {
+            const lastE20 = ema20Data[ema20Data.length - 1];
+            const lastE50 = ema50Data[ema50Data.length - 1];
+            const prevE20 = ema20Data[ema20Data.length - 2];
+            const prevE50 = ema50Data[ema50Data.length - 2];
+
+            const maContext = {
+              current: { e20: lastE20.value, e50: lastE50.value },
+              previous: { e20: prevE20.value, e50: prevE50.value }
+            };
+
+            // Lancement du moteur de détection EMA
+            checkMASniperSignal(priceDataZZ, maContext);
+          }
+        } catch (e) {
+          console.error("Erreur MA Sniper Logic:", e);
+        }
       }
 
       // --- BLOC BOLLINGER + SNIPER (Version Finale Optimisée) ---
@@ -3009,7 +3239,7 @@ document.addEventListener("DOMContentLoaded", () => {
           lastValueVisible: false,
           title: 'ZigZag' // Apparaît au survol ou dans la légende
         });
-      }  
+      }
 
       // On rend la série visible au cas où elle aurait été cachée  
       zigzagSeries.applyOptions({ visible: true });
@@ -3021,16 +3251,16 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       btn.innerText = "ZZ"; // Reste "ZZ" mais perd la couleur bleue
 
-      if (zigzagSeries) {  
+      if (zigzagSeries) {
         // Option 1 : On cache la série (plus performant)
-        zigzagSeries.applyOptions({ visible: false });   
+        zigzagSeries.applyOptions({ visible: false });
 
         // Option 2 : On vide si vous voulez vraiment libérer la mémoire
-        zigzagSeries.setData([]);   
-        zigzagSeries.setMarkers([]);     
+        zigzagSeries.setData([]);
+        zigzagSeries.setMarkers([]);
       }
     }
-  };  
+  };
 
   function refreshZigZag() {
     // 1. Vérifications de sécurité

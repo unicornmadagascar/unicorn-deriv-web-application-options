@@ -2878,12 +2878,12 @@
     }
 
     /* Classe active (quand l'indicateur est ON) */
-    #indicatorOverlay button.active {  
+    #indicatorOverlay button.active {
       background-color: #2196F3 !important;
-      /* Bleu */  
+      /* Bleu */
       color: #ffffff !important;
-      /* Texte blanc */ 
-      border-color: #1e88e5 !important;  
+      /* Texte blanc */
+      border-color: #1e88e5 !important;
     }
 
     .separator {
@@ -2953,7 +2953,7 @@
 
     /* On réactive les clics uniquement sur les toasts eux-mêmes */
     .toast {
-      pointer-events: auto;     
+      pointer-events: auto;
 
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(8px);
@@ -2961,7 +2961,7 @@
       border-radius: 10px;
       padding: 15px 20px;
       display: flex;
-      align-items: center;  
+      align-items: center;
       gap: 12px;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
         0 8px 10px -6px rgba(0, 0, 0, 0.1);
@@ -3573,6 +3573,102 @@
       /* Devient rouge au survol */
       transform: scale(1.1);
     }
+
+    /*---------------------- Badge de contrôle EMA ---------------------------*/
+    /* Conteneur Parent */
+    #ma-sniper-label {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid #e2e8f0;
+      padding: 2px 12px;
+      /* Réduit pour être plus compact */
+      border-radius: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      min-width: 320px;
+      /* Légèrement augmenté pour le menu + alertes */
+      height: 32px;
+      overflow: hidden;
+      /* Empêche les débordements lors des animations */
+    }
+
+    /* Style spécifique pour le SELECT */
+    #ma-sensitivity {
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 800;
+      cursor: pointer;
+      color: #475569;
+      padding: 2px 4px;
+      margin-left: 5px;
+      transition: all 0.2s;
+    }
+
+    #ma-sensitivity:hover {
+      background: #f1f5f9;
+      color: #2196F3;
+    }
+
+    /* Dot d'état */
+    .status-dot {
+      margin-left: 10px;
+      flex-shrink: 0;
+      /* Empêche le point de s'écraser */
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #cbd5e1;
+    }
+
+    /* Conteneur d'alertes (Flex grow pour occuper l'espace central) */
+    #ma-sniper-alert-badge {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+      /* Ne gêne pas les clics */
+    }
+
+    /* Message dynamique */
+    .ma-sniper-msg {
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 900;
+      border-radius: 4px;
+      white-space: nowrap;
+      animation: sniperPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Boutons d'action (Export/Reset) */
+    .btn-export,
+    .btn-reset {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0 4px;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+
+    .btn-export:hover,
+    .btn-reset:hover {
+      opacity: 1;
+    }
+
+    @keyframes sniperPop {
+      from {
+        transform: translateY(10px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
   </style>
 </head>
 
@@ -3812,6 +3908,28 @@
         <button class="btn-export" onclick="exportLogsToCSV()" title="Exporter le journal CSV">📥</button>
         <button class="btn-reset" onclick="clearSniperLogs()" title="Effacer le journal">🗑️</button>
         <div id="sniper-alert-badge"></div>
+      </div>
+
+      <div id="ma-sniper-label" class="chart-badge" style="margin-top: 8px;">
+        <button id="ma-sniper-btn" onclick="toggleMASniper(event)" title="MA Sniper Mode">🚀</button>
+        <span style="font-weight: 700; font-size: 11px; margin-left: 5px;">MA Sniper:</span>
+
+        <select id="ma-sensitivity" onchange="updateSensitivity()"
+          style="background:none; border:none; font-size:10px; font-weight:bold; cursor:pointer; color:#64748b; outline:none; margin-left:5px;">
+          <option value="low">SENS: LOW</option>
+          <option value="medium" selected>SENS: MED</option>
+          <option value="high">SENS: HIGH</option>
+        </select>
+
+        <span id="ma-status-value" style="font-size: 11px; color: #64748b; margin-left: 5px;">OFF</span>
+        <span id="ma-signal-dot" class="status-dot"></span>
+
+        <div id="ma-sniper-alert-badge"></div>
+
+        <div style="margin-left: auto; display: flex; align-items: center;">
+          <button class="btn-export" onclick="exportMAModelToCSV()" title="Exporter journal MA">📥</button>
+          <button class="btn-reset" onclick="clearMASniperLogs()" title="Effacer journal MA">🗑️</button>
+        </div>
       </div>
 
       <div id="indicatorOverlay" class="overlay_">
