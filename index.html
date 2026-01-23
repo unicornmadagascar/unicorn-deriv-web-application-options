@@ -4036,7 +4036,7 @@
 
           <select id="ma-sensitivity" onchange="updateSensitivity()">
             <option value="low">SENS: LOW</option>
-            <option value="medium" selected>SENS: MED</option>
+            <option value="medium" selected>SENS: MED</option>  
             <option value="high">SENS: HIGH</option>
           </select>
 
@@ -4445,45 +4445,6 @@
   </div>
 
   <!-- JOURNAL DE BORD -->
-  <div id="ma-sniper-label" class="sniper-badge" onclick="toggleLogTable()">
-    <div id="ma-signal-dot"></div>
-    <span id="ma-status-value">OFF</span>
-    <div id="ma-sniper-alert-badge"></div>
-  </div>
-
-  <div id="sniper-log-modal" class="sniper-modal" style="display: none;">
-    <div class="sniper-modal-content">
-      <div class="sniper-modal-header">
-        <h3>Journal MA Sniper</h3>
-        <div class="header-actions">
-          <button onclick="takeSniperScreenshot('MANUAL')" class="btn-snap">📸 Snap Chart</button>
-          <button onclick="toggleLogTable()" class="close-btn">✖</button>
-        </div>
-      </div>
-
-      <div class="table-wrapper">
-        <table id="sniper-log-table">
-          <thead>
-            <tr>
-              <th>Hour</th>
-              <th>Signal</th>
-              <th>Price</th>
-              <th>Gap</th>
-              <th>Analyze</th>
-            </tr>
-          </thead>
-          <tbody id="sniper-log-body">
-          </tbody>
-        </table>
-      </div>
-
-      <div class="sniper-modal-footer">
-        <button onclick="exportMAModelToCSV()" class="btn-export">📥 Export CSV</button>
-        <button onclick="clearMASniperLogs()" class="btn-clear">🗑️ All Cancel</button>
-      </div>
-    </div>
-  </div>
-
   <script>
 
     function closePopup() {
