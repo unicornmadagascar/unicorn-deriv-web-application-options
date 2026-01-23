@@ -281,6 +281,23 @@ document.addEventListener("DOMContentLoaded", () => {
     continuous: ["Volatility 10 (1s)", "Volatility 15 (1s)", "Volatility 25 (1s)", "Volatility 30 (1s)", "Volatility 50 (1s)", "Volatility 75 (1s)", "Volatility 90 (1s)", "Volatility 100 (1s)", "Volatility 10", "Volatility 25", "Volatility 50", "Volatility 75", "Volatility 100"]
   };
 
+  const sniperProfiles = {
+    // Indices synthétiques (Volatilité constante, micro-mouvements)
+    SYNTH: { slopeMin: 0.00002, ratio: 1.3, gapThreshold: 0.3, label: "⚡ SYNTH" },
+
+    // Métaux (Or, Argent - Volatilité directionnelle forte)
+    METALS: { slopeMin: 0.00015, ratio: 2.0, gapThreshold: 0.8, label: "👑 METAL" },
+
+    // Crypto (Forte volatilité, besoin de confirmation)
+    CRYPTO: { slopeMin: 0.00050, ratio: 1.5, gapThreshold: 2.0, label: "₿ CRYPTO" },
+
+    // Forex (Mouvements plus lents et réguliers)
+    FOREX: { slopeMin: 0.00008, ratio: 1.4, gapThreshold: 0.2, label: "💱 FOREX" },
+
+    // Par défaut
+    DEFAULT: { slopeMin: 0.00010, ratio: 1.5, gapThreshold: 1.0, label: "🔍 AUTO" }
+  };
+
   const SYMBOL_CONVERSION_MAP = {
     // METALS
     "Gold/USD": "frxXAUUSD", "Palladium/USD": "frxXPDUSD", "Platinum/USD": "frxXPTUSD", "Silver/USD": "frxXAGUSD",
@@ -3126,9 +3143,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const { e20: prevE20, e50: prevE50 } = maContext.previous;
 
     // --- MISE À JOUR VISUELLE (BADGE & GAP) ---
-    // On met à jour l'interface à chaque tick, même sans signal
     if (typeof window.updateGapMonitor === "function") {
-      window.updateGapMonitor(e20, e50);
+      // Ajout d'un petit plus : On passe la direction au monitor
+      const direction = e20 > e50 ? "↑" : "↓";
+      window.updateGapMonitor(e20, e50, direction);
     }
 
     // --- FILTRES DE DÉCLENCHEMENT ---
@@ -3136,7 +3154,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // A. Cooldown : Pas deux signaux sur la même bougie
     if (candle.time === (window.lastProcessedCandleTime || 0)) return;
 
-    // B. Validation Volume / Actif (Gère l'absence de volume sur R_50)
+    // B. Validation Volume / Actif (Adaptatif R_50, Gold, Forex)
     const volumeOk = typeof isVolumeValidated === "function" ? isVolumeValidated(data) : true;
     if (!volumeOk) return;
 
@@ -3146,16 +3164,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const slope20 = (e20 - prevE20) / prevE20;
     const slope50 = (e50 - prevE50) / prevE50;
 
-    // Debug Log pour calibrer la sensibilité (F12 console)
+    // Debug Log de précision dans la console
     if (Math.abs(slope20) > 0.000001) {
-      console.log(`📉 [DEBUG] Slope: ${slope20.toFixed(7)} | Gap: ${Math.abs((e20 - e50) / e50 * 100).toFixed(3)}%`);
+      const currentGap = Math.abs((e20 - e50) / e50 * 100);
+      console.log(`📉 [DEBUG] Slope: ${slope20.toFixed(7)} | Gap: ${currentGap.toFixed(3)}% | Config: ${window.sniperConfig?.label || 'AUTO'}`);
     }
 
     let signal = null;
 
     // --- STRATÉGIE A : MOMENTUM ⚡ (Accélération directionnelle) ---
-    const isStrongSlope = Math.abs(slope20) > (window.sniperConfig?.slopeMin || 0.00005);
-    const isAccelerating = Math.abs(slope20) > Math.abs(slope50) * (window.sniperConfig?.ratio || 1.5);
+    // Utilisation des seuils dynamiques selon l'actif
+    const config = window.sniperConfig || { slopeMin: 0.00010, ratio: 1.5 };
+
+    const isStrongSlope = Math.abs(slope20) > config.slopeMin;
+    const isAccelerating = Math.abs(slope20) > Math.abs(slope50) * config.ratio;
 
     if (isStrongSlope && isAccelerating) {
       if (slope20 > 0 && candle.close > e20) {
@@ -3177,6 +3199,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- STRATÉGIE C : REBOND 🎯 (Test de support/résistance EMA) ---
     if (!signal) {
       const prevCandle = data[i - 1];
+      // Sécurité Rebond : on s'assure qu'il y a un vrai rejet de la moyenne
       if (e20 > e50 && candle.low <= e20 && candle.close > e20 && prevCandle.close > e20) {
         signal = { type: 'BUY', subtype: 'REBOND', color: '#2ecc71', icon: '🎯' };
       } else if (e20 < e50 && candle.high >= e20 && candle.close < e20 && prevCandle.close < e20) {
@@ -3188,13 +3211,44 @@ document.addEventListener("DOMContentLoaded", () => {
     if (signal) {
       window.lastProcessedCandleTime = candle.time;
 
-      // On envoie vers l'alerte visuelle (Infobulle + Pulse)
       if (typeof window.triggerMASniperAlert === "function") {
         window.triggerMASniperAlert(signal, candle, e20, e50);
-      }  
+      }
 
-      console.log(`🚀 [SIGNAL] ${signal.type} ${signal.subtype} à ${new Date().toLocaleTimeString()}`);
+      console.log(`🚀 [SIGNAL] ${signal.type} ${signal.subtype} | Symbole: ${window.currentSymbol || 'N/A'}`);
     }
+  }
+
+  function autoAdjustSniperConfig(symbol) {
+    if (!symbol) return sniperProfiles.DEFAULT;
+
+    const sym = symbol.toUpperCase();
+    let profile;
+
+    if (sym.includes('R_') || sym.includes('100') || sym.includes('VOLATILITY')) {
+      profile = sniperProfiles.SYNTH;
+    } else if (sym.includes('XAU') || sym.includes('GOLD') || sym.includes('XAG')) {
+      profile = sniperProfiles.METALS;
+    } else if (sym.includes('BTC') || sym.includes('ETH') || sym.includes('USD')) {
+      // Distinction Crypto vs Forex
+      const cryptoKeywords = ['BTC', 'ETH', 'SOL', 'LTC', 'BNB'];
+      const isCrypto = cryptoKeywords.some(k => sym.includes(k));
+      profile = isCrypto ? sniperProfiles.CRYPTO : sniperProfiles.FOREX;
+    } else {
+      profile = sniperProfiles.DEFAULT;
+    }
+
+    // Mise à jour de la config globale
+    window.sniperConfig = profile;
+
+    // Mise à jour visuelle du petit label "NoVol" pour indiquer le mode
+    const warningEl = document.getElementById('no-vol-warning');
+    if (warningEl) {
+      warningEl.innerText = profile.label;
+      warningEl.style.display = 'inline';
+    }
+
+    return profile;
   }
 
   /**
@@ -3266,46 +3320,56 @@ document.addEventListener("DOMContentLoaded", () => {
     return percentage >= 80;
   }
 
-  window.updateGapMonitor = function (e20, e50) {
+  window.updateGapMonitor = function (e20, e50, direction) {
     const gapBar = document.getElementById('volume-bar');
     const gapPercent = document.getElementById('volume-percent');
-    const warningEl = document.getElementById('no-vol-warning');
 
     if (!e20 || !e50 || !gapBar || !gapPercent) return;
 
-    // 1. Calcul du Gap en %
+    // 1. Calcul du Gap et Direction
     const gap = Math.abs(((e20 - e50) / e50) * 100);
+    const arrow = direction || (e20 > e50 ? "↑" : "↓");
 
-    // 2. Mise à jour du texte (format "G: 1.25%")
-    gapPercent.innerText = `G: ${gap.toFixed(2)}%`;
+    // 2. Seuils dynamiques
+    const threshold = window.sniperConfig?.gapThreshold || 1.0;
 
-    // 3. Mise à jour de la barre
-    // On considère que 5% de gap est le maximum visuel (100% de la barre)
-    const progress = Math.min((gap / 5) * 100, 100);
+    // 3. Mise à jour du texte
+    gapPercent.innerText = `${arrow} G: ${gap.toFixed(3)}%`;
+
+    // 4. Progression de la barre
+    const maxBarRange = threshold * 2;
+    const progress = Math.min((gap / maxBarRange) * 100, 100);
     gapBar.style.width = progress + "%";
 
-    // 4. Logique de couleurs moderne
-    if (gap >= 5) {
-      // Mode LOCK : Rouge vif + Texte Gras
-      gapBar.style.background = '#ef4444';
+    // 5. Gestion des états et de l'animation Flash
+    // On retire l'animation par défaut
+    gapBar.classList.remove('critical-flash');
+
+    if (gap >= threshold * 1.5) {
+      // --- MODE ALERTE CRITIQUE ---
+      gapBar.style.background = '#ef4444'; // Rouge vif
       gapPercent.style.color = '#ef4444';
       gapPercent.style.fontWeight = '800';
-    } else if (gap >= 3) {
-      // Mode CRITIQUE : Orange/Fuchsia
-      gapBar.style.background = '#f59e0b';
+      // On active le clignotement
+      gapBar.classList.add('critical-flash');
+
+    } else if (gap >= threshold) {
+      // --- MODE TENSION ---
+      gapBar.style.background = '#f59e0b'; // Orange
       gapPercent.style.color = '#f59e0b';
       gapPercent.style.fontWeight = '700';
     } else {
-      // Mode NORMAL : Bleu professionnel
-      gapBar.style.background = '#3b82f6';
-      gapPercent.style.color = '#1e293b'; // Noir pour lisibilité sur fond blanc
+      // --- MODE NORMAL ---
+      gapBar.style.background = '#3b82f6'; // Bleu
+      gapPercent.style.color = '#1e293b';
       gapPercent.style.fontWeight = '600';
     }
 
-    // 5. Petit bonus : si le gap est très faible (< 0.1%), on montre que c'est neutre
-    if (gap < 0.1) {
-      gapBar.style.background = '#cbd5e1'; // Gris
-    }
+    // 6. Zone neutre
+    if (gap < threshold * 0.1) {
+      gapBar.style.background = '#cbd5e1';
+      gapPercent.style.color = '#94a3b8';
+    }  
   };
 
   // --- 4. Alerte et Journalisation ---
@@ -3624,6 +3688,10 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- NOUVEAU : BLOC MA SNIPER STRATEGY ---
       // On vérifie si le mode est ON et si on a assez de bougies pour l'EMA 50
       if (maSniperActive && priceDataZZ.length >= 50) {
+
+        const symbol = currentSymbol;
+        autoAdjustSniperConfig(symbol);
+
         try {
           const ema20Data = calculateEMA(priceDataZZ, 20);
           const ema50Data = calculateEMA(priceDataZZ, 50);
