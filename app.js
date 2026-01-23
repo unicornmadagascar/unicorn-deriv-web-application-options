@@ -2975,7 +2975,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 1. Vider le LocalStorage
       localStorage.clear();
-
+   
       // 2. Désactiver le mode Sniper
       maSniperActive = false;
       isSniperSynergyActive = false;
@@ -3013,7 +3013,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Son de confirmation (Bip descendant)
       playSniperSound('RESET');
 
-      alert("Dashboard réinitialisé avec succès.");
+      alert("Dashboard réinitialisé avec succès.");  
     }
   };
 
@@ -3082,7 +3082,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- 2. Activation du Sniper ---
   window.toggleMASniper = function (event) {
-    maSniperActive = !maSniperActive;
+    if (event) event.stopPropagation();
+
+    maSniperActive = !maSniperActive; 
     const btn = document.getElementById('ma-sniper-btn');
     const status = document.getElementById('ma-status-value');
     const dot = document.getElementById('ma-signal-dot');
