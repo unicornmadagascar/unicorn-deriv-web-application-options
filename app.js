@@ -3108,37 +3108,56 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // --- 3. Moteur de Détection ---
+  /**
+ * Moteur de détection universel MA Sniper
+ * S'adapte au R_50 (Synthétique), Crypto, Forex et Actions.
+ */
   function checkMASniperSignal(data, maContext) {
-    if (!data || data.length < 2) return;
+    // 1. SÉCURITÉ : Vérification des données entrantes
+    if (!data || data.length < 2 || !maContext || !maContext.current || !maContext.previous) {
+      return;
+    }
 
     const i = data.length - 1;
     const candle = data[i];
 
-    console.log("DATA CANDLE (checkMASniperSignal) :", candle);
-
-    // 1. Cooldown (Évite les alertes multiples sur la même bougie)
-    if (candle.time === lastProcessedCandleTime) return;
-
-    const volumeOk = isVolumeValidated(data);
-    console.log("Volume :", volumeOk);
-
-    // 2. Validation du Volume (Correction de l'erreur ReferenceError)
-    if (!volumeOk) return;
-
-    // Sécurité sur le contexte MA
-    if (!maContext.current || !maContext.previous) return;
-
+    // Extraction des valeurs EMA
     const { e20, e50 } = maContext.current;
     const { e20: prevE20, e50: prevE50 } = maContext.previous;
 
-    // Calcul Pente (Momentum)
+    // --- MISE À JOUR VISUELLE (BADGE & GAP) ---
+    // On met à jour l'interface à chaque tick, même sans signal
+    if (typeof window.updateGapMonitor === "function") {
+      window.updateGapMonitor(e20, e50);
+    }
+
+    // --- FILTRES DE DÉCLENCHEMENT ---
+
+    // A. Cooldown : Pas deux signaux sur la même bougie
+    if (candle.time === (window.lastProcessedCandleTime || 0)) return;
+
+    // B. Validation Volume / Actif (Gère l'absence de volume sur R_50)
+    const volumeOk = typeof isVolumeValidated === "function" ? isVolumeValidated(data) : true;
+    if (!volumeOk) return;
+
+    // --- CALCULS ANALYTIQUES ---
+
+    // Calcul de la Pente (Momentum)
     const slope20 = (e20 - prevE20) / prevE20;
     const slope50 = (e50 - prevE50) / prevE50;
 
+    // Debug Log pour calibrer la sensibilité (F12 console)
+    if (Math.abs(slope20) > 0.000001) {
+      console.log(`📉 [DEBUG] Slope: ${slope20.toFixed(7)} | Gap: ${Math.abs((e20 - e50) / e50 * 100).toFixed(3)}%`);
+    }
+
     let signal = null;
 
-    // A. MOMENTUM ⚡ (Accélération de la tendance)
-    if (Math.abs(slope20) > sniperConfig.slopeMin && Math.abs(slope20) > Math.abs(slope50) * sniperConfig.ratio) {
+    // --- STRATÉGIE A : MOMENTUM ⚡ (Accélération directionnelle) ---
+    const isStrongSlope = Math.abs(slope20) > (window.sniperConfig?.slopeMin || 0.00005);
+    const isAccelerating = Math.abs(slope20) > Math.abs(slope50) * (window.sniperConfig?.ratio || 1.5);
+
+    if (isStrongSlope && isAccelerating) {
       if (slope20 > 0 && candle.close > e20) {
         signal = { type: 'BUY', subtype: 'MOMENTUM', color: '#2ecc71', icon: '⚡' };
       } else if (slope20 < 0 && candle.close < e20) {
@@ -3146,7 +3165,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // B. CROSSOVER 🔄 (Croisement EMA 20/50)
+    // --- STRATÉGIE B : CROSSOVER 🔄 (Croisement de tendance) ---
     if (!signal) {
       if (prevE20 <= prevE50 && e20 > e50) {
         signal = { type: 'BUY', subtype: 'CROSS', color: '#2ecc71', icon: '🔄' };
@@ -3155,7 +3174,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // C. REBOND 🎯 (Test de support/résistance sur EMA 20)
+    // --- STRATÉGIE C : REBOND 🎯 (Test de support/résistance EMA) ---
     if (!signal) {
       const prevCandle = data[i - 1];
       if (e20 > e50 && candle.low <= e20 && candle.close > e20 && prevCandle.close > e20) {
@@ -3165,11 +3184,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 3. Déclenchement de l'alerte
+    // --- DÉCLENCHEMENT FINAL ---
     if (signal) {
-      lastProcessedCandleTime = candle.time;
-      // Cette fonction gérera le flash du badge et le marqueur (Flèche)
-      window.triggerMASniperAlert(signal, candle, e20, e50);
+      window.lastProcessedCandleTime = candle.time;
+
+      // On envoie vers l'alerte visuelle (Infobulle + Pulse)
+      if (typeof window.triggerMASniperAlert === "function") {
+        window.triggerMASniperAlert(signal, candle, e20, e50);
+      }
+
+      console.log(`🚀 [SIGNAL] ${signal.type} ${signal.subtype} à ${new Date().toLocaleTimeString()}`);
     }
   }
 
@@ -3197,12 +3221,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- CAS A : ACTIF SANS VOLUME (Ex: R_50, R_100, Indices Synthétiques) ---
     if (!volKey) {
       if (warningEl) {
-        warningEl.style.display = 'inline';  
+        warningEl.style.display = 'inline';
         warningEl.innerText = "⚡ SYNTH"; // Indique un actif synthétique
       }
 
       // Si on a les EMA, on utilise la barre pour afficher le GAP à la place
-      if (window.currentEma20 && window.currentEma50) {   
+      if (window.currentEma20 && window.currentEma50) {
         const e20 = window.currentEma20;
         const e50 = window.currentEma50;
         const gap = Math.abs(((e20 - e50) / e50) * 100);
@@ -3218,7 +3242,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // IMPORTANT : On retourne true car on ne peut pas valider ce qui n'existe pas
       return true;
-    }  
+    }
 
     // --- CAS B : ACTIF AVEC VOLUME (Ex: BTC, Actions, Forex avec Tick Vol) ---
     if (warningEl) warningEl.style.display = 'none';
@@ -3241,7 +3265,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Validation : On accepte le signal si le volume est au moins à 80% de sa moyenne
     return percentage >= 80;
   }
-   
+
   window.updateGapMonitor = function (e20, e50) {
     const gapBar = document.getElementById('volume-bar');
     const gapPercent = document.getElementById('volume-percent');
