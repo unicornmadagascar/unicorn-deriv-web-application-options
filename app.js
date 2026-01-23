@@ -3109,7 +3109,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const i = data.length - 1;
     const candle = data[i]; 
     
-    console.log("DATA CANDLE (checkMASniperSignal) :",candle);
+    console.log("DATA CANDLE (checkMASniperSignal) :",candle);  
 
     // 1. Cooldown (Évite les alertes multiples sur la même bougie)
     if (candle.time === lastProcessedCandleTime) return;
