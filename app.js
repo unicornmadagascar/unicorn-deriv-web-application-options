@@ -2822,64 +2822,76 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.restoreTradingSession = function () {
-    console.log("🔄 Initialisation de la session...");
+    const alertBadge = document.getElementById('ma-sniper-alert-badge');
 
-    // 1. Restaurer les EMA
-    const savedPeriods = localStorage.getItem('active_ma_periods');
-    if (savedPeriods) {
-      const periods = JSON.parse(savedPeriods);
-      periods.forEach(p => {
-        // On cherche le bouton correspondant à la période
-        const btn = document.querySelector(`button[onclick*="toggleMA(${p}"]`);
-        // On appelle toggleMA. Note : assurez-vous que toggleMA ne bloque pas 
-        // si le bouton est déjà visuellement actif.
-        if (btn && !activePeriods.includes(p)) {
-          window.toggleMA(p, btn);
+    // Affichage d'un message de chargement temporaire
+    if (alertBadge) {
+      alertBadge.innerHTML = `<span style="font-size: 10px; color: #3b82f6; animation: pulse 1s infinite;">🔄 Restauration...</span>`;
+    }
+
+    setTimeout(() => {
+      console.log("🔄 Initialisation de la session...");
+
+      // 1. Restaurer les EMA
+      const savedPeriods = localStorage.getItem('active_ma_periods');
+      if (savedPeriods) {
+        const periods = JSON.parse(savedPeriods);
+        periods.forEach(p => {
+          const btn = document.querySelector(`button[onclick*="toggleMA(${p}"]`);
+          if (btn && !activePeriods.includes(p)) {
+            window.toggleMA(p, btn);
+          }
+        });
+      }
+
+      // 2. Restaurer la Sensibilité
+      const savedSens = localStorage.getItem('ma_sniper_sensitivity');
+      if (savedSens) {
+        const select = document.getElementById('ma-sensitivity');
+        if (select) {
+          select.value = savedSens;
+          if (typeof updateSensitivity === 'function') updateSensitivity();
         }
-      });
-    }
-
-    // 2. Restaurer la Sensibilité (SENS: LOW/MED/HIGH)
-    const savedSens = localStorage.getItem('ma_sniper_sensitivity');
-    if (savedSens) {
-      const select = document.getElementById('ma-sensitivity');
-      if (select) {
-        select.value = savedSens;
-        if (typeof updateSensitivity === 'function') updateSensitivity();
       }
-    }
 
-    // 3. Restaurer le Sniper
-    const wasSniperArmed = localStorage.getItem('ma_sniper_armed') === 'true';
-    const hasSynergy = activePeriods.includes(20) && activePeriods.includes(50);
+      // 3. Restaurer le Sniper
+      const wasSniperArmed = localStorage.getItem('ma_sniper_armed') === 'true';
+      const hasSynergy = activePeriods.includes(20) && activePeriods.includes(50);
 
-    if (wasSniperArmed && hasSynergy) {
-      maSniperActive = true;
+      if (wasSniperArmed && hasSynergy) {
+        maSniperActive = true;
+        const label = document.getElementById('ma-sniper-label');
+        if (label) label.style.display = 'flex';
 
-      // Mise à jour visuelle complète du badge
-      const label = document.getElementById('ma-sniper-label');
-      if (label) label.style.display = 'flex';
+        const btn = document.getElementById('ma-sniper-btn');
+        if (btn) btn.classList.add('armed');
 
-      const btn = document.getElementById('ma-sniper-btn');
-      if (btn) btn.classList.add('armed');
+        const dot = document.getElementById('ma-signal-dot');
+        if (dot) dot.style.backgroundColor = '#2ecc71';
 
-      const dot = document.getElementById('ma-signal-dot');
-      if (dot) dot.style.backgroundColor = '#2ecc71';
-
-      const statusText = document.getElementById('ma-status-value');
-      if (statusText) statusText.innerText = 'ON';
-
-      console.log("🚀 MA Sniper restauré et armé.");
-    }
-
-    // 4. Restaurer les Marqueurs (Flèches sur le graphique)
-    const savedLogs = localStorage.getItem('ma_sniper_logs');
-    if (savedLogs) {
-      maSniperMarkers = JSON.parse(savedLogs);
-      if (typeof syncAllChartMarkers === 'function') {
-        syncAllChartMarkers();
+        const statusText = document.getElementById('ma-status-value');
+        if (statusText) statusText.innerText = 'ON';
       }
-    }
+
+      // 4. Restaurer les Marqueurs
+      const savedLogs = localStorage.getItem('ma_sniper_logs');
+      if (savedLogs) {
+        maSniperMarkers = JSON.parse(savedLogs);
+        if (typeof syncAllChartMarkers === 'function') syncAllChartMarkers();
+      }
+
+      // MESSAGE DE SUCCÈS FINAL
+      if (alertBadge) {
+        alertBadge.innerHTML = `<span style="font-size: 10px; color: #10b981; font-weight: bold;">✅ Session prête</span>`;
+
+        // On efface le message après 2 secondes pour laisser la place aux alertes de trading
+        setTimeout(() => { alertBadge.innerHTML = ""; }, 2000);
+      }
+
+      // Petit bip de confirmation
+      playSniperSound('SIGNAL');
+
+    }, 5000); // Petit délai pour laisser le graphique s'initialiser proprement
   };
 
   window.masterReset = function () {
@@ -2929,12 +2941,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  window.requestNotificationPermission = function () {
+    if (!("Notification" in window)) return;
+
+    Notification.requestPermission().then(permission => {
+      if (permission === "granted") {
+        console.log("🔔 Notifications activées");
+        // Petit test de succès
+        new Notification("Système Sniper", {
+          body: "Alertes bureau activées ✔️",
+          silent: true
+        });
+      }
+    });
+  };
+
   // --- ACTIVATION / DÉSACTIVATION ---  
   window.toggleMASniper = function (event) {
     if (event) event.stopPropagation();
 
     // Vérification de sécurité EMA (déjà présente)
     if (!activePeriods.includes(20) || !activePeriods.includes(50)) return;
+
+    if (Notification.permission === "default") {
+      window.requestNotificationPermission();
+    }
 
     maSniperActive = !maSniperActive;
 
@@ -3052,7 +3083,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (signal) {
       lastProcessedCandleTime = candle.time;
       // Cette fonction gérera le flash du badge et le marqueur (Flèche)
-      triggerMASniperAlert(signal, candle, e20, e50);
+      window.triggerMASniperAlert(signal, candle, e20, e50);
     }
   }
 
@@ -3098,11 +3129,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Calcul du Gap en pourcentage entre la 20 et la 50
     const gapValue = Math.abs(((e20 - e50) / e50) * 100);
     const emaGap = gapValue.toFixed(2);
-
-    // Seuil de Gap critique (ex: 3%)
     const isCritical = gapValue > 3.0;
 
-    // 1. AFFICHAGE DU MESSAGE (Dynamique selon l'intensité)
+    // 1. AFFICHAGE DU MESSAGE SUR LE DASHBOARD
     if (alertBadge) {
       alertBadge.innerHTML = `
             <div class="ma-sniper-msg" style="color: ${signal.color}; border: 2px solid ${isCritical ? signal.color : signal.color + '44'};">
@@ -3111,30 +3140,44 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     }
 
-    // 2. EFFETS VISUELS (Nettoyage et Relance)
+    // 2. EFFETS VISUELS DU BADGE (Reset & Flash)
     maSniperLabel.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
-    void maSniperLabel.offsetWidth;
+    void maSniperLabel.offsetWidth; // Force le redémarrage de l'animation
 
-    // Flash standard
     const flashClass = signal.type === 'BUY' ? 'badge-flash-buy' : 'badge-flash-sell';
     maSniperLabel.classList.add(flashClass);
 
-    // 3. LOGIQUE DE SECOUSSE (SHAKE)
+    // 3. LOGIQUE SONORE ET SECOUSSE (SHAKE)
     if (isCritical) {
-      // Alerte majeure : Gap > 3%
       maSniperLabel.classList.add('critical-shake');
-      if (typeof playCriticalSound === "function") playSniperSound('CRITICAL');
-    } else if (signal.subtype === 'CROSS') {
-      // Alerte normale : Croisement standard
-      maSniperLabel.classList.add('sniper-shake');
+      playSniperSound('CRITICAL');
+    } else {
+      // Son de signal standard pour tous les types (Rebond, Momentum, Cross)
       playSniperSound('SIGNAL');
+
+      // Secousse visuelle spécifique pour les croisements (CROSS)
+      if (signal.subtype === 'CROSS') {
+        maSniperLabel.classList.add('sniper-shake');
+      }
     }
 
-    // 4. MARQUEUR GRAPHIQUE AVEC INFOS DÉTAILLÉES
+    // 4. NOTIFICATION PUSH (BUREAU)
+    if (Notification.permission === "granted") {
+      const notif = new Notification(`${isCritical ? '🚨' : signal.icon} MA Sniper: ${signal.type}`, {
+        body: `${signal.subtype} @ ${candle.close.toFixed(2)} | Gap: ${emaGap}%`,
+        silent: true // On utilise notre propre playSniperSound
+      });
+
+      // Au clic, ramène l'utilisateur sur le graphique
+      notif.onclick = () => { window.focus(); notif.close(); };
+      setTimeout(() => notif.close(), 5000);
+    }
+
+    // 5. MARQUEUR GRAPHIQUE
     const newMarker = {
       time: candle.time,
       position: signal.type === 'BUY' ? 'belowBar' : 'aboveBar',
-      color: isCritical ? '#ff00ff' : signal.color, // Magenta si critique pour le repérer de loin
+      color: isCritical ? '#ff00ff' : signal.color,
       shape: signal.type === 'BUY' ? 'arrowUp' : 'arrowDown',
       text: `${isCritical ? '🔥' : ''}${signal.subtype} (G:${emaGap}%)`,
       size: isCritical ? 3 : 2
@@ -3143,9 +3186,11 @@ document.addEventListener("DOMContentLoaded", () => {
     maSniperMarkers.push(newMarker);
     if (typeof syncAllChartMarkers === "function") syncAllChartMarkers();
 
-    // 5. RESET APRÈS 5 SECONDES
+    // 6. RESET AUTOMATIQUE DES EFFETS
     setTimeout(() => {
-      if (alertBadge) alertBadge.innerHTML = "";
+      if (alertBadge && alertBadge.innerHTML.includes(emaGap)) {
+        alertBadge.innerHTML = "";
+      }
       maSniperLabel.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
     }, 5000);
   };
@@ -3213,19 +3258,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.logMASignalToStorage = function (data, candle) {
     let logs = JSON.parse(localStorage.getItem('ma_sniper_logs')) || [];
-    logs.push({ date: new Date().toLocaleString(), type: data.side, price: candle.close, ma20: data.ma20, ma50: data.ma50, time: candle.time });
+
+    // On enregistre les données pour le CSV ET les données pour le graphique (markers)
+    logs.push({
+      date: new Date().toLocaleString(),
+      type: data.type, // BUY ou SELL
+      subtype: data.subtype, // CROSS, REBOND, etc.
+      price: candle.close,
+      ma20: data.ma20,
+      ma50: data.ma50,
+      time: candle.time,
+      // On stocke ici l'objet marker pour pouvoir le restaurer sur le graphique
+      marker: {
+        time: candle.time,
+        position: data.type === 'BUY' ? 'belowBar' : 'aboveBar',
+        color: data.isCritical ? '#ff00ff' : data.color,
+        shape: data.type === 'BUY' ? 'arrowUp' : 'arrowDown',
+        text: `${data.isCritical ? '🔥' : ''}${data.subtype}`,
+        size: data.isCritical ? 3 : 2
+      }
+    });
+
+    // Limite à 200 entrées pour ne pas alourdir le navigateur
     if (logs.length > 200) logs.shift();
+
     localStorage.setItem('ma_sniper_logs', JSON.stringify(logs));
   };
 
   window.exportMAModelToCSV = function () {
     const logs = JSON.parse(localStorage.getItem('ma_sniper_logs')) || [];
     if (!logs.length) return alert("Journal vide.");
-    let csv = "Date,Type,Prix,MA20,MA50\n" + logs.map(l => `${l.date},${l.type},${l.price},${l.ma20},${l.ma50}`).join("\n");
+
+    let csv = "Date,Type,Sous-Type,Prix,MA20,MA50\n" +
+      logs.map(l => `${l.date},${l.type},${l.subtype || ''},${l.price},${l.ma20},${l.ma50}`).join("\n");
+
     const blob = new Blob([csv], { type: 'text/csv' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `ma_sniper_${new Date().toLocaleDateString()}.csv`;
+    a.download = `ma_sniper_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
   };
 
@@ -3234,29 +3304,30 @@ document.addEventListener("DOMContentLoaded", () => {
       // 1. Nettoyage du stockage local
       localStorage.removeItem('ma_sniper_logs');
 
-      // 2. Réinitialisation des marqueurs spécifiques à la MA
+      // 2. Réinitialisation des marqueurs en mémoire
       maSniperMarkers = [];
 
-      // 3. Synchronisation pour ne garder que les marqueurs BB sur le graphique
+      // 3. Synchronisation graphique (Efface les flèches du chart)
       if (typeof syncAllChartMarkers === "function") {
         syncAllChartMarkers();
       }
 
-      // 4. Nettoyage de l'interface utilisateur (Badge)
+      // 4. Nettoyage de l'interface utilisateur
       const alertBadge = document.getElementById('ma-sniper-alert-badge');
       const labelContainer = document.getElementById('ma-sniper-label');
 
       if (alertBadge) alertBadge.innerHTML = "";
 
       if (labelContainer) {
-        // On retire les classes de flash (vert/rouge) si elles sont actives
-        labelContainer.classList.remove('flash-buy', 'flash-sell');
-        // On peut aussi ajouter un petit effet de "reset" visuel rapide
+        // Nettoyage des classes d'animation et de flash
+        labelContainer.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
         labelContainer.style.borderColor = "#e2e8f0";
       }
 
-      // 5. Petit son de confirmation discret (optionnel)
-      playClearSound();
+      // 5. Son de confirmation descendant
+      playSniperSound('RESET');
+
+      console.log("🧹 Journal et marqueurs MA Sniper réinitialisés.");
     }
   };
 
