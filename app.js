@@ -3489,7 +3489,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       console.warn("⚠️ [Markers] Aucune série active (currentSeries) trouvée pour afficher les marqueurs.");
     }
-  };
+  };    
 
   // --- 5. Fonctions Utilitaires (Audio, Logs, Export) ---
   function playSniperSound(type) {
