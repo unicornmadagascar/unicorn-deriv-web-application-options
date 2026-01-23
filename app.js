@@ -3371,7 +3371,7 @@ document.addEventListener("DOMContentLoaded", () => {
       gapPercent.style.color = '#94a3b8';
     }  
   };
-
+   
   // --- 4. Alerte et Journalisation ---
   window.triggerMASniperAlert = function (signal, candle, e20, e50) {
     const maSniperLabel = document.getElementById('ma-sniper-label');
