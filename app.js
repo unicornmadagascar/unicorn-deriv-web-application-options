@@ -2902,7 +2902,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.maSniperMarkers = logs.map(l => l.marker).filter(m => m !== undefined);
 
         if (typeof syncAllChartMarkers === 'function') {
-          syncAllChartMarkers();
+          window.syncAllChartMarkers();
         }
       }
 
@@ -2933,7 +2933,7 @@ document.addEventListener("DOMContentLoaded", () => {
       window.allMarkers = [];
       window.maSniperMarkers = [];
       if (typeof syncAllChartMarkers === 'function') {
-        syncAllChartMarkers();
+        window.syncAllChartMarkers();
       }
 
       // 4. Masquer et nettoyer les séries de données (EMA)
@@ -3553,7 +3553,7 @@ document.addEventListener("DOMContentLoaded", () => {
       gain.gain.exponentialRampToValueAtTime(0.01, start + duration);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
-      osc.start(start);
+      osc.start();
       osc.stop(start + duration);
     };
 
