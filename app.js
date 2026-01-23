@@ -2821,6 +2821,78 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof renderIndicators === "function") renderIndicators();
   };
 
+  window.toggleLogTable = function () {
+    const modal = document.getElementById('sniper-log-modal');
+    if (!modal) return;
+
+    if (modal.style.display === 'none') {
+      renderLogTable();
+      modal.style.display = 'flex';
+    } else {
+      modal.style.display = 'none';
+    }
+  };
+
+  window.takeSniperScreenshot = function (signalType) {
+    if (!window.chart) return;
+
+    // 1. Créer un canvas à partir du graphique
+    const canvas = window.chart.takeScreenshot();
+
+    // 2. Transformer le canvas en URL d'image (base64)
+    const screenshotUrl = canvas.toDataURL('image/png');
+
+    // 3. Téléchargement automatique
+    const link = document.createElement('a');
+    const date = new Date().toISOString().replace(/[:.]/g, '-');
+    link.download = `Sniper_${signalType}_${date}.png`;
+    link.href = screenshotUrl;
+    link.click();
+
+    console.log("📸 Screenshot du signal enregistré.");
+  };
+
+  function renderLogTable() {
+    const tbody = document.getElementById('sniper-log-body');
+    const logs = JSON.parse(localStorage.getItem('ma_sniper_logs')) || [];
+    const currentPrice = window.currentPrice || 0; // On récupère le prix actuel du chart
+
+    if (!tbody) return;
+
+    let winCount = 0;
+
+    tbody.innerHTML = logs.reverse().map(log => {
+      const gapValue = Math.abs(((log.ma20 - log.ma50) / log.ma50) * 100).toFixed(2);
+
+      // Calcul de performance simple :
+      // Si BUY et prix actuel > prix signal = WIN
+      // Si SELL et prix actuel < prix signal = WIN
+      let statusHtml = "";
+      if (currentPrice > 0) {
+        const isWin = log.type === 'BUY' ? (currentPrice > log.price) : (currentPrice < log.price);
+        if (isWin) winCount++;
+        statusHtml = isWin ?
+          '<span style="color: #2ecc71; font-weight: bold;">🎯 PROFIT</span>' :
+          '<span style="color: #e74c3c; font-weight: bold;">⌛ ATTENTE/LOSS</span>';
+      }
+
+      return `
+            <tr>
+                <td>${log.date.split(',')[1]}</td>
+                <td style="color: ${log.type === 'BUY' ? '#2ecc71' : '#e74c3c'}">${log.type} ${log.subtype || ''}</td>
+                <td>${log.price.toFixed(2)}</td>
+                <td>${gapValue}%</td>
+                <td>${statusHtml}</td>
+            </tr>
+        `;
+    }).join('');
+
+    // Mise à jour d'un petit compteur de Winrate en haut du tableau
+    const winRate = logs.length > 0 ? ((winCount / logs.length) * 100).toFixed(1) : 0;
+    document.querySelector('.sniper-modal-header h3').innerHTML =
+      `📊 Journal Sniper | Winrate Estimé: ${winRate}%`;
+  }
+
   window.restoreTradingSession = function () {
     const alertBadge = document.getElementById('ma-sniper-alert-badge');
 
@@ -2832,13 +2904,14 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       console.log("🔄 Initialisation de la session...");
 
-      // 1. Restaurer les EMA
+      // 1. Restaurer les EMA (Active les moyennes mobiles)
       const savedPeriods = localStorage.getItem('active_ma_periods');
       if (savedPeriods) {
         const periods = JSON.parse(savedPeriods);
         periods.forEach(p => {
           const btn = document.querySelector(`button[onclick*="toggleMA(${p}"]`);
-          if (btn && !activePeriods.includes(p)) {
+          // On vérifie activePeriods pour ne pas doubler l'activation
+          if (btn && typeof activePeriods !== 'undefined' && !activePeriods.includes(p)) {
             window.toggleMA(p, btn);
           }
         });
@@ -2854,12 +2927,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // 3. Restaurer le Sniper
+      // 3. Restaurer le Sniper (Seulement si 20 et 50 sont présentes)
       const wasSniperArmed = localStorage.getItem('ma_sniper_armed') === 'true';
       const hasSynergy = activePeriods.includes(20) && activePeriods.includes(50);
 
       if (wasSniperArmed && hasSynergy) {
-        maSniperActive = true;
+        window.maSniperActive = true;
         const label = document.getElementById('ma-sniper-label');
         if (label) label.style.display = 'flex';
 
@@ -2873,25 +2946,28 @@ document.addEventListener("DOMContentLoaded", () => {
         if (statusText) statusText.innerText = 'ON';
       }
 
-      // 4. Restaurer les Marqueurs
+      // 4. Restaurer les Marqueurs sur le Graphique
       const savedLogs = localStorage.getItem('ma_sniper_logs');
       if (savedLogs) {
-        maSniperMarkers = JSON.parse(savedLogs);
-        if (typeof syncAllChartMarkers === 'function') syncAllChartMarkers();
+        const logs = JSON.parse(savedLogs);
+        // Extraction cruciale : on ne prend que la propriété .marker de chaque log
+        window.maSniperMarkers = logs.map(l => l.marker).filter(m => m !== undefined);
+
+        if (typeof syncAllChartMarkers === 'function') {
+          window.syncAllChartMarkers();
+        }
       }
 
-      // MESSAGE DE SUCCÈS FINAL
+      // MESSAGE DE SUCCÈS
       if (alertBadge) {
         alertBadge.innerHTML = `<span style="font-size: 10px; color: #10b981; font-weight: bold;">✅ Session prête</span>`;
-
-        // On efface le message après 2 secondes pour laisser la place aux alertes de trading
-        setTimeout(() => { alertBadge.innerHTML = ""; }, 2000);
+        setTimeout(() => { alertBadge.innerHTML = ""; }, 2500);
       }
 
-      // Petit bip de confirmation
-      playSniperSound('SIGNAL');
+      // Son de notification de fin de chargement
+      if (typeof playSniperSound === 'function') playSniperSound('SIGNAL');
 
-    }, 5000); // Petit délai pour laisser le graphique s'initialiser proprement
+    }, 1500); // Délai optimisé
   };
 
   window.masterReset = function () {
@@ -3126,73 +3202,95 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!maSniperActive || !maSniperLabel) return;
 
-    // Calcul du Gap en pourcentage entre la 20 et la 50
+    // 1. ANALYSE DU GAP ET SÉCURITÉ
     const gapValue = Math.abs(((e20 - e50) / e50) * 100);
     const emaGap = gapValue.toFixed(2);
     const isCritical = gapValue > 3.0;
+    const isLocked = gapValue > 5.0; // Verrouillage si extension extrême
 
-    // 1. AFFICHAGE DU MESSAGE SUR LE DASHBOARD
+    // 2. AFFICHAGE DU MESSAGE ET CHECKLIST
     if (alertBadge) {
-      alertBadge.innerHTML = `
-            <div class="ma-sniper-msg" style="color: ${signal.color}; border: 2px solid ${isCritical ? signal.color : signal.color + '44'};">
-                ${isCritical ? '🔥' : signal.icon} ${signal.subtype} | Gap: ${emaGap}%
+      let content = `
+            <div class="ma-sniper-msg" style="color: ${isLocked ? '#ff4d4d' : signal.color}; border: 2px solid ${isCritical ? signal.color : signal.color + '44'};">
+                ${isLocked ? '🚫 LOCK' : (isCritical ? '🔥' : signal.icon)} ${signal.subtype} | Gap: ${emaGap}%
             </div>
         `;
+
+      // Ajout de la Checklist si Critique ou Verrouillé
+      if (isCritical) {
+        content += `
+                <div class="sniper-checklist" style="border-color: ${isLocked ? '#ff4d4d' : '#ff00ff'}">
+                    <span class="checklist-item">⬜ ${isLocked ? 'DANGER : EXTENSION +5%' : 'CHECK : VOLATILITÉ'}</span>
+                    <span class="checklist-item">⬜ ATTENDRE RETOUR EMA 20 ?</span>
+                    <span class="checklist-item">⬜ R/R RATIO VALIDE ?</span>
+                </div>
+            `;
+      }
+      alertBadge.innerHTML = content;
     }
 
-    // 2. EFFETS VISUELS DU BADGE (Reset & Flash)
+    // 3. EFFETS VISUELS ET SONORES
     maSniperLabel.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
-    void maSniperLabel.offsetWidth; // Force le redémarrage de l'animation
+    void maSniperLabel.offsetWidth;
+
+    if (isLocked) {
+      maSniperLabel.classList.add('critical-shake');
+      playSniperSound('CRITICAL'); // Son d'alerte maximale
+    } else if (isCritical) {
+      maSniperLabel.classList.add('critical-shake');
+      playSniperSound('CRITICAL');
+    } else {
+      playSniperSound('SIGNAL');
+      if (signal.subtype === 'CROSS') maSniperLabel.classList.add('sniper-shake');
+    }
 
     const flashClass = signal.type === 'BUY' ? 'badge-flash-buy' : 'badge-flash-sell';
     maSniperLabel.classList.add(flashClass);
 
-    // 3. LOGIQUE SONORE ET SECOUSSE (SHAKE)
-    if (isCritical) {
-      maSniperLabel.classList.add('critical-shake');
-      playSniperSound('CRITICAL');
-    } else {
-      // Son de signal standard pour tous les types (Rebond, Momentum, Cross)
-      playSniperSound('SIGNAL');
-
-      // Secousse visuelle spécifique pour les croisements (CROSS)
-      if (signal.subtype === 'CROSS') {
-        maSniperLabel.classList.add('sniper-shake');
-      }
-    }
-
-    // 4. NOTIFICATION PUSH (BUREAU)
+    // 4. NOTIFICATION PUSH
     if (Notification.permission === "granted") {
-      const notif = new Notification(`${isCritical ? '🚨' : signal.icon} MA Sniper: ${signal.type}`, {
-        body: `${signal.subtype} @ ${candle.close.toFixed(2)} | Gap: ${emaGap}%`,
-        silent: true // On utilise notre propre playSniperSound
+      const notif = new Notification(`${isLocked ? '🚫' : (isCritical ? '🚨' : signal.icon)} ${signal.type}`, {
+        body: `${isLocked ? 'ZONE DANGEREUSE' : signal.subtype} @ ${candle.close.toFixed(2)} | Gap: ${emaGap}%`,
+        silent: true
       });
-
-      // Au clic, ramène l'utilisateur sur le graphique
       notif.onclick = () => { window.focus(); notif.close(); };
       setTimeout(() => notif.close(), 5000);
     }
 
-    // 5. MARQUEUR GRAPHIQUE
+    // 5. MARQUEUR GRAPHIQUE ET SAUVEGARDE
     const newMarker = {
       time: candle.time,
       position: signal.type === 'BUY' ? 'belowBar' : 'aboveBar',
-      color: isCritical ? '#ff00ff' : signal.color,
+      color: isLocked ? '#ff4d4d' : (isCritical ? '#ff00ff' : signal.color),
       shape: signal.type === 'BUY' ? 'arrowUp' : 'arrowDown',
-      text: `${isCritical ? '🔥' : ''}${signal.subtype} (G:${emaGap}%)`,
-      size: isCritical ? 3 : 2
+      text: `${isLocked ? '🚫' : (isCritical ? '🔥' : '')}${signal.subtype} (${emaGap}%)`,
+      size: isLocked ? 4 : (isCritical ? 3 : 2)
     };
 
+    // Ajout au tableau mémoire
     maSniperMarkers.push(newMarker);
+
+    // SAUVEGARDE DANS LES LOGS (Pour restauration future)
+    if (typeof logMASignalToStorage === "function") {
+      logMASignalToStorage({
+        ...signal,
+        isCritical: isCritical,
+        ma20: e20,
+        ma50: e50,
+        color: signal.color,
+        marker: newMarker // On stocke l'objet marker complet
+      }, candle);
+    }
+
     if (typeof syncAllChartMarkers === "function") syncAllChartMarkers();
 
-    // 6. RESET AUTOMATIQUE DES EFFETS
+    // 6. RESET AUTOMATIQUE
     setTimeout(() => {
       if (alertBadge && alertBadge.innerHTML.includes(emaGap)) {
         alertBadge.innerHTML = "";
       }
       maSniperLabel.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
-    }, 5000);
+    }, 8000); // Temps rallongé à 8s pour lire la checklist
   };
 
   function syncAllChartMarkers() {
@@ -3330,21 +3428,6 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("🧹 Journal et marqueurs MA Sniper réinitialisés.");
     }
   };
-
-  // Fonction utilitaire pour le son de nettoyage
-  function playClearSound() {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    oscillator.start();
-    oscillator.stop(audioCtx.currentTime + 0.1);
-  }
 
   function updateMAs() {
     if (!maSeries || !chart || !isWsInitialized || priceDataZZ.length === 0) return;
