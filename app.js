@@ -150,8 +150,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Variable pour éviter que le son ne se répète en boucle
   let isSniperSynergyActive = false;
   // Au début du script
-  window.currentEma20 = 0;
-  window.currentEma50 = 0;
+  let currentEma20 = 0; 
+  let currentEma50 = 0;
   // ================== x ==================  
 
   let wsReady = false;
@@ -3178,12 +3178,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const val50 = parseFloat(e50);
 
     if (isNaN(val20) || isNaN(val50) || val50 === 0) {
-      if (gapPercent) gapPercent.innerText = "G: ---%";
-      return;
+      if (gapPercent) gapPercent.innerText = "G: ---%";      
+      return;    
     }
 
     // 2. CALCUL DU GAP
-    const gap = Math.abs(((val20 - val50) / val50) * 100);
+    const gap = Math.abs(((val20 - val50) / val50) * 100);      
 
     // 3. GESTION DE LA DIRECTION ET DES COULEURS
     // Si direction n'est pas fourni, on le déduit
@@ -3195,12 +3195,12 @@ document.addEventListener("DOMContentLoaded", () => {
       gapPercent.innerHTML = `<span style="color: ${dirColor}; font-weight: 800;">${realDirection}</span> G: ${gap.toFixed(3)}%`;
     }
 
-    // 5. MISE À JOUR DE LA BARRE ET DES ÉTATS VISUELS
+    // 5. MISE À JOUR DE LA BARRE ET DES ÉTATS VISUELS  
     if (gapBar) {
       const threshold = sniperConfig?.gapThreshold || 1.0;  
       // La barre se remplit à 100% quand on atteint 2x le seuil
       const progress = Math.min((gap / (threshold * 2)) * 100, 100);
-      gapBar.style.width = progress + "%";
+      gapBar.style.width = progress + "%";  
 
       // Nettoyage des animations
       gapBar.classList.remove('critical-flash');
@@ -3220,13 +3220,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 6. MISE À JOUR DU STATUT (Point vert/OFF)
     if (statusDot && statusValue) {
-      if (window.maSniperActive) {
+      if (maSniperActive) {
         statusDot.classList.add('active');
         statusValue.innerText = "ON";
         statusValue.style.color = "#22c55e";
       } else {
-        statusDot.classList.remove('active');
-        statusValue.innerText = "OFF";
+        statusDot.classList.remove('active');    
+        statusValue.innerText = "OFF";  
         statusValue.style.color = "#64748b";
       }
     }
@@ -3252,7 +3252,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Mise à jour de la config globale
-    sniperConfig = profile;
+    sniperConfig = profile;   
 
     // Mise à jour visuelle du petit label "NoVol" pour indiquer le mode
     const warningEl = document.getElementById('no-vol-warning');
@@ -3345,7 +3345,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!maSniperActive || !maSniperLabel || isNaN(val20)) return;
 
     // 1. ANALYSE DU GAP DYNAMIQUE
-    const threshold = sniperConfig?.gapThreshold || 1.0;
+    const threshold = sniperConfig?.gapThreshold || 1.0;    
     const gapValue = Math.abs(((val20 - val50) / val50) * 100);
     const emaGap = gapValue.toFixed(3);
 
@@ -3383,7 +3383,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (isLocked || isCritical) {
       maSniperLabel.classList.add('critical-shake');
-      if (playSniperSound) playSniperSound('CRITICAL');
+      if (playSniperSound) playSniperSound('CRITICAL');  
     } else {
       if (playSniperSound) playSniperSound('SIGNAL');
       if (signal.subtype === 'CROSS') maSniperLabel.classList.add('sniper-shake');
@@ -3541,7 +3541,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }*/
   };
 
-  window.exportMAModelToCSV = function () {
+  window.exportMAModelToCSV = function () {  
     const logs = JSON.parse(localStorage.getItem('ma_sniper_logs')) || [];
     if (!logs.length) return alert("Journal vide.");
 
@@ -3664,8 +3664,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const pVal50 = parseFloat(prevE50.value);
 
             // 2. Stockage dans les variables globales
-            window.currentEma20 = val20;
-            window.currentEma50 = val50;
+            currentEma20 = val20;
+            currentEma50 = val50;
 
             // 3. MISE À JOUR VISUELLE DU GAP (Avec la nouvelle signature)
             if (typeof window.updateGapMonitor === "function") {
