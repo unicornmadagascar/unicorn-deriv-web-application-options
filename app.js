@@ -2836,73 +2836,83 @@ document.addEventListener("DOMContentLoaded", () => {
   window.restoreTradingSession = function () {
     const alertBadge = document.getElementById('ma-sniper-alert-badge');
 
-    // Affichage d'un message de chargement temporaire
+    // 1. État de chargement visuel
     if (alertBadge) {
       alertBadge.innerHTML = `<span style="font-size: 10px; color: #3b82f6; animation: pulse 1s infinite;">🔄 Restauration Session...</span>`;
     }
 
     setTimeout(() => {
-      console.log("🔄 Initialisation de la session et synchronisation des filtres...");
+      console.log("⚙️ Synchronisation du moteur Sniper...");
 
-      // 1. Restaurer les EMA (Active les moyennes mobiles)
+      // 2. RÉCUPÉRATION DES VALEURS EMA SAUVEGARDÉES (Pour éviter le null sur les flèches)
+      const saved20 = localStorage.getItem('last_ema_20');
+      const saved50 = localStorage.getItem('last_ema_50');
+      if (saved20) currentEma20 = parseFloat(saved20);  
+      if (saved50) currentEma50 = parseFloat(saved50);  
+
+      // 3. RESTAURER LES PERIODES EMA (Boutons activés)
       const savedPeriods = localStorage.getItem('active_ma_periods');
       if (savedPeriods) {
         const periods = JSON.parse(savedPeriods);
         periods.forEach(p => {
           const btn = document.querySelector(`button[onclick*="toggleMA(${p}"]`);
-          if (btn && typeof activePeriods !== 'undefined' && !activePeriods.includes(p)) {
+          // Si le bouton existe et n'est pas déjà actif dans le script
+          if (btn && activePeriods && !activePeriods.includes(p)) {
             window.toggleMA(p, btn);
           }
         });
       }
 
-      // 2. Restaurer la Sensibilité (Sélecteur Sniper)
+      // 4. RESTAURER LE PROFIL D'ACTIF ET LA SENSIBILITÉ
+      // On détecte d'abord le profil selon le symbole actuel
+      autoAdjustSniperConfig(currentSymbol);
+
       const savedSens = localStorage.getItem('ma_sniper_sensitivity');
       if (savedSens) {
         const select = document.getElementById('ma-sensitivity');
         if (select) {
           select.value = savedSens;
+          // updateSensitivity appliquera les modificateurs au profil détecté plus haut
           if (typeof window.updateSensitivity === 'function') window.updateSensitivity();
         }
       }
 
-      // 3. Restaurer l'état du Sniper
+      // 5. RÉARMEMENT DU SNIPER
       const wasSniperArmed = localStorage.getItem('ma_sniper_armed') === 'true';
-      // Le Sniper nécessite 20 et 50 pour être fonctionnel
-      const hasSynergy = window.activePeriods && window.activePeriods.includes(20) && window.activePeriods.includes(50);
+      const hasSynergy = activePeriods && activePeriods.includes(20) && activePeriods.includes(50);
 
       if (wasSniperArmed && hasSynergy) {
         maSniperActive = true;
 
-        // Mise à jour visuelle des éléments de contrôle
         const label = document.getElementById('ma-sniper-label');
         if (label) label.style.display = 'flex';
 
         const btn = document.getElementById('ma-sniper-btn');
         if (btn) btn.classList.add('armed');
 
-        // Utilisation de la fonction updateGapMonitor pour synchroniser le point de statut proprement
-        if (typeof window.updateGapMonitor === "function") {
-          // On simule un tick neutre pour réactiver le point vert (ON)
+        // Mise à jour immédiate du badge (Status ON + Direction)
+        if (typeof window.updateGapMonitor === "function" && currentEma20 && currentEma50) {
           const direction = currentEma20 > currentEma50 ? "↑" : "↓";
           window.updateGapMonitor(currentEma20, currentEma50, direction);
         }
       }
 
-      // 4. RESTAURATION DES MARQUEURS (Logique filtrée par Symbole/TF)
-      // On ne recharge pas depuis les logs mais depuis l'historique dédié
+      // 6. RESTAURATION DES MARQUEURS SUR LE GRAPHIQUE
       if (typeof window.syncAllChartMarkers === 'function') {
         window.syncAllChartMarkers();
       }
 
-      // MESSAGE DE SUCCÈS
+      // 7. FINALISATION
       if (alertBadge) {
-        alertBadge.innerHTML = `<span style="font-size: 10px; color: #10b981; font-weight: bold;">✅ Session restaurée (${window.currentSymbol} ${window.currentTimeframe})</span>`;
+        const statusColor = maSniperActive ? "#10b981" : "#64748b";
+        alertBadge.innerHTML = `<span style="font-size: 10px; color: ${statusColor}; font-weight: bold;">✅ Session ${window.currentSymbol} Prête</span>`;
         setTimeout(() => { alertBadge.innerHTML = ""; }, 3000);
-      }
+      }  
 
-      // Son de notification
-      if (typeof playSniperSound === 'function') playSniperSound('SIGNAL');
+      // Son de succès
+      if (maSniperActive && typeof playSniperSound === 'function') {      
+        playSniperSound('SIGNAL');
+      }
 
     }, 1200);
   };
@@ -3046,13 +3056,49 @@ document.addEventListener("DOMContentLoaded", () => {
  */
   // --- 1. Gestion de la Sensibilité ---
   window.updateSensitivity = function () {
-    const mode = document.getElementById('ma-sensitivity').value;
+    const selector = document.getElementById('ma-sensitivity');
+    const mode = selector.value;
+    const symbol = currentSymbol;
+
+    // 1. Récupération du profil de base pour l'actif actuel
+    let baseProfile = window.autoAdjustSniperConfig(symbol);
+
+    // 2. Application des modificateurs relatifs
     switch (mode) {
-      case 'low': sniperConfig = { slopeMin: 0.0002, ratio: 4.5 }; break;
-      case 'medium': sniperConfig = { slopeMin: 0.0001, ratio: 3.0 }; break;
-      case 'high': sniperConfig = { slopeMin: 0.00005, ratio: 2.0 }; break;
+      case 'low':
+        sniperConfig.slopeMin = baseProfile.slopeMin * 1.5;
+        sniperConfig.gapThreshold = baseProfile.gapThreshold * 1.2;
+        sniperConfig.ratio = baseProfile.ratio * 1.3;
+        break;
+      case 'medium':
+        sniperConfig.slopeMin = baseProfile.slopeMin;
+        sniperConfig.gapThreshold = baseProfile.gapThreshold;
+        sniperConfig.ratio = baseProfile.ratio;
+        break;
+      case 'high':
+        sniperConfig.slopeMin = baseProfile.slopeMin * 0.5;
+        sniperConfig.gapThreshold = baseProfile.gapThreshold * 0.8;
+        sniperConfig.ratio = baseProfile.ratio * 0.7;
+        break;
     }
-    console.log(`🎯 Sensibilité MA réglée sur : ${mode.toUpperCase()}`);
+
+    // 3. Sauvegarde
+    localStorage.setItem('ma_sniper_sensitivity', mode);
+
+    // 4. EFFET VISUEL : Flash sur le sélecteur ou le badge
+    const badge = document.getElementById('ma-sniper-btn') || selector;
+    if (badge) {
+      badge.style.transition = "all 0.2s ease";
+      badge.style.boxShadow = "0 0 15px #fcd34d"; // Halo doré
+      badge.style.borderColor = "#fcd34d";
+
+      setTimeout(() => {
+        badge.style.boxShadow = "";
+        badge.style.borderColor = "";
+      }, 600);
+    }
+
+    console.log(`🎯 [${baseProfile.label}] Sensibilité : ${mode.toUpperCase()}`);
   };
 
   // --- 2. Activation du Sniper ---
@@ -3107,7 +3153,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3. CALCULS ANALYTIQUES AVANCÉS
     const slope20 = (e20 - prevE20) / prevE20;
     const slope50 = (e50 - prevE50) / prevE50;
-    const gap = Math.abs((e20 - e50) / e50) * 100;  
+    const gap = Math.abs((e20 - e50) / e50) * 100;
     const config = sniperConfig;
 
     // --- NOUVEAUX FILTRES DE FIABILITÉ ---  
@@ -3166,7 +3212,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.updateGapMonitor = function (e20, e50, direction) {
     const gapBar = document.getElementById('volume-bar');
-    const gapPercent = document.getElementById('volume-percent');  
+    const gapPercent = document.getElementById('volume-percent');
     const statusDot = document.getElementById('ma-signal-dot');
     const statusValue = document.getElementById('ma-status-value');
 
