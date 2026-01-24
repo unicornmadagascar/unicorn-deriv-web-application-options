@@ -3032,7 +3032,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- ACTIVATION / DÉSACTIVATION ---  
-  window.toggleMASniper = function (event) {
+  /*window.toggleMASniper = function (event) {
     if (event) event.stopPropagation();
 
     // Vérification de sécurité EMA (déjà présente)
@@ -3061,7 +3061,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (dot) dot.style.backgroundColor = '#cbd5e1'; // Gris
       if (statusText) statusText.innerText = 'OFF';
     }
-  };
+  };*/
 
   /**
  * SYSTEME MA SNIPER V2.0
@@ -3080,7 +3080,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // --- 2. Activation du Sniper ---
-  window.toggleMASniper = function (event) {
+  window.toggleMASniper = function (event) {  
     if (event) event.stopPropagation();
 
     maSniperActive = !maSniperActive;
