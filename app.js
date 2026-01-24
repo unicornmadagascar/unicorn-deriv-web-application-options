@@ -135,17 +135,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let globalBandwidths = [];
   // 1. Ajoutez cette variable tout en haut de votre script avec les autres
   let allMarkers = [];
-  /**
- * SYSTEME MA SNIPER V2.0
- * Stratégies : Momentum ⚡, Crossover 🔄, Rebond 🎯
- * Filtres : Volume Relatif (RVOL), Cooldown temporel, Sensibilité ajustable
- */
-
   // --- Initialisation des Variables ---
   let maSniperActive = false;
   let maSniperMarkers = [];
   let lastProcessedCandleTime = null;
-  let sniperConfig = { slopeMin: 0.0001, ratio: 3.0 }; // Mode Medium par défaut
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   // Variable pour éviter que le son ne se répète en boucle
   let isSniperSynergyActive = false;
@@ -282,21 +275,14 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const sniperProfiles = {
-    // Indices synthétiques (Volatilité constante, micro-mouvements)
     SYNTH: { slopeMin: 0.00002, ratio: 1.3, gapThreshold: 0.3, label: "⚡ SYNTH" },
-
-    // Métaux (Or, Argent - Volatilité directionnelle forte)
     METALS: { slopeMin: 0.00015, ratio: 2.0, gapThreshold: 0.8, label: "👑 METAL" },
-
-    // Crypto (Forte volatilité, besoin de confirmation)
     CRYPTO: { slopeMin: 0.00050, ratio: 1.5, gapThreshold: 2.0, label: "₿ CRYPTO" },
-
-    // Forex (Mouvements plus lents et réguliers)
     FOREX: { slopeMin: 0.00008, ratio: 1.4, gapThreshold: 0.2, label: "💱 FOREX" },
-
-    // Par défaut
     DEFAULT: { slopeMin: 0.00010, ratio: 1.5, gapThreshold: 1.0, label: "🔍 AUTO" }
   };
+
+  let sniperConfig = sniperProfiles.DEFAULT; // Mode Medium par défaut
 
   const SYMBOL_CONVERSION_MAP = {
     // METALS
@@ -3096,99 +3082,91 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- 3. Moteur de Détection ---
   /**
  * Moteur de détection universel MA Sniper
- * S'adapte au R_50 (Synthétique), Crypto, Forex et Actions.
+ * S'adapte au R_50 (Synthétique), Crypto, Forex et Actions.  
  */
-  function checkMASniperSignal(data, maContext) {
-    // 1. SÉCURITÉ : Vérification des données entrantes
-    if (!data || data.length < 2 || !maContext || !maContext.current || !maContext.previous) {
-      return;
-    }
+  window.checkMASniperSignal = function (data, maContext) {
+    if (!maSniperActive || !data || data.length < 5 || !maContext?.current) return;
 
-    const i = data.length - 1;
-    const candle = data[i];
-
-    // FIX NAN : On force la conversion en nombre au cas où l'API renvoie des strings
+    const candle = data[data.length - 1];
     const e20 = parseFloat(maContext.current.e20);
     const e50 = parseFloat(maContext.current.e50);
     const prevE20 = parseFloat(maContext.previous.e20);
     const prevE50 = parseFloat(maContext.previous.e50);
 
-    // Sécurité supplémentaire : Si l'un des calculs échoue, on arrête
     if (isNaN(e20) || isNaN(e50)) return;
 
-    // --- MISE À JOUR VISUELLE (BADGE & GAP) ---
+    // 1. MISE À JOUR MONITOR
     if (typeof window.updateGapMonitor === "function") {
-      // Détermination de la flèche ici pour garantir sa transmission
-      const direction = e20 > e50 ? "↑" : "↓";
-      window.updateGapMonitor(e20, e50, direction);
+      window.updateGapMonitor(e20, e50, e20 > e50 ? "↑" : "↓");
     }
 
-    // --- FILTRES DE DÉCLENCHEMENT ---
-
-    // A. Cooldown : Pas deux signaux sur la même bougie
+    // 2. FILTRES DE BASE (Cooldown & Volume)
     if (candle.time === (lastProcessedCandleTime || 0)) return;
+    if (typeof isVolumeValidated === "function" && !isVolumeValidated(data)) return;
 
-    // B. Validation Volume
-    const volumeOk = typeof isVolumeValidated === "function" ? isVolumeValidated(data) : true;
-    if (!volumeOk) return;
-
-    // --- CALCULS ANALYTIQUES ---
-
+    // 3. CALCULS ANALYTIQUES AVANCÉS
     const slope20 = (e20 - prevE20) / prevE20;
     const slope50 = (e50 - prevE50) / prevE50;
+    const gap = Math.abs((e20 - e50) / e50) * 100;  
+    const config = sniperConfig;
+
+    // --- NOUVEAUX FILTRES DE FIABILITÉ ---  
+    const isHarmonious = (slope20 * slope50) > 0; // Les deux moyennes vont dans le même sens
+    const priceDist20 = Math.abs(candle.close - e20) / e20 * 100;
+    const isOverextended = priceDist20 > (config.gapThreshold * 1.5); // Filtre Anti-FOMO (Élastique)
+    const isSqueeze = gap < (config.gapThreshold * 0.25); // Détection de compression
 
     let signal = null;
 
-    // Récupération Config
-    const config = sniperConfig || { slopeMin: 0.00010, ratio: 1.5 };
-
-    // --- STRATÉGIE A : MOMENTUM ⚡ ---
-    const isStrongSlope = Math.abs(slope20) > config.slopeMin;
-    const isAccelerating = Math.abs(slope20) > Math.abs(slope50) * config.ratio;
-
-    if (isStrongSlope && isAccelerating) {
-      if (slope20 > 0 && candle.close > e20) {
-        signal = { type: 'BUY', subtype: 'MOMENTUM', color: '#2ecc71', icon: '⚡' };
-      } else if (slope20 < 0 && candle.close < e20) {
-        signal = { type: 'SELL', subtype: 'MOMENTUM', color: '#e74c3c', icon: '⚡' };
-      }
+    // --- STRATÉGIE A : SQUEEZE BREAKOUT 💎 (Nouveau - Haute Fiabilité) ---
+    // On cherche un croisement qui sort d'une zone de compression étroite
+    const wasAbove = prevE20 > prevE50;
+    const isAbove = e20 > e50;
+    if (wasAbove !== isAbove && isSqueeze) {
+      signal = { type: isAbove ? 'BUY' : 'SELL', subtype: 'SQUEEZE', color: '#fcd34d', icon: '💎' };
     }
 
-    // --- STRATÉGIE B : CROSSOVER 🔄 ---
+    // --- STRATÉGIE B : CROSSOVER 🔄 (Classique) ---
+    if (!signal && wasAbove !== isAbove) {
+      signal = { type: isAbove ? 'BUY' : 'SELL', subtype: 'CROSS', color: isAbove ? '#2ecc71' : '#e74c3c', icon: '🔄' };
+    }
+
+    // --- STRATÉGIE C : REBOND 🎯 (Avec Filtre Inertie 50) ---
     if (!signal) {
-      if (prevE20 <= prevE50 && e20 > e50) {
-        signal = { type: 'BUY', subtype: 'CROSS', color: '#2ecc71', icon: '🔄' };
-      } else if (prevE20 >= prevE50 && e20 < e50) {
-        signal = { type: 'SELL', subtype: 'CROSS', color: '#e74c3c', icon: '🔄' };
+      const minTrend = config.slopeMin / 2;
+      const isTrendBullish = slope50 > minTrend;
+      const isTrendBearish = slope50 < -minTrend;
+      const prevCandle = data[data.length - 2];
+
+      if (isAbove && isTrendBullish && candle.low <= e20 && candle.close > e20 && prevCandle.close > e20) {
+        signal = { type: 'BUY', subtype: 'REBOND', color: '#10b981', icon: '🎯' };
+      } else if (!isAbove && isTrendBearish && candle.high >= e20 && candle.close < e20 && prevCandle.close < e20) {
+        signal = { type: 'SELL', subtype: 'REBOND', color: '#f43f5e', icon: '🎯' };
       }
     }
 
-    // --- STRATÉGIE C : REBOND 🎯 ---
-    if (!signal) {
-      const prevCandle = data[i - 1];
-      if (e20 > e50 && candle.low <= e20 && candle.close > e20 && prevCandle.close > e20) {
-        signal = { type: 'BUY', subtype: 'REBOND', color: '#2ecc71', icon: '🎯' };
-      } else if (e20 < e50 && candle.high >= e20 && candle.close < e20 && prevCandle.close < e20) {
-        signal = { type: 'SELL', subtype: 'REBOND', color: '#e74c3c', icon: '🎯' };
+    // --- STRATÉGIE D : MOMENTUM ⚡ (Avec Filtre Anti-FOMO) ---
+    if (!signal && !isOverextended && isHarmonious) {
+      const isStrong = Math.abs(slope20) > config.slopeMin;
+      const isFast = Math.abs(slope20) > Math.abs(slope50) * config.ratio;
+
+      if (isStrong && isFast) {
+        if (slope20 > 0 && candle.close > e20) signal = { type: 'BUY', subtype: 'MOMENTUM', color: '#3b82f6', icon: '⚡' };
+        else if (slope20 < 0 && candle.close < e20) signal = { type: 'SELL', subtype: 'MOMENTUM', color: '#8b5cf6', icon: '⚡' };
       }
     }
 
-    // --- DÉCLENCHEMENT FINAL ---
-    // IMPORTANT : Vérifiez que maSniperActive est bien à TRUE globalement
-    if (signal && maSniperActive) {
+    // 4. ÉMISSION DU SIGNAL
+    if (signal) {
       lastProcessedCandleTime = candle.time;
-
-      if (typeof window.triggerMASniperAlert === "function") {
-        window.triggerMASniperAlert(signal, candle, e20, e50);
-      }
-
-      console.log(`🚀 [SIGNAL] ${signal.type} ${signal.subtype}`);
+      window.triggerMASniperAlert(signal, candle, e20, e50);
+      console.log(`[Elite Sniper] Signal ${signal.subtype} détecté sur ${currentSymbol}`);
     }
-  }
+  };
 
   window.updateGapMonitor = function (e20, e50, direction) {
     const gapBar = document.getElementById('volume-bar');
-    const gapPercent = document.getElementById('volume-percent');
+    const gapPercent = document.getElementById('volume-percent');  
     const statusDot = document.getElementById('ma-signal-dot');
     const statusValue = document.getElementById('ma-status-value');
 
@@ -3258,21 +3236,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const sym = symbol.toUpperCase();
-    let profile;  
+    let profile;
 
     // 1. Logique de détection par mots-clés
     if (sym.includes('R_') || sym.includes('BOO') || sym.includes('CRA') || sym.includes('1HZ') || sym.includes('JD') || sym.includes('1HZ') || sym.includes('STP')) {
       profile = sniperProfiles.SYNTH;
     } else if (sym.includes('XAU') || sym.includes('PALLADIUM') || sym.includes('PLATINUM') || sym.includes('XPT') || sym.includes('XPD') || sym.includes('XAG')) {
       profile = sniperProfiles.METALS;
-    } else if (sym.includes('BTC') || sym.includes('ETC')) {  
+    } else if (sym.includes('BTC') || sym.includes('ETC')) {
       profile = sniperProfiles.CRYPTO;
     } else {
       profile = sniperProfiles.FOREX;
-    }       
+    }
 
     // 2. Mise à jour de la config globale (Utilisation de window pour la portée)
-    sniperConfig = { ...profile };  
+    sniperConfig = { ...profile };
 
     // 3. Mise à jour visuelle du badge
     const warningEl = document.getElementById('no-vol-warning');
@@ -3283,7 +3261,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "👑 METAL": { bg: "#fbbf24", text: "#000000" },
         "₿ CRYPTO": { bg: "#f59e0b", text: "#ffffff" },
         "💱 FOREX": { bg: "#3b82f6", text: "#ffffff" },
-        "🔍 AUTO": { bg: "#64748b", text: "#ffffff" }  
+        "🔍 AUTO": { bg: "#64748b", text: "#ffffff" }
       };
 
       const theme = profileColors[profile.label] || profileColors["🔍 AUTO"];
