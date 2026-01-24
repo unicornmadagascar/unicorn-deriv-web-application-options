@@ -3371,9 +3371,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div style="font-size:11px; line-height: 1.4;">
                         ⬜ ${isLocked ? 'EXTRÊME : ATTENDRE' : 'VOLATILITÉ HAUTE'}<br>
                         ⬜ PRIX CONFIRMÉ ?<br>
-                        ⬜ RR RATIO VALIDE ?
+                        ⬜ RR RATIO VALIDE ?  
                     </div>
-                </div>` : ''}  
+                </div>` : ''}    
         `;
     }
 
