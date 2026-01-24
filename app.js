@@ -2880,7 +2880,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const hasSynergy = activePeriods.includes(20) && activePeriods.includes(50);
 
       if (wasSniperArmed && hasSynergy) {
-        window.maSniperActive = true;
+        maSniperActive = true;
         const label = document.getElementById('ma-sniper-label');
         if (label) label.style.display = 'flex';
 
@@ -2899,9 +2899,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (savedLogs) {
         const logs = JSON.parse(savedLogs);
         // Extraction cruciale : on ne prend que la propriété .marker de chaque log
-        window.maSniperMarkers = logs.map(l => l.marker).filter(m => m !== undefined);
+        maSniperMarkers = logs.map(l => l.marker).filter(m => m !== undefined);
 
-        if (typeof syncAllChartMarkers === 'function') {
+        if (typeof window.syncAllChartMarkers === 'function') {
           window.syncAllChartMarkers();
         }
       }
@@ -2925,20 +2925,20 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.clear();
 
       // 2. Désactiver les états de trading
-      window.maSniperActive = false;
-      window.isSniperSynergyActive = false;
-      window.lastProcessedCandleTime = null; // IMPORTANT : Permet de relancer des signaux immédiatement après reset
+      maSniperActive = false;
+      isSniperSynergyActive = false;
+      lastProcessedCandleTime = null; // IMPORTANT : Permet de relancer des signaux immédiatement après reset
 
       // 3. Vider les marqueurs et rafraîchir le graphique
-      window.allMarkers = [];
-      window.maSniperMarkers = [];
-      if (typeof syncAllChartMarkers === 'function') {
+      allMarkers = [];
+      maSniperMarkers = [];
+      if (typeof window.syncAllChartMarkers === 'function') {
         window.syncAllChartMarkers();
       }
 
       // 4. Masquer et nettoyer les séries de données (EMA)
-      if (window.maSeries) {
-        Object.values(window.maSeries).forEach(series => {
+      if (maSeries) {
+        Object.values(maSeries).forEach(series => {
           series.setData([]); // Vide les données de la ligne
           series.applyOptions({ visible: false }); // Cache la ligne
         });
@@ -2968,7 +2968,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (volPercent) volPercent.innerText = "G: 0.000%";
 
       // 8. Réinitialiser les variables d'état locales
-      window.activePeriods = [];
+      activePeriods = [];
 
       // 9. Rafraîchir la table des logs visuelle
       if (typeof window.renderLogTable === 'function') {
@@ -2999,37 +2999,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   };
-
-  function makeDraggable(el, handle) {
-    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    handle.onmousedown = dragMouseDown;
-
-    function dragMouseDown(e) {
-      e = e || window.event;
-      e.preventDefault();
-      pos3 = e.clientX;
-      pos4 = e.clientY;
-      document.onmouseup = closeDragElement;
-      document.onmousemove = elementDrag;
-    }
-
-    function elementDrag(e) {
-      e = e || window.event;
-      e.preventDefault();
-      pos1 = pos3 - e.clientX;
-      pos2 = pos4 - e.clientY;
-      pos3 = e.clientX;
-      pos4 = e.clientY;
-      el.style.top = (el.offsetTop - pos2) + "px";
-      el.style.left = (el.offsetLeft - pos1) + "px";
-      el.style.right = 'auto'; // Désactive l'ancrage à droite pendant le drag
-    }
-
-    function closeDragElement() {
-      document.onmouseup = null;
-      document.onmousemove = null;
-    }
-  }
 
   // --- ACTIVATION / DÉSACTIVATION ---  
   /*window.toggleMASniper = function (event) {
@@ -3136,7 +3105,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- FILTRES DE DÉCLENCHEMENT ---
 
     // A. Cooldown : Pas deux signaux sur la même bougie
-    if (candle.time === (window.lastProcessedCandleTime || 0)) return;
+    if (candle.time === (lastProcessedCandleTime || 0)) return;
 
     // B. Validation Volume
     const volumeOk = typeof isVolumeValidated === "function" ? isVolumeValidated(data) : true;
@@ -3150,7 +3119,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let signal = null;
 
     // Récupération Config
-    const config = window.sniperConfig || { slopeMin: 0.00010, ratio: 1.5 };
+    const config = sniperConfig || { slopeMin: 0.00010, ratio: 1.5 };
 
     // --- STRATÉGIE A : MOMENTUM ⚡ ---
     const isStrongSlope = Math.abs(slope20) > config.slopeMin;
@@ -3185,8 +3154,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- DÉCLENCHEMENT FINAL ---
     // IMPORTANT : Vérifiez que maSniperActive est bien à TRUE globalement
-    if (signal && window.maSniperActive) {
-      window.lastProcessedCandleTime = candle.time;
+    if (signal && maSniperActive) {
+      lastProcessedCandleTime = candle.time;
 
       if (typeof window.triggerMASniperAlert === "function") {
         window.triggerMASniperAlert(signal, candle, e20, e50);
@@ -3226,7 +3195,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5. MISE À JOUR DE LA BARRE ET DES ÉTATS VISUELS
     if (gapBar) {
-      const threshold = window.sniperConfig?.gapThreshold || 1.0;
+      const threshold = sniperConfig?.gapThreshold || 1.0;
       // La barre se remplit à 100% quand on atteint 2x le seuil
       const progress = Math.min((gap / (threshold * 2)) * 100, 100);
       gapBar.style.width = progress + "%";
@@ -3281,7 +3250,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Mise à jour de la config globale
-    window.sniperConfig = profile;
+    sniperConfig = profile;
 
     // Mise à jour visuelle du petit label "NoVol" pour indiquer le mode
     const warningEl = document.getElementById('no-vol-warning');
@@ -3371,10 +3340,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const val20 = parseFloat(e20);
     const val50 = parseFloat(e50);
 
-    if (!window.maSniperActive || !maSniperLabel || isNaN(val20)) return;
+    if (!maSniperActive || !maSniperLabel || isNaN(val20)) return;
 
     // 1. ANALYSE DU GAP DYNAMIQUE
-    const threshold = window.sniperConfig?.gapThreshold || 1.0;
+    const threshold = sniperConfig?.gapThreshold || 1.0;
     const gapValue = Math.abs(((val20 - val50) / val50) * 100);
     const emaGap = gapValue.toFixed(3);
 
@@ -3392,10 +3361,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span style="font-weight:bold">${icon}</span>
                     <span style="font-size:11px; display:block">Gap: ${emaGap}% | Prix: ${candle.close.toFixed(2)}</span>
                 </div>
-                <div class="msg-close-btn" onclick="this.parentElement.parentElement.innerHTML=''" style="cursor:pointer">✕</div>
+                <div class="msg-close-btn" onclick="closeSniperAlert()" style="cursor:pointer">✕</div>
             </div>
             ${(isCritical || isLocked) ? `
-                <div class="sniper-checklist" style="position: absolute; top: 95px; right: 0; width: 190px; background: white; border: 1px solid #ccc; padding: 10px; z-index: 1000; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                <div class="sniper-checklist" id="current-sniper-checklist" style="position: absolute; top: 95px; right: 0; width: 190px; background: white; border: 1px solid #ccc; padding: 10px; z-index: 1000; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
                     <div style="font-size:10px; font-weight:900; color: #ef4444; margin-bottom:5px;">⚠️ VÉRIFICATION REQUISE</div>
                     <div style="font-size:11px; line-height: 1.4;">
                         ⬜ ${isLocked ? 'EXTRÊME : ATTENDRE' : 'VOLATILITÉ HAUTE'}<br>
@@ -3412,9 +3381,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (isLocked || isCritical) {
       maSniperLabel.classList.add('critical-shake');
-      if (window.playSniperSound) playSniperSound('CRITICAL');
+      if (playSniperSound) playSniperSound('CRITICAL');
     } else {
-      if (window.playSniperSound) playSniperSound('SIGNAL');
+      if (playSniperSound) playSniperSound('SIGNAL');
       if (signal.subtype === 'CROSS') maSniperLabel.classList.add('sniper-shake');
     }
     maSniperLabel.classList.add(signal.type === 'BUY' ? 'badge-flash-buy' : 'badge-flash-sell');
@@ -3430,8 +3399,8 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // Initialisation du tableau si nécessaire et ajout
-    if (!window.maSniperMarkers) window.maSniperMarkers = [];
-    window.maSniperMarkers.push(newMarker);
+    if (!maSniperMarkers) maSniperMarkers = [];
+    maSniperMarkers.push(newMarker);
 
     // 5. SAUVEGARDE ET SYNCHRONISATION (Crucial pour l'affichage)
     if (typeof window.logMASignalToStorage === "function") {
