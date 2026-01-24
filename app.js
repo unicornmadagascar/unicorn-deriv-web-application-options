@@ -3025,10 +3025,12 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.classList.add('armed');    
       if (dot) dot.style.backgroundColor = '#2ecc71'; // Vert
       if (statusText) statusText.innerText = 'ON';
+      maSniperActive = true;
     } else {
       btn.classList.remove('armed');
       if (dot) dot.style.backgroundColor = '#cbd5e1'; // Gris
       if (statusText) statusText.innerText = 'OFF';  
+      maSniperActive = false;
     }  
   };  
 
@@ -3195,7 +3197,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5. MISE À JOUR DE LA BARRE ET DES ÉTATS VISUELS
     if (gapBar) {
-      const threshold = sniperConfig?.gapThreshold || 1.0;
+      const threshold = sniperConfig?.gapThreshold || 1.0;  
       // La barre se remplit à 100% quand on atteint 2x le seuil
       const progress = Math.min((gap / (threshold * 2)) * 100, 100);
       gapBar.style.width = progress + "%";
