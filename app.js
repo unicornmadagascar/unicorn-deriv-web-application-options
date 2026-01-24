@@ -2911,11 +2911,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Son de succès
       if (maSniperActive && typeof playSniperSound === 'function') {       
-        playSniperSound('SIGNAL');   
+        playSniperSound('SIGNAL');    
       }
   
     }, 1200);
-  };
+  };  
 
   window.masterReset = function () {
     if (confirm("🚨 Voulez-vous réinitialiser TOUS les paramètres (EMA, Sniper, Bollinger, Logs) ?")) {
