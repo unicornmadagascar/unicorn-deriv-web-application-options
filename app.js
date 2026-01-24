@@ -3277,7 +3277,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Sécurité : Si pas assez de données, on autorise le signal par défaut
     if (!data || data.length <= period) return true;
 
-    const currentCandle = data[data.length - 1];
+    const currentCandle = data[data.length - 1];   
 
     // 1. DÉTECTION AUTOMATIQUE DU VOLUME
     // On cherche les clés classiques. Note : On exclut 'zb' (timestamp)
