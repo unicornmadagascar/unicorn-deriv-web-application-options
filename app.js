@@ -3029,7 +3029,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.classList.remove('armed');
       if (dot) dot.style.backgroundColor = '#cbd5e1'; // Gris
       if (statusText) statusText.innerText = 'OFF';  
-    }
+    }  
   };  
 
   /**  
