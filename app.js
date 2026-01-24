@@ -3452,7 +3452,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (alertBadge && alertBadge.innerHTML.includes(emaGap)) alertBadge.innerHTML = "";
       maSniperLabel.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
     }, 10000);
-  };
+  };  
    
   window.closeSniperAlert = function () {
     const alert = document.getElementById('current-sniper-alert');
