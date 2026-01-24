@@ -3669,8 +3669,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (typeof window.updateGapMonitor === "function") {
               // On déduit la direction ici pour l'envoyer au monitor  
               const direction = val20 > val50 ? "↑" : "↓";
-              window.updateGapMonitor(val20, val50, direction);
-            }
+              window.updateGapMonitor(val20, val50, direction);  
+            }  
 
             // 4. Préparation du contexte pour le moteur de détection
             const maContext = {
