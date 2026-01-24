@@ -3049,7 +3049,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // --- 2. Activation du Sniper ---
-  window.toggleMASniper = function (event) {  
+  window.toggleMASniper = function (event) {
     if (event) event.stopPropagation();
 
     maSniperActive = !maSniperActive;
@@ -3453,12 +3453,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 4. Application sur la série active
     // Vérifiez bien que 'currentSeries' est la variable globale de votre graphique
-    if (currentSeries) {  
-      currentSeries.setMarkers(combined);      
-    } else {  
+    if (currentSeries) {
+      currentSeries.setMarkers(combined);
+    } else {
       console.warn("⚠️ [Markers] Aucune série active (currentSeries) trouvée pour afficher les marqueurs.");
     }
-  };    
+  };
 
   // --- 5. Fonctions Utilitaires (Audio, Logs, Export) ---
   function playSniperSound(type) {
@@ -3534,9 +3534,9 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem('ma_sniper_logs', JSON.stringify(logs));
 
     // 5. Mise à jour de la table visuelle (si elle existe dans votre interface)
-    if (typeof window.renderLogTable === "function") {
+    /*if (typeof window.renderLogTable === "function") {
       window.renderLogTable();
-    }
+    }*/
   };
 
   window.exportMAModelToCSV = function () {
@@ -3577,8 +3577,8 @@ document.addEventListener("DOMContentLoaded", () => {
       maSniperMarkers = [];
 
       // 3. Synchronisation graphique (Efface les flèches du chart)
-      if (typeof syncAllChartMarkers === "function") {
-        syncAllChartMarkers();
+      if (typeof window.syncAllChartMarkers === "function") {
+        window.syncAllChartMarkers();
       }
 
       // 4. Nettoyage de l'interface utilisateur
@@ -3641,7 +3641,6 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- NOUVEAU : BLOC MA SNIPER STRATEGY ---
       // On vérifie si le mode est ON et si on a assez de bougies pour l'EMA 50
       if (maSniperActive && priceDataZZ.length >= 50) {
-
         const symbol = currentSymbol;
         autoAdjustSniperConfig(symbol);
 
@@ -3656,19 +3655,27 @@ document.addEventListener("DOMContentLoaded", () => {
             const prevE20 = ema20Data[ema20Data.length - 2];
             const prevE50 = ema50Data[ema50Data.length - 2];
 
-            // --- ICI ON REMPLIT LES VALEURS "INCONNUES" ---
-            window.currentEma20 = lastE20;
-            window.currentEma50 = lastE50;
+            // 1. Extraction des valeurs brutes (pour calcul et affichage)
+            const val20 = parseFloat(lastE20.value);
+            const val50 = parseFloat(lastE50.value);
+            const pVal20 = parseFloat(prevE20.value);
+            const pVal50 = parseFloat(prevE50.value);
 
-            // --- MISE À JOUR VISUELLE DU GAP DANS LE BADGE ---
-            // On appelle la fonction de monitoring avec les valeurs actuelles
-            if (typeof updateGapMonitor === "function") {
-              window.updateGapMonitor(lastE20.value, lastE50.value);
+            // 2. Stockage dans les variables globales
+            window.currentEma20 = val20;
+            window.currentEma50 = val50;
+
+            // 3. MISE À JOUR VISUELLE DU GAP (Avec la nouvelle signature)
+            if (typeof window.updateGapMonitor === "function") {
+              // On déduit la direction ici pour l'envoyer au monitor
+              const direction = val20 > val50 ? "↑" : "↓";
+              window.updateGapMonitor(val20, val50, direction);
             }
 
+            // 4. Préparation du contexte pour le moteur de détection
             const maContext = {
-              current: { e20: lastE20.value, e50: lastE50.value },
-              previous: { e20: prevE20.value, e50: prevE50.value }
+              current: { e20: val20, e50: val50 },
+              previous: { e20: pVal20, e50: pVal50 }
             };
 
             // Lancement du moteur de détection EMA
@@ -3678,11 +3685,13 @@ document.addEventListener("DOMContentLoaded", () => {
           console.error("Erreur MA Sniper Logic:", e);
         }
       } else {
-        // OPTIONNEL : Si le mode Sniper est OFF, on peut remettre le badge à zéro ou le cacher
-        const gapPercent = document.getElementById('volume-percent');
-        if (gapPercent && !maSniperActive) gapPercent.innerText = "OFF";
+        // Si le mode Sniper est OFF ou données insuffisantes
+        if (typeof window.updateGapMonitor === "function") {
+          // On appelle avec des valeurs nulles pour mettre le badge en état "OFF" proprement
+          window.updateGapMonitor(null, null, null);
+        }
       }
-
+      
       // --- BLOC BOLLINGER + SNIPER (Version Finale Optimisée) ---
       if (bandsEnabled) {
         try {
