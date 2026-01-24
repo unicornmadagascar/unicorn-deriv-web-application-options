@@ -1019,9 +1019,15 @@ document.addEventListener("DOMContentLoaded", () => {
     cache = [];
     priceDataZZ = [];
     isWsInitialized = false;
+    currentSymbol = symbol;
+    currentInterval = interval;
 
     // --- INITIALISATION DU GRAPHIQUE ---
     initChart(chartType);
+    // --- UPDATING   
+    if (typeof window.syncAllChartMarkers === "function") {
+        window.syncAllChartMarkers();
+    }
 
     ws = new WebSocket(WS_URL);
 
