@@ -3272,7 +3272,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 2. Mise à jour de la config globale (Utilisation de window pour la portée)
-    sniperConfig = { ...profile };
+    sniperConfig = { ...profile };  
 
     // 3. Mise à jour visuelle du badge
     const warningEl = document.getElementById('no-vol-warning');
