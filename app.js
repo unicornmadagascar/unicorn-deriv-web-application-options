@@ -2911,7 +2911,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Son de succès
       if (maSniperActive && typeof playSniperSound === 'function') {      
-        playSniperSound('SIGNAL');
+        playSniperSound('SIGNAL');   
       }
 
     }, 1200);
