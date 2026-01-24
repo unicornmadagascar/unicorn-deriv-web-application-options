@@ -3032,7 +3032,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };  
 
-  /**
+  /**  
  * SYSTEME MA SNIPER V2.0
  * Stratégies : Momentum ⚡, Crossover 🔄, Rebond 🎯
  * Filtres : Volume Relatif (RVOL), Cooldown temporel, Sensibilité ajustable
