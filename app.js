@@ -2913,8 +2913,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (maSniperActive && typeof playSniperSound === 'function') {       
         playSniperSound('SIGNAL');    
       }
-  
-    }, 1200);
+    
+    }, 1200);  
   };  
 
   window.masterReset = function () {
