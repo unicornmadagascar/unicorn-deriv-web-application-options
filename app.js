@@ -3667,7 +3667,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // 3. MISE À JOUR VISUELLE DU GAP (Avec la nouvelle signature)
             if (typeof window.updateGapMonitor === "function") {
-              // On déduit la direction ici pour l'envoyer au monitor
+              // On déduit la direction ici pour l'envoyer au monitor  
               const direction = val20 > val50 ? "↑" : "↓";
               window.updateGapMonitor(val20, val50, direction);
             }
@@ -3691,7 +3691,7 @@ document.addEventListener("DOMContentLoaded", () => {
           window.updateGapMonitor(null, null, null);
         }
       }
-      
+
       // --- BLOC BOLLINGER + SNIPER (Version Finale Optimisée) ---
       if (bandsEnabled) {
         try {
