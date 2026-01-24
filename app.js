@@ -3204,7 +3204,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Nettoyage des animations
       gapBar.classList.remove('critical-flash');
-
+  
       if (gap >= threshold * 1.5) {
         // ÉTAT CRITIQUE (Surchauffe)
         gapBar.style.background = '#ef4444';
