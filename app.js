@@ -3269,7 +3269,7 @@ document.addEventListener("DOMContentLoaded", () => {
       profile = sniperProfiles.CRYPTO;
     } else {
       profile = sniperProfiles.FOREX;
-    }     
+    }       
 
     // 2. Mise à jour de la config globale (Utilisation de window pour la portée)
     sniperConfig = { ...profile };  
