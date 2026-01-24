@@ -2971,9 +2971,9 @@ document.addEventListener("DOMContentLoaded", () => {
       activePeriods = [];
 
       // 9. Rafraîchir la table des logs visuelle
-      if (typeof window.renderLogTable === 'function') {
+      /*if (typeof window.renderLogTable === 'function') {
         window.renderLogTable();
-      }
+      }*/
 
       // Son de confirmation et feedback
       if (typeof playSniperSound === 'function') {
@@ -3001,7 +3001,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // --- ACTIVATION / DÉSACTIVATION ---  
-  /*window.toggleMASniper = function (event) {
+  window.toggleMASniper = function (event) {
     if (event) event.stopPropagation();
 
     // Vérification de sécurité EMA (déjà présente)
@@ -3030,7 +3030,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (dot) dot.style.backgroundColor = '#cbd5e1'; // Gris
       if (statusText) statusText.innerText = 'OFF';
     }
-  };*/
+  };  
 
   /**
  * SYSTEME MA SNIPER V2.0
@@ -3049,7 +3049,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // --- 2. Activation du Sniper ---
-  window.toggleMASniper = function (event) {
+  /*window.toggleMASniper = function (event) {
     if (event) event.stopPropagation();
 
     maSniperActive = !maSniperActive;
@@ -3070,7 +3070,7 @@ document.addEventListener("DOMContentLoaded", () => {
       dot.style.background = "#cbd5e1";
       document.getElementById('ma-sniper-alert-badge').innerHTML = "";
     }
-  };
+  };*/
 
   // --- 3. Moteur de Détection ---
   /**
