@@ -3453,7 +3453,7 @@ document.addEventListener("DOMContentLoaded", () => {
       maSniperLabel.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
     }, 10000);
   };
-
+   
   window.closeSniperAlert = function () {
     const alert = document.getElementById('current-sniper-alert');
     const checklist = document.getElementById('current-sniper-checklist');
@@ -3467,7 +3467,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (alert) alert.remove();
       if (checklist) checklist.remove();
 
-      // Arrêt des secousses visuelles sur le badge blanc
+      // Arrêt des secousses visuelles sur le badge blanc      
       if (maSniperLabel) {
         maSniperLabel.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
       }
@@ -3485,7 +3485,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On ne garde que les marqueurs du symbole et du timeframe ACTUELS
     const currentSym = currentSymbol;
     const currentTF = currentInterval;
-
+  
     const filteredHistory = history.filter(m =>
       m.symbol === currentSym &&
       m.timeframe === currentTF
@@ -3504,9 +3504,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5. APPLICATION SUR LE GRAPHIQUE
     if (currentSeries) {
-      currentSeries.setMarkers(combined);
+      currentSeries.setMarkers(combined);  
       // Mise à jour de la variable globale pour les autres fonctions
-      maSniperMarkers = filteredHistory;
+      maSniperMarkers = filteredHistory;  
     } else {
       console.warn("⚠️ [Markers] currentSeries non trouvée. Impossible d'afficher les flèches.");
     }
@@ -3603,7 +3603,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }*/
   };
 
-  window.exportMAModelToCSV = function () {
+  window.exportMAModelToCSV = function () {  
     const logs = JSON.parse(localStorage.getItem('ma_sniper_logs')) || [];
     if (!logs.length) return alert("Journal vide.");
 
