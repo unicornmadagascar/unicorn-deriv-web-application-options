@@ -2847,8 +2847,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // 2. RÉCUPÉRATION DES VALEURS EMA SAUVEGARDÉES (Pour éviter le null sur les flèches)
       const saved20 = localStorage.getItem('last_ema_20');
       const saved50 = localStorage.getItem('last_ema_50');
-      if (saved20) currentEma20 = parseFloat(saved20);  
-      if (saved50) currentEma50 = parseFloat(saved50);  
+      if (saved20) currentEma20 = parseFloat(saved20);
+      if (saved50) currentEma50 = parseFloat(saved50);
 
       // 3. RESTAURER LES PERIODES EMA (Boutons activés)
       const savedPeriods = localStorage.getItem('active_ma_periods');
@@ -2907,15 +2907,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const statusColor = maSniperActive ? "#10b981" : "#64748b";
         alertBadge.innerHTML = `<span style="font-size: 10px; color: ${statusColor}; font-weight: bold;">✅ Session ${window.currentSymbol} Prête</span>`;
         setTimeout(() => { alertBadge.innerHTML = ""; }, 3000);
-      }  
+      }
 
       // Son de succès
-      if (maSniperActive && typeof playSniperSound === 'function') {       
-        playSniperSound('SIGNAL');    
+      if (maSniperActive && typeof playSniperSound === 'function') {
+        playSniperSound('SIGNAL');
       }
-    
-    }, 1200);  
-  };  
+
+    }, 1200);
+  };
 
   window.masterReset = function () {
     if (confirm("🚨 Voulez-vous réinitialiser TOUS les paramètres (EMA, Sniper, Bollinger, Logs) ?")) {
@@ -3759,52 +3759,55 @@ document.addEventListener("DOMContentLoaded", () => {
       // On vérifie si le mode est ON et si on a assez de bougies pour l'EMA 50
       if (maSniperActive && priceDataZZ.length >= 50) {
         const symbol = currentSymbol;
+
+        // 1. Ajustement automatique du profil (Crypto, Synth, etc.)
         autoAdjustSniperConfig(symbol);
 
         try {
           const ema20Data = calculateEMA(priceDataZZ, 20);
           const ema50Data = calculateEMA(priceDataZZ, 50);
 
-          // Sécurité : Vérifier que calculateEMA a retourné assez de points
           if (ema20Data.length >= 2 && ema50Data.length >= 2) {
             const lastE20 = ema20Data[ema20Data.length - 1];
             const lastE50 = ema50Data[ema50Data.length - 1];
             const prevE20 = ema20Data[ema20Data.length - 2];
             const prevE50 = ema50Data[ema50Data.length - 2];
 
-            // 1. Extraction des valeurs brutes (pour calcul et affichage)
+            // Extraction et conversion
             const val20 = parseFloat(lastE20.value);
             const val50 = parseFloat(lastE50.value);
             const pVal20 = parseFloat(prevE20.value);
             const pVal50 = parseFloat(prevE50.value);
 
-            // 2. Stockage dans les variables globales
+            // 2. STOCKAGE ET PERSISTANCE (Crucial pour la restauration des flèches)
             currentEma20 = val20;
             currentEma50 = val50;
+            localStorage.setItem('last_ema_20', val20);
+            localStorage.setItem('last_ema_50', val50);
 
-            // 3. MISE À JOUR VISUELLE DU GAP (Avec la nouvelle signature)
+            // 3. MISE À JOUR VISUELLE DU MONITOR
             if (typeof window.updateGapMonitor === "function") {
-              // On déduit la direction ici pour l'envoyer au monitor  
               const direction = val20 > val50 ? "↑" : "↓";
               window.updateGapMonitor(val20, val50, direction);
             }
 
-            // 4. Préparation du contexte pour le moteur de détection
+            // 4. PRÉPARATION DU CONTEXTE (Avec les 4 nouvelles stratégies)
             const maContext = {
               current: { e20: val20, e50: val50 },
               previous: { e20: pVal20, e50: pVal50 }
             };
 
-            // Lancement du moteur de détection EMA
-            checkMASniperSignal(priceDataZZ, maContext);
+            // Lancement du moteur de détection Elite (Cross, Rebond, Momentum, Squeeze)
+            if (typeof window.checkMASniperSignal === "function") {
+              window.checkMASniperSignal(priceDataZZ, maContext);
+            }
           }
         } catch (e) {
           console.error("Erreur MA Sniper Logic:", e);
         }
       } else {
-        // Si le mode Sniper est OFF ou données insuffisantes
+        // Mode OFF ou données insuffisantes
         if (typeof window.updateGapMonitor === "function") {
-          // On appelle avec des valeurs nulles pour mettre le badge en état "OFF" proprement
           window.updateGapMonitor(null, null, null);
         }
       }
