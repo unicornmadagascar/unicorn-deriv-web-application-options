@@ -3022,7 +3022,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusText = document.getElementById('ma-status-value');
 
     if (maSniperActive) {
-      btn.classList.add('armed');
+      btn.classList.add('armed');    
       if (dot) dot.style.backgroundColor = '#2ecc71'; // Vert
       if (statusText) statusText.innerText = 'ON';
     } else {
