@@ -3258,18 +3258,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const sym = symbol.toUpperCase();
-    let profile;
+    let profile;  
 
     // 1. Logique de détection par mots-clés
     if (sym.includes('R_') || sym.includes('BOO') || sym.includes('CRA') || sym.includes('1HZ') || sym.includes('JD') || sym.includes('1HZ') || sym.includes('STP')) {
       profile = sniperProfiles.SYNTH;
     } else if (sym.includes('XAU') || sym.includes('PALLADIUM') || sym.includes('PLATINUM') || sym.includes('XPT') || sym.includes('XPD') || sym.includes('XAG')) {
       profile = sniperProfiles.METALS;
-    } else if (sym.includes('BTC') || sym.includes('ETC')) {
+    } else if (sym.includes('BTC') || sym.includes('ETC')) {  
       profile = sniperProfiles.CRYPTO;
     } else {
       profile = sniperProfiles.FOREX;
-    }
+    }     
 
     // 2. Mise à jour de la config globale (Utilisation de window pour la portée)
     sniperConfig = { ...profile };  
