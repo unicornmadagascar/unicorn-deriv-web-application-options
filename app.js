@@ -3283,7 +3283,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "👑 METAL": { bg: "#fbbf24", text: "#000000" },
         "₿ CRYPTO": { bg: "#f59e0b", text: "#ffffff" },
         "💱 FOREX": { bg: "#3b82f6", text: "#ffffff" },
-        "🔍 AUTO": { bg: "#64748b", text: "#ffffff" }
+        "🔍 AUTO": { bg: "#64748b", text: "#ffffff" }  
       };
 
       const theme = profileColors[profile.label] || profileColors["🔍 AUTO"];
