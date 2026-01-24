@@ -3373,7 +3373,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         ⬜ PRIX CONFIRMÉ ?<br>
                         ⬜ RR RATIO VALIDE ?  
                     </div>
-                </div>` : ''}    
+                </div>` : ''}      
         `;
     }
 
