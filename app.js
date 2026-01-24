@@ -1026,7 +1026,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initChart(chartType);
     // --- UPDATING   
     if (typeof window.syncAllChartMarkers === "function") {
-        window.syncAllChartMarkers();
+      window.syncAllChartMarkers();
     }
 
     ws = new WebSocket(WS_URL);
@@ -3252,34 +3252,59 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   function autoAdjustSniperConfig(symbol) {
-    if (!symbol) return sniperProfiles.DEFAULT;
+    if (!symbol) {
+      sniperConfig = sniperProfiles.DEFAULT;
+      return sniperProfiles.DEFAULT;
+    }
 
     const sym = symbol.toUpperCase();
     let profile;
 
-    if (sym.includes('R_') || sym.includes('100') || sym.includes('VOLATILITY')) {
+    // 1. Logique de détection par mots-clés
+    if (sym.includes('R_') || sym.includes('BOO') || sym.includes('CRA') || sym.includes('1HZ') || sym.includes('JD') || sym.includes('1HZ') || sym.includes('STP')) {
       profile = sniperProfiles.SYNTH;
-    } else if (sym.includes('XAU') || sym.includes('GOLD') || sym.includes('XAG')) {
+    } else if (sym.includes('XAU') || sym.includes('PALLADIUM') || sym.includes('PLATINUM') || sym.includes('XPT') || sym.includes('XPD') || sym.includes('XAG')) {
       profile = sniperProfiles.METALS;
-    } else if (sym.includes('BTC') || sym.includes('ETH') || sym.includes('USD')) {
-      // Distinction Crypto vs Forex
-      const cryptoKeywords = ['BTC', 'ETH', 'SOL', 'LTC', 'BNB'];
-      const isCrypto = cryptoKeywords.some(k => sym.includes(k));
-      profile = isCrypto ? sniperProfiles.CRYPTO : sniperProfiles.FOREX;
+    } else if (sym.includes('BTC') || sym.includes('ETC')) {
+      profile = sniperProfiles.CRYPTO;
     } else {
-      profile = sniperProfiles.DEFAULT;
+      profile = sniperProfiles.FOREX;
     }
 
-    // Mise à jour de la config globale
-    sniperConfig = profile;
+    // 2. Mise à jour de la config globale (Utilisation de window pour la portée)
+    sniperConfig = { ...profile };
 
-    // Mise à jour visuelle du petit label "NoVol" pour indiquer le mode
+    // 3. Mise à jour visuelle du badge
     const warningEl = document.getElementById('no-vol-warning');
     if (warningEl) {
+      // Définition des couleurs selon le profil
+      const profileColors = {
+        "⚡ SYNTH": { bg: "#8b5cf6", text: "#ffffff" },
+        "👑 METAL": { bg: "#fbbf24", text: "#000000" },
+        "₿ CRYPTO": { bg: "#f59e0b", text: "#ffffff" },
+        "💱 FOREX": { bg: "#3b82f6", text: "#ffffff" },
+        "🔍 AUTO": { bg: "#64748b", text: "#ffffff" }
+      };
+
+      const theme = profileColors[profile.label] || profileColors["🔍 AUTO"];
+
       warningEl.innerText = profile.label;
-      warningEl.style.display = 'inline';
+      warningEl.style.display = 'inline-block';
+      warningEl.style.backgroundColor = theme.bg;
+      warningEl.style.color = theme.text;
+      warningEl.style.padding = "2px 6px";
+      warningEl.style.borderRadius = "4px";
+      warningEl.style.fontWeight = "bold";
+      warningEl.style.fontSize = "10px";
+      warningEl.style.transition = "all 0.3s ease";
+
+      // Ajout d'un petit effet de flash/pulsation lors du changement
+      warningEl.classList.remove('profile-switch');
+      void warningEl.offsetWidth; // Force le reflow pour relancer l'animation
+      warningEl.classList.add('profile-switch');
     }
 
+    console.log(`📡 Profil activé : ${profile.label} pour ${sym}`);
     return profile;
   }
 
@@ -3288,67 +3313,53 @@ document.addEventListener("DOMContentLoaded", () => {
  * S'adapte aux indices synthétiques (R_50), au Forex, aux Cryptos et Actions.
  */
   function isVolumeValidated(data) {
-    const period = 20;
     const warningEl = document.getElementById('no-vol-warning');
     const volBar = document.getElementById('volume-bar');
     const volPercent = document.getElementById('volume-percent');
 
-    // Sécurité : Si pas assez de données, on autorise le signal par défaut
-    if (!data || data.length <= period) return true;
+    if (!data || data.length < 20) return true;
 
+    // On récupère la config déjà mise à jour par autoAdjustSniperConfig
+    const config = sniperConfig;
     const currentCandle = data[data.length - 1];
 
-    // 1. DÉTECTION AUTOMATIQUE DU VOLUME
-    // On cherche les clés classiques. Note : On exclut 'zb' (timestamp)
-    const volKey = ['volume', 'v', 'tick_volume', 'vol'].find(key =>
-      key in currentCandle && typeof currentCandle[key] === 'number' && currentCandle[key] > 0
-    );
+    // Mise à jour visuelle du badge avec le label du profil
+    if (warningEl) {
+      warningEl.innerText = config.currentProfileLabel || "🔍 AUTO";
+      // Couleur dynamique simple
+      const label = config.currentProfileLabel;
+      warningEl.style.color = label.includes("₿") ? "#f59e0b" : (label.includes("⚡") ? "#8b5cf6" : "#3b82f6");
+    }
 
-    // --- CAS A : ACTIF SANS VOLUME (Ex: R_50, R_100, Indices Synthétiques) ---
-    if (!volKey) {
-      if (warningEl) {
-        warningEl.style.display = 'inline';
-        warningEl.innerText = "⚡ SYNTH"; // Indique un actif synthétique
-      }
+    // Détection du volume
+    const volKey = ['volume', 'v', 'tick_volume'].find(k => k in currentCandle);
 
-      // Si on a les EMA, on utilise la barre pour afficher le GAP à la place
+    // --- CAS A : SANS VOLUME (Affichage GAP) ---
+    if (!volKey || config.currentProfileLabel.includes("SYNTH")) {
       if (currentEma20 && currentEma50) {
-        const e20 = currentEma20;
-        const e50 = currentEma50;
-        const gap = Math.abs(((e20 - e50) / e50) * 100);
-
+        const gap = Math.abs(((currentEma20 - currentEma50) / currentEma50) * 100);
         if (volPercent) volPercent.innerText = `G: ${gap.toFixed(3)}%`;
         if (volBar) {
-          // Calibration pour indices synthétiques (barre pleine à 0.5% de gap)
-          const progress = Math.min((gap / 0.5) * 100, 100);
+          // La barre se remplit par rapport au seuil du profil actuel
+          const progress = Math.min((gap / (config.gapThreshold * 1.5)) * 100, 100);
           volBar.style.width = progress + "%";
-          volBar.style.background = gap > 0.3 ? "#f59e0b" : "#3b82f6";
+          volBar.style.background = gap >= config.gapThreshold ? "#ef4444" : "#8b5cf6";
         }
       }
-
-      // IMPORTANT : On retourne true car on ne peut pas valider ce qui n'existe pas
       return true;
     }
 
-    // --- CAS B : ACTIF AVEC VOLUME (Ex: BTC, Actions, Forex avec Tick Vol) ---
-    if (warningEl) warningEl.style.display = 'none';
+    // --- CAS B : AVEC VOLUME (Affichage VOLUME %) ---
+    const currentVolume = currentCandle[volKey] || 0;
+    const avgVolume = data.slice(-21, -1).reduce((s, c) => s + (c[volKey] || 0), 0) / 20;
+    const percentage = Math.round((avgVolume > 0 ? currentVolume / avgVolume : 1) * 100);
 
-    const currentVolume = currentCandle[volKey];
-    const slice = data.slice(-period - 1, -1);
-    const avgVolume = slice.reduce((sum, c) => sum + (c[volKey] || 0), 0) / period;
-
-    const ratio = avgVolume > 0 ? currentVolume / avgVolume : 1;
-    const percentage = Math.round(ratio * 100);
-
-    // Mise à jour visuelle du Volume
     if (volBar && volPercent) {
       volBar.style.width = Math.min(percentage, 100) + "%";
-      volBar.style.background = percentage >= 100 ? "#2ecc71" : "#3b82f6"; // Vert si fort, Bleu sinon
+      volBar.style.background = percentage >= 100 ? "#22c55e" : "#3b82f6";
       volPercent.innerText = `V: ${percentage}%`;
-      volPercent.style.color = "#1e293b";
     }
 
-    // Validation : On accepte le signal si le volume est au moins à 80% de sa moyenne
     return percentage >= 80;
   }
 
@@ -3458,8 +3469,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (alertBadge && alertBadge.innerHTML.includes(emaGap)) alertBadge.innerHTML = "";
       maSniperLabel.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
     }, 10000);
-  };  
-   
+  };
+
   window.closeSniperAlert = function () {
     const alert = document.getElementById('current-sniper-alert');
     const checklist = document.getElementById('current-sniper-checklist');
@@ -3491,7 +3502,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On ne garde que les marqueurs du symbole et du timeframe ACTUELS
     const currentSym = currentSymbol;
     const currentTF = currentInterval;
-  
+
     const filteredHistory = history.filter(m =>
       m.symbol === currentSym &&
       m.timeframe === currentTF
@@ -3510,9 +3521,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5. APPLICATION SUR LE GRAPHIQUE
     if (currentSeries) {
-      currentSeries.setMarkers(combined);  
+      currentSeries.setMarkers(combined);
       // Mise à jour de la variable globale pour les autres fonctions
-      maSniperMarkers = filteredHistory;  
+      maSniperMarkers = filteredHistory;
     } else {
       console.warn("⚠️ [Markers] currentSeries non trouvée. Impossible d'afficher les flèches.");
     }
@@ -3609,7 +3620,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }*/
   };
 
-  window.exportMAModelToCSV = function () {  
+  window.exportMAModelToCSV = function () {
     const logs = JSON.parse(localStorage.getItem('ma_sniper_logs')) || [];
     if (!logs.length) return alert("Journal vide.");
 
@@ -3667,7 +3678,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const alertBadge = document.getElementById('ma-sniper-alert-badge');
       const labelContainer = document.getElementById('ma-sniper-label');
 
-      if (alertBadge) alertBadge.innerHTML = "";   
+      if (alertBadge) alertBadge.innerHTML = "";
 
       if (labelContainer) {
         // Nettoyage des classes d'animation et de flash
