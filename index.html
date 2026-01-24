@@ -3696,6 +3696,12 @@
       transition: all 0.3s ease;
     }
 
+    #ma-sniper-alert-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     /* Header: Titre et Select */
     .sniper-header {
       display: flex;
@@ -3881,7 +3887,8 @@
       animation: slideIn 0.3s ease-out;
       border-left: 5px solid #3b82f6;
       /* Couleur par défaut */
-      padding-right: 30px; /* Espace pour la croix */
+      padding-right: 30px;
+      /* Espace pour la croix */
       cursor: default;
     }
 
@@ -3896,6 +3903,21 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
+    }
+
+    /* Petite flèche */
+    .ma-sniper-msg::after {
+      content: '';
+      position: absolute;
+      top: -6px;
+      right: 20px;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: 6px solid #ef4444;
+    }
+
+    .ma-sniper-msg.critical::after {
+      border-bottom-color: #d946ef;
     }
 
     /* .msg-close-btn {
@@ -3946,17 +3968,32 @@
       }
     }
 
+    /* Animation de pulsation pour les alertes critiques */
     @keyframes pulse-red {
       0% {
-        box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
       }
 
       70% {
-        box-shadow: 0 0 0 10px rgba(244, 63, 94, 0);
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
       }
 
       100% {
-        box-shadow: 0 0 0 0 rgba(244, 63, 94, 0);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+      }
+    }
+
+    @keyframes pulse-critical {
+      0% {
+        box-shadow: 0 0 0 0 rgba(217, 70, 239, 0.7);
+      }
+
+      70% {
+        box-shadow: 0 0 0 12px rgba(217, 70, 239, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(217, 70, 239, 0);
       }
     }
 
@@ -4388,7 +4425,7 @@
 
     </div>
   </div>
-
+  
   <div id="tradeHistoryContainer__" class="glass-panel">
     <div class="header-flex">
       <h2 class="tradeHistoryTitle__">AI-TCN Engine <span class="live-pulse"></span></h2>

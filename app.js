@@ -3441,8 +3441,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.syncAllChartMarkers = function () {
     // 1. Protection contre les tableaux non définis
-    const list1 = window.allMarkers || [];
-    const list2 = window.maSniperMarkers || [];
+    const list1 = allMarkers || [];
+    const list2 = maSniperMarkers || [];
 
     // 2. Fusion et suppression des doublons sur le même timestamp/type
     // Cela évite d'empiler deux flèches l'une sur l'autre
