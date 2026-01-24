@@ -3272,7 +3272,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const period = 20;
     const warningEl = document.getElementById('no-vol-warning');
     const volBar = document.getElementById('volume-bar');
-    const volPercent = document.getElementById('volume-percent');
+    const volPercent = document.getElementById('volume-percent');   
 
     // Sécurité : Si pas assez de données, on autorise le signal par défaut
     if (!data || data.length <= period) return true;
@@ -3306,7 +3306,7 @@ document.addEventListener("DOMContentLoaded", () => {
           volBar.style.background = gap > 0.3 ? "#f59e0b" : "#3b82f6";
         }
       }
-
+  
       // IMPORTANT : On retourne true car on ne peut pas valider ce qui n'existe pas
       return true;
     }
@@ -3373,7 +3373,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         ⬜ PRIX CONFIRMÉ ?<br>
                         ⬜ RR RATIO VALIDE ?
                     </div>
-                </div>` : ''}
+                </div>` : ''}  
         `;
     }
 
