@@ -150,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Variable pour éviter que le son ne se répète en boucle
   let isSniperSynergyActive = false;
   // Au début du script
-  let currentEma20 = 0; 
+  let currentEma20 = 0;
   let currentEma50 = 0;
   // ================== x ==================  
 
@@ -2846,11 +2846,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Affichage d'un message de chargement temporaire
     if (alertBadge) {
-      alertBadge.innerHTML = `<span style="font-size: 10px; color: #3b82f6; animation: pulse 1s infinite;">🔄 Restauration...</span>`;
+      alertBadge.innerHTML = `<span style="font-size: 10px; color: #3b82f6; animation: pulse 1s infinite;">🔄 Restauration Session...</span>`;
     }
 
     setTimeout(() => {
-      console.log("🔄 Initialisation de la session...");
+      console.log("🔄 Initialisation de la session et synchronisation des filtres...");
 
       // 1. Restaurer les EMA (Active les moyennes mobiles)
       const savedPeriods = localStorage.getItem('active_ma_periods');
@@ -2858,14 +2858,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const periods = JSON.parse(savedPeriods);
         periods.forEach(p => {
           const btn = document.querySelector(`button[onclick*="toggleMA(${p}"]`);
-          // On vérifie activePeriods pour ne pas doubler l'activation
           if (btn && typeof activePeriods !== 'undefined' && !activePeriods.includes(p)) {
             window.toggleMA(p, btn);
           }
         });
       }
 
-      // 2. Restaurer la Sensibilité
+      // 2. Restaurer la Sensibilité (Sélecteur Sniper)
       const savedSens = localStorage.getItem('ma_sniper_sensitivity');
       if (savedSens) {
         const select = document.getElementById('ma-sensitivity');
@@ -2875,47 +2874,45 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // 3. Restaurer le Sniper (Seulement si 20 et 50 sont présentes)
+      // 3. Restaurer l'état du Sniper
       const wasSniperArmed = localStorage.getItem('ma_sniper_armed') === 'true';
-      const hasSynergy = activePeriods.includes(20) && activePeriods.includes(50);
+      // Le Sniper nécessite 20 et 50 pour être fonctionnel
+      const hasSynergy = window.activePeriods && window.activePeriods.includes(20) && window.activePeriods.includes(50);
 
       if (wasSniperArmed && hasSynergy) {
         maSniperActive = true;
+
+        // Mise à jour visuelle des éléments de contrôle
         const label = document.getElementById('ma-sniper-label');
         if (label) label.style.display = 'flex';
 
         const btn = document.getElementById('ma-sniper-btn');
         if (btn) btn.classList.add('armed');
 
-        const dot = document.getElementById('ma-signal-dot');
-        if (dot) dot.style.backgroundColor = '#2ecc71';
-
-        const statusText = document.getElementById('ma-status-value');
-        if (statusText) statusText.innerText = 'ON';
+        // Utilisation de la fonction updateGapMonitor pour synchroniser le point de statut proprement
+        if (typeof window.updateGapMonitor === "function") {
+          // On simule un tick neutre pour réactiver le point vert (ON)
+          const direction = currentEma20 > currentEma50 ? "↑" : "↓";
+          window.updateGapMonitor(currentEma20, currentEma50, direction);
+        }
       }
 
-      // 4. Restaurer les Marqueurs sur le Graphique
-      const savedLogs = localStorage.getItem('ma_sniper_logs');
-      if (savedLogs) {
-        const logs = JSON.parse(savedLogs);
-        // Extraction cruciale : on ne prend que la propriété .marker de chaque log
-        maSniperMarkers = logs.map(l => l.marker).filter(m => m !== undefined);
-
-        if (typeof window.syncAllChartMarkers === 'function') {
-          window.syncAllChartMarkers();
-        }
+      // 4. RESTAURATION DES MARQUEURS (Logique filtrée par Symbole/TF)
+      // On ne recharge pas depuis les logs mais depuis l'historique dédié
+      if (typeof window.syncAllChartMarkers === 'function') {
+        window.syncAllChartMarkers();
       }
 
       // MESSAGE DE SUCCÈS
       if (alertBadge) {
-        alertBadge.innerHTML = `<span style="font-size: 10px; color: #10b981; font-weight: bold;">✅ Session prête</span>`;
-        setTimeout(() => { alertBadge.innerHTML = ""; }, 2500);
+        alertBadge.innerHTML = `<span style="font-size: 10px; color: #10b981; font-weight: bold;">✅ Session restaurée (${window.currentSymbol} ${window.currentTimeframe})</span>`;
+        setTimeout(() => { alertBadge.innerHTML = ""; }, 3000);
       }
 
-      // Son de notification de fin de chargement
+      // Son de notification
       if (typeof playSniperSound === 'function') playSniperSound('SIGNAL');
 
-    }, 1500); // Délai optimisé
+    }, 1200);
   };
 
   window.masterReset = function () {
@@ -2924,14 +2921,18 @@ document.addEventListener("DOMContentLoaded", () => {
       // 1. Vider le LocalStorage
       localStorage.clear();
 
-      // 2. Désactiver les états de trading
+      // 2. Désactiver les états de trading et variables globales
       maSniperActive = false;
       isSniperSynergyActive = false;
-      lastProcessedCandleTime = null; // IMPORTANT : Permet de relancer des signaux immédiatement après reset
+      lastProcessedCandleTime = null;
+      activePeriods = [];
 
-      // 3. Vider les marqueurs et rafraîchir le graphique
+      // 3. Vider l'historique des marqueurs (Nouvelle clé incluse)
       allMarkers = [];
       maSniperMarkers = [];
+      // On vide explicitement la clé spécifique au stockage persistant
+      localStorage.removeItem('ma_sniper_markers_history');
+
       if (typeof window.syncAllChartMarkers === 'function') {
         window.syncAllChartMarkers();
       }
@@ -2939,48 +2940,60 @@ document.addEventListener("DOMContentLoaded", () => {
       // 4. Masquer et nettoyer les séries de données (EMA)
       if (maSeries) {
         Object.values(maSeries).forEach(series => {
-          series.setData([]); // Vide les données de la ligne
-          series.applyOptions({ visible: false }); // Cache la ligne
+          series.setData([]);
+          series.applyOptions({ visible: false });
         });
       }
 
-      // 5. Réinitialiser l'interface (Boutons)
+      // 5. Réinitialiser l'interface (Boutons d'activation)
       const allMaButtons = document.querySelectorAll('button[onclick*="toggleMA"]');
       allMaButtons.forEach(btn => {
         btn.classList.remove('active', 'sniper-ready');
-        btn.style.backgroundColor = ""; // Reset couleur si modifiée inline
+        btn.style.backgroundColor = "";
       });
 
-      // 6. Nettoyage complet des Badges et Alertes
-      const elementsToHide = ['ma-sniper-label', 'volatility-label', 'ma-sniper-alert-badge'];
-      elementsToHide.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.style.display = 'none';
-          el.innerHTML = ''; // Vide le contenu (Checklist, etc.)
-        }
-      });
+      // 6. Nettoyage INTELLIGENT des Badges et Alertes
+      // On ne cache pas le label (le badge lui-même), on réinitialise son état visuel
+      const sniperLabel = document.getElementById('ma-sniper-label');
+      if (sniperLabel) {
+        // On retire les classes d'animation et de couleur
+        sniperLabel.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
+        // On ne fait PAS .innerHTML = '' ici pour ne pas détruire les boutons/titre
+      }
 
-      // 7. Reset de la barre de volume/gap
-      const volBar = document.getElementById('volume-bar');
-      const volPercent = document.getElementById('volume-percent');
-      if (volBar) volBar.style.width = "0%";
-      if (volPercent) volPercent.innerText = "G: 0.000%";
+      // On nettoie UNIQUEMENT le contenu des alertes (la pilule/checklist)
+      const alertBadge = document.getElementById('ma-sniper-alert-badge');
+      if (alertBadge) {
+        alertBadge.innerHTML = '';
+        alertBadge.style.display = 'block'; // On le laisse dispo pour la prochaine alerte
+      }
 
-      // 8. Réinitialiser les variables d'état locales
-      activePeriods = [];
+      const volLabel = document.getElementById('volatility-label');
+      if (volLabel) volLabel.style.display = 'none';
 
-      // 9. Rafraîchir la table des logs visuelle
+      // 7. Reset des indicateurs de Monitoring (Barre de Gap)
+      // On appelle updateGapMonitor avec des valeurs nulles pour remettre le point en gris/OFF
+      if (typeof window.updateGapMonitor === "function") {
+        window.updateGapMonitor(null, null, null);
+      } else {
+        // Fallback manuel si la fonction n'est pas là
+        const volBar = document.getElementById('volume-bar');
+        const volPercent = document.getElementById('volume-percent');
+        if (volBar) volBar.style.width = "0%";
+        if (volPercent) volPercent.innerHTML = "G: 0.000%";
+      }
+
+      // 8. Rafraîchir les logs (si actif)
       /*if (typeof window.renderLogTable === 'function') {
         window.renderLogTable();
       }*/
 
-      // Son de confirmation et feedback
+      // 9. Feedback sonore
       if (typeof playSniperSound === 'function') {
         playSniperSound('RESET');
       }
 
-      console.log("🧹 Système réinitialisé.");
+      console.log("🧹 Système réinitialisé proprement (Structure conservée).");
       alert("Dashboard réinitialisé avec succès.");
     }
   };
@@ -2999,7 +3012,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   };
-  
+
   // --- ACTIVATION / DÉSACTIVATION ---  
   window.toggleMASniper = function (event) {
     if (event) event.stopPropagation();
@@ -3022,17 +3035,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusText = document.getElementById('ma-status-value');
 
     if (maSniperActive) {
-      btn.classList.add('armed');    
+      btn.classList.add('armed');
       if (dot) dot.style.backgroundColor = '#2ecc71'; // Vert
       if (statusText) statusText.innerText = 'ON';
       maSniperActive = true;
     } else {
       btn.classList.remove('armed');
       if (dot) dot.style.backgroundColor = '#cbd5e1'; // Gris
-      if (statusText) statusText.innerText = 'OFF';  
+      if (statusText) statusText.innerText = 'OFF';
       maSniperActive = false;
-    }  
-  };  
+    }
+  };
 
   /**  
  * SYSTEME MA SNIPER V2.0
@@ -3178,12 +3191,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const val50 = parseFloat(e50);
 
     if (isNaN(val20) || isNaN(val50) || val50 === 0) {
-      if (gapPercent) gapPercent.innerText = "G: ---%";      
-      return;    
+      if (gapPercent) gapPercent.innerText = "G: ---%";
+      return;
     }
 
     // 2. CALCUL DU GAP
-    const gap = Math.abs(((val20 - val50) / val50) * 100);      
+    const gap = Math.abs(((val20 - val50) / val50) * 100);
 
     // 3. GESTION DE LA DIRECTION ET DES COULEURS
     // Si direction n'est pas fourni, on le déduit
@@ -3197,14 +3210,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5. MISE À JOUR DE LA BARRE ET DES ÉTATS VISUELS  
     if (gapBar) {
-      const threshold = sniperConfig?.gapThreshold || 1.0;  
+      const threshold = sniperConfig?.gapThreshold || 1.0;
       // La barre se remplit à 100% quand on atteint 2x le seuil
       const progress = Math.min((gap / (threshold * 2)) * 100, 100);
-      gapBar.style.width = progress + "%";  
+      gapBar.style.width = progress + "%";
 
       // Nettoyage des animations
       gapBar.classList.remove('critical-flash');
-  
+
       if (gap >= threshold * 1.5) {
         // ÉTAT CRITIQUE (Surchauffe)
         gapBar.style.background = '#ef4444';
@@ -3225,8 +3238,8 @@ document.addEventListener("DOMContentLoaded", () => {
         statusValue.innerText = "ON";
         statusValue.style.color = "#22c55e";
       } else {
-        statusDot.classList.remove('active');    
-        statusValue.innerText = "OFF";  
+        statusDot.classList.remove('active');
+        statusValue.innerText = "OFF";
         statusValue.style.color = "#64748b";
       }
     }
@@ -3252,7 +3265,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Mise à jour de la config globale
-    sniperConfig = profile;   
+    sniperConfig = profile;
 
     // Mise à jour visuelle du petit label "NoVol" pour indiquer le mode
     const warningEl = document.getElementById('no-vol-warning');
@@ -3272,12 +3285,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const period = 20;
     const warningEl = document.getElementById('no-vol-warning');
     const volBar = document.getElementById('volume-bar');
-    const volPercent = document.getElementById('volume-percent');   
+    const volPercent = document.getElementById('volume-percent');
 
     // Sécurité : Si pas assez de données, on autorise le signal par défaut
     if (!data || data.length <= period) return true;
 
-    const currentCandle = data[data.length - 1];   
+    const currentCandle = data[data.length - 1];
 
     // 1. DÉTECTION AUTOMATIQUE DU VOLUME
     // On cherche les clés classiques. Note : On exclut 'zb' (timestamp)
@@ -3306,7 +3319,7 @@ document.addEventListener("DOMContentLoaded", () => {
           volBar.style.background = gap > 0.3 ? "#f59e0b" : "#3b82f6";
         }
       }
-  
+
       // IMPORTANT : On retourne true car on ne peut pas valider ce qui n'existe pas
       return true;
     }
@@ -3338,21 +3351,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const maSniperLabel = document.getElementById('ma-sniper-label');
     const alertBadge = document.getElementById('ma-sniper-alert-badge');
 
-    // SÉCURITÉ : On s'assure que les valeurs sont numériques pour éviter le NaN dans les marqueurs
+    // SÉCURITÉ : Valeurs numériques
     const val20 = parseFloat(e20);
     const val50 = parseFloat(e50);
+
+    // Récupération du contexte actuel (Symbole et Timeframe)
+    const currentSym = currentSymbol || "cryBTCUSD";
+    const currentTF = currentInterval || "1m";
 
     if (!maSniperActive || !maSniperLabel || isNaN(val20)) return;
 
     // 1. ANALYSE DU GAP DYNAMIQUE
-    const threshold = sniperConfig?.gapThreshold || 1.0;    
+    const threshold = sniperConfig?.gapThreshold || 1.0;
     const gapValue = Math.abs(((val20 - val50) / val50) * 100);
     const emaGap = gapValue.toFixed(3);
 
     const isCritical = gapValue >= threshold;
     const isLocked = gapValue >= (threshold * 1.5);
 
-    // 2. CONSTRUCTION DU MESSAGE (Version simplifiée pour éviter les erreurs de rendu)
+    // 2. CONSTRUCTION DU MESSAGE (Pilule)
     if (alertBadge) {
       let alertClass = isCritical || isLocked ? "ma-sniper-msg critical" : "ma-sniper-msg";
       let icon = isLocked ? "🚫 LOCK" : (isCritical ? "🔥 " + signal.subtype : signal.icon + " " + signal.subtype);
@@ -3363,7 +3380,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span style="font-weight:bold">${icon}</span>
                     <span style="font-size:11px; display:block">Gap: ${emaGap}% | Prix: ${candle.close.toFixed(2)}</span>
                 </div>
-                <div class="msg-close-btn" onclick="closeSniperAlert()" style="cursor:pointer">✕</div>
+                <div class="msg-close-btn" onclick="if(window.closeSniperAlert) closeSniperAlert(); else this.parentElement.remove();" style="cursor:pointer">✕</div>
             </div>
             ${(isCritical || isLocked) ? `
                 <div class="sniper-checklist" id="current-sniper-checklist" style="position: absolute; top: 95px; right: 0; width: 190px; background: white; border: 1px solid #ccc; padding: 10px; z-index: 1000; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
@@ -3383,16 +3400,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (isLocked || isCritical) {
       maSniperLabel.classList.add('critical-shake');
-      if (playSniperSound) playSniperSound('CRITICAL');  
+      if (typeof playSniperSound === "function") playSniperSound('CRITICAL');
     } else {
-      if (playSniperSound) playSniperSound('SIGNAL');
+      if (typeof playSniperSound === "function") playSniperSound('SIGNAL');
       if (signal.subtype === 'CROSS') maSniperLabel.classList.add('sniper-shake');
     }
     maSniperLabel.classList.add(signal.type === 'BUY' ? 'badge-flash-buy' : 'badge-flash-sell');
 
-    // 4. CRÉATION DU MARQUEUR (C'est ici que les flèches apparaissent sur le chart)
+    // 4. CRÉATION ET SAUVEGARDE DU MARQUEUR (Avec filtres Symbol/TF)
     const newMarker = {
       time: candle.time,
+      symbol: currentSym,       // Ajout du filtre Symbole
+      timeframe: currentTF,     // Ajout du filtre Timeframe
       position: signal.type === 'BUY' ? 'belowBar' : 'aboveBar',
       color: isLocked ? '#ff4d4d' : (isCritical ? '#f59e0b' : signal.color),
       shape: signal.type === 'BUY' ? 'arrowUp' : 'arrowDown',
@@ -3400,16 +3419,30 @@ document.addEventListener("DOMContentLoaded", () => {
       size: isLocked ? 3 : 2
     };
 
-    // Initialisation du tableau si nécessaire et ajout
-    if (!maSniperMarkers) maSniperMarkers = [];
-    maSniperMarkers.push(newMarker);
+    // --- LOGIQUE LOCALSTORAGE ---
+    let savedHistory = JSON.parse(localStorage.getItem('ma_sniper_markers_history')) || [];
 
-    // 5. SAUVEGARDE ET SYNCHRONISATION (Crucial pour l'affichage)
+    // Éviter les doublons (même seconde, même symbole, même TF)
+    const isDuplicate = savedHistory.some(m => m.time === newMarker.time && m.symbol === currentSym && m.timeframe === currentTF);
+
+    if (!isDuplicate) {
+      savedHistory.push(newMarker);
+      // Limite à 500 marqueurs pour la performance
+      if (savedHistory.length > 500) savedHistory.shift();
+      localStorage.setItem('ma_sniper_markers_history', JSON.stringify(savedHistory));
+    }
+
+    // Mise à jour de la liste active (filtrée)
+    if (!maSniperMarkers) maSniperMarkers = [];
+
+    // On recharge uniquement les marqueurs pertinents pour le graphique actuel
+    maSniperMarkers = savedHistory.filter(m => m.symbol === currentSym && m.timeframe === currentTF);
+
+    // 5. SYNCHRONISATION
     if (typeof window.logMASignalToStorage === "function") {
       window.logMASignalToStorage({ ...signal, isCritical, ma20: val20, ma50: val50, gap: emaGap, marker: newMarker }, candle);
     }
 
-    // On force l'affichage immédiat sur le graphique
     if (typeof window.syncAllChartMarkers === "function") {
       window.syncAllChartMarkers();
     }
@@ -3442,23 +3475,40 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.syncAllChartMarkers = function () {
-    // 1. Protection contre les tableaux non définis
-    const list1 = allMarkers || [];
-    const list2 = maSniperMarkers || [];
+    // 1. Récupération de l'historique global sauvegardé
+    const history = JSON.parse(localStorage.getItem('ma_sniper_markers_history')) || [];
 
-    // 2. Fusion et suppression des doublons sur le même timestamp/type
-    // Cela évite d'empiler deux flèches l'une sur l'autre
-    const combined = [...list1, ...list2];
+    // 2. Récupération des autres marqueurs (manuels ou autres indicateurs)
+    const list1 = window.allMarkers || [];
 
-    // 3. Tri chronologique (Crucial pour la stabilité du graphique)
-    combined.sort((a, b) => a.time - b.time);
+    // 3. FILTRAGE INTELLIGENT
+    // On ne garde que les marqueurs du symbole et du timeframe ACTUELS
+    const currentSym = currentSymbol;
+    const currentTF = currentInterval;
 
-    // 4. Application sur la série active
-    // Vérifiez bien que 'currentSeries' est la variable globale de votre graphique
+    const filteredHistory = history.filter(m =>
+      m.symbol === currentSym &&
+      m.timeframe === currentTF
+    );
+
+    // 4. FUSION ET TRI
+    // On combine les marqueurs système (list1) et les marqueurs Sniper filtrés
+    const combined = [...list1, ...filteredHistory];
+
+    // Tri chronologique indispensable pour Lightweight Charts
+    combined.sort((a, b) => {
+      const timeA = typeof a.time === 'number' ? a.time : a.time.timestamp || 0;
+      const timeB = typeof b.time === 'number' ? b.time : b.time.timestamp || 0;
+      return timeA - timeB;
+    });
+
+    // 5. APPLICATION SUR LE GRAPHIQUE
     if (currentSeries) {
       currentSeries.setMarkers(combined);
+      // Mise à jour de la variable globale pour les autres fonctions
+      maSniperMarkers = filteredHistory;
     } else {
-      console.warn("⚠️ [Markers] Aucune série active (currentSeries) trouvée pour afficher les marqueurs.");
+      console.warn("⚠️ [Markers] currentSeries non trouvée. Impossible d'afficher les flèches.");
     }
   };
 
@@ -3514,60 +3564,84 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. Récupération des logs existants
     let logs = JSON.parse(localStorage.getItem('ma_sniper_logs')) || [];
 
-    // 2. Préparation de l'entrée (Data Mining)
+    // 2. Préparation de l'entrée enrichie (Ajout du Timeframe)
     const newLog = {
-      date: new Date().toLocaleString('fr-FR'), // Format date française
-      timestamp: candle.time,
+      date: new Date().toLocaleString('fr-FR'),
+      timestamp: typeof candle.time === 'number' ? candle.time : (candle.time.timestamp || candle.time),
+      symbol: window.currentSymbol || "N/A",      // Actif (ex: BTCUSD)
+      timeframe: currentInterval || "1m", // Unité de temps (ex: 5m)
       type: signal.type,            // BUY / SELL
       subtype: signal.subtype,      // MOMENTUM / CROSS / REBOND
-      price: candle.close.toFixed(5), // Précision pour le Forex/R_50
+      price: candle.close.toFixed(5),
       ma20: parseFloat(signal.ma20).toFixed(5),
       ma50: parseFloat(signal.ma50).toFixed(5),
-      gap: signal.gap || "0.000",   // Nouvelle colonne Gap
-      isCritical: signal.isCritical || false,
-      symbol: window.currentSymbol || "N/A" // Pour savoir quel actif a généré le signal
+      gap: signal.gap || "0.000",
+      isCritical: signal.isCritical || false
     };
 
-    // 3. Gestion de la taille du journal (Max 200 entrées pour ne pas alourdir le navigateur)
-    logs.unshift(newLog); // Ajoute au début
-    if (logs.length > 200) logs.pop(); // Supprime le plus vieux
+    // 3. Gestion de la taille du journal (Max 200 entrées)
+    // On vérifie si ce signal exact n'a pas déjà été loggé (sécurité anti-doublon au même timestamp)
+    const isDuplicate = logs.some(l =>
+      l.timestamp === newLog.timestamp &&
+      l.symbol === newLog.symbol &&
+      l.timeframe === newLog.timeframe
+    );
 
-    // 4. Sauvegarde
-    localStorage.setItem('ma_sniper_logs', JSON.stringify(logs));
+    if (!isDuplicate) {
+      logs.unshift(newLog); // Ajoute au début (le plus récent en haut)
+      if (logs.length > 200) logs.pop();
 
-    // 5. Mise à jour de la table visuelle (si elle existe dans votre interface)
+      // 4. Sauvegarde
+      localStorage.setItem('ma_sniper_logs', JSON.stringify(logs));
+
+      console.log(`📝 [Log] Signal enregistré pour ${newLog.symbol} (${newLog.timeframe})`);
+    }
+
+    // 5. Mise à jour de la table visuelle
     /*if (typeof window.renderLogTable === "function") {
       window.renderLogTable();
     }*/
   };
 
-  window.exportMAModelToCSV = function () {  
+  window.exportMAModelToCSV = function () {
     const logs = JSON.parse(localStorage.getItem('ma_sniper_logs')) || [];
     if (!logs.length) return alert("Journal vide.");
 
-    // Header mis à jour avec Symbole et Gap
-    const header = "Date;Symbole;Type;Sous-Type;Prix;MA20;MA50;Gap %";
+    // 1. Header enrichi : Ajout de TF (Timeframe) et État (Critical/Normal)
+    const header = "Date;Symbole;TF;Type;Sous-Type;Prix;MA20;MA50;Gap %;Etat";
 
+    // 2. Mapping des données avec les nouvelles propriétés
     const rows = logs.map(l => {
       return [
         l.date,
-        l.symbol,
+        l.symbol || 'N/A',
+        l.timeframe || '1m',       // Nouvelle colonne Timeframe
         l.type,
         l.subtype || '',
         l.price,
         l.ma20,
         l.ma50,
-        l.gap
+        l.gap,
+        l.isCritical ? 'CRITICAL' : 'NORMAL' // Nouvelle colonne État
       ].join(";");
     }).join("\r\n");
 
+    // 3. Construction du fichier avec encodage UTF-8 (BOM pour Excel)
     const csvContent = "\ufeff" + header + "\r\n" + rows;
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
 
+    // 4. Déclenchement du téléchargement
     const a = document.createElement('a');
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const fileName = `sniper_report_${window.currentSymbol || 'global'}_${timestamp}.csv`;
+
     a.href = URL.createObjectURL(blob);
-    a.download = `sniper_report_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = fileName;
+    document.body.appendChild(a); // Sécurité pour certains navigateurs
     a.click();
+    document.body.removeChild(a);
+
+    console.log(`📊 Export CSV généré : ${fileName}`);
   };
 
   window.clearMASniperLogs = function () {
@@ -3587,7 +3661,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const alertBadge = document.getElementById('ma-sniper-alert-badge');
       const labelContainer = document.getElementById('ma-sniper-label');
 
-      if (alertBadge) alertBadge.innerHTML = "";
+      if (alertBadge) alertBadge.innerHTML = "";   
 
       if (labelContainer) {
         // Nettoyage des classes d'animation et de flash
@@ -3671,8 +3745,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (typeof window.updateGapMonitor === "function") {
               // On déduit la direction ici pour l'envoyer au monitor  
               const direction = val20 > val50 ? "↑" : "↓";
-              window.updateGapMonitor(val20, val50, direction);  
-            }  
+              window.updateGapMonitor(val20, val50, direction);
+            }
 
             // 4. Préparation du contexte pour le moteur de détection
             const maContext = {
