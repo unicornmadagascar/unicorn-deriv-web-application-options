@@ -3647,7 +3647,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 2. Calcul du PnL en pourcentage
     const entry = tradeManager.entryPrice;
-    let pnl = 0;
+    let pnl = 0;  
 
     if (tradeManager.side === 'BUY') {
       pnl = ((currentPrice - entry) / entry) * 100;
