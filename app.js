@@ -3314,7 +3314,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "🔍 AUTO": { bg: "#64748b", text: "#ffffff" }
       };
 
-      const theme = profileColors[profile.label] || profileColors["🔍 AUTO"];
+      const theme = profileColors[profile.label] || profileColors["🔍 AUTO"];  
 
       // Application des styles
       warningEl.innerText = profile.label;
