@@ -145,6 +145,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Au début du script
   let currentEma20 = 0;
   let currentEma50 = 0;
+  // État par défaut : désactivé (pour éviter de remplir votre dossier téléchargement par erreur)
+  window.autoScreenshotActive = false;
   // ================== x ==================  
 
   let wsReady = false;
@@ -3022,35 +3024,50 @@ document.addEventListener("DOMContentLoaded", () => {
   window.toggleMASniper = function (event) {
     if (event) event.stopPropagation();
 
-    // Vérification de sécurité EMA (déjà présente)
-    if (!activePeriods.includes(20) || !activePeriods.includes(50)) return;
+    // 1. Vérification de sécurité EMA (Conservée)
+    if (!activePeriods.includes(20) || !activePeriods.includes(50)) {
+      console.warn("⚠️ EMA 20 et 50 doivent être actives pour le Sniper.");
+      return;
+    }
 
+    // 2. Gestion des permissions de notification
     if (Notification.permission === "default") {
       window.requestNotificationPermission();
     }
 
+    // 3. Basculement de l'état (Inversion)
     maSniperActive = !maSniperActive;
 
-    // SAUVEGARDE DE L'ÉTAT
+    // 4. SAUVEGARDE DE L'ÉTAT
     localStorage.setItem('ma_sniper_armed', maSniperActive);
 
-    // Mise à jour visuelle du bouton et du point
+    // 5. Mise à jour visuelle (UI)
     const btn = document.getElementById('ma-sniper-btn');
     const dot = document.getElementById('ma-signal-dot');
     const statusText = document.getElementById('ma-status-value');
 
     if (maSniperActive) {
-      btn.classList.add('armed');
-      if (dot) dot.style.backgroundColor = '#2ecc71'; // Vert
+      // État ACTIVÉ
+      if (btn) {
+        btn.classList.add('armed');
+        btn.classList.add('sniper-active'); // Ajout de la classe d'animation
+      }
+      if (dot) dot.style.backgroundColor = '#2ecc71'; // Vert éclatant
       if (statusText) statusText.innerText = 'ON';
-      maSniperActive = true;
+
+      console.log("🚀 MA SNIPER : ARMED & READY");
     } else {
-      btn.classList.remove('armed');
-      if (dot) dot.style.backgroundColor = '#cbd5e1'; // Gris
+      // État DÉSACTIVÉ
+      if (btn) {
+        btn.classList.remove('armed');
+        btn.classList.remove('sniper-active'); // Retrait de l'animation
+      }
+      if (dot) dot.style.backgroundColor = '#cbd5e1'; // Gris (Standard)
       if (statusText) statusText.innerText = 'OFF';
-      maSniperActive = false;
+
+      console.log("💤 MA SNIPER : STANDBY");
     }
-  };
+  };  
 
   /**  
  * SYSTEME MA SNIPER V2.0
@@ -3283,9 +3300,9 @@ document.addEventListener("DOMContentLoaded", () => {
       sniperConfig = sniperProfiles.DEFAULT;
       return sniperProfiles.DEFAULT;
     }
-   
-    const sym = symbol.toUpperCase(); 
-    let profile;   
+
+    const sym = symbol.toUpperCase();
+    let profile;
 
     // 1. Logique de détection par mots-clés (Conservée)
     if (sym.includes('R_') || sym.includes('BOO') || sym.includes('CRA') || sym.includes('1HZ') || sym.includes('JD') || sym.includes('STP')) {
@@ -3314,7 +3331,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "🔍 AUTO": { bg: "#64748b", text: "#ffffff" }
       };
 
-      const theme = profileColors[profile.label] || profileColors["🔍 AUTO"];  
+      const theme = profileColors[profile.label] || profileColors["🔍 AUTO"];
 
       // Application des styles
       warningEl.innerText = profile.label;
@@ -3335,7 +3352,66 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log(`📡 Profil activé : ${profile.label} pour ${sym}`);
     return profile;
-  }  
+  }
+
+  window.captureSniperShot = function (signal, symbol) {
+    // 1. Cibler le conteneur principal du graphique
+    const chartElement = document.getElementById('chartInner');
+    const overlayCanvas = document.getElementById('Trendoverlay__');
+    if (!chartElement) return;
+
+    // 2. Récupérer les canvas internes de Lightweight Charts
+    const chartCanvases = chartElement.querySelectorAll('canvas');
+    if (chartCanvases.length === 0) return;
+
+    // 3. Créer un canvas temporaire "Master" à la taille du graphique
+    const firstCanvas = chartCanvases[0];
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = firstCanvas.width;
+    tempCanvas.height = firstCanvas.height;
+    const ctx = tempCanvas.getContext('2d');
+
+    // 4. FUSION DES COUCHES (L'ordre est important pour la visibilité)
+    // A. On dessine d'abord les canvas du graphique (Prix + EMA + Grid)
+    chartCanvases.forEach(canvas => {
+      ctx.drawImage(canvas, 0, 0);
+    });
+
+    // B. On superpose votre Overlay (Trendoverlay__) s'il existe et est visible
+    if (overlayCanvas && overlayCanvas.style.display !== 'none') {
+      ctx.drawImage(overlayCanvas, 0, 0);
+    }
+
+    // 5. Génération du nom de fichier propre
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('fr-FR').replace(/:/g, '-');
+    const fileName = `SNIPER_${signal.subtype}_${symbol}_${timeStr}.png`;
+
+    // 6. Exportation et Téléchargement
+    try {
+      const dataURL = tempCanvas.toDataURL("image/png");
+      const link = document.createElement('a');
+      link.download = fileName;
+      link.href = dataURL;
+
+      // Ajout temporaire au DOM pour simuler le clic (requis sur certains navigateurs)
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // 7. Feedback Visuel sur votre badge d'alerte
+      const alertBadge = document.getElementById('current-sniper-alert');
+      if (alertBadge) {
+        const camIcon = document.createElement('span');
+        camIcon.innerHTML = " 📷 <small style='font-size:8px'>SAVED</small>";
+        camIcon.style.color = "#10b981";
+        alertBadge.querySelector('.msg-main-info').appendChild(camIcon);
+      }
+
+    } catch (e) {
+      console.error("❌ Échec de la capture Sniper :", e);
+    }
+  };
 
   /**
  * Valide le volume si disponible, sinon bascule sur le monitoring du Gap EMA.
@@ -3409,6 +3485,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // Fonction pour basculer l'état (à lier à votre nouveau bouton)
+  window.toggleAutoScreenshot = function () {
+    window.autoScreenshotActive = !window.autoScreenshotActive;
+    localStorage.setItem('ma_sniper_autoscreen', window.autoScreenshotActive);
+
+    const btn = document.getElementById('btn-auto-screen');
+    if (btn) {
+      if (window.autoScreenshotActive) {
+        btn.classList.add('capture-active');
+        btn.style.filter = "grayscale(0%) brightness(1.2)";
+      } else {
+        btn.classList.remove('capture-active');
+        btn.style.filter = "grayscale(100%)";
+      }
+    }
+  };
+
   // --- VOTRE FONCTION MISE À JOUR ---
   window.triggerMASniperAlert = function (signal, candle, e20, e50) {
     const maSniperLabel = document.getElementById('ma-sniper-label');
@@ -3475,11 +3568,11 @@ document.addEventListener("DOMContentLoaded", () => {
       window.sendPushNotification(signal, currentSym, emaGap, candle.close.toFixed(2));
     }
 
-    // 4. CRÉATION ET SAUVEGARDE DU MARQUEUR (Avec filtres Symbol/TF)
+    // 4. CRÉATION ET SAUVEGARDE DU MARQUEUR
     const newMarker = {
       time: candle.time,
-      symbol: currentSym,       // Ajout du filtre Symbole
-      timeframe: currentTF,     // Ajout du filtre Timeframe
+      symbol: currentSym,
+      timeframe: currentTF,
       position: signal.type === 'BUY' ? 'belowBar' : 'aboveBar',
       color: isLocked ? '#ff4d4d' : (isCritical ? '#f59e0b' : signal.color),
       shape: signal.type === 'BUY' ? 'arrowUp' : 'arrowDown',
@@ -3489,21 +3582,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- LOGIQUE LOCALSTORAGE ---
     let savedHistory = JSON.parse(localStorage.getItem('ma_sniper_markers_history')) || [];
-
-    // Éviter les doublons (même seconde, même symbole, même TF)
     const isDuplicate = savedHistory.some(m => m.time === newMarker.time && m.symbol === currentSym && m.timeframe === currentTF);
 
     if (!isDuplicate) {
       savedHistory.push(newMarker);
-      // Limite à 500 marqueurs pour la performance
       if (savedHistory.length > 500) savedHistory.shift();
       localStorage.setItem('ma_sniper_markers_history', JSON.stringify(savedHistory));
     }
 
-    // Mise à jour de la liste active (filtrée)
     if (!maSniperMarkers) maSniperMarkers = [];
-
-    // On recharge uniquement les marqueurs pertinents pour le graphique actuel
     maSniperMarkers = savedHistory.filter(m => m.symbol === currentSym && m.timeframe === currentTF);
 
     // 5. SYNCHRONISATION
@@ -3513,6 +3600,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (typeof window.syncAllChartMarkers === "function") {
       window.syncAllChartMarkers();
+    }
+
+    // 5.5 CAPTURE AUTOMATIQUE (Nouveau)
+    if (window.autoScreenshotActive && !isDuplicate) {
+      setTimeout(() => {
+        if (typeof window.captureSniperShot === "function") {
+          window.captureSniperShot(signal, currentSym);
+          // Petit ajout visuel discret pour dire "Photo prise"
+          const msg = document.getElementById('current-sniper-alert');
+          if (msg) msg.style.boxShadow = "0 0 10px rgba(16, 185, 129, 0.5)";
+        }
+      }, 500);
     }
 
     // 6. AUTO-RESET

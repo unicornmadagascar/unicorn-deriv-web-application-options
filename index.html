@@ -4151,6 +4151,57 @@
     .profile-switch {
       animation: profile-confirm 0.4s ease-out;
     }
+
+    /* Animation de pulsation standard (Bleu/Vert pour le Sniper) */
+    @keyframes pulse-sniper {
+      0% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+      }
+    }
+
+    /* Animation de pulsation alerte (Rouge pour l'Auto-Capture) */
+    @keyframes pulse-record {
+      0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+        transform: scale(1);
+      }
+    }
+
+    /* Classes actives */
+    .sniper-active {
+      animation: pulse-sniper 2s infinite !important;
+      background-color: #3b82f6 !important;
+      /* Bleu vif quand actif */
+      border-color: #60a5fa !important;
+    }
+
+    .capture-active {
+      animation: pulse-record 1.5s infinite !important;
+      border: 1px solid #ef4444 !important;
+      background-color: rgba(239, 68, 68, 0.1) !important;
+    }
+    
   </style>
 </head>
 
@@ -4428,6 +4479,8 @@
           <div id="ma-sniper-alert-badge"></div>
 
           <div class="sniper-actions">
+            <button id="btn-auto-screen" class="action-btn" onclick="window.toggleAutoScreenshot()"
+              style="filter: grayscale(100%); transition: all 0.3s;" title="Auto-Capture: OFF">📸</button>
             <button class="action-btn" onclick="exportMAModelToCSV()" title="Exporter">📥</button>
             <button class="action-btn" onclick="clearMASniperLogs()" title="Effacer Logs">🗑️</button>
             <button class="action-btn danger" onclick="masterReset()" title="Reset Total">🧹</button>
