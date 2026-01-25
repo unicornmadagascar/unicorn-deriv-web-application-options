@@ -3001,18 +3001,20 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.requestNotificationPermission = function () {
-    if (!("Notification" in window)) return;
+    if (!("Notification" in window)) {
+      console.log("Ce navigateur ne supporte pas les notifications desktop");
+      return;
+    }
 
-    Notification.requestPermission().then(permission => {
-      if (permission === "granted") {
-        console.log("🔔 Notifications activées");
-        // Petit test de succès
-        new Notification("Système Sniper", {
-          body: "Alertes bureau activées ✔️",
-          silent: true
-        });
-      }
-    });
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          console.log("🔔 Notifications activées !");
+          // Notification de test
+          new Notification("Sniper MA", { body: "Notifications prêtes pour les signaux !" });
+        }
+      });
+    }
   };
 
   // --- ACTIVATION / DÉSACTIVATION ---  
@@ -3388,6 +3390,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- 4. Alerte et Journalisation ---
+  // --- FONCTION UTILITAIRE PUSH (À placer une fois dans votre code) ---
+  window.sendPushNotification = function (signal, symbol, gap, price) {
+    if ("Notification" in window && Notification.permission === "granted") {
+      const title = `${signal.icon} SNIPER: ${signal.type} ${symbol}`;
+      const options = {
+        body: `Stratégie: ${signal.subtype}\nGap: ${gap}%\nPrix: ${price}\nTF: ${window.currentInterval || '1m'}`,
+        silent: false,
+        requireInteraction: false
+      };
+      new Notification(title, options);
+    }
+  };
+
+  // --- VOTRE FONCTION MISE À JOUR ---
   window.triggerMASniperAlert = function (signal, candle, e20, e50) {
     const maSniperLabel = document.getElementById('ma-sniper-label');
     const alertBadge = document.getElementById('ma-sniper-alert-badge');
@@ -3447,6 +3463,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (signal.subtype === 'CROSS') maSniperLabel.classList.add('sniper-shake');
     }
     maSniperLabel.classList.add(signal.type === 'BUY' ? 'badge-flash-buy' : 'badge-flash-sell');
+
+    // 3.5 AJOUT DE LA NOTIFICATION PUSH
+    if (typeof window.sendPushNotification === "function") {
+      window.sendPushNotification(signal, currentSym, emaGap, candle.close.toFixed(2));
+    }
 
     // 4. CRÉATION ET SAUVEGARDE DU MARQUEUR (Avec filtres Symbol/TF)
     const newMarker = {
@@ -3732,13 +3753,28 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- CALCULS ET MISES À JOUR ---
   function calculateEMA(data, period) {
     if (data.length < period) return [];
+
     const ema = [];
     const k = 2 / (period + 1);
-    let emaValue = data[0].close;
-    for (let i = 0; i < data.length; i++) {
-      emaValue = (data[i].close - emaValue) * k + emaValue;
-      if (i >= period - 1) ema.push({ time: data[i].time, value: emaValue });
+
+    // 1. INITIALISATION : On calcule la SMA pour la première valeur d'EMA
+    // Cela évite que les premières bougies ne faussent tout le reste de la courbe
+    let sum = 0;
+    for (let i = 0; i < period; i++) {
+      sum += data[i].close;
     }
+    let emaValue = sum / period;
+
+    // Ajouter la première valeur au tableau
+    ema.push({ time: data[period - 1].time, value: emaValue });
+
+    // 2. CALCUL RÉCURSIF : Formule EMA standard
+    // EMA = (Close - EMA_précédent) * k + EMA_précédent
+    for (let i = period; i < data.length; i++) {
+      emaValue = (data[i].close - emaValue) * k + emaValue;
+      ema.push({ time: data[i].time, value: emaValue });
+    }
+
     return ema;
   }
 
@@ -6753,6 +6789,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initCalendarTable();
   initHistoricalTable();
   inithistoricalchart();
+  // Appeler la demande au démarrage
+  window.requestNotificationPermission();
 
   if (typeof window.updateSymbols === 'function') {
     window.updateSymbols();
