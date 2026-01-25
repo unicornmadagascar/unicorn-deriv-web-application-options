@@ -3059,7 +3059,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       // État DÉSACTIVÉ
       if (btn) {
-        btn.classList.remove('armed');
+        btn.classList.remove('armed');  
         btn.classList.remove('sniper-active'); // Retrait de l'animation
       }
       if (dot) dot.style.backgroundColor = '#cbd5e1'; // Gris (Standard)
