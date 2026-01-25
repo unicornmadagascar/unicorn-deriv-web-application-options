@@ -159,6 +159,9 @@ document.addEventListener("DOMContentLoaded", () => {
     beActivation: 0.3,
     tsActivation: 0.6
   };
+  
+  let bePriceLine = null; // Ligne bleue pour le Breakeven
+  let tsPriceLine = null; // Ligne verte pour le Trailing Stop
   // ================== x ==================  
 
   let wsReady = false;
@@ -3557,7 +3560,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- DÉSACTIVATION ---
       tradeManager.isActive = false;
 
-      if (btn) btn.classList.remove('active');  
+      if (btn) btn.classList.remove('active');
 
       if (pnlLabel) {
         pnlLabel.innerText = "READY";       // On repasse en mode attente
@@ -3647,7 +3650,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 2. Calcul du PnL en pourcentage
     const entry = tradeManager.entryPrice;
-    let pnl = 0;  
+    let pnl = 0;
 
     if (tradeManager.side === 'BUY') {
       pnl = ((currentPrice - entry) / entry) * 100;
@@ -3685,6 +3688,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5. Mise à jour de l'UI
     window.updatePnLUI(pnl);
+    window.updateRiskLinesOnChart(pnl);
   };
 
   window.executeClosePosition = function (reason) {
@@ -3738,6 +3742,70 @@ document.addEventListener("DOMContentLoaded", () => {
         playSniperSound('CLOSE_LOSS');
       }
     }
+
+    window.removeRiskLines();
+  };
+
+  window.updateRiskLinesOnChart = function (pnl) {
+    if (!tradeManager || !tradeManager.isActive) {
+      window.removeRiskLines();
+      return;
+    }
+
+    const entry = tradeManager.entryPrice;
+    const side = tradeManager.side;
+
+    // --- 1. GESTION DU BREAKEVEN (BE) ---
+    // Calcul du prix du BE (Prix d'entrée + 0.05% pour couvrir les frais)
+    const bePrice = (side === 'BUY') ? entry * 1.0005 : entry * 0.9995;
+
+    if (pnl >= 0.1 && !bePriceLine) { // On l'affiche dès qu'on est un peu en profit
+      bePriceLine = currentSeries.createPriceLine({
+        price: bePrice,
+        color: '#3b82f6',
+        lineWidth: 2,
+        lineStyle: 2, // Pointillés
+        axisLabelVisible: true,
+        title: 'BREAKEVEN',
+      });
+    }
+
+    // --- 2. GESTION DU TRAILING STOP (TS) ---
+    if (pnl >= tradeManager.tsActivation) {
+      // Calcul du prix de sortie dynamique (Distance par rapport au sommet)
+      const peakPrice = (side === 'BUY')
+        ? entry * (1 + (tradeManager.highestPnL / 100))
+        : entry * (1 - (tradeManager.highestPnL / 100));
+
+      const tsDistancePrice = entry * (tradeManager.tsTrailingDist / 100);
+      const tsPrice = (side === 'BUY') ? peakPrice - tsDistancePrice : peakPrice + tsDistancePrice;
+
+      // Si la ligne n'existe pas, on la crée. Si elle existe, on la déplace.
+      if (!tsPriceLine) {
+        tsPriceLine = currentSeries.createPriceLine({
+          price: tsPrice,
+          color: '#10b981',
+          lineWidth: 2,
+          lineStyle: 0, // Ligne pleine
+          axisLabelVisible: true,
+          title: 'TRAILING STOP',
+        });
+      } else {
+        tsPriceLine.applyOptions({ price: tsPrice });
+      }
+    }
+  };
+
+  // Fonction pour tout nettoyer
+  window.removeRiskLines = function () {
+    if (bePriceLine) {
+      currentSeries.removePriceLine(bePriceLine);
+      bePriceLine = null;
+    }
+    if (tsPriceLine) {
+      currentSeries.removePriceLine(tsPriceLine);
+      tsPriceLine = null;
+    }
   };
 
   // --- VOTRE FONCTION MISE À JOUR ---
@@ -3785,7 +3853,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         ⬜ RR RATIO VALIDE ?  
                     </div>
                 </div>` : ''}       
-        `;   
+        `;
     }
 
     // 3. EFFETS VISUELS
