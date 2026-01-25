@@ -3283,7 +3283,7 @@ document.addEventListener("DOMContentLoaded", () => {
       sniperConfig = sniperProfiles.DEFAULT;
       return sniperProfiles.DEFAULT;
     }
-
+   
     const sym = symbol.toUpperCase(); 
     let profile;   
 
