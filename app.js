@@ -3359,7 +3359,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (profileName.includes("₿")) warningEl.style.color = "#f59e0b";      // Orange Crypto
       else if (profileName.includes("⚡")) warningEl.style.color = "#a855f7"; // Violet Synth
       else if (profileName.includes("👑")) warningEl.style.color = "#fbbf24"; // Or Metals
-      else warningEl.style.color = "#3b82f6";                                // Bleu Forex
+      else warningEl.style.color = "#3b82f6";                                  // Bleu Forex
     }
 
     // Détection de la clé de volume
