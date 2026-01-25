@@ -3781,7 +3781,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div style="font-size:10px; font-weight:900; color: #ef4444; margin-bottom:5px;">⚠️ VÉRIFICATION REQUISE</div>
                     <div style="font-size:11px; line-height: 1.4;">
                         ⬜ ${isLocked ? 'EXTRÊME : ATTENDRE' : 'VOLATILITÉ HAUTE'}<br>
-                        ⬜ PRIX CONFIRMÉ ?<br>
+                        ⬜ PRIX CONFIRMÉ ?<br>  
                         ⬜ RR RATIO VALIDE ?  
                     </div>
                 </div>` : ''}       
