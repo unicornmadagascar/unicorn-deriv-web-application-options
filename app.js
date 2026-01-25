@@ -3068,7 +3068,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("💤 MA SNIPER : STANDBY");
     }
   };    
-
+   
   /**  
  * SYSTEME MA SNIPER V2.0
  * Stratégies : Momentum ⚡, Crossover 🔄, Rebond 🎯
