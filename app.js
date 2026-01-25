@@ -1011,6 +1011,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- INITIALISATION DU GRAPHIQUE ---
     initChart(chartType);
     // --- UPDATING   
+    autoAdjustSniperConfig(currentSymbol);
     if (typeof window.syncAllChartMarkers === "function") {
       window.syncAllChartMarkers();
     }
@@ -3284,7 +3285,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const sym = symbol.toUpperCase(); 
-    let profile;
+    let profile;   
 
     // 1. Logique de détection par mots-clés (Conservée)
     if (sym.includes('R_') || sym.includes('BOO') || sym.includes('CRA') || sym.includes('1HZ') || sym.includes('JD') || sym.includes('STP')) {
