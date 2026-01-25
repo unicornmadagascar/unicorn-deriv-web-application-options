@@ -3557,7 +3557,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- DÉSACTIVATION ---
       tradeManager.isActive = false;
 
-      if (btn) btn.classList.remove('active');
+      if (btn) btn.classList.remove('active');  
 
       if (pnlLabel) {
         pnlLabel.innerText = "READY";       // On repasse en mode attente
