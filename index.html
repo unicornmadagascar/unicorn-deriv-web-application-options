@@ -4201,7 +4201,88 @@
       border: 1px solid #ef4444 !important;
       background-color: rgba(239, 68, 68, 0.1) !important;
     }
-    
+
+    /* Animation de pulsation verte pour le profit */
+    @keyframes pnl-pulse-green {
+      0% {
+        text-shadow: 0 0 0px rgba(16, 185, 129, 0);
+        transform: scale(1);
+      }
+
+      50% {
+        text-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+        transform: scale(1.05);
+      }
+
+      100% {
+        text-shadow: 0 0 0px rgba(16, 185, 129, 0);
+        transform: scale(1);
+      }
+    }
+
+    /* Animation de pulsation rouge pour l'alerte de perte */
+    @keyframes pnl-pulse-red {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+        transform: scale(0.95);
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    /* Classe appliquée quand le Trailing est actif (Profit sécurisé) */
+    .pnl-active-ts {
+      animation: pnl-pulse-green 1.5s infinite ease-in-out;
+      color: #10b981 !important;
+      display: inline-block;
+    }
+
+    /* Classe appliquée quand on approche du Stop Loss (Derniers 0.2%) */
+    .pnl-near-sl {
+      animation: pnl-pulse-red 0.8s infinite ease-in-out;
+      color: #ef4444 !important;
+      display: inline-block;
+    }
+
+    /* Texte PnL qui pulse */
+    .pnl-active-ts {
+      animation: pnl-pulse-green 1.5s infinite ease-in-out;
+    }
+
+    #btn-arm-risk.active {
+      background-color: #10b981 !important;
+      /* Vert émeraude */
+      color: white !important;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+      filter: brightness(1.2);
+    }
+
+    /* Animation pour le mode READY (Attente d'armement) */
+    @keyframes ready-fade {
+      0% {
+        opacity: 0.4;
+      }
+
+      50% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0.4;
+      }
+    }
+
+    .ready-pulse {
+      animation: ready-fade 2s infinite ease-in-out;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
   </style>
 </head>
 
@@ -4476,9 +4557,32 @@
             </div>
           </div>
 
+          <div id="risk-manager-panel" class="sniper-monitor"
+            style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 5px; padding-top: 5px;">
+            <div class="monitor-info">
+              <span style="font-size: 9px; font-weight: bold; color: #94a3b8;">RISK MANAGER</span>
+              <span id="pnl-value-label" style="font-size: 11px; font-weight: 900; color: #cbd5e1;">0.00%</span>
+            </div>
+
+            <div style="display: flex; gap: 4px; margin-top: 4px;">
+              <select id="set-max-loss" class="sniper-select" style="flex: 1; font-size: 9px; height: 22px;">
+                <option value="-0.5">SL: -0.5%</option>
+                <option value="-1.0" selected>SL: -1.0%</option>
+                <option value="-2.0">SL: -2.0%</option>
+              </select>
+              <select id="set-ts-dist" class="sniper-select" style="flex: 1; font-size: 9px; height: 22px;">
+                <option value="0.1">TS: 0.1%</option>
+                <option value="0.2" selected>TS: 0.2%</option>
+                <option value="0.5">TS: 0.5%</option>
+              </select>
+            </div>
+          </div>
+
           <div id="ma-sniper-alert-badge"></div>
 
           <div class="sniper-actions">
+            <button id="btn-arm-risk" class="action-btn" onclick="window.armRiskFromPanel()"
+              title="Armer/Désarmer le suivi BE/TS" style="transition: all 0.3s;">🎯</button>
             <button id="btn-auto-screen" class="action-btn" onclick="window.toggleAutoScreenshot()"
               style="filter: grayscale(100%); transition: all 0.3s;" title="Auto-Capture: OFF">📸</button>
             <button class="action-btn" onclick="exportMAModelToCSV()" title="Exporter">📥</button>

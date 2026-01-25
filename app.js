@@ -147,6 +147,18 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentEma50 = 0;
   // État par défaut : désactivé (pour éviter de remplir votre dossier téléchargement par erreur)
   window.autoScreenshotActive = false;
+  // --- INITIALISATION GLOBALE ---
+  let tradeManager = {
+    isActive: false,       // Le verrou principal est fermé
+    entryPrice: 0,
+    side: null,            // 'BUY' ou 'SELL'
+    highestPnL: 0,         // Record pour le Trailing
+    isBE: false,           // État du Breakeven
+    maxLoss: -1.0,         // Valeur par défaut
+    tsTrailingDist: 0.2,   // Valeur par défaut
+    beActivation: 0.3,
+    tsActivation: 0.6
+  };
   // ================== x ==================  
 
   let wsReady = false;
@@ -1098,6 +1110,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (lastBar && isWsInitialized) {
           // Mise à jour de Lightweight Charts
           currentSeries.update(lastBar);
+
+          // --- AJOUT CRITIQUE : MONITORING DU RISK MANAGER (PnL, BE, TS) ---
+          // On le place ici pour une réactivité maximale à chaque tick de prix
+          window.currentClosePrice = lastBar.close; // On synchronise le prix pour l'armement
+          if (typeof window.runSmartRiskManager === 'function') {
+            window.runSmartRiskManager(lastBar.close);
+          }
 
           // Mise à jour du cache local
           if (cache.length > 0) {
@@ -2921,84 +2940,96 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.masterReset = function () {
-    if (confirm("🚨 Voulez-vous réinitialiser TOUS les paramètres (EMA, Sniper, Bollinger, Logs) ?")) {
+    if (confirm("🚨 Voulez-vous réinitialiser TOUS les paramètres (EMA, Sniper, Risk Manager, Logs) ?")) {
 
-      // 1. Vider le LocalStorage
+      // 1. Vidage complet du stockage (Local & Variables)
       localStorage.clear();
 
-      // 2. Désactiver les états de trading et variables globales
+      // États du Sniper
       maSniperActive = false;
       isSniperSynergyActive = false;
       lastProcessedCandleTime = null;
       activePeriods = [];
 
-      // 3. Vider l'historique des marqueurs (Nouvelle clé incluse)
+      // 2. RÉINITIALISATION DU RISK MANAGER (PnL, BE/TS)
+      if (window.tradeManager) {
+        window.tradeManager.isActive = false;
+        window.tradeManager.highestPnL = 0;
+        window.tradeManager.isBE = false;
+      }
+
+      // 3. Vider l'historique des marqueurs (Graphique)
       allMarkers = [];
       maSniperMarkers = [];
-      // On vide explicitement la clé spécifique au stockage persistant
       localStorage.removeItem('ma_sniper_markers_history');
 
       if (typeof window.syncAllChartMarkers === 'function') {
         window.syncAllChartMarkers();
       }
 
-      // 4. Masquer et nettoyer les séries de données (EMA)
-      if (maSeries) {
+      // 4. Masquer et nettoyer les séries EMA sur le graphique
+      if (typeof maSeries !== 'undefined' && maSeries) {
         Object.values(maSeries).forEach(series => {
           series.setData([]);
           series.applyOptions({ visible: false });
         });
       }
 
-      // 5. Réinitialiser l'interface (Boutons d'activation)
-      const allMaButtons = document.querySelectorAll('button[onclick*="toggleMA"]');
+      // 5. Réinitialisation visuelle des boutons (🚀 et autres)
+      const allMaButtons = document.querySelectorAll('button[onclick*="toggleMA"], #ma-sniper-btn, #btn-arm-risk');
       allMaButtons.forEach(btn => {
-        btn.classList.remove('active', 'sniper-ready');
+        // On retire TOUTES les classes d'animation que nous avons ajoutées
+        btn.classList.remove('active', 'armed', 'sniper-active', 'sniper-ready', 'capture-active');
         btn.style.backgroundColor = "";
+        btn.style.filter = ""; // Pour le bouton 📸
       });
 
-      // 6. Nettoyage INTELLIGENT des Badges et Alertes
-      // On ne cache pas le label (le badge lui-même), on réinitialise son état visuel
+      // 6. Nettoyage de l'interface du Panel Sniper
       const sniperLabel = document.getElementById('ma-sniper-label');
       if (sniperLabel) {
-        // On retire les classes d'animation et de couleur
         sniperLabel.classList.remove('badge-flash-buy', 'badge-flash-sell', 'sniper-shake', 'critical-shake');
-        // On ne fait PAS .innerHTML = '' ici pour ne pas détruire les boutons/titre
       }
 
-      // On nettoie UNIQUEMENT le contenu des alertes (la pilule/checklist)
+      // Reset spécifique du Risk Manager dans le Panel
+      const pnlLabel = document.getElementById('pnl-value-label');
+      if (pnlLabel) {
+        pnlLabel.innerText = "0.00%";
+        pnlLabel.style.color = "#cbd5e1";
+        pnlLabel.classList.remove('pnl-active-ts', 'pnl-near-sl');
+      }
+
+      // Réinitialisation du texte ON/OFF
+      const statusText = document.getElementById('ma-status-value');
+      if (statusText) statusText.innerText = 'OFF';
+
+      const dot = document.getElementById('ma-signal-dot');
+      if (dot) dot.style.backgroundColor = '#cbd5e1';
+
+      // 7. Nettoyage des Alertes (Pilules/Checklist)
       const alertBadge = document.getElementById('ma-sniper-alert-badge');
       if (alertBadge) {
         alertBadge.innerHTML = '';
-        alertBadge.style.display = 'block'; // On le laisse dispo pour la prochaine alerte
       }
 
       const volLabel = document.getElementById('volatility-label');
       if (volLabel) volLabel.style.display = 'none';
 
-      // 7. Reset des indicateurs de Monitoring (Barre de Gap)
-      // On appelle updateGapMonitor avec des valeurs nulles pour remettre le point en gris/OFF
+      // 8. Reset des indicateurs de Monitoring (Barre de Gap)
       if (typeof window.updateGapMonitor === "function") {
         window.updateGapMonitor(null, null, null);
       } else {
-        // Fallback manuel si la fonction n'est pas là
         const volBar = document.getElementById('volume-bar');
         const volPercent = document.getElementById('volume-percent');
         if (volBar) volBar.style.width = "0%";
         if (volPercent) volPercent.innerHTML = "G: 0.000%";
       }
 
-      // 8. Rafraîchir les logs (si actif)
-      /*if (typeof window.renderLogTable === 'function') {
-        window.renderLogTable();
-      }*/
-
-      // 9. Feedback sonore
+      // 9. Feedback sonore et Logs
       if (typeof playSniperSound === 'function') {
         playSniperSound('RESET');
       }
 
-      console.log("🧹 Système réinitialisé proprement (Structure conservée).");
+      console.log("🧹 Master Reset : Système remis à zéro, Risk Manager désactivé.");
       alert("Dashboard réinitialisé avec succès.");
     }
   };
@@ -3009,12 +3040,20 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // Si déjà refusé, on informe l'utilisateur (optionnel mais utile pour le debug)
+    if (Notification.permission === "denied") {
+      console.warn("🔔 Notifications bloquées par les réglages du navigateur.");
+      return;
+    }
+
     if (Notification.permission !== "granted") {
       Notification.requestPermission().then(permission => {
         if (permission === "granted") {
           console.log("🔔 Notifications activées !");
-          // Notification de test
-          new Notification("Sniper MA", { body: "Notifications prêtes pour les signaux !" });
+          new Notification("Sniper MA", {
+            body: "Notifications prêtes pour les signaux !",
+            icon: "https://votre-icone-url.com/icon.png" // Optionnel : ajoutez votre logo
+          });
         }
       });
     }
@@ -3024,7 +3063,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.toggleMASniper = function (event) {
     if (event) event.stopPropagation();
 
-    // 1. Vérification de sécurité EMA (Conservée)
+    // 1. Vérification de sécurité EMA
     if (!activePeriods.includes(20) || !activePeriods.includes(50)) {
       console.warn("⚠️ EMA 20 et 50 doivent être actives pour le Sniper.");
       return;
@@ -3035,7 +3074,7 @@ document.addEventListener("DOMContentLoaded", () => {
       window.requestNotificationPermission();
     }
 
-    // 3. Basculement de l'état (Inversion)
+    // 3. Basculement de l'état
     maSniperActive = !maSniperActive;
 
     // 4. SAUVEGARDE DE L'ÉTAT
@@ -3045,30 +3084,50 @@ document.addEventListener("DOMContentLoaded", () => {
     const btn = document.getElementById('ma-sniper-btn');
     const dot = document.getElementById('ma-signal-dot');
     const statusText = document.getElementById('ma-status-value');
+    const pnlLabel = document.getElementById('pnl-value-label');
+    const riskBtn = document.getElementById('btn-arm-risk');
 
     if (maSniperActive) {
-      // État ACTIVÉ
+      // --- ÉTAT ACTIVÉ ---
       if (btn) {
-        btn.classList.add('armed');
-        btn.classList.add('sniper-active'); // Ajout de la classe d'animation
+        btn.classList.add('armed', 'sniper-active');
       }
-      if (dot) dot.style.backgroundColor = '#2ecc71'; // Vert éclatant
+      if (dot) dot.style.backgroundColor = '#2ecc71';
       if (statusText) statusText.innerText = 'ON';
+
+      // Message "READY" clignotant si le Risk Manager n'est pas encore armé
+      if (pnlLabel) {
+        pnlLabel.innerText = "READY";
+        pnlLabel.style.color = "#3b82f6"; // Bleu "Ready"
+        pnlLabel.classList.add('ready-pulse'); // On ajoute l'animation
+      }
 
       console.log("🚀 MA SNIPER : ARMED & READY");
     } else {
-      // État DÉSACTIVÉ
+      // --- ÉTAT DÉSACTIVÉ ---
       if (btn) {
-        btn.classList.remove('armed');  
-        btn.classList.remove('sniper-active'); // Retrait de l'animation
+        btn.classList.remove('armed', 'sniper-active');
       }
-      if (dot) dot.style.backgroundColor = '#cbd5e1'; // Gris (Standard)
-      if (statusText) statusText.innerText = 'OFF';  
-  
-      console.log("💤 MA SNIPER : STANDBY");
-    }    
-  };         
-   
+      if (dot) dot.style.backgroundColor = '#cbd5e1';
+      if (statusText) statusText.innerText = 'OFF';
+
+      // 🛑 SÉCURITÉ : Désactiver le Risk Manager si on éteint le Sniper
+      if (tradeManager) {
+        tradeManager.isActive = false;
+      }
+
+      if (riskBtn) riskBtn.classList.remove('active');
+
+      if (pnlLabel) {
+        pnlLabel.innerText = "0.00%";
+        pnlLabel.style.color = "#cbd5e1";
+        pnlLabel.classList.remove('ready-pulse', 'pnl-active-ts', 'pnl-near-sl');
+      }
+
+      console.log("💤 MA SNIPER : STANDBY (Risk Manager Reset)");
+    }
+  };
+
   /**  
  * SYSTEME MA SNIPER V2.0
  * Stratégies : Momentum ⚡, Crossover 🔄, Rebond 🎯
@@ -3120,30 +3179,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log(`🎯 [${baseProfile.label}] Sensibilité : ${mode.toUpperCase()}`);
   };
-
-  // --- 2. Activation du Sniper ---
-  /*window.toggleMASniper = function (event) {
-    if (event) event.stopPropagation();
-
-    maSniperActive = !maSniperActive;
-    const btn = document.getElementById('ma-sniper-btn');
-    const status = document.getElementById('ma-status-value');
-    const dot = document.getElementById('ma-signal-dot');
-
-    if (maSniperActive) {
-      btn.classList.add('active');
-      status.innerText = "SCANNING";
-      status.style.color = "#2196F3";
-      dot.style.background = "#2196F3";
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-    } else {
-      btn.classList.remove('active');
-      status.innerText = "OFF";
-      status.style.color = "#64748b";
-      dot.style.background = "#cbd5e1";
-      document.getElementById('ma-sniper-alert-badge').innerHTML = "";
-    }
-  };*/
 
   // --- 3. Moteur de Détection ---
   /**
@@ -3425,7 +3460,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!data || data.length < 2) return true;
 
     // Récupération de la config (mise à jour par autoAdjustSniperConfig)
-    const config = window.sniperConfig || { label: "🔍 AUTO", gapThreshold: 1.0 };
+    const config = sniperConfig || { label: "🔍 AUTO", gapThreshold: 1.0 };
     const currentCandle = data[data.length - 1];
     const profileName = config.currentProfileLabel || config.label || "🔍 AUTO";
 
@@ -3445,8 +3480,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- CAS A : SANS VOLUME ou SYNTHÉTIQUE (Affichage du GAP) ---
     if (hasNoVolumeData || profileName.includes("⚡")) {
-      if (window.currentEma20 && window.currentEma50) {
-        const gap = Math.abs(((window.currentEma20 - window.currentEma50) / window.currentEma50) * 100);
+      if (currentEma20 && currentEma50) {
+        const gap = Math.abs(((currentEma20 - currentEma50) / currentEma50) * 100);
         if (volPercent) volPercent.innerText = `G: ${gap.toFixed(3)}%`;
         if (volBar) {
           const progress = Math.min((gap / (config.gapThreshold * 1.5)) * 100, 100);
@@ -3502,6 +3537,209 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  window.armRiskFromPanel = function () {
+    const btn = document.getElementById('btn-arm-risk');
+    const pnlLabel = document.getElementById('pnl-value-label');
+
+    // --- 1. SÉCURITÉ : Vérifier si le Sniper est ON ---
+    if (!maSniperActive) {
+      const label = document.getElementById('ma-sniper-label');
+      if (label) {
+        label.classList.add('critical-shake');
+        setTimeout(() => label.classList.remove('critical-shake'), 500);
+      }
+      console.warn("⚠️ Impossible d'armer le Risk Manager : MA SNIPER est sur OFF.");
+      return;
+    }
+
+    // --- 2. LOGIQUE TOGGLE ---
+    if (tradeManager && tradeManager.isActive) {
+      // --- DÉSACTIVATION ---
+      tradeManager.isActive = false;
+
+      if (btn) btn.classList.remove('active');
+
+      if (pnlLabel) {
+        pnlLabel.innerText = "READY";       // On repasse en mode attente
+        pnlLabel.style.color = "#3b82f6";   // Retour au bleu "Ready"
+        pnlLabel.classList.add('ready-pulse'); // On relance le clignotement
+        pnlLabel.classList.remove('pnl-active-ts', 'pnl-near-sl');
+      }
+
+      console.log("🛑 Risk Manager : DÉSACTIVÉ. Retour au mode READY.");
+    } else {
+      // --- ACTIVATION ---
+      // On initialise l'objet avec les valeurs des sélecteurs HTML
+      tradeManager = {
+        isActive: true,
+        entryPrice: window.currentClosePrice || 0, // Assurez-vous que cette variable globale existe
+        side: window.lastSignalSide || 'BUY',
+        highestPnL: 0,
+        isBE: false,
+        maxLoss: parseFloat(document.getElementById('set-max-loss').value),
+        tsTrailingDist: parseFloat(document.getElementById('set-ts-dist').value),
+        beActivation: 0.3, // BE s'active à +0.3%
+        tsActivation: 0.6  // TS s'active à +0.6%
+      };
+
+      if (btn) btn.classList.add('active');
+
+      if (pnlLabel) {
+        pnlLabel.classList.remove('ready-pulse'); // On arrête le clignotement "Ready"
+        pnlLabel.innerText = "0.00%";             // On affiche le départ du calcul
+        pnlLabel.style.color = "#10b981";         // Couleur neutre/profit
+      }
+
+      console.log(`🎯 Risk Manager : ARMÉ sur ${tradeManager.side} | SL: ${tradeManager.maxLoss}% | TS Dist: ${tradeManager.tsTrailingDist}%`);
+    }
+  };
+
+  // Mise à jour du texte PnL et des animations de pulsation
+  window.updatePnLUI = function (pnl) {
+    const label = document.getElementById('pnl-value-label');
+    if (!label) return;
+
+    // --- SÉCURITÉ : Si le Risk Manager n'est pas actif, on force l'état READY ---
+    if (!tradeManager || !tradeManager.isActive) {
+      if (maSniperActive) {
+        label.innerText = "READY";
+        label.style.color = "#3b82f6";
+        label.classList.add('ready-pulse');
+      } else {
+        label.innerText = "0.00%";
+        label.style.color = "#cbd5e1";
+        label.classList.remove('ready-pulse');
+      }
+      return;
+    }
+
+    // --- MISE À JOUR DU TEXTE PnL ---
+    label.innerText = (pnl > 0 ? "+" : "") + pnl.toFixed(2) + "%";
+
+    // On retire systématiquement ready-pulse dès qu'on calcule un PnL réel
+    label.classList.remove('ready-pulse', 'pnl-active-ts', 'pnl-near-sl');
+
+    // --- LOGIQUE DES COULEURS ET ANIMATIONS ---
+    if (pnl >= 0) {
+      label.style.color = "#10b981"; // Vert (Profit)
+
+      // Si le Trailing Stop est actif (Profit > seuil d'activation)
+      if (pnl >= tradeManager.tsActivation) {
+        label.classList.add('pnl-active-ts'); // Pulsation verte
+      }
+    } else {
+      label.style.color = "#ef4444"; // Rouge (Loss)
+
+      // Alerte visuelle si on approche du Stop Loss (distance de 0.2%)
+      if (pnl <= (tradeManager.maxLoss + 0.2)) {
+        label.classList.add('pnl-near-sl'); // Pulsation rouge rapide
+      }
+    }
+  };
+
+  window.runSmartRiskManager = function (currentPrice) {
+    // 1. Verrou de sécurité : on ne fait rien si le Risk Manager n'est pas "ARMÉ"
+    if (!tradeManager || !tradeManager.isActive) {
+      // Optionnel : On s'assure que l'UI affiche READY si le Sniper est ON
+      if (maSniperActive) window.updatePnLUI(0);
+      return;
+    }
+
+    // 2. Calcul du PnL en pourcentage
+    const entry = tradeManager.entryPrice;
+    let pnl = 0;
+
+    if (tradeManager.side === 'BUY') {
+      pnl = ((currentPrice - entry) / entry) * 100;
+    } else {
+      pnl = ((entry - currentPrice) / entry) * 100;
+    }
+
+    // 3. Mise à jour du plus haut profit atteint (Peak)
+    if (pnl > tradeManager.highestPnL) {
+      tradeManager.highestPnL = pnl;
+    }
+
+    // 4. LOGIQUE DE SORTIE AUTOMATIQUE (L'intelligence du système)
+
+    // A. STOP LOSS : Sortie si la perte atteint le seuil (ex: -1.0%)
+    if (pnl <= tradeManager.maxLoss) {
+      window.executeClosePosition(`STOP LOSS REACHED (${pnl.toFixed(2)}%)`);
+      return;
+    }
+
+    // B. BREAKEVEN : Si profit > 0.3%, on sécurise (empêche de repasser en négatif)
+    if (pnl >= tradeManager.beActivation && !tradeManager.isBE) {
+      tradeManager.isBE = true;
+      console.log("🛡️ Breakeven activé : Capital protégé.");
+    }
+
+    // C. TRAILING STOP : Si profit > 0.6%, on suit la chute depuis le sommet
+    if (pnl >= tradeManager.tsActivation) {
+      const dropFromPeak = tradeManager.highestPnL - pnl;
+      if (dropFromPeak >= tradeManager.tsTrailingDist) {
+        window.executeClosePosition(`TRAILING STOP HIT (${pnl.toFixed(2)}%)`);
+        return;
+      }
+    }
+
+    // 5. Mise à jour de l'UI
+    window.updatePnLUI(pnl);
+  };
+
+  window.executeClosePosition = function (reason) {
+    // 1. Désactivation immédiate du moteur de calcul
+    if (tradeManager) {
+      tradeManager.isActive = false;
+    }
+
+    // 2. Feedback visuel sur le bouton 🎯 (Reset du Toggle)
+    const btn = document.getElementById('btn-arm-risk');
+    if (btn) {
+      btn.classList.remove('active');
+      btn.style.backgroundColor = "";
+    }
+
+    // 3. Notification dans la console pour le suivi (Logs)
+    console.warn(`🚀 POSITION CLOSE : ${reason}`);
+
+    // 4. Mise à jour du Label PnL avec un état de transition
+    const pnlLabel = document.getElementById('pnl-value-label');
+    if (pnlLabel) {
+      pnlLabel.innerText = "EXIT";
+      pnlLabel.style.color = "#fb923c"; // Orange alerte
+      pnlLabel.classList.remove('pnl-active-ts', 'pnl-near-sl', 'ready-pulse');
+
+      // 5. Retour automatique au mode "READY" après 3 secondes
+      setTimeout(() => {
+        if (maSniperActive) {
+          pnlLabel.innerText = "READY";
+          pnlLabel.style.color = "#3b82f6"; // Bleu Ready
+          pnlLabel.classList.add('ready-pulse');
+        } else {
+          pnlLabel.innerText = "0.00%";
+          pnlLabel.style.color = "#cbd5e1";
+        }
+      }, 3000);
+    }
+
+    // 6. Déclencheur Optionnel : Capture d'écran de la sortie
+    if (window.autoScreenshotActive && typeof window.captureSniperShot === 'function') {
+      window.captureSniperShot({ subtype: 'EXIT_TRADE' }, currentSymbol);
+    }
+
+    // 7. Feedback sonore INTELLIGENT
+    if (typeof playSniperSound === 'function') {
+      // Si la raison contient "TRAILING" ou "STOP HIT" (en profit), on joue le son de victoire
+      // Sinon, si c'est un "STOP LOSS", on joue le son de perte
+      if (reason.includes("TRAILING") || reason.includes("HIT")) {
+        playSniperSound('CLOSE_WIN');
+      } else {
+        playSniperSound('CLOSE_LOSS');
+      }
+    }
+  };
+
   // --- VOTRE FONCTION MISE À JOUR ---
   window.triggerMASniperAlert = function (signal, candle, e20, e50) {
     const maSniperLabel = document.getElementById('ma-sniper-label');
@@ -3533,8 +3771,8 @@ document.addEventListener("DOMContentLoaded", () => {
       alertBadge.innerHTML = `
             <div class="${alertClass}" id="current-sniper-alert" style="border-left: 5px solid ${signal.color}">
                 <div class="msg-main-info" onclick="if(window.toggleLogTable) toggleLogTable()" style="cursor:pointer">
-                    <span style="font-weight:bold">${icon}</span>
-                    <span style="font-size:11px; display:block">Gap: ${emaGap}% | Prix: ${candle.close.toFixed(2)}</span>
+                  <span style="font-weight:bold">${icon}</span>
+                  <span style="font-size:11px; display:block">Gap: ${emaGap}% | Prix: ${candle.close.toFixed(2)}</span>
                 </div>
                 <div class="msg-close-btn" onclick="if(window.closeSniperAlert) closeSniperAlert(); else this.parentElement.remove();" style="cursor:pointer">✕</div>
             </div>
@@ -3546,7 +3784,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         ⬜ PRIX CONFIRMÉ ?<br>
                         ⬜ RR RATIO VALIDE ?  
                     </div>
-                </div>` : ''}      
+                </div>` : ''}       
         `;
     }
 
@@ -3693,36 +3931,53 @@ document.addEventListener("DOMContentLoaded", () => {
       gain.gain.exponentialRampToValueAtTime(0.01, start + duration);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
-      osc.start();
+      osc.start(start);
       osc.stop(start + duration);
     };
 
     switch (type) {
-      case 'ARMED': // Duo 20/50 activé
+      case 'ARMED': // Activation du Sniper (🚀)
         playTone(880, now, 0.1, 'sine', 0.1);
         setTimeout(() => playTone(1760, audioCtx.currentTime, 0.1, 'sine', 0.1), 100);
         break;
 
-      case 'CRITICAL': // Gap > 3% (Sirène)
+      case 'RISK_ON': // Armement du Risk Manager (🎯)
+        playTone(660, now, 0.05, 'sine', 0.1);
+        playTone(880, now + 0.1, 0.05, 'sine', 0.1);
+        playTone(1320, now + 0.2, 0.1, 'sine', 0.1);
+        break;
+
+      case 'SIGNAL': // Signal standard
+        playTone(1200, now, 0.05, 'sine', 0.05);
+        break;
+
+      case 'CRITICAL': // Alerte Gap (Sirène)
         playTone(880, now, 0.15, 'square', 0.1);
         playTone(660, now + 0.2, 0.2, 'square', 0.1);
         break;
 
-      case 'SIGNAL': // Signal standard (Bip discret)
-        playTone(1200, now, 0.05, 'sine', 0.05);
+      case 'CLOSE_WIN': // Sortie Profit / TS Hit (Son ascendant joyeux)
+        playTone(523.25, now, 0.1, 'sine', 0.1); // C5
+        playTone(659.25, now + 0.1, 0.1, 'sine', 0.1); // E5
+        playTone(783.99, now + 0.2, 0.3, 'sine', 0.1); // G5
         break;
 
-      case 'RESET': // Nettoyage (Son descendant)
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.frequency.setValueAtTime(440, now);
-        osc.frequency.exponentialRampToValueAtTime(110, now + 0.3);
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(now + 0.3);
+      case 'CLOSE_LOSS': // Sortie Stop Loss (Bip grave préventif)
+        playTone(220, now, 0.2, 'triangle', 0.1);
+        playTone(220, now + 0.3, 0.2, 'triangle', 0.1);
+        break;
+
+      case 'RESET': // Nettoyage
+        const oscR = audioCtx.createOscillator();
+        const gainR = audioCtx.createGain();
+        oscR.frequency.setValueAtTime(440, now);
+        oscR.frequency.exponentialRampToValueAtTime(110, now + 0.3);
+        gainR.gain.setValueAtTime(0.1, now);
+        gainR.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        oscR.connect(gainR);
+        gainR.connect(audioCtx.destination);
+        oscR.start();
+        oscR.stop(now + 0.3);
         break;
     }
   }
