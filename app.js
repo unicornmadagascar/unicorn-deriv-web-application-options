@@ -3066,7 +3066,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (statusText) statusText.innerText = 'OFF';  
   
       console.log("💤 MA SNIPER : STANDBY");
-    }
+    }  
   };       
    
   /**  
