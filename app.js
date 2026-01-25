@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
     beActivation: 0.3,
     tsActivation: 0.6
   };
-  
+
   let bePriceLine = null; // Ligne bleue pour le Breakeven
   let tsPriceLine = null; // Ligne verte pour le Trailing Stop
   // ================== x ==================  
@@ -3045,7 +3045,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Si déjà refusé, on informe l'utilisateur (optionnel mais utile pour le debug)
     if (Notification.permission === "denied") {
-      console.warn("🔔 Notifications bloquées par les réglages du navigateur.");
+      console.warn("🔔 Notifications bloquées par les réglages du navigateur.");  
       return;
     }
 
