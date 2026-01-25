@@ -3063,7 +3063,7 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.classList.remove('sniper-active'); // Retrait de l'animation
       }
       if (dot) dot.style.backgroundColor = '#cbd5e1'; // Gris (Standard)
-      if (statusText) statusText.innerText = 'OFF';
+      if (statusText) statusText.innerText = 'OFF';  
 
       console.log("💤 MA SNIPER : STANDBY");
     }
