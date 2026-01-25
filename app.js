@@ -2955,10 +2955,10 @@ document.addEventListener("DOMContentLoaded", () => {
       activePeriods = [];
 
       // 2. RÉINITIALISATION DU RISK MANAGER (PnL, BE/TS)
-      if (window.tradeManager) {
-        window.tradeManager.isActive = false;
-        window.tradeManager.highestPnL = 0;
-        window.tradeManager.isBE = false;
+      if (tradeManager) {
+        tradeManager.isActive = false;
+        tradeManager.highestPnL = 0;
+        tradeManager.isBE = false;
       }
 
       // 3. Vider l'historique des marqueurs (Graphique)
@@ -3471,7 +3471,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (warningEl) {
       warningEl.innerText = profileName;
       // Couleur basée sur le texte du label
-      if (profileName.includes("₿")) warningEl.style.color = "#f59e0b";      // Orange Crypto
+      if (profileName.includes("₿")) warningEl.style.color = "#ffffff";      // Orange Crypto
       else if (profileName.includes("⚡")) warningEl.style.color = "#a855f7"; // Violet Synth
       else if (profileName.includes("👑")) warningEl.style.color = "#fbbf24"; // Or Metals
       else warningEl.style.color = "#3b82f6";                                  // Bleu Forex
