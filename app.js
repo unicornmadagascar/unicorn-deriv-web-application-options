@@ -3064,7 +3064,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       if (dot) dot.style.backgroundColor = '#cbd5e1'; // Gris (Standard)
       if (statusText) statusText.innerText = 'OFF';  
-
+  
       console.log("💤 MA SNIPER : STANDBY");
     }
   };    
