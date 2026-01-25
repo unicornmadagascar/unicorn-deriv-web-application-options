@@ -3785,7 +3785,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         ⬜ RR RATIO VALIDE ?  
                     </div>
                 </div>` : ''}       
-        `;
+        `;   
     }
 
     // 3. EFFETS VISUELS
