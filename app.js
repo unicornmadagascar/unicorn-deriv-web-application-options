@@ -3471,10 +3471,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (warningEl) {
       warningEl.innerText = profileName;
       // Couleur basée sur le texte du label
-      if (profileName.includes("₿")) warningEl.style.color = "#ffffff";      // Orange Crypto
-      else if (profileName.includes("⚡")) warningEl.style.color = "#a855f7"; // Violet Synth
-      else if (profileName.includes("👑")) warningEl.style.color = "#fbbf24"; // Or Metals
-      else warningEl.style.color = "#3b82f6";                                  // Bleu Forex
+      if (profileName.includes("₿")) warningEl.style.color = "#ffffff";        // Orange Crypto
+      else if (profileName.includes("⚡")) warningEl.style.color = "#a855f7";  // Violet Synth
+      else if (profileName.includes("👑")) warningEl.style.color = "#fbbf24";  // Or Metals
+      else warningEl.style.color = "#3b82f6";                                   // Bleu Forex
     }
 
     // Détection de la clé de volume
