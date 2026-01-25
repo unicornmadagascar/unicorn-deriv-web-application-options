@@ -3066,8 +3066,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (statusText) statusText.innerText = 'OFF';  
   
       console.log("💤 MA SNIPER : STANDBY");
-    }  
-  };       
+    }    
+  };         
    
   /**  
  * SYSTEME MA SNIPER V2.0
