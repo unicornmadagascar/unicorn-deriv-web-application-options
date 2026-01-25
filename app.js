@@ -3283,27 +3283,28 @@ document.addEventListener("DOMContentLoaded", () => {
       return sniperProfiles.DEFAULT;
     }
 
-    const sym = symbol.toUpperCase();
+    const sym = symbol.toUpperCase(); 
     let profile;
 
-    // 1. Logique de détection par mots-clés
-    if (sym.includes('R_') || sym.includes('BOO') || sym.includes('CRA') || sym.includes('1HZ') || sym.includes('JD') || sym.includes('1HZ') || sym.includes('STP')) {
+    // 1. Logique de détection par mots-clés (Conservée)
+    if (sym.includes('R_') || sym.includes('BOO') || sym.includes('CRA') || sym.includes('1HZ') || sym.includes('JD') || sym.includes('STP')) {
       profile = sniperProfiles.SYNTH;
     } else if (sym.includes('XAU') || sym.includes('PALLADIUM') || sym.includes('PLATINUM') || sym.includes('XPT') || sym.includes('XPD') || sym.includes('XAG')) {
       profile = sniperProfiles.METALS;
-    } else if (sym.includes('BTC') || sym.includes('ETC')) {
+    } else if (sym.includes('BTC') || sym.includes('ETC') || sym.includes('ETH')) {
       profile = sniperProfiles.CRYPTO;
     } else {
       profile = sniperProfiles.FOREX;
     }
 
-    // 2. Mise à jour de la config globale (Utilisation de window pour la portée)
+    // 2. Mise à jour de la config globale
+    // AJOUT CRUCIAL : On lie le label pour que isVolumeValidated le lise
+    profile.currentProfileLabel = profile.label;
     sniperConfig = { ...profile };
 
-    // 3. Mise à jour visuelle du badge
+    // 3. Mise à jour visuelle du badge (Conservée et optimisée)
     const warningEl = document.getElementById('no-vol-warning');
     if (warningEl) {
-      // Définition des couleurs selon le profil
       const profileColors = {
         "⚡ SYNTH": { bg: "#8b5cf6", text: "#ffffff" },
         "👑 METAL": { bg: "#fbbf24", text: "#000000" },
@@ -3314,6 +3315,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const theme = profileColors[profile.label] || profileColors["🔍 AUTO"];
 
+      // Application des styles
       warningEl.innerText = profile.label;
       warningEl.style.display = 'inline-block';
       warningEl.style.backgroundColor = theme.bg;
@@ -3324,49 +3326,52 @@ document.addEventListener("DOMContentLoaded", () => {
       warningEl.style.fontSize = "10px";
       warningEl.style.transition = "all 0.3s ease";
 
-      // Ajout d'un petit effet de flash/pulsation lors du changement
+      // Animation de changement
       warningEl.classList.remove('profile-switch');
-      void warningEl.offsetWidth; // Force le reflow pour relancer l'animation
+      void warningEl.offsetWidth;
       warningEl.classList.add('profile-switch');
     }
 
     console.log(`📡 Profil activé : ${profile.label} pour ${sym}`);
     return profile;
-  }
+  }  
 
   /**
  * Valide le volume si disponible, sinon bascule sur le monitoring du Gap EMA.
  * S'adapte aux indices synthétiques (R_50), au Forex, aux Cryptos et Actions.
  */
-  function isVolumeValidated(data) {
+  window.isVolumeValidated = function (data) {
     const warningEl = document.getElementById('no-vol-warning');
     const volBar = document.getElementById('volume-bar');
     const volPercent = document.getElementById('volume-percent');
 
-    if (!data || data.length < 20) return true;
+    if (!data || data.length < 2) return true;
 
-    // On récupère la config déjà mise à jour par autoAdjustSniperConfig
-    const config = sniperConfig;
+    // Récupération de la config (mise à jour par autoAdjustSniperConfig)
+    const config = window.sniperConfig || { label: "🔍 AUTO", gapThreshold: 1.0 };
     const currentCandle = data[data.length - 1];
+    const profileName = config.currentProfileLabel || config.label || "🔍 AUTO";
 
-    // Mise à jour visuelle du badge avec le label du profil
+    // --- MISE À JOUR VISUELLE DU BADGE (Label de l'actif) ---
     if (warningEl) {
-      warningEl.innerText = config.currentProfileLabel || "🔍 AUTO";
-      // Couleur dynamique simple
-      const label = config.currentProfileLabel;
-      warningEl.style.color = label.includes("₿") ? "#f59e0b" : (label.includes("⚡") ? "#8b5cf6" : "#3b82f6");
+      warningEl.innerText = profileName;
+      // Couleur basée sur le texte du label
+      if (profileName.includes("₿")) warningEl.style.color = "#f59e0b";      // Orange Crypto
+      else if (profileName.includes("⚡")) warningEl.style.color = "#a855f7"; // Violet Synth
+      else if (profileName.includes("👑")) warningEl.style.color = "#fbbf24"; // Or Metals
+      else warningEl.style.color = "#3b82f6";                                // Bleu Forex
     }
 
-    // Détection du volume
+    // Détection de la clé de volume
     const volKey = ['volume', 'v', 'tick_volume'].find(k => k in currentCandle);
+    const hasNoVolumeData = !volKey || currentCandle[volKey] === 0;
 
-    // --- CAS A : SANS VOLUME (Affichage GAP) ---
-    if (!volKey || config.currentProfileLabel.includes("SYNTH")) {
-      if (currentEma20 && currentEma50) {
-        const gap = Math.abs(((currentEma20 - currentEma50) / currentEma50) * 100);
+    // --- CAS A : SANS VOLUME ou SYNTHÉTIQUE (Affichage du GAP) ---
+    if (hasNoVolumeData || profileName.includes("⚡")) {
+      if (window.currentEma20 && window.currentEma50) {
+        const gap = Math.abs(((window.currentEma20 - window.currentEma50) / window.currentEma50) * 100);
         if (volPercent) volPercent.innerText = `G: ${gap.toFixed(3)}%`;
         if (volBar) {
-          // La barre se remplit par rapport au seuil du profil actuel
           const progress = Math.min((gap / (config.gapThreshold * 1.5)) * 100, 100);
           volBar.style.width = progress + "%";
           volBar.style.background = gap >= config.gapThreshold ? "#ef4444" : "#8b5cf6";
@@ -3387,7 +3392,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     return percentage >= 80;
-  }
+  };
 
   // --- 4. Alerte et Journalisation ---
   // --- FONCTION UTILITAIRE PUSH (À placer une fois dans votre code) ---
