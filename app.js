@@ -3695,7 +3695,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. RÉCUPÉRATION DU CONTRAT (Lecture seule de la variable globale)
     // On filtre pour ne prendre que les contrats du symbole actuel (ex: R_100)
     let activeContract = contrats4update.find(c => c.symbol === currentSymbol);
-    console.log("Active Contract :", activeContract);
+    //console.log("Active Contract :", activeContract);
     if (!activeContract) {
       const pnlLabel = document.getElementById('pnl-value-label');
       if (pnlLabel && pnlLabel.innerText !== "READY") {
