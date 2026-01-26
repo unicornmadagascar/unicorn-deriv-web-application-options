@@ -3897,8 +3897,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (data.msg_type === "portfolio") {
-        contrats4update = data.portfolio.contracts || [];
-        console.log("contrats4update :",contrats4update);
+        contrats4update = data.portfolio.contracts || []; 
+        console.log("contrats4update :",contrats4update);  
         // Optionnel : redemander le portfolio toutes les 2 secondes pour refresh
         setTimeout(() => { if (ws4update.readyState === 1) ws4update.send(JSON.stringify({ portfolio: 1 })); }, 2000);
       }
