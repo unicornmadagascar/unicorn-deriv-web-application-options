@@ -4273,7 +4273,7 @@ document.addEventListener("DOMContentLoaded", () => {
         gainR.gain.setValueAtTime(0.1, now);
         gainR.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
         oscR.connect(gainR);
-        gainR.connect(audioCtx.destination);
+        gainR.connect(audioCtx.destination);  
         oscR.start();
         oscR.stop(now + 0.3);
         break;
