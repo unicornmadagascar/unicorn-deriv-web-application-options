@@ -3671,7 +3671,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  window.runSmartRiskManager = function () {
+  window.runSmartRiskManager = function (currentPrice) {
     const c = window.currentActiveContract;
     if (!c || !tradeManager.isActive) return;
 
@@ -3707,6 +3707,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Mise à jour UI
     window.updatePnLUI(pnl);
+    // MISE À JOUR VISUELLE DES LIGNES
+    window.updateRiskLinesOnChart(pnl, currentPrice);
   };
 
   window.executeClosePosition = function (reason) {
@@ -3758,7 +3760,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 6. CAPTURE D'ÉCRAN ---
     if (window.autoScreenshotActive && typeof window.captureSniperShot === 'function') {
-      window.captureSniperShot({ subtype: 'EXIT_TRADE' }, window.currentSymbol);
+      window.captureSniperShot({ subtype: 'EXIT_TRADE' }, currentSymbol);
     }
 
     // --- 7. FEEDBACK SONORE ---
@@ -3772,6 +3774,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.updateRiskLinesOnChart = function (pnl, currentPrice) {
+    // 1. SÉCURITÉ : Nettoyage si inactif
     if (!tradeManager || !tradeManager.isActive || !currentSeries) {
       window.removeRiskLines();
       return;
@@ -3780,40 +3783,47 @@ document.addEventListener("DOMContentLoaded", () => {
     const entry = tradeManager.entryPrice;
     const side = tradeManager.side;
 
-    // --- 1. LIGNE BREAKEVEN (BE) ---
-    // On l'affiche dès que le trade est ouvert pour visualiser l'objectif de sécurité
-    const bePrice = (side === 'BUY') ? entry * 1.0005 : entry * 0.9995;
+    // --- 2. LIGNE BREAKEVEN (BE) ---
+    // On calcule le prix exact de l'entrée (avec une micro-marge pour couvrir les frais si souhaité)
+    const bePrice = (side === 'BUY') ? entry * 1.0001 : entry * 0.9999;
+
+    const beOptions = {
+      price: bePrice,
+      color: '#3b82f6', // Bleu
+      lineWidth: 2,
+      lineStyle: LightweightCharts.LineStyle.Dashed,
+      axisLabelVisible: true,
+      title: 'BE PROTECT',
+    };
 
     if (!bePriceLine) {
-      bePriceLine = currentSeries.createPriceLine({
-        price: bePrice,
-        color: '#3b82f6',
-        lineWidth: 2,
-        lineStyle: 2, // Pointillés (LineStyle.Dashed)
-        axisLabelVisible: true,
-        title: 'BE PROTECT',
-      });
+      bePriceLine = currentSeries.createPriceLine(beOptions);
+    } else {
+      // Optionnel : On peut mettre à jour le prix si l'entrée change
+      bePriceLine.applyOptions({ price: bePrice });
     }
 
-    // --- 2. LIGNE TRAILING STOP (TS) ---
+    // --- 3. LIGNE TRAILING STOP (TS) ---
     if (pnl >= tradeManager.tsActivation) {
-      // Calcul du prix du Stop Suiveur
+      // Calcul du prix du sommet (Peak) atteint pendant le trade
       const peakPrice = (side === 'BUY')
         ? entry * (1 + (tradeManager.highestPnL / 100))
         : entry * (1 - (tradeManager.highestPnL / 100));
 
+      // Calcul de la distance de recul autorisée
       const tsDistancePrice = entry * (tradeManager.tsTrailingDist / 100);
       const tsPrice = (side === 'BUY') ? peakPrice - tsDistancePrice : peakPrice + tsDistancePrice;
 
-      // Calcul de la proximité (Alerte si le prix est à moins de 0.05% de la ligne)
+      // Calcul de la proximité (Alerte visuelle à 0.05%)
       const distanceToTS = Math.abs((currentPrice - tsPrice) / tsPrice * 100);
       const isNear = distanceToTS < 0.05;
 
       const tsOptions = {
         price: tsPrice,
-        color: isNear ? '#fb923c' : '#10b981', // Orange si proche, sinon Vert
+        color: isNear ? '#fb923c' : '#10b981', // Orange si danger, sinon Vert
         lineWidth: isNear ? 3 : 2,
-        lineStyle: 0, // Pleine (LineStyle.Solid)
+        lineStyle: LightweightCharts.LineStyle.Solid,
+        axisLabelVisible: true,
         title: isNear ? '⚠️ TS WARNING' : 'TS ACTIVE',
       };
 
@@ -3823,7 +3833,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tsPriceLine.applyOptions(tsOptions);
       }
     } else {
-      // Si le profit redescend sous le seuil d'activation avant le déclenchement
+      // Supprimer la ligne TS si le profit n'est plus suffisant pour l'activer
       if (tsPriceLine) {
         currentSeries.removePriceLine(tsPriceLine);
         tsPriceLine = null;
@@ -3831,10 +3841,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Fonction pour tout nettoyer
+  // --- FONCTION DE NETTOYAGE ---
   window.removeRiskLines = function () {
-    if (bePriceLine) { currentSeries.removePriceLine(bePriceLine); bePriceLine = null; }
-    if (tsPriceLine) { currentSeries.removePriceLine(tsPriceLine); tsPriceLine = null; }
+    if (currentSeries) {
+      if (bePriceLine) {
+        currentSeries.removePriceLine(bePriceLine);
+        bePriceLine = null;
+      }
+      if (tsPriceLine) {
+        currentSeries.removePriceLine(tsPriceLine);
+        tsPriceLine = null;
+      }
+    }
   };
 
   window.initPortfolioStream = function () {
@@ -3859,7 +3877,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Une fois autorisé, on demande la liste des contrats ouverts (Portfolio)
         ws4update.send(JSON.stringify({ portfolio: 1 }));
 
-        // On garde la connexion en vie (Ping)
+        // On garde la connexion en vie (Ping) 
         setInterval(() => {
           if (ws4update.readyState === WebSocket.OPEN) ws4update.send(JSON.stringify({ ping: 1 }));
         }, 30000);
@@ -3876,30 +3894,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // --- C. FLUX TEMPS RÉEL DU CONTRAT (Le "Cœur" du système) ---
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
-        const c = data.proposal_open_contract;
-        const id = c.contract_id;
+        const c = data.proposal_open_contract;  
+        const id = c.contract_id;  
+  
+        // 1. Mise à jour de la référence globale
+        window.currentActiveContract = c;  
 
-        // 1. Mise à jour pour le Risk Manager
-        window.currentActiveContract = c;
-
-        // 2. Gestion État Ouvert vs Fermé
+        // 2. Gestion État Ouvert  
         if (c.is_sold === 0) {
-          // Mise à jour pour vos Donuts
-          activeContracts[id] = Number(c.profit || 0);
+          // Mise à jour pour les Donuts  
+          activeContracts[id] = Number(c.profit || 0); 
 
-          // Lancement du Risk Manager (BE/TS/SL)
+          // Lancement du Risk Manager avec le spot du contrat
           if (typeof window.runSmartRiskManager === 'function') {
-            window.runSmartRiskManager();
+            // On utilise c.current_spot qui est le prix actuel du marché fourni par le flux du contrat
+            const currentSpot = parseFloat(c.current_spot);
+            window.runSmartRiskManager(currentSpot);
           }
-        } else {
-          // Nettoyage si le contrat est fini
+        }
+        // 3. Gestion État Fermé (Fin du trade)
+        else {
           delete activeContracts[id];
+
+          // Si c'était le contrat suivi par le manager, on nettoie tout
           if (window.currentActiveContract && window.currentActiveContract.contract_id === id) {
             window.currentActiveContract = null;
+
+            // On désactive le manager pour arrêter les calculs
+            if (tradeManager) {
+              tradeManager.isActive = false;
+              tradeManager.highestPnL = 0; // Reset pour le prochain trade
+            }
+
+            // SUPPRESSION IMMÉDIATE DES LIGNES (BE/TS)
+            if (typeof window.removeRiskLines === 'function') {
+              window.removeRiskLines();
+            }
           }
-          // Nettoyer les lignes du chart (si vous avez la fonction)
+
+          // Supprimer la ligne de prix d'entrée spécifique au contrat
           if (window.removePriceLine) window.removePriceLine(id);
         }
+
+        // Mise à jour UI
+        if (typeof updateDonutCharts === 'function') updateDonutCharts();
       }
     };
 
