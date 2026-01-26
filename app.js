@@ -3689,7 +3689,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.runSmartRiskManager = function (currentPrice) {
     // 1. SÉCURITÉ
-    if (!tradeManager || !tradeManager.isActive) return;
+    if (!tradeManager || !tradeManager.isActive) return;  
 
     console.log("CURRENT SYMBOL : ", currentSymbol);
     // 2. RÉCUPÉRATION DU CONTRAT (Lecture seule de la variable globale)
