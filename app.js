@@ -150,26 +150,26 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- INITIALISATION GLOBALE ---
   let tradeManager = {
     isActive: false,       // Le verrou principal est fermé
-    entryPrice: 0,  
+    entryPrice: 0,
     side: null,            // 'BUY' ou 'SELL'
     highestPnL: 0,         // Record pour le Trailing
     isBE: false,           // État du Breakeven
     maxLoss: -1.0,         // Valeur par défaut
     tsTrailingDist: 0.2,   // Valeur par défaut
     beActivation: 0.3,
-    tsActivation: 0.6  
+    tsActivation: 0.6
   };
 
   let bePriceLine = null; // Ligne bleue pour le Breakeven   
   let tsPriceLine = null; // Ligne verte pour le Trailing Stop
-  let contrats4update;  
+  let contrats4update;
   let ws4update = null;
-  let ws_close = null;   
+  let ws_close = null;
   // ================== x ==================  
 
   let wsReady = false;
   let wsControl = null;
-  let wsSignal = null;  
+  let wsSignal = null;
   let ControlSocket = null;
   let engineStarted = false;
   let totalPL = 0; // cumul des profits et pertes
@@ -336,6 +336,33 @@ document.addEventListener("DOMContentLoaded", () => {
     // JUMP & STEP
     "Jump 10 Index": "JD10", "Jump 25 Index": "JD25", "Jump 50 Index": "JD50", "Jump 75 Index": "JD75", "Jump 100 Index": "JD100",
     "Step Index 100": "stpRNG", "Step Index 200": "stpRNG2", "Step Index 300": "stpRNG3", "Step Index 400": "stpRNG4", "Step Index 500": "stpRNG5"
+  };
+
+  window.MasterStorage = {
+    key: 'sniper_master_db',
+
+    getDb: function () {
+      try {
+        return JSON.parse(localStorage.getItem(this.key) || '{}');
+      } catch (e) {
+        console.error("Erreur lecture LocalStorage", e);
+        return {};
+      }
+    },
+
+    save: function (category, data) {
+      const symbol = window.currentSymbol;
+      if (!symbol) return;
+      const db = this.getDb();
+      if (!db[symbol]) db[symbol] = {};
+      db[symbol][category] = data;
+      localStorage.setItem(this.key, JSON.stringify(db));
+    },
+
+    load: function () {
+      const symbol = window.currentSymbol;
+      return this.getDb()[symbol] || null;
+    }
   };
 
   const SYMBOLS = [
@@ -2936,6 +2963,14 @@ document.addEventListener("DOMContentLoaded", () => {
         alertBadge.innerHTML = `<span style="font-size: 10px; color: ${statusColor}; font-weight: bold;">✅ Session ${window.currentSymbol} Prête</span>`;
         setTimeout(() => { alertBadge.innerHTML = ""; }, 3000);
       }
+      
+      // 8. MASTERSTORAGE POUR FIBONACCI SESSION
+      const session = MasterStorage.load();
+      if (session && session.analytics) {
+        showFiboAnalysis = session.analytics.showFibo;
+        const btn = document.getElementById('btn-fibo-analysis');
+        if (btn && showFiboAnalysis) btn.classList.add('active');  
+      }
 
       // Son de succès
       if (maSniperActive && typeof playSniperSound === 'function') {
@@ -3569,10 +3604,10 @@ document.addEventListener("DOMContentLoaded", () => {
         pnlLabel.innerText = "READY";       // On repasse en mode attente
         pnlLabel.style.color = "#3b82f6";   // Retour au bleu "Ready"
         pnlLabel.classList.add('ready-pulse'); // On relance le clignotement
-        pnlLabel.classList.remove('pnl-active-ts', 'pnl-near-sl');  
+        pnlLabel.classList.remove('pnl-active-ts', 'pnl-near-sl');
       }
 
-      console.log("🛑 Risk Manager : DÉSACTIVÉ. Retour au mode READY.");  
+      console.log("🛑 Risk Manager : DÉSACTIVÉ. Retour au mode READY.");
     } else {
       // --- ACTIVATION ---  
       // On initialise l'objet avec les valeurs des sélecteurs HTML
@@ -3580,7 +3615,7 @@ document.addEventListener("DOMContentLoaded", () => {
         isActive: true,
         entryPrice: window.currentClosePrice || 0, // Assurez-vous que cette variable globale existe
         side: window.lastSignalSide || 'BUY',
-        highestPnL: 0,  
+        highestPnL: 0,
         isBE: false,
         maxLoss: parseFloat(document.getElementById('set-max-loss').value),
         tsTrailingDist: parseFloat(document.getElementById('set-ts-dist').value),
@@ -3651,7 +3686,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On cherche un contrat ouvert pour le symbole actuel
     let openContracts = websocketupdating(); // Variable mise à jour par votre WebSocket
     console.log("OPEN CONTRACTS :", openContracts);
-       
+
     if (!openContracts || openContracts.length === 0) {
       // Si aucun contrat n'est ouvert mais que le manager est ON, on affiche "WAITING"
       document.getElementById('pnl-value-label').innerText = "NO POSITION";
@@ -3659,7 +3694,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     let contract = openContracts[0]; // On prend le premier contrat actif
-    const entry = parseFloat(contract.entry_spot);  
+    const entry = parseFloat(contract.entry_spot);
 
     // 3. DÉDUCTION DU SIDE (CALL = BUY / PUT = SELL)
     const side = (contract.contract_type === 'MULTUP') ? 'BUY' : 'SELL';
@@ -3676,7 +3711,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5. MISE À JOUR DU PEAK (Pour le Trailing)
     if (pnl > tradeManager.highestPnL) {
-      tradeManager.highestPnL = pnl;  
+      tradeManager.highestPnL = pnl;
     }
 
     // 6. LOGIQUE DE SORTIE AUTOMATIQUE
@@ -4421,7 +4456,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
           // A. CALCULS MATHÉMATIQUES
           const bbData = calculateBollingerData(priceDataZZ);
-          const emaData = calculateEMA(priceDataZZ, 200);
+          const emaData = calculateEMABB(priceDataZZ, 200);
 
           if (bbData.length > 0) {
             const lastPoint = bbData[bbData.length - 1];
@@ -4701,17 +4736,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.enableFibonacci = function (btn) {
     if (currentMode === 'fibo') {
+      // --- DÉSACTIVATION ---
       deactivateAllDrawingButtons();
       canvas.style.pointerEvents = 'none';
-      showFiboAnalysis = false; // On cache tout quand on désactive
+      window.showFiboAnalysis = false; // On cache les analyses (VP, VA, POC, Fibo)
+      currentMode = null; // Reset du mode de dessin
     } else {
+      // --- ACTIVATION ---
       deactivateAllDrawingButtons();
       currentMode = 'fibo';
-      btn.classList.add('active');
+      if (btn) btn.classList.add('active');
       canvas.style.pointerEvents = 'all';
-      showFiboAnalysis = true; // On affiche tout quand on active
+      window.showFiboAnalysis = true; // On active le bloc d'analyse dans render()
     }
-    render(); // Rafraîchissement immédiat
+
+    // --- SAUVEGARDE CENTRALISÉE ---
+    // On enregistre l'état pour que MasterStorage s'en souvienne au prochain changement de symbole
+    if (window.MasterStorage) {
+      window.MasterStorage.save('analytics', {
+        showFibo: showFiboAnalysis,
+        lookback: vpLookback || 300
+      });
+    }
+
+    // --- RENDU ---
+    if (typeof render === 'function') {
+      render(); // Rafraîchissement pour dessiner/effacer l'histogramme et les niveaux
+    }
   };
 
   /**
@@ -4722,6 +4773,26 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.height = chartInner.clientHeight;
     render();
   }
+
+  window.saveAnalyticSettings = function () {
+    const symbol = window.currentSymbol;
+    if (!symbol) return;
+
+    // On récupère les états actuels des boutons/variables globales
+    const settings = {
+      fibo: {
+        enabled: showFiboAnalysis, // État du bouton Fibo
+        lookback: vpLookback || 300
+      },
+      volumeProfile: {
+        enabled: (currentChartType === "candlestick"), // Actif seulement si bougies
+        showVA: true, // Toujours afficher VA si VP est actif
+        rowPrecision: 50
+      }
+    };
+
+    window.MasterStorage.save('analytics', settings);
+  };
 
   /**
  * Le moteur de rendu rectifié
