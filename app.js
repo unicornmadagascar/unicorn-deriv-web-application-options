@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsReady = false;
   let wsControl = null;
   let wsSignal = null;
-  let ControlSocket = null;   
+  let ControlSocket = null;
   let engineStarted = false;
   let totalPL = 0; // cumul des profits et pertes
   let ws = null;
@@ -1111,7 +1111,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // A. Gestion de l'HISTORIQUE (Initialisation)
       if (msg.msg_type === "candles") {
-        const candles = msg.candles;  
+        const candles = msg.candles;
         if (Array.isArray(candles)) {
           // On transforme et filtre toutes les bougies historiques
           const formattedData = candles.map(normalize).filter(Boolean);
@@ -3689,7 +3689,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.runSmartRiskManager = function (currentPrice) {
     // 1. SÉCURITÉ
-    if (!tradeManager || !tradeManager.isActive) return;  
+    if (!tradeManager || !tradeManager.isActive) return;
 
     console.log("CURRENT SYMBOL : ", currentSymbol);
     // 2. RÉCUPÉRATION DU CONTRAT (Lecture seule de la variable globale)
@@ -4790,7 +4790,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function render() {
     if (!ctx || !chartInner) return;
 
-    // 1. Initialisation et Nettoyage
+    // 1. Initialisation et Nettoyage (Ajustement dynamique à la taille du conteneur)
     canvas.width = chartInner.clientWidth;
     canvas.height = chartInner.clientHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -4799,10 +4799,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const timeScale = chart.timeScale();
 
-    // --- B. BLOC D'ANALYSE DYNAMIQUE (Bouton Fibonacci) ---
+    // --- BLOC D'ANALYSE (S'affiche avec le bouton Fibonacci) ---
     if (showFiboAnalysis) {
-      // 1. VOLUME PROFILE & VALUE AREA (70%)
+
+      // A. VOLUME PROFILE & VALUE AREA (70%)
       const vpData = (currentChartType === "candlestick") ? calculateVolumeProfile() : null;
+
       if (vpData) {
         ctx.save();
         const { profile, maxTotalVolume, rowHeight, vah, val } = vpData;
@@ -4815,6 +4817,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const y = parseFloat(yKey);
           const isInValueArea = d.price <= vah && d.price >= val;
 
+          // Couleurs optimisées fond blanc
           const buyColor = isInValueArea ? 'rgba(0, 150, 136, 0.55)' : 'rgba(0, 150, 136, 0.15)';
           const sellColor = isInValueArea ? 'rgba(255, 82, 82, 0.45)' : 'rgba(255, 82, 82, 0.10)';
 
@@ -4826,15 +4829,17 @@ document.addEventListener("DOMContentLoaded", () => {
           ctx.fillStyle = buyColor;
           ctx.fillRect(startX - totalWidth, y, buyWidth, rowHeight - 0.5);
 
-          // POINT OF CONTROL (POC)
+          // --- POINT OF CONTROL (POC) ---
           if (d.total === maxTotalVolume) {
             const pricePOC = currentSeries.coordinateToPrice(y).toFixed(2);
             ctx.strokeStyle = '#d35400';
             ctx.lineWidth = 2;
             ctx.strokeRect(startX - totalWidth, y, totalWidth, rowHeight - 0.5);
+
             ctx.fillStyle = '#d35400';
             const badgeWidth = 65;
             ctx.fillRect(startX - totalWidth - badgeWidth, y - 9, badgeWidth, 18);
+
             ctx.fillStyle = '#FFFFFF';
             ctx.font = "bold 11px Arial";
             ctx.textAlign = "center";
@@ -4853,6 +4858,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.moveTo(startX - maxWidth, yLimit);
             ctx.lineTo(startX, yLimit);
             ctx.stroke();
+
             ctx.fillStyle = "#2c3e50";
             ctx.font = "bold 10px Arial";
             ctx.textAlign = "left";
@@ -4862,14 +4868,43 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.restore();
       }
 
-      // 2. FIBONACCI DYNAMIQUE (Calculé sur le POC actuel)
+      // B. FIBONACCI DYNAMIQUE
       const fiboParams = calculateDynamicFiboPOC();
       if (fiboParams) {
-        drawFiboLevels(fiboParams.fib0, fiboParams.fib100, 'DYNAMIC POC');
+        ctx.save();
+        const { fib0, fib100 } = fiboParams;
+        const y0 = currentSeries.priceToCoordinate(fib0);
+        const y100 = currentSeries.priceToCoordinate(fib100);
+
+        if (y0 !== null && y100 !== null) {
+          const rangeY = y100 - y0;
+          const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+
+          levels.forEach(lvl => {
+            const yLvl = y0 + (rangeY * lvl);
+            const isMain = [0, 0.5, 0.618, 1].includes(lvl);
+            ctx.strokeStyle = isMain ? 'rgba(0, 86, 179, 0.8)' : 'rgba(0, 0, 0, 0.15)';
+            ctx.lineWidth = isMain ? 2 : 1;
+            ctx.setLineDash(isMain ? [] : [5, 5]);
+
+            ctx.beginPath();
+            ctx.moveTo(0, yLvl);
+            ctx.lineTo(canvas.width, yLvl);
+            ctx.stroke();
+
+            ctx.setLineDash([]);
+            const priceLabel = currentSeries.coordinateToPrice(yLvl).toFixed(3);
+            ctx.fillStyle = isMain ? "#0056b3" : "#555555";
+            ctx.font = isMain ? "bold 12px Arial" : "10px Arial";
+            ctx.textAlign = "left";
+            ctx.fillText(`${(lvl * 100).toFixed(1)}% : ${priceLabel}`, 10, yLvl - 8);
+          });
+        }
+        ctx.restore();
       }
     }
 
-    // --- C. OBJETS CLASSIQUES & PERMANENTS ---
+    // --- C. OBJETS CLASSIQUES ---
     drawingObjects.forEach((obj) => {
       ctx.save();
       const x1 = timeScale.timeToCoordinate(obj.p1.time);
@@ -4877,34 +4912,28 @@ document.addEventListener("DOMContentLoaded", () => {
       const y1 = currentSeries.priceToCoordinate(obj.p1.price);
       const y2 = currentSeries.priceToCoordinate(obj.p2.price);
 
-      if (x1 !== null && y1 !== null) {
+      if (x1 !== null && y1 !== null && x2 !== null && y2 !== null) {
         const isSelected = (selectedObject === obj);
         ctx.strokeStyle = isSelected ? '#e67e22' : '#2962FF';
         ctx.lineWidth = isSelected ? 3 : 2;
 
         if (obj.type === 'trend') {
-          if (x2 !== null && y2 !== null) {
-            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-          }
+          ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
         } else if (obj.type === 'rect') {
-          if (x2 !== null && y2 !== null) {
-            ctx.fillStyle = isSelected ? 'rgba(230, 126, 34, 0.15)' : 'rgba(41, 98, 255, 0.08)';
-            ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
-            ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
-          }
-        } else if (obj.type === 'fibo_permanent') {
-          // Rendu des Fibonacci sauvegardés dans MasterStorage
-          drawFiboLevels(obj.p1.price, obj.p2.price, 'SAVED FIBO');
+          ctx.fillStyle = isSelected ? 'rgba(230, 126, 34, 0.15)' : 'rgba(41, 98, 255, 0.08)';
+          ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+          ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
         }
       }
       ctx.restore();
     });
 
-    // --- E. ÉLÉMENTS RESTANTS (Calendrier, Setup) ---
+    // --- D. CALENDRIER ÉCONOMIQUE (Nouveau - Appel de la fonction bulles) ---
+    // On dessine ceci après les objets classiques pour qu'ils soient toujours visibles
     drawCalendarLabels(ctx);
 
+    // --- E. SETUP TP/SL ---
     if (setup) {
-      // ... (votre code setup TP/SL reste identique) ...
       ctx.save();
       const x1 = timeScale.timeToCoordinate(setup.startTime);
       const x2 = timeScale.timeToCoordinate(setup.endTime);
@@ -4918,38 +4947,14 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.fillRect(x1, Math.min(yTP, yEntry), w, Math.abs(yEntry - yTP));
         ctx.fillStyle = 'rgba(255, 82, 82, 0.2)';
         ctx.fillRect(x1, Math.min(yEntry, ySL), w, Math.abs(ySL - yEntry));
+
         const rr = (Math.abs(setup.tpPrice - setup.entryPrice) / Math.max(0.0001, Math.abs(setup.entryPrice - setup.slPrice))).toFixed(2);
-        ctx.fillStyle = "#2c3e50"; ctx.font = "bold 12px Arial";
+        ctx.fillStyle = "#2c3e50";
+        ctx.font = "bold 12px Arial";
         ctx.fillText(`Ratio R/R: ${rr}`, x1 + 5, Math.min(yTP, yEntry) - 10);
       }
       ctx.restore();
     }
-  }
-
-  // --- D. FONCTION INTERNE DE DESSIN FIBO (Évite la duplication de code) ---
-  function drawFiboLevels(p0, p100, labelPrefix) {
-    const y0 = currentSeries.priceToCoordinate(p0);
-    const y100 = currentSeries.priceToCoordinate(p100);
-    if (y0 === null || y100 === null) return;
-
-    const rangeY = y100 - y0;
-    const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
-
-    levels.forEach(lvl => {
-      const yLvl = y0 + (rangeY * lvl);
-      const isMain = [0, 0.5, 0.618, 1].includes(lvl);
-      ctx.strokeStyle = isMain ? 'rgba(0, 86, 179, 0.8)' : 'rgba(0, 0, 0, 0.15)';
-      ctx.lineWidth = isMain ? 2 : 1;
-      ctx.setLineDash(isMain ? [] : [5, 5]);
-
-      ctx.beginPath(); ctx.moveTo(0, yLvl); ctx.lineTo(canvas.width, yLvl); ctx.stroke();
-
-      ctx.setLineDash([]);
-      const priceLabel = currentSeries.coordinateToPrice(yLvl).toFixed(3);
-      ctx.fillStyle = isMain ? "#0056b3" : "#555555";
-      ctx.font = isMain ? "bold 11px Arial" : "10px Arial";
-      ctx.fillText(`${(lvl * 100).toFixed(1)}% : ${priceLabel}`, 10, yLvl - 5);
-    });
   }
 
   // --- CALCUL DU VOLUME PROFILE (Bicolore + POC) ---
