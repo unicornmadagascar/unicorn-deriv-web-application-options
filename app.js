@@ -3578,7 +3578,7 @@ document.addEventListener("DOMContentLoaded", () => {
         isActive: true,
         entryPrice: window.currentClosePrice || 0, // Assurez-vous que cette variable globale existe
         side: window.lastSignalSide || 'BUY',
-        highestPnL: 0,
+        highestPnL: 0,  
         isBE: false,
         maxLoss: parseFloat(document.getElementById('set-max-loss').value),
         tsTrailingDist: parseFloat(document.getElementById('set-ts-dist').value),
