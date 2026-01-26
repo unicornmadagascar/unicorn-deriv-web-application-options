@@ -4869,7 +4869,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         } else if (obj.type === 'fibo_permanent') {
           // Rendu des Fibonacci sauvegardés dans MasterStorage
-          drawFiboLevels(obj.p1.price, obj.p2.price, 'SAVED FIBO');
+          drawFiboLevels(obj.p1.price, obj.p2.price, 'SAVED FIBO');  
         }
       }
       ctx.restore();
