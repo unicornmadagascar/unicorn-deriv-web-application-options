@@ -4741,7 +4741,7 @@ document.addEventListener("DOMContentLoaded", () => {
       canvas.style.pointerEvents = 'none';
       showFiboAnalysis = false; // On cache les analyses (VP, VA, POC, Fibo)
       currentMode = null; // Reset du mode de dessin
-    } else {
+    } else {   
       // --- ACTIVATION ---
       deactivateAllDrawingButtons();
       currentMode = 'fibo';  
