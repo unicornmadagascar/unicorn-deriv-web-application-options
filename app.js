@@ -5455,7 +5455,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Abonne chaque contrat
     contracts.forEach(c => {
       console.log("📡 Subscribing to:", c.contract_id);
-      subscribeContractDetails(c.contract_id);
+      subscribeContractDetails(c.contract_id);  
     });
   }
 
