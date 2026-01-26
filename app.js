@@ -2965,9 +2965,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const session = MasterStorage.load();  
-      if (session && session.analytics) {
+      if (session && session.analytics) {  
         showFiboAnalysis = session.analytics.showFibo;
-        const btn = document.getElementById('btn-fibo-analysis');
+        const btn = document.getElementById('btn-fibo-analysis');  
         if (btn && showFiboAnalysis) btn.classList.add('active');  
       }  
 
