@@ -169,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let wsReady = false;
   let wsControl = null;
-  let wsSignal = null;
+  let wsSignal = null;  
   let ControlSocket = null;
   let engineStarted = false;
   let totalPL = 0; // cumul des profits et pertes
