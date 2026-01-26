@@ -2968,7 +2968,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (session && session.analytics) {  
         showFiboAnalysis = session.analytics.showFibo;  
         const btn = document.getElementById('btn-fibo-analysis');    
-        if (btn && showFiboAnalysis) btn.classList.add('active');     
+        if (btn && showFiboAnalysis) btn.classList.add('active');      
       }  
 
       // Son de succès
