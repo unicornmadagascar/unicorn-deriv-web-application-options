@@ -117,9 +117,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let showFiboAnalysis = false; // Variable globale pour le rendu
   let selectedSymbol = null;
   let selectedSymbolLocated = null;
-  let selectedSymbolconverted = null;
+  let selectedSymbolconverted = null;  
   let smoothedVol = 0; // Mémoire de la position précédente
-  let areaSeriesBB;
+  let areaSeriesBB;  
   let upperLine, middleLine, lowerLine;
   let bandsEnabled = false;
   // Variable pour ne pas répéter le son en boucle
