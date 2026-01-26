@@ -4739,15 +4739,15 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- DÉSACTIVATION ---
       deactivateAllDrawingButtons();
       canvas.style.pointerEvents = 'none';
-      window.showFiboAnalysis = false; // On cache les analyses (VP, VA, POC, Fibo)
+      showFiboAnalysis = false; // On cache les analyses (VP, VA, POC, Fibo)
       currentMode = null; // Reset du mode de dessin
     } else {
       // --- ACTIVATION ---
       deactivateAllDrawingButtons();
-      currentMode = 'fibo';
+      currentMode = 'fibo';  
       if (btn) btn.classList.add('active');
       canvas.style.pointerEvents = 'all';
-      window.showFiboAnalysis = true; // On active le bloc d'analyse dans render()
+      showFiboAnalysis = true; // On active le bloc d'analyse dans render()
     }
 
     // --- SAUVEGARDE CENTRALISÉE ---
