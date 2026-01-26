@@ -3891,7 +3891,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (data.msg_type === "authorize") {
         // Une fois autorisé, on demande le portfolio  
-        ws4update.send(JSON.stringify({ portfolio: 1 }));
+        ws4update.send(JSON.stringify({ portfolio: 1 }));   
         // On lance un ping toutes les 30s pour garder la connexion active
         setInterval(() => { if (ws4update.readyState === 1) ws4update.send(JSON.stringify({ ping: 1 })); }, 1000);
       }
