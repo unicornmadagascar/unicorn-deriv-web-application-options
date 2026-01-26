@@ -3882,7 +3882,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     ws4update = new WebSocket(WS_URL);
    
-    ws4update.onopen = () => {
+    ws4update.onopen = () => {  
       ws4update.send(JSON.stringify({ authorize: TOKEN }));
     };
 
