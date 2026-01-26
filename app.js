@@ -3843,11 +3843,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (ws4update && (ws4update.readyState === WebSocket.CLOSED || ws4update.readyState === WebSocket.CLOSING)) {
-      ws_close.send(JSON.stringify({ authorize: TOKEN }));
+      ws4update.send(JSON.stringify({ authorize: TOKEN }));
     }
 
     if (ws4update && (ws4update.readyState === WebSocket.OPEN || ws4update.readyState === WebSocket.CONNECTING)) {
-      ws_close.send(JSON.stringify({ authorize: TOKEN }));
+      ws4update.send(JSON.stringify({ authorize: TOKEN }));
     }
 
     ws4update.onmessage = (msg) => {
