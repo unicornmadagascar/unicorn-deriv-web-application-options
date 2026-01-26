@@ -7404,6 +7404,7 @@ document.addEventListener("DOMContentLoaded", () => {
     await loadSymbol(currentSymbol, currentInterval, currentChartType);
     setupChartInteractions(chart);
     window.restoreTradingSession();
+    window.initPortfolioStream();
   };
 
   // Simulation : mise à jour toutes les 2 secondes
