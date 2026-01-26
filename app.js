@@ -3875,7 +3875,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.closeAllPositionsStandalone = function () {
     // Vérification si l'URL et le Token sont dispos
-    if (typeof WS_URL === 'undefined' || typeof TOKEN === 'undefined') {
+    if (typeof WS_URL === 'undefined' || typeof TOKEN === 'undefined') {  
       console.error("❌ WS_URL ou TOKEN non défini.");
       return;
     }
