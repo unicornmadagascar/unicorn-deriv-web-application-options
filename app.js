@@ -162,6 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let bePriceLine = null; // Ligne bleue pour le Breakeven
   let tsPriceLine = null; // Ligne verte pour le Trailing Stop
+  let contrats4update;
   // ================== x ==================  
 
   let wsReady = false;
@@ -3045,7 +3046,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Si déjà refusé, on informe l'utilisateur (optionnel mais utile pour le debug)
     if (Notification.permission === "denied") {
-      console.warn("🔔 Notifications bloquées par les réglages du navigateur.");  
+      console.warn("🔔 Notifications bloquées par les réglages du navigateur.");
       return;
     }
 
@@ -3472,8 +3473,8 @@ document.addEventListener("DOMContentLoaded", () => {
       warningEl.innerText = profileName;
       // Couleur basée sur le texte du label
       if (profileName.includes("₿")) warningEl.style.color = "#ffffff";        // Orange Crypto
-      else if (profileName.includes("⚡")) warningEl.style.color = "#a855f7";  // Violet Synth
-      else if (profileName.includes("👑")) warningEl.style.color = "#fbbf24";  // Or Metals
+      else if (profileName.includes("⚡")) warningEl.style.color = "#ffffff";  // Violet Synth
+      else if (profileName.includes("👑")) warningEl.style.color = "#ffffff";  // Or Metals
       else warningEl.style.color = "#3b82f6";                                   // Bleu Forex
     }
 
@@ -3482,7 +3483,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const hasNoVolumeData = !volKey || currentCandle[volKey] === 0;
 
     // --- CAS A : SANS VOLUME ou SYNTHÉTIQUE (Affichage du GAP) ---  
-    if (hasNoVolumeData || profileName.includes("⚡")) {  
+    if (hasNoVolumeData || profileName.includes("⚡")) {
       if (currentEma20 && currentEma50) {
         const gap = Math.abs(((currentEma20 - currentEma50) / currentEma50) * 100);
         if (volPercent) volPercent.innerText = `G: ${gap.toFixed(3)}%`;
@@ -3641,84 +3642,107 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.runSmartRiskManager = function (currentPrice) {
-    // 1. Verrou de sécurité : on ne fait rien si le Risk Manager n'est pas "ARMÉ"
-    if (!tradeManager || !tradeManager.isActive) {
-      // Optionnel : On s'assure que l'UI affiche READY si le Sniper est ON
-      if (maSniperActive) window.updatePnLUI(0);
+    // 1. SÉCURITÉ : On ne calcule rien si le Risk Manager n'est pas armé sur le panel
+    if (!tradeManager || !tradeManager.isActive) return;
+
+    // 2. RÉCUPÉRATION DU CONTRAT ACTIF (Via les données de l'API Deriv)
+    // On cherche un contrat ouvert pour le symbole actuel
+    let openContracts = websocketupdating(); // Variable mise à jour par votre WebSocket
+    if (!openContracts || openContracts.length === 0) {
+      // Si aucun contrat n'est ouvert mais que le manager est ON, on affiche "WAITING"
+      document.getElementById('pnl-value-label').innerText = "NO POSITION";
       return;
     }
 
-    // 2. Calcul du PnL en pourcentage
-    const entry = tradeManager.entryPrice;
-    let pnl = 0;
+    let contract = openContracts[0]; // On prend le premier contrat actif
+    const entry = parseFloat(contract.entry_spot);
 
-    if (tradeManager.side === 'BUY') {
+    // 3. DÉDUCTION DU SIDE (CALL = BUY / PUT = SELL)
+    const side = (contract.contract_type === 'MULTUP') ? 'BUY' : 'SELL';
+    tradeManager.side = side; // On met à jour l'objet pour les lignes du chart
+    tradeManager.entryPrice = entry; // On s'assure d'avoir le vrai prix d'entrée broker
+
+    // 4. CALCUL DU PNL RÉEL
+    let pnl = 0;
+    if (side === 'BUY') {
       pnl = ((currentPrice - entry) / entry) * 100;
     } else {
       pnl = ((entry - currentPrice) / entry) * 100;
     }
 
-    // 3. Mise à jour du plus haut profit atteint (Peak)
+    // 5. MISE À JOUR DU PEAK (Pour le Trailing)
     if (pnl > tradeManager.highestPnL) {
-      tradeManager.highestPnL = pnl;
+      tradeManager.highestPnL = pnl;  
     }
 
-    // 4. LOGIQUE DE SORTIE AUTOMATIQUE (L'intelligence du système)
-
-    // A. STOP LOSS : Sortie si la perte atteint le seuil (ex: -1.0%)
+    // 6. LOGIQUE DE SORTIE AUTOMATIQUE
+    // Stop Loss
     if (pnl <= tradeManager.maxLoss) {
-      window.executeClosePosition(`STOP LOSS REACHED (${pnl.toFixed(2)}%)`);
+      window.executeClosePosition(`STOP LOSS (${pnl.toFixed(2)}%)`);
       return;
     }
 
-    // B. BREAKEVEN : Si profit > 0.3%, on sécurise (empêche de repasser en négatif)
+    // Breakeven (Sécurisation à +0.3%)
     if (pnl >= tradeManager.beActivation && !tradeManager.isBE) {
       tradeManager.isBE = true;
-      console.log("🛡️ Breakeven activé : Capital protégé.");
+      console.log("🛡️ BE Activé via API");
     }
 
-    // C. TRAILING STOP : Si profit > 0.6%, on suit la chute depuis le sommet
+    // Trailing Stop (Sortie si chute depuis le sommet)
     if (pnl >= tradeManager.tsActivation) {
       const dropFromPeak = tradeManager.highestPnL - pnl;
       if (dropFromPeak >= tradeManager.tsTrailingDist) {
-        window.executeClosePosition(`TRAILING STOP HIT (${pnl.toFixed(2)}%)`);
+        window.executeClosePosition(`TRAILING HIT (${pnl.toFixed(2)}%)`);
         return;
       }
     }
 
-    // 5. Mise à jour de l'UI
+    // 7. MISE À JOUR UI ET GRAPHIQUE
     window.updatePnLUI(pnl);
-    window.updateRiskLinesOnChart(pnl);
+    if (typeof window.updateRiskLinesOnChart === 'function') {
+      window.updateRiskLinesOnChart(pnl, currentPrice);
+    }
   };
 
   window.executeClosePosition = function (reason) {
-    // 1. Désactivation immédiate du moteur de calcul
-    if (tradeManager) {
-      tradeManager.isActive = false;
+    // --- 0. EXÉCUTION RÉELLE CHEZ LE BROKER ---
+    if (typeof window.closeAllPositionsStandalone === 'function') {
+      window.closeAllPositionsStandalone();
     }
 
-    // 2. Feedback visuel sur le bouton 🎯 (Reset du Toggle)
+    // --- 1. DÉSACTIVATION DU MOTEUR DE CALCUL ---
+    if (tradeManager) {
+      tradeManager.isActive = false;
+      tradeManager.highestPnL = 0; // Reset du peak pour le prochain trade
+    }
+
+    // --- 2. NETTOYAGE GRAPHIQUE IMMÉDIAT ---
+    if (typeof window.removeRiskLines === 'function') {
+      window.removeRiskLines();
+    }
+
+    // --- 3. FEEDBACK VISUEL (BOUTON 🎯) ---
     const btn = document.getElementById('btn-arm-risk');
     if (btn) {
       btn.classList.remove('active');
       btn.style.backgroundColor = "";
     }
 
-    // 3. Notification dans la console pour le suivi (Logs)
+    // --- 4. LOGS ET ALERTES ---
     console.warn(`🚀 POSITION CLOSE : ${reason}`);
 
-    // 4. Mise à jour du Label PnL avec un état de transition
+    // --- 5. INTERFACE PnL (LABEL) ---
     const pnlLabel = document.getElementById('pnl-value-label');
     if (pnlLabel) {
       pnlLabel.innerText = "EXIT";
-      pnlLabel.style.color = "#fb923c"; // Orange alerte
+      pnlLabel.style.color = "#fb923c"; // Orange
       pnlLabel.classList.remove('pnl-active-ts', 'pnl-near-sl', 'ready-pulse');
 
-      // 5. Retour automatique au mode "READY" après 3 secondes
+      // Retour au mode READY ou STANDBY après 3 secondes
       setTimeout(() => {
         if (maSniperActive) {
           pnlLabel.innerText = "READY";
-          pnlLabel.style.color = "#3b82f6"; // Bleu Ready
+          pnlLabel.style.color = "#3b82f6";
           pnlLabel.classList.add('ready-pulse');
         } else {
           pnlLabel.innerText = "0.00%";
@@ -3727,27 +3751,23 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 3000);
     }
 
-    // 6. Déclencheur Optionnel : Capture d'écran de la sortie
+    // --- 6. CAPTURE D'ÉCRAN ---
     if (window.autoScreenshotActive && typeof window.captureSniperShot === 'function') {
-      window.captureSniperShot({ subtype: 'EXIT_TRADE' }, currentSymbol);
+      window.captureSniperShot({ subtype: 'EXIT_TRADE' }, window.currentSymbol);
     }
 
-    // 7. Feedback sonore INTELLIGENT
+    // --- 7. FEEDBACK SONORE ---
     if (typeof playSniperSound === 'function') {
-      // Si la raison contient "TRAILING" ou "STOP HIT" (en profit), on joue le son de victoire
-      // Sinon, si c'est un "STOP LOSS", on joue le son de perte
       if (reason.includes("TRAILING") || reason.includes("HIT")) {
         playSniperSound('CLOSE_WIN');
       } else {
         playSniperSound('CLOSE_LOSS');
       }
     }
-
-    window.removeRiskLines();
   };
 
-  window.updateRiskLinesOnChart = function (pnl) {
-    if (!tradeManager || !tradeManager.isActive) {
+  window.updateRiskLinesOnChart = function (pnl, currentPrice) {
+    if (!tradeManager || !tradeManager.isActive || !currentSeries) {
       window.removeRiskLines();
       return;
     }
@@ -3755,24 +3775,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const entry = tradeManager.entryPrice;
     const side = tradeManager.side;
 
-    // --- 1. GESTION DU BREAKEVEN (BE) ---
-    // Calcul du prix du BE (Prix d'entrée + 0.05% pour couvrir les frais)
+    // --- 1. LIGNE BREAKEVEN (BE) ---
+    // On l'affiche dès que le trade est ouvert pour visualiser l'objectif de sécurité
     const bePrice = (side === 'BUY') ? entry * 1.0005 : entry * 0.9995;
 
-    if (pnl >= 0.1 && !bePriceLine) { // On l'affiche dès qu'on est un peu en profit
+    if (!bePriceLine) {
       bePriceLine = currentSeries.createPriceLine({
         price: bePrice,
         color: '#3b82f6',
         lineWidth: 2,
-        lineStyle: 2, // Pointillés
+        lineStyle: 2, // Pointillés (LineStyle.Dashed)
         axisLabelVisible: true,
-        title: 'BREAKEVEN',
+        title: 'BE PROTECT',
       });
     }
 
-    // --- 2. GESTION DU TRAILING STOP (TS) ---
+    // --- 2. LIGNE TRAILING STOP (TS) ---
     if (pnl >= tradeManager.tsActivation) {
-      // Calcul du prix de sortie dynamique (Distance par rapport au sommet)
+      // Calcul du prix du Stop Suiveur
       const peakPrice = (side === 'BUY')
         ? entry * (1 + (tradeManager.highestPnL / 100))
         : entry * (1 - (tradeManager.highestPnL / 100));
@@ -3780,32 +3800,148 @@ document.addEventListener("DOMContentLoaded", () => {
       const tsDistancePrice = entry * (tradeManager.tsTrailingDist / 100);
       const tsPrice = (side === 'BUY') ? peakPrice - tsDistancePrice : peakPrice + tsDistancePrice;
 
-      // Si la ligne n'existe pas, on la crée. Si elle existe, on la déplace.
+      // Calcul de la proximité (Alerte si le prix est à moins de 0.05% de la ligne)
+      const distanceToTS = Math.abs((currentPrice - tsPrice) / tsPrice * 100);
+      const isNear = distanceToTS < 0.05;
+
+      const tsOptions = {
+        price: tsPrice,
+        color: isNear ? '#fb923c' : '#10b981', // Orange si proche, sinon Vert
+        lineWidth: isNear ? 3 : 2,
+        lineStyle: 0, // Pleine (LineStyle.Solid)
+        title: isNear ? '⚠️ TS WARNING' : 'TS ACTIVE',
+      };
+
       if (!tsPriceLine) {
-        tsPriceLine = currentSeries.createPriceLine({
-          price: tsPrice,
-          color: '#10b981',
-          lineWidth: 2,
-          lineStyle: 0, // Ligne pleine
-          axisLabelVisible: true,
-          title: 'TRAILING STOP',
-        });
+        tsPriceLine = currentSeries.createPriceLine(tsOptions);
       } else {
-        tsPriceLine.applyOptions({ price: tsPrice });
+        tsPriceLine.applyOptions(tsOptions);
+      }
+    } else {
+      // Si le profit redescend sous le seuil d'activation avant le déclenchement
+      if (tsPriceLine) {
+        currentSeries.removePriceLine(tsPriceLine);
+        tsPriceLine = null;
       }
     }
   };
 
   // Fonction pour tout nettoyer
   window.removeRiskLines = function () {
-    if (bePriceLine) {
-      currentSeries.removePriceLine(bePriceLine);
-      bePriceLine = null;
+    if (bePriceLine) { currentSeries.removePriceLine(bePriceLine); bePriceLine = null; }
+    if (tsPriceLine) { currentSeries.removePriceLine(tsPriceLine); tsPriceLine = null; }
+  };
+
+  function websocketupdating() {
+    if (ws4update === null) {
+      ws4update = new WebSocket(WS_URL);
+      ws4update.open = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
     }
-    if (tsPriceLine) {
-      currentSeries.removePriceLine(tsPriceLine);
-      tsPriceLine = null;
+
+    if (ws4update && (ws4update.readyState === WebSocket.CLOSED || ws4update.readyState === WebSocket.CLOSING)) {
+      ws_close.send(JSON.stringify({ authorize: TOKEN }));
     }
+
+    if (ws4update && (ws4update.readyState === WebSocket.OPEN || ws4update.readyState === WebSocket.CONNECTING)) {
+      ws_close.send(JSON.stringify({ authorize: TOKEN }));
+    }
+
+    ws4update.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+
+      if (data.msg_type === "authorize" && data.authorize) {
+        ws4update.send(JSON.stringify({ portfolio: 1 }));
+      }
+
+      // 2. Gestion des contrats
+      if (data.msg_type === "portfolio" && data.portfolio) {
+        contrats4update = data.portfolio.contracts;
+      }
+
+      if (data.msg_type === "ping") {
+        ws4update.send(JSON.stringify({ ping: 1 }));
+      }
+    };
+
+    ws4update.onerror = () => { ws4update.close(); ws4update = null; setTimout(websocketupdating, 500); };
+    ws4update.onclose = () => { setTimout(websocketupdating, 500); };
+
+    return contrats4update;
+  }
+
+  window.closeAllPositionsStandalone = function () {
+    // Vérification si l'URL et le Token sont dispos
+    if (typeof WS_URL === 'undefined' || typeof TOKEN === 'undefined') {
+      console.error("❌ WS_URL ou TOKEN non défini.");
+      return;
+    }
+
+    const ws_close = new WebSocket(WS_URL);
+    let contractsToClose = 0;
+    let closedCount = 0;
+
+    ws_close.onopen = () => {
+      console.log("📡 WS de clôture connecté");
+      ws_close.send(JSON.stringify({ authorize: TOKEN }));
+    };
+
+    ws_close.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.error) {
+        console.error("❌ Erreur Deriv :", data.error.message);
+        // On ne ferme pas forcément, sauf si erreur d'autorisation
+        if (data.msg_type === 'authorize') ws_close.close();
+        return;
+      }
+
+      // 1️⃣ Autorisation réussie -> Demander le portfolio
+      if (data.msg_type === 'authorize') {
+        console.log("🔐 Autorisé pour clôture");
+        ws_close.send(JSON.stringify({ portfolio: 1 }));
+      }
+
+      // 2️⃣ Réception du portfolio -> Identifier les contrats
+      if (data.msg_type === 'portfolio') {
+        const contracts = data.portfolio.contracts || [];
+        if (contracts.length === 0) {
+          console.log("✅ Aucun contrat ouvert à fermer.");
+          ws_close.close();
+          return;
+        }
+
+        contractsToClose = contracts.length;
+        console.log(`📦 ${contractsToClose} contrat(s) détecté(s). Envoi des ordres de vente...`);
+
+        contracts.forEach(c => {
+          ws_close.send(JSON.stringify({
+            sell: c.contract_id,
+            price: 0 // '0' signifie vendre au prix actuel du marché
+          }));
+        });
+      }
+
+      // 3️⃣ Confirmation de vente pour chaque contrat
+      if (data.msg_type === 'sell') {
+        closedCount++;
+        console.log(`✅ Contrat ${data.sell.contract_id} fermé avec succès (${data.sell.sell_price} USD)`);
+
+        // Si tous les contrats sont fermés, on quitte proprement
+        if (closedCount >= contractsToClose) {
+          console.log("🏁 Tous les contrats ont été liquidés.");
+          setTimeout(() => ws_close.close(), 1000);
+        }
+      }
+    };
+
+    ws_close.onerror = (err) => {
+      console.error("🚨 Erreur WebSocket Clôture", err);
+      ws_close.close();
+    };
+
+    ws_close.onclose = () => {
+      console.log("🔌 Connexion de clôture terminée.");
+    };
   };
 
   // --- VOTRE FONCTION MISE À JOUR ---
