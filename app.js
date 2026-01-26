@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let bePriceLine = null; // Ligne bleue pour le Breakeven   
   let tsPriceLine = null; // Ligne verte pour le Trailing Stop
-  let contrats4update = [];
+  const contrats4update = [];
   let ws4update = null;
   let ws_close = null;
   // ================== x ==================  
@@ -4246,7 +4246,7 @@ document.addEventListener("DOMContentLoaded", () => {
       subtype: signal.subtype,      // MOMENTUM / CROSS / REBOND
       price: candle.close.toFixed(5),
       ma20: parseFloat(signal.ma20).toFixed(5),
-      ma50: parseFloat(signal.ma50).toFixed(5),
+      ma50: parseFloat(signal.ma50).toFixed(5),  
       gap: signal.gap || "0.000",
       isCritical: signal.isCritical || false
     };
@@ -4255,7 +4255,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On vérifie si ce signal exact n'a pas déjà été loggé (sécurité anti-doublon au même timestamp)
     const isDuplicate = logs.some(l =>
       l.timestamp === newLog.timestamp &&
-      l.symbol === newLog.symbol &&
+      l.symbol === newLog.symbol &&   
       l.timeframe === newLog.timeframe
     );
 
@@ -5270,7 +5270,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 3. Calcul des pourcentages (Win Rate)
     const winRate = totalTrades > 0 ? (countProfit / totalTrades) * 100 : 0;
-    const lossRate = totalTrades > 0 ? (countLoss / totalTrades) * 100 : 0;
+    const lossRate = totalTrades > 0 ? (countLoss / totalTrades) * 100 : 0;  
 
     // 4. Animation des cercles (SVG dasharray)
     // Format: "pourcentage, reste"
