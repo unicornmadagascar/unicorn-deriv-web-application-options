@@ -3694,7 +3694,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 3. EXTRACTION DES DONNÉES
-    const entry = parseFloat(activeContract.entry_spot);
+    const entry = parseFloat(activeContract.entry_spot);  
     console.log("Entry Spot :", entry);
     // Deriv utilise souvent 'CALL'/'PUT' ou 'MULTUP'/'MULTDOWN'
     const side = (activeContract.contract_type.includes('UP') || activeContract.contract_type.includes('CALL')) ? 'BUY' : 'SELL';
