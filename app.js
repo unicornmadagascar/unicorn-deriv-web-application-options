@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let bePriceLine = null; // Ligne bleue pour le Breakeven   
   let tsPriceLine = null; // Ligne verte pour le Trailing Stop
-  let contrats4update;
+  let contrats4update = [];
   let ws4update = null;
   let ws_close = null;
   // ================== x ==================  
@@ -2964,12 +2964,12 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => { alertBadge.innerHTML = ""; }, 3000);
       }
 
-      const session = window.MasterStorage.load();      
-      if (session && session.analytics) {  
-        showFiboAnalysis = session.analytics.showFibo;  
-        const btn = document.getElementById('btn-fibo-analysis');    
-        if (btn && showFiboAnalysis) btn.classList.add('active');      
-      }  
+      const session = window.MasterStorage.load();
+      if (session && session.analytics) {
+        showFiboAnalysis = session.analytics.showFibo;
+        const btn = document.getElementById('btn-fibo-analysis');
+        if (btn && showFiboAnalysis) btn.classList.add('active');
+      }
 
       // Son de succès
       if (maSniperActive && typeof playSniperSound === 'function') {
@@ -3678,29 +3678,31 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.runSmartRiskManager = function (currentPrice) {
-    // 1. SÉCURITÉ : On ne calcule rien si le Risk Manager n'est pas armé sur le panel
+    // 1. SÉCURITÉ
     if (!tradeManager || !tradeManager.isActive) return;
 
-    // 2. RÉCUPÉRATION DU CONTRAT ACTIF (Via les données de l'API Deriv)
-    // On cherche un contrat ouvert pour le symbole actuel
-    let openContracts = websocketupdating(); // Variable mise à jour par votre WebSocket
-    console.log("OPEN CONTRACTS :", openContracts);
+    // 2. RÉCUPÉRATION DU CONTRAT (Lecture seule de la variable globale)
+    // On filtre pour ne prendre que les contrats du symbole actuel (ex: R_100)
+    let activeContract = contrats4update.find(c => c.symbol === currentSymbol);
 
-    if (!openContracts || openContracts.length === 0) {
-      // Si aucun contrat n'est ouvert mais que le manager est ON, on affiche "WAITING"
-      document.getElementById('pnl-value-label').innerText = "NO POSITION";
+    if (!activeContract) {
+      const pnlLabel = document.getElementById('pnl-value-label');
+      if (pnlLabel && pnlLabel.innerText !== "READY") {
+        pnlLabel.innerText = "NO POSITION";
+        pnlLabel.style.color = "#64748b";
+      }
       return;
     }
 
-    let contract = openContracts[0]; // On prend le premier contrat actif
-    const entry = parseFloat(contract.entry_spot);
+    // 3. EXTRACTION DES DONNÉES
+    const entry = parseFloat(activeContract.entry_spot);
+    // Deriv utilise souvent 'CALL'/'PUT' ou 'MULTUP'/'MULTDOWN'
+    const side = (activeContract.contract_type.includes('UP') || activeContract.contract_type.includes('CALL')) ? 'BUY' : 'SELL';
 
-    // 3. DÉDUCTION DU SIDE (CALL = BUY / PUT = SELL)
-    const side = (contract.contract_type === 'MULTUP') ? 'BUY' : 'SELL';
-    tradeManager.side = side; // On met à jour l'objet pour les lignes du chart
-    tradeManager.entryPrice = entry; // On s'assure d'avoir le vrai prix d'entrée broker
+    tradeManager.side = side;
+    tradeManager.entryPrice = entry;
 
-    // 4. CALCUL DU PNL RÉEL
+    // 4. CALCUL DU PNL (Multiplicateurs ou Vanilles)
     let pnl = 0;
     if (side === 'BUY') {
       pnl = ((currentPrice - entry) / entry) * 100;
@@ -3708,25 +3710,26 @@ document.addEventListener("DOMContentLoaded", () => {
       pnl = ((entry - currentPrice) / entry) * 100;
     }
 
-    // 5. MISE À JOUR DU PEAK (Pour le Trailing)
+    // 5. MISE À JOUR DU SOMMET (PEAK)
     if (pnl > tradeManager.highestPnL) {
       tradeManager.highestPnL = pnl;
     }
 
     // 6. LOGIQUE DE SORTIE AUTOMATIQUE
-    // Stop Loss
+    // A. Stop Loss
     if (pnl <= tradeManager.maxLoss) {
       window.executeClosePosition(`STOP LOSS (${pnl.toFixed(2)}%)`);
       return;
     }
 
-    // Breakeven (Sécurisation à +0.3%)
+    // B. Breakeven (Sécurisation)
     if (pnl >= tradeManager.beActivation && !tradeManager.isBE) {
       tradeManager.isBE = true;
-      console.log("🛡️ BE Activé via API");
+      console.log("🛡️ Breakeven sécurisé à " + pnl.toFixed(2) + "%");
+      if (typeof playSniperSound === 'function') playSniperSound('SIGNAL');
     }
 
-    // Trailing Stop (Sortie si chute depuis le sommet)
+    // C. Trailing Stop
     if (pnl >= tradeManager.tsActivation) {
       const dropFromPeak = tradeManager.highestPnL - pnl;
       if (dropFromPeak >= tradeManager.tsTrailingDist) {
@@ -3735,8 +3738,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 7. MISE À JOUR UI ET GRAPHIQUE
-    window.updatePnLUI(pnl);
+    // 7. MISE À JOUR UI
+    if (typeof window.updatePnLUI === 'function') {
+      window.updatePnLUI(pnl);
+    }
+
     if (typeof window.updateRiskLinesOnChart === 'function') {
       window.updateRiskLinesOnChart(pnl, currentPrice);
     }
@@ -3870,42 +3876,35 @@ document.addEventListener("DOMContentLoaded", () => {
     if (tsPriceLine) { currentSeries.removePriceLine(tsPriceLine); tsPriceLine = null; }
   };
 
-  function websocketupdating() {
-    if (ws4update === null) {
-      ws4update = new WebSocket(WS_URL);
-      ws4update.open = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
-    }
+  window.initPortfolioStream = function () {
+    if (ws4update && ws4update.readyState < 2) return; // Déjà ouvert ou en cours
 
-    if (ws4update && (ws4update.readyState === WebSocket.CLOSED || ws4update.readyState === WebSocket.CLOSING)) {
-      ws4update.send(JSON.stringify({ authorize: TOKEN }));
-    }
+    ws4update = new WebSocket(WS_URL);
 
-    if (ws4update && (ws4update.readyState === WebSocket.OPEN || ws4update.readyState === WebSocket.CONNECTING)) {
+    ws4update.onopen = () => {
       ws4update.send(JSON.stringify({ authorize: TOKEN }));
-    }
+    };
 
     ws4update.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
 
-      if (data.msg_type === "authorize" && data.authorize) {
+      if (data.msg_type === "authorize") {
+        // Une fois autorisé, on demande le portfolio
         ws4update.send(JSON.stringify({ portfolio: 1 }));
+        // On lance un ping toutes les 30s pour garder la connexion active
+        setInterval(() => { if (ws4update.readyState === 1) ws4update.send(JSON.stringify({ ping: 1 })); }, 30000);
       }
 
-      // 2. Gestion des contrats
-      if (data.msg_type === "portfolio" && data.portfolio) {
-        contrats4update = data.portfolio.contracts;
-      }
-
-      if (data.msg_type === "ping") {
-        ws4update.send(JSON.stringify({ ping: 1 }));
+      if (data.msg_type === "portfolio") {
+        contrats4update = data.portfolio.contracts || [];
+        // Optionnel : redemander le portfolio toutes les 2 secondes pour refresh
+        setTimeout(() => { if (ws4update.readyState === 1) ws4update.send(JSON.stringify({ portfolio: 1 })); }, 2000);
       }
     };
 
-    ws4update.onerror = () => { ws4update.close(); ws4update = null; setTimout(websocketupdating, 500); };
-    ws4update.onclose = () => { setTimout(websocketupdating, 500); };
-
-    return contrats4update;
-  }
+    ws4update.onerror = () => { ws4update.close(); };
+    ws4update.onclose = () => { setTimeout(window.initPortfolioStream, 2000); };
+  };
 
   window.closeAllPositionsStandalone = function () {
     // Vérification si l'URL et le Token sont dispos
