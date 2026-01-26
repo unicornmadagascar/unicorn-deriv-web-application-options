@@ -338,33 +338,6 @@ document.addEventListener("DOMContentLoaded", () => {
     "Step Index 100": "stpRNG", "Step Index 200": "stpRNG2", "Step Index 300": "stpRNG3", "Step Index 400": "stpRNG4", "Step Index 500": "stpRNG5"
   };
 
-  window.MasterStorage = {
-    key: 'sniper_master_db',
-
-    getDb: function () {
-      try {
-        return JSON.parse(localStorage.getItem(this.key) || '{}');
-      } catch (e) {
-        console.error("Erreur lecture LocalStorage", e);
-        return {};
-      }
-    },
-
-    save: function (category, data) {
-      const symbol = window.currentSymbol;
-      if (!symbol) return;
-      const db = this.getDb();
-      if (!db[symbol]) db[symbol] = {};
-      db[symbol][category] = data;
-      localStorage.setItem(this.key, JSON.stringify(db));
-    },
-
-    load: function () {
-      const symbol = window.currentSymbol;
-      return this.getDb()[symbol] || null;
-    }
-  };
-
   const SYMBOLS = [
     { symbol: "BOOM300N", name: "Boom 300" },
     { symbol: "CRASH300N", name: "Crash 300" },
@@ -2963,14 +2936,6 @@ document.addEventListener("DOMContentLoaded", () => {
         alertBadge.innerHTML = `<span style="font-size: 10px; color: ${statusColor}; font-weight: bold;">✅ Session ${window.currentSymbol} Prête</span>`;
         setTimeout(() => { alertBadge.innerHTML = ""; }, 3000);
       }
-      
-      // 8. MASTERSTORAGE POUR FIBONACCI SESSION
-      const session = window.MasterStorage.load();
-      if (session && session.analytics) {  
-        showFiboAnalysis = session.analytics.showFibo;
-        const btn = document.getElementById('btn-fibo-analysis');
-        if (btn && showFiboAnalysis) btn.classList.add('active');        
-      }
 
       // Son de succès
       if (maSniperActive && typeof playSniperSound === 'function') {     
@@ -4739,7 +4704,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- DÉSACTIVATION ---
       deactivateAllDrawingButtons();  
       canvas.style.pointerEvents = 'none';
-      showFiboAnalysis = false; // On cache les analyses (VP, VA, POC, Fibo)
+      showFiboAnalysis = false; // On cache les analyses (VP, VA, POC, Fibo)   
       currentMode = null; // Reset du mode de dessin
     } else {   
       // --- ACTIVATION ---
@@ -4748,15 +4713,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (btn) btn.classList.add('active');
       canvas.style.pointerEvents = 'all';
       showFiboAnalysis = true; // On active le bloc d'analyse dans render()
-    }
-
-    // --- SAUVEGARDE CENTRALISÉE ---
-    // On enregistre l'état pour que MasterStorage s'en souvienne au prochain changement de symbole
-    if (window.MasterStorage) {
-      window.MasterStorage.save('analytics', {
-        showFibo: showFiboAnalysis,
-        lookback: vpLookback || 300
-      });
     }
 
     // --- RENDU ---
@@ -4773,26 +4729,6 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.height = chartInner.clientHeight;
     render();
   }
-
-  window.saveAnalyticSettings = function () {
-    const symbol = window.currentSymbol;
-    if (!symbol) return;
-
-    // On récupère les états actuels des boutons/variables globales
-    const settings = {
-      fibo: {
-        enabled: showFiboAnalysis, // État du bouton Fibo
-        lookback: vpLookback || 300
-      },
-      volumeProfile: {
-        enabled: (currentChartType === "candlestick"), // Actif seulement si bougies
-        showVA: true, // Toujours afficher VA si VP est actif
-        rowPrecision: 50
-      }
-    };
-
-    window.MasterStorage.save('analytics', settings);
-  };
 
   /**
  * Le moteur de rendu rectifié
