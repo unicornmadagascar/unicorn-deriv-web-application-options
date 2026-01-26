@@ -3905,7 +3905,7 @@ document.addEventListener("DOMContentLoaded", () => {
           // Mise à jour pour les Donuts  
           activeContracts[id] = Number(c.profit || 0); 
   
-          // Lancement du Risk Manager avec le spot du contrat
+          // Lancement du Risk Manager avec le spot du contrat  
           if (typeof window.runSmartRiskManager === 'function') {
             // On utilise c.current_spot qui est le prix actuel du marché fourni par le flux du contrat
             const currentSpot = parseFloat(c.current_spot);
