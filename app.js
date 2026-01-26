@@ -2964,10 +2964,10 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => { alertBadge.innerHTML = ""; }, 3000);
       }
 
-      const session = MasterStorage.load();  
+      const session = MasterStorage.load();    
       if (session && session.analytics) {  
         showFiboAnalysis = session.analytics.showFibo;  
-        const btn = document.getElementById('btn-fibo-analysis');  
+        const btn = document.getElementById('btn-fibo-analysis');    
         if (btn && showFiboAnalysis) btn.classList.add('active');     
       }  
 
