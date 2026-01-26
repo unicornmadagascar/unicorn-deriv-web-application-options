@@ -3680,22 +3680,22 @@ document.addEventListener("DOMContentLoaded", () => {
   window.runSmartRiskManager = function (currentPrice) {
     // 1. SÉCURITÉ
     if (!tradeManager || !tradeManager.isActive) return;
-     
-    console.log("CURRENT SYMBOL : ",currentSymbol);  
+
+    console.log("CURRENT SYMBOL : ", currentSymbol);
     // 2. RÉCUPÉRATION DU CONTRAT (Lecture seule de la variable globale)
     // On filtre pour ne prendre que les contrats du symbole actuel (ex: R_100)
     let activeContract = contrats4update.find(c => c.symbol === currentSymbol);
-    console.log("Active Contract :", activeContract);  
+    console.log("Active Contract :", activeContract);
     if (!activeContract) {
-      const pnlLabel = document.getElementById('pnl-value-label');  
-      if (pnlLabel && pnlLabel.innerText !== "READY") {   
-        pnlLabel.style.color = "#64748b";  
+      const pnlLabel = document.getElementById('pnl-value-label');
+      if (pnlLabel && pnlLabel.innerText !== "READY") {
+        pnlLabel.style.color = "#64748b";
       }
-      return;  
-    }  
+      return;
+    }
 
     // 3. EXTRACTION DES DONNÉES
-    const entry = parseFloat(activeContract.entry_spot);  
+    const entry = parseFloat(activeContract.entry_spot);
     console.log("Entry Spot :", entry);
     // Deriv utilise souvent 'CALL'/'PUT' ou 'MULTUP'/'MULTDOWN'
     const side = (activeContract.contract_type.includes('UP') || activeContract.contract_type.includes('CALL')) ? 'BUY' : 'SELL';
@@ -3889,7 +3889,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ws4update.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
 
-      if (data.msg_type === "authorize") {  
+      if (data.msg_type === "authorize") {
         // Une fois autorisé, on demande le portfolio
         ws4update.send(JSON.stringify({ portfolio: 1 }));
         // On lance un ping toutes les 30s pour garder la connexion active
@@ -3897,14 +3897,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (data.msg_type === "portfolio") {
-        contrats4update = data.portfolio.contracts || []; 
-        console.log("contrats4update :",contrats4update);  
+        contrats4update = data.portfolio.contracts || [];
+        console.log("contrats4update :", contrats4update);
         // Optionnel : redemander le portfolio toutes les 2 secondes pour refresh
         setTimeout(() => { if (ws4update.readyState === 1) ws4update.send(JSON.stringify({ portfolio: 1 })); }, 2000);
       }
     };
 
-    ws4update.onerror = () => { ws4update.close(); };  
+    ws4update.onerror = () => { ws4update.close(); };
     ws4update.onclose = () => { setTimeout(window.initPortfolioStream, 2000); };
   };
 
@@ -7409,12 +7409,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof window.restoreTradingSession === 'function') {
       window.restoreTradingSession();
     }
-
-    // 2. Initialiser le flux du Portfolio (WebSocket)
-    // Cela va remplir la variable 'contrats4update' en arrière-plan
-    if (typeof window.initPortfolioStream === 'function') {
-      window.initPortfolioStream();      
-    }
   };
 
   // Simulation : mise à jour toutes les 2 secondes
@@ -7422,8 +7416,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (connectBtn.textContent !== "Connect") {
       // Subscribing Tables  S  
       connectDeriv_table();
+
+      // Initialiser le flux du Portfolio (WebSocket)
+      // Cela va remplir la variable 'contrats4update' en arrière-plan
+      if (typeof window.initPortfolioStream === 'function') {
+        window.initPortfolioStream();
+      }  
     }
-  }, 300);
+  }, 500);
 
   // === Trade Evaluation Panel Toggle ===
   tradeEvalToggle.addEventListener("click", () => {
