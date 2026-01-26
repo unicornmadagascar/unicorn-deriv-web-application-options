@@ -2964,6 +2964,13 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => { alertBadge.innerHTML = ""; }, 3000);
       }
 
+      const session = MasterStorage.load();
+      if (session && session.analytics) {
+        showFiboAnalysis = session.analytics.showFibo;
+        const btn = document.getElementById('btn-fibo-analysis');
+        if (btn && showFiboAnalysis) btn.classList.add('active');  
+      }
+
       // Son de succès
       if (maSniperActive && typeof playSniperSound === 'function') {
         playSniperSound('SIGNAL');
@@ -4865,11 +4872,11 @@ document.addEventListener("DOMContentLoaded", () => {
           if (x2 !== null && y2 !== null) {
             ctx.fillStyle = isSelected ? 'rgba(230, 126, 34, 0.15)' : 'rgba(41, 98, 255, 0.08)';
             ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
-            ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);   
+            ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
           }
         } else if (obj.type === 'fibo_permanent') {
           // Rendu des Fibonacci sauvegardés dans MasterStorage
-          drawFiboLevels(obj.p1.price, obj.p2.price, 'SAVED FIBO');  
+          drawFiboLevels(obj.p1.price, obj.p2.price, 'SAVED FIBO');
         }
       }
       ctx.restore();
