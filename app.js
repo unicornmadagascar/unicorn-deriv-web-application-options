@@ -1103,8 +1103,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Payload Positions Ouvertes (Abonnement unique)
         ws.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
-        ws.send(JSON.stringify({ portfolio: 1 }));
-        // return; 
+        return; 
       }
 
       // --- DANS VOTRE ONSMESSAGE ---  
@@ -1144,13 +1143,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (lastBar && isWsInitialized) {
           // Mise à jour de Lightweight Charts
           currentSeries.update(lastBar);
-
-          // --- AJOUT CRITIQUE : MONITORING DU RISK MANAGER (PnL, BE, TS) ---
-          // On le place ici pour une réactivité maximale à chaque tick de prix
-          window.currentClosePrice = lastBar.close; // On synchronise le prix pour l'armement
-          if (typeof window.runSmartRiskManager === 'function') {
-            window.runSmartRiskManager(lastBar.close);
-          }
 
           // Mise à jour du cache local
           if (cache.length > 0) {
@@ -1192,7 +1184,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
         const c = data.proposal_open_contract;
         const id = c.contract_id;
-
+  
         // Contrat encore ouvert
         if (c.is_sold === 0) {
           activeContracts[id] = Number(c.profit || 0);
@@ -1203,15 +1195,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         updateDonutCharts();
-      }
-
-      if (data.msg_type === "portfolio" && data.portfolio) {
-        const c = data.portfolio.contracts || [];
-
-        contrats4update = [...c]; // copie du tableau
-
-        console.log("contrats4update :", contrats4update);
-        console.log("length :", contrats4update.length);
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
