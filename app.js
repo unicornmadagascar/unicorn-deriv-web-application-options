@@ -7411,7 +7411,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. Initialiser le flux du Portfolio (WebSocket)
     // Cela va remplir la variable 'contrats4update' en arrière-plan
     if (typeof window.initPortfolioStream === 'function') {
-      window.initPortfolioStream();    
+      window.initPortfolioStream();      
     }
   };
 
