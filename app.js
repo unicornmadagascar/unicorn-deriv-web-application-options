@@ -1103,6 +1103,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Payload Positions Ouvertes (Abonnement unique)
         ws.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
+        ws.send(JSON.stringify({ portfolio: 1 }));
         return;
       }
 
@@ -1202,6 +1203,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         updateDonutCharts();
+      }
+
+      if (data.msg_type === "portfolio" && data.portfolio) {
+        const c = data.portfolio.contracts || [];
+        contrats4update = [...c];
+        console.log("contrats4update :",contrats4update);
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
@@ -5445,9 +5452,6 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("ℹ️ Aucun contrat ouvert actuellement.");
       return;
     }
-
-    contrats4update = contracts;  
-    console.log("contrats4update :", contrats4update);
 
     // Nettoie le tableau avant de remplir
     document.getElementById("autoTradeBody").innerHTML = "";
