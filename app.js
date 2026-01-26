@@ -3634,10 +3634,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!label) return;
 
     // --- 1. ÉTAT : PAS DE POSITION ACTIVE ---
-    if (!window.tradeManager || !window.tradeManager.isActive) {
+    if (!tradeManager || !tradeManager.isActive) {
       label.classList.remove('pnl-active-ts', 'pnl-near-sl');
 
-      if (window.maSniperActive) {
+      if (maSniperActive) {
         label.innerText = "READY";
         label.style.color = "#3b82f6"; // Bleu Sniper
         label.classList.add('ready-pulse');
@@ -3659,7 +3659,7 @@ document.addEventListener("DOMContentLoaded", () => {
       label.classList.remove('pnl-near-sl');
 
       // Animation si le Trailing Stop est "armé"
-      if (pnl >= window.tradeManager.tsActivation) {
+      if (pnl >= tradeManager.tsActivation) {
         label.classList.add('pnl-active-ts');
       } else {
         label.classList.remove('pnl-active-ts');
@@ -3669,13 +3669,13 @@ document.addEventListener("DOMContentLoaded", () => {
       label.classList.remove('pnl-active-ts');   
 
       // Alerte critique si proche du Stop Loss (marge de 0.2%)
-      if (pnl <= (window.tradeManager.maxLoss + 0.2)) {
+      if (pnl <= (tradeManager.maxLoss + 0.2)) {
         label.classList.add('pnl-near-sl');
       } else {
         label.classList.remove('pnl-near-sl');
       }
     }
-  };
+  };  
 
   window.runSmartRiskManager = function (currentPrice) {
     const c = window.currentActiveContract;
