@@ -5446,6 +5446,9 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    contrats4update = contracts;
+    console.log("contrats4update :", contrats4update);
+
     // Nettoie le tableau avant de remplir
     document.getElementById("autoTradeBody").innerHTML = "";
 
