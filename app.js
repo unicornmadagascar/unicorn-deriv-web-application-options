@@ -3893,11 +3893,12 @@ document.addEventListener("DOMContentLoaded", () => {
         // Une fois autorisé, on demande le portfolio
         ws4update.send(JSON.stringify({ portfolio: 1 }));
         // On lance un ping toutes les 30s pour garder la connexion active
-        setInterval(() => { if (ws4update.readyState === 1) ws4update.send(JSON.stringify({ ping: 1 })); }, 30000);
+        setInterval(() => { if (ws4update.readyState === 1) ws4update.send(JSON.stringify({ ping: 1 })); }, 1000);
       }
 
       if (data.msg_type === "portfolio") {
         contrats4update = data.portfolio.contracts || [];
+        console.log("contrats4update :",contrats4update);
         // Optionnel : redemander le portfolio toutes les 2 secondes pour refresh
         setTimeout(() => { if (ws4update.readyState === 1) ws4update.send(JSON.stringify({ portfolio: 1 })); }, 2000);
       }
