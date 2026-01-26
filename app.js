@@ -3572,7 +3572,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       console.log("🛑 Risk Manager : DÉSACTIVÉ. Retour au mode READY.");
     } else {
-      // --- ACTIVATION ---
+      // --- ACTIVATION ---  
       // On initialise l'objet avec les valeurs des sélecteurs HTML
       tradeManager = {
         isActive: true,
