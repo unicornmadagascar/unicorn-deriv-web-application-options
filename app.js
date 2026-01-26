@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let bePriceLine = null; // Ligne bleue pour le Breakeven   
   let tsPriceLine = null; // Ligne verte pour le Trailing Stop
-  let contrats4update;
+  const contrats4update = [];
   let ws4update = null;
   let ws_close = null;
   // ================== x ==================  
@@ -1208,7 +1208,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.msg_type === "portfolio" && data.portfolio) {
         const c = data.portfolio.contracts || [];
         contrats4update = [...c];
-        console.log("contrats4update :",contrats4update);    
+        console.log("contrats4update :",contrats4update);      
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
