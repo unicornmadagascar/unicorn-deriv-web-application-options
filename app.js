@@ -3691,7 +3691,7 @@ document.addEventListener("DOMContentLoaded", () => {
         pnlLabel.style.color = "#64748b";
       }
       return;  
-    }
+    }  
 
     // 3. EXTRACTION DES DONNÉES
     const entry = parseFloat(activeContract.entry_spot);  
