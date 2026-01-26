@@ -3899,9 +3899,9 @@ document.addEventListener("DOMContentLoaded", () => {
   
         // 1. Mise à jour de la référence globale
         window.currentActiveContract = c;  
-
+   
         // 2. Gestion État Ouvert  
-        if (c.is_sold === 0) {
+        if (c.is_sold === 0) {  
           // Mise à jour pour les Donuts  
           activeContracts[id] = Number(c.profit || 0); 
   
