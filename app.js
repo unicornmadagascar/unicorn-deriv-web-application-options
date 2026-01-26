@@ -3690,7 +3690,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (pnlLabel && pnlLabel.innerText !== "READY") {   
         pnlLabel.style.color = "#64748b";
       }
-      return;
+      return;  
     }
 
     // 3. EXTRACTION DES DONNÉES
