@@ -1104,10 +1104,10 @@ document.addEventListener("DOMContentLoaded", () => {
         // Payload Positions Ouvertes (Abonnement unique)
         ws.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
         ws.send(JSON.stringify({ portfolio: 1 }));
-        return;
+        // return; 
       }
 
-      // --- DANS VOTRE ONSMESSAGE ---
+      // --- DANS VOTRE ONSMESSAGE ---  
 
       // A. Gestion de l'HISTORIQUE (Initialisation)
       if (msg.msg_type === "candles") {
