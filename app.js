@@ -3633,40 +3633,46 @@ document.addEventListener("DOMContentLoaded", () => {
     const label = document.getElementById('pnl-value-label');
     if (!label) return;
 
-    // --- SÉCURITÉ : Si le Risk Manager n'est pas actif, on force l'état READY ---
-    if (!tradeManager || !tradeManager.isActive) {
-      if (maSniperActive) {
+    // --- 1. ÉTAT : PAS DE POSITION ACTIVE ---
+    if (!window.tradeManager || !window.tradeManager.isActive) {
+      label.classList.remove('pnl-active-ts', 'pnl-near-sl');
+
+      if (window.maSniperActive) {
         label.innerText = "READY";
-        label.style.color = "#3b82f6";
+        label.style.color = "#3b82f6"; // Bleu Sniper
         label.classList.add('ready-pulse');
       } else {
-        label.innerText = "0.00%";
-        label.style.color = "#cbd5e1";
+        label.innerText = "NO POSITION";
+        label.style.color = "#cbd5e1"; // Gris
         label.classList.remove('ready-pulse');
       }
       return;
     }
 
-    // --- MISE À JOUR DU TEXTE PnL ---
+    // --- 2. ÉTAT : POSITION EN COURS ---
+    label.classList.remove('ready-pulse');
     label.innerText = (pnl > 0 ? "+" : "") + pnl.toFixed(2) + "%";
 
-    // On retire systématiquement ready-pulse dès qu'on calcule un PnL réel
-    label.classList.remove('ready-pulse', 'pnl-active-ts', 'pnl-near-sl');
-
-    // --- LOGIQUE DES COULEURS ET ANIMATIONS ---
+    // --- 3. COULEURS ET ALERTES DYNAMIQUES ---
     if (pnl >= 0) {
-      label.style.color = "#10b981"; // Vert (Profit)
+      label.style.color = "#10b981"; // Vert Profit
+      label.classList.remove('pnl-near-sl');
 
-      // Si le Trailing Stop est actif (Profit > seuil d'activation)
-      if (pnl >= tradeManager.tsActivation) {
-        label.classList.add('pnl-active-ts'); // Pulsation verte
+      // Animation si le Trailing Stop est "armé"
+      if (pnl >= window.tradeManager.tsActivation) {
+        label.classList.add('pnl-active-ts');
+      } else {
+        label.classList.remove('pnl-active-ts');
       }
     } else {
-      label.style.color = "#ef4444"; // Rouge (Loss)
+      label.style.color = "#ef4444"; // Rouge Perte
+      label.classList.remove('pnl-active-ts');   
 
-      // Alerte visuelle si on approche du Stop Loss (distance de 0.2%)
-      if (pnl <= (tradeManager.maxLoss + 0.2)) {
-        label.classList.add('pnl-near-sl'); // Pulsation rouge rapide
+      // Alerte critique si proche du Stop Loss (marge de 0.2%)
+      if (pnl <= (window.tradeManager.maxLoss + 0.2)) {
+        label.classList.add('pnl-near-sl');
+      } else {
+        label.classList.remove('pnl-near-sl');
       }
     }
   };
@@ -3894,17 +3900,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // --- C. FLUX TEMPS RÉEL DU CONTRAT (Le "Cœur" du système) ---
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
-        const c = data.proposal_open_contract;  
-        const id = c.contract_id;  
-  
+        const c = data.proposal_open_contract;
+        const id = c.contract_id;
+
         // 1. Mise à jour de la référence globale
-        window.currentActiveContract = c;  
-   
+        window.currentActiveContract = c;
+
         // 2. Gestion État Ouvert  
-        if (c.is_sold === 0) {  
+        if (c.is_sold === 0) {
           // Mise à jour pour les Donuts  
-          activeContracts[id] = Number(c.profit || 0); 
-  
+          activeContracts[id] = Number(c.profit || 0);
+
           // Lancement du Risk Manager avec le spot du contrat  
           if (typeof window.runSmartRiskManager === 'function') {
             // On utilise c.current_spot qui est le prix actuel du marché fourni par le flux du contrat
@@ -4273,7 +4279,7 @@ document.addEventListener("DOMContentLoaded", () => {
         gainR.gain.setValueAtTime(0.1, now);
         gainR.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
         oscR.connect(gainR);
-        gainR.connect(audioCtx.destination);  
+        gainR.connect(audioCtx.destination);
         oscR.start();
         oscR.stop(now + 0.3);
         break;
