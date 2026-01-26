@@ -3871,7 +3871,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ws4update.onclose = () => { setTimout(websocketupdating, 500); };
 
     return contrats4update;
-  }
+  }  
 
   window.closeAllPositionsStandalone = function () {
     // Vérification si l'URL et le Token sont dispos
