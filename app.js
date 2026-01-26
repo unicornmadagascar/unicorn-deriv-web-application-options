@@ -3878,13 +3878,20 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.initPortfolioStream = function () {
-    if (ws4update && ws4update.readyState < 2) return; // Déjà ouvert ou en cours
 
-    ws4update = new WebSocket(WS_URL);
-   
-    ws4update.onopen = () => {  
-      ws4update.send(JSON.stringify({ authorize: TOKEN }));
-    };
+    if (ws4update === null) {
+      ws4update = new WebSocket(WS_URL);
+      ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (ws4update && (ws4update.readyState === WebSocket.OPEN || ws4update.readyState === WebSocket.CONNECTING)) {
+      ws4update.onopen = () => { wsOpenLines.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (ws4update && (ws4update.readyState === WebSocket.CLOSED || ws4update.readyState === WebSocket.CLOSING)) {
+      ws4update = new WebSocket(WS_URL);
+      ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };  
+    }
 
     ws4update.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
@@ -3905,7 +3912,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     ws4update.onerror = () => { ws4update.close(); };
-    ws4update.onclose = () => { setTimeout(window.initPortfolioStream, 2000); };
+    ws4update.onclose = () => { setTimeout(window.initPortfolioStream, 2000); };  
   };
 
   window.closeAllPositionsStandalone = function () {
