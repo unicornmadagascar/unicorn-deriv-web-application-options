@@ -4737,7 +4737,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.enableFibonacci = function (btn) {
     if (currentMode === 'fibo') {   
       // --- DÉSACTIVATION ---
-      deactivateAllDrawingButtons();
+      deactivateAllDrawingButtons();  
       canvas.style.pointerEvents = 'none';
       showFiboAnalysis = false; // On cache les analyses (VP, VA, POC, Fibo)
       currentMode = null; // Reset du mode de dessin
