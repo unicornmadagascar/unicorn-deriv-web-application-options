@@ -3477,12 +3477,12 @@ document.addEventListener("DOMContentLoaded", () => {
       else warningEl.style.color = "#3b82f6";                                   // Bleu Forex
     }
 
-    // Détection de la clé de volume
+    // Détection de la clé de volume  
     const volKey = ['volume', 'v', 'tick_volume'].find(k => k in currentCandle);
     const hasNoVolumeData = !volKey || currentCandle[volKey] === 0;
 
     // --- CAS A : SANS VOLUME ou SYNTHÉTIQUE (Affichage du GAP) ---
-    if (hasNoVolumeData || profileName.includes("⚡")) {
+    if (hasNoVolumeData || profileName.includes("⚡")) {  
       if (currentEma20 && currentEma50) {
         const gap = Math.abs(((currentEma20 - currentEma50) / currentEma50) * 100);
         if (volPercent) volPercent.innerText = `G: ${gap.toFixed(3)}%`;
