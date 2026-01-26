@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let bePriceLine = null; // Ligne bleue pour le Breakeven   
   let tsPriceLine = null; // Ligne verte pour le Trailing Stop
-  const contrats4update = [];
+  let contrats4update;
   let ws4update = null;
   let ws_close = null;
   // ================== x ==================  
@@ -5446,7 +5446,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    contrats4update = contracts;
+    contrats4update = contracts;  
     console.log("contrats4update :", contrats4update);
 
     // Nettoie le tableau avant de remplir
