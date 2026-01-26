@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let bePriceLine = null; // Ligne bleue pour le Breakeven   
   let tsPriceLine = null; // Ligne verte pour le Trailing Stop
-  const contrats4update = [];
+  let contrats4update = [];
   let ws4update = null;
   let ws_close = null;
   // ================== x ==================  
@@ -1207,8 +1207,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (data.msg_type === "portfolio" && data.portfolio) {
         const c = data.portfolio.contracts || [];
-        contrats4update = [...c];
-        console.log("contrats4update :",contrats4update);      
+
+        contrats4update = [...c]; // copie du tableau
+
+        console.log("contrats4update :", contrats4update);
+        console.log("length :", contrats4update.length);
       }
 
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
@@ -3897,15 +3900,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (ws4update && (ws4update.readyState === WebSocket.CLOSED || ws4update.readyState === WebSocket.CLOSING)) {
       ws4update = new WebSocket(WS_URL);
-      ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };  
-    }    
+      ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
+    }
 
     ws4update.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
-   
-      if (data.msg_type === "authorize") {  
+
+      if (data.msg_type === "authorize") {
         // Une fois autorisé, on demande le portfolio  
-        ws4update.send(JSON.stringify({ portfolio: 1 }));   
+        ws4update.send(JSON.stringify({ portfolio: 1 }));
         // On lance un ping toutes les 30s pour garder la connexion active
         setInterval(() => { if (ws4update.readyState === 1) ws4update.send(JSON.stringify({ ping: 1 })); }, 1000);
       }
@@ -3919,7 +3922,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     ws4update.onerror = () => { ws4update.close(); };
-    ws4update.onclose = () => { setTimeout(window.initPortfolioStream, 2000); };  
+    ws4update.onclose = () => { setTimeout(window.initPortfolioStream, 2000); };
   };
 
   window.closeAllPositionsStandalone = function () {
@@ -4253,7 +4256,7 @@ document.addEventListener("DOMContentLoaded", () => {
       subtype: signal.subtype,      // MOMENTUM / CROSS / REBOND
       price: candle.close.toFixed(5),
       ma20: parseFloat(signal.ma20).toFixed(5),
-      ma50: parseFloat(signal.ma50).toFixed(5),  
+      ma50: parseFloat(signal.ma50).toFixed(5),
       gap: signal.gap || "0.000",
       isCritical: signal.isCritical || false
     };
@@ -4262,7 +4265,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On vérifie si ce signal exact n'a pas déjà été loggé (sécurité anti-doublon au même timestamp)
     const isDuplicate = logs.some(l =>
       l.timestamp === newLog.timestamp &&
-      l.symbol === newLog.symbol &&   
+      l.symbol === newLog.symbol &&
       l.timeframe === newLog.timeframe
     );
 
@@ -5277,7 +5280,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 3. Calcul des pourcentages (Win Rate)
     const winRate = totalTrades > 0 ? (countProfit / totalTrades) * 100 : 0;
-    const lossRate = totalTrades > 0 ? (countLoss / totalTrades) * 100 : 0;  
+    const lossRate = totalTrades > 0 ? (countLoss / totalTrades) * 100 : 0;
 
     // 4. Animation des cercles (SVG dasharray)
     // Format: "pourcentage, reste"
@@ -5458,8 +5461,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Abonne chaque contrat
     contracts.forEach(c => {
-      console.log("📡 Subscribing to:", c.contract_id);  
-      subscribeContractDetails(c.contract_id);  
+      console.log("📡 Subscribing to:", c.contract_id);
+      subscribeContractDetails(c.contract_id);
     });
   }
 
@@ -7435,7 +7438,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Cela va remplir la variable 'contrats4update' en arrière-plan
       if (typeof window.initPortfolioStream === 'function') {
         window.initPortfolioStream();
-      }  
+      }
     }
   }, 500);
 
