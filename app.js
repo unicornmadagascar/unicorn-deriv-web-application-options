@@ -3684,11 +3684,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. RÉCUPÉRATION DU CONTRAT (Lecture seule de la variable globale)
     // On filtre pour ne prendre que les contrats du symbole actuel (ex: R_100)
     let activeContract = contrats4update.find(c => c.symbol === currentSymbol);
-
+    console.log("Active Contract :", activeContract);  
     if (!activeContract) {
       const pnlLabel = document.getElementById('pnl-value-label');
-      if (pnlLabel && pnlLabel.innerText !== "READY") {
-        pnlLabel.innerText = "NO POSITION";
+      if (pnlLabel && pnlLabel.innerText !== "READY") {  
         pnlLabel.style.color = "#64748b";
       }
       return;
@@ -3696,6 +3695,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 3. EXTRACTION DES DONNÉES
     const entry = parseFloat(activeContract.entry_spot);
+    console.log("Entry Spot :", entry);
     // Deriv utilise souvent 'CALL'/'PUT' ou 'MULTUP'/'MULTDOWN'
     const side = (activeContract.contract_type.includes('UP') || activeContract.contract_type.includes('CALL')) ? 'BUY' : 'SELL';
 
