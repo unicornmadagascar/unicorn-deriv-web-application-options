@@ -3881,7 +3881,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (ws4update && ws4update.readyState < 2) return; // Déjà ouvert ou en cours
 
     ws4update = new WebSocket(WS_URL);
-
+   
     ws4update.onopen = () => {
       ws4update.send(JSON.stringify({ authorize: TOKEN }));
     };
