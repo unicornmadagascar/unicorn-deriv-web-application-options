@@ -4735,7 +4735,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   window.enableFibonacci = function (btn) {
-    if (currentMode === 'fibo') {
+    if (currentMode === 'fibo') {   
       // --- DÉSACTIVATION ---
       deactivateAllDrawingButtons();
       canvas.style.pointerEvents = 'none';
