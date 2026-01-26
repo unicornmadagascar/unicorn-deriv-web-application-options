@@ -1111,7 +1111,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // A. Gestion de l'HISTORIQUE (Initialisation)
       if (msg.msg_type === "candles") {
-        const candles = msg.candles;
+        const candles = msg.candles;  
         if (Array.isArray(candles)) {
           // On transforme et filtre toutes les bougies historiques
           const formattedData = candles.map(normalize).filter(Boolean);
