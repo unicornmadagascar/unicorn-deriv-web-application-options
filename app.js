@@ -2965,7 +2965,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       
       // 8. MASTERSTORAGE POUR FIBONACCI SESSION
-      const session = MasterStorage.load();
+      const session = window.MasterStorage.load();
       if (session && session.analytics) {  
         showFiboAnalysis = session.analytics.showFibo;
         const btn = document.getElementById('btn-fibo-analysis');
