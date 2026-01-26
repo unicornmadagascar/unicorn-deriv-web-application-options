@@ -2969,7 +2969,7 @@ document.addEventListener("DOMContentLoaded", () => {
         showFiboAnalysis = session.analytics.showFibo;
         const btn = document.getElementById('btn-fibo-analysis');
         if (btn && showFiboAnalysis) btn.classList.add('active');  
-      }
+      }  
 
       // Son de succès
       if (maSniperActive && typeof playSniperSound === 'function') {
