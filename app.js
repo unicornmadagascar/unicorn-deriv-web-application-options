@@ -3688,7 +3688,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!activeContract) {
       const pnlLabel = document.getElementById('pnl-value-label');
       if (pnlLabel && pnlLabel.innerText !== "READY") {
-        pnlLabel.innerText = "NO POSITION";
+        pnlLabel.innerText = "NO POSITION";  
         pnlLabel.style.color = "#64748b";
       }
       return;
