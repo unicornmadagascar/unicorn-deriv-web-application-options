@@ -338,6 +338,33 @@ document.addEventListener("DOMContentLoaded", () => {
     "Step Index 100": "stpRNG", "Step Index 200": "stpRNG2", "Step Index 300": "stpRNG3", "Step Index 400": "stpRNG4", "Step Index 500": "stpRNG5"
   };
 
+  window.MasterStorage = {
+    key: 'sniper_master_db',
+
+    getDb: function () {
+      try {
+        return JSON.parse(localStorage.getItem(this.key) || '{}');
+      } catch (e) {
+        console.error("Erreur lecture LocalStorage", e);
+        return {};
+      }
+    },
+
+    save: function (category, data) {
+      const symbol = window.currentSymbol;
+      if (!symbol) return;
+      const db = this.getDb();
+      if (!db[symbol]) db[symbol] = {};
+      db[symbol][category] = data;
+      localStorage.setItem(this.key, JSON.stringify(db));
+    },
+
+    load: function () {
+      const symbol = window.currentSymbol;
+      return this.getDb()[symbol] || null;
+    }
+  };
+
   const SYMBOLS = [
     { symbol: "BOOM300N", name: "Boom 300" },
     { symbol: "CRASH300N", name: "Crash 300" },
