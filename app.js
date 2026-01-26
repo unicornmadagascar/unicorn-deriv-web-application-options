@@ -2964,7 +2964,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => { alertBadge.innerHTML = ""; }, 3000);
       }
 
-      const session = MasterStorage.load();    
+      const session = window.MasterStorage.load();      
       if (session && session.analytics) {  
         showFiboAnalysis = session.analytics.showFibo;  
         const btn = document.getElementById('btn-fibo-analysis');    
