@@ -4288,7 +4288,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const newLog = {
       date: new Date().toLocaleString('fr-FR'),
       timestamp: typeof candle.time === 'number' ? candle.time : (candle.time.timestamp || candle.time),
-      symbol: window.currentSymbol || "N/A",      // Actif (ex: BTCUSD)
+      symbol: currentSymbol || "N/A",      // Actif (ex: BTCUSD)
       timeframe: currentInterval || "1m", // Unité de temps (ex: 5m)
       type: signal.type,            // BUY / SELL
       subtype: signal.subtype,      // MOMENTUM / CROSS / REBOND
