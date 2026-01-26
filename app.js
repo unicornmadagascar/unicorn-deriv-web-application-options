@@ -4865,7 +4865,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (x2 !== null && y2 !== null) {
             ctx.fillStyle = isSelected ? 'rgba(230, 126, 34, 0.15)' : 'rgba(41, 98, 255, 0.08)';
             ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
-            ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+            ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);   
           }
         } else if (obj.type === 'fibo_permanent') {
           // Rendu des Fibonacci sauvegardés dans MasterStorage
