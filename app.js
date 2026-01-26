@@ -3889,7 +3889,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ws4update.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
 
-      if (data.msg_type === "authorize") {
+      if (data.msg_type === "authorize") {  
         // Une fois autorisé, on demande le portfolio
         ws4update.send(JSON.stringify({ portfolio: 1 }));
         // On lance un ping toutes les 30s pour garder la connexion active
@@ -3904,7 +3904,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    ws4update.onerror = () => { ws4update.close(); };
+    ws4update.onerror = () => { ws4update.close(); };  
     ws4update.onclose = () => { setTimeout(window.initPortfolioStream, 2000); };
   };
 
