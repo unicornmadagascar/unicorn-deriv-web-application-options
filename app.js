@@ -3657,7 +3657,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     let contract = openContracts[0]; // On prend le premier contrat actif
-    const entry = parseFloat(contract.entry_spot);
+    const entry = parseFloat(contract.entry_spot);  
 
     // 3. DÉDUCTION DU SIDE (CALL = BUY / PUT = SELL)
     const side = (contract.contract_type === 'MULTUP') ? 'BUY' : 'SELL';
