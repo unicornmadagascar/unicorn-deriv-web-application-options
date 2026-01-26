@@ -160,9 +160,9 @@ document.addEventListener("DOMContentLoaded", () => {
     tsActivation: 0.6
   };
 
-  let bePriceLine = null; // Ligne bleue pour le Breakeven
+  let bePriceLine = null; // Ligne bleue pour le Breakeven   
   let tsPriceLine = null; // Ligne verte pour le Trailing Stop
-  let contrats4update;
+  let contrats4update;  
   let ws4update = null;
   let ws_close = null;   
   // ================== x ==================  
