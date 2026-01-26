@@ -7433,12 +7433,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (connectBtn.textContent !== "Connect") {
       // Subscribing Tables  S  
       connectDeriv_table();
-
-      // Initialiser le flux du Portfolio (WebSocket)
-      // Cela va remplir la variable 'contrats4update' en arrière-plan
-      if (typeof window.initPortfolioStream === 'function') {
-        window.initPortfolioStream();
-      }
     }
   }, 500);
 
