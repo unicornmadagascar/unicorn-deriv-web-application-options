@@ -3648,6 +3648,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. RÉCUPÉRATION DU CONTRAT ACTIF (Via les données de l'API Deriv)
     // On cherche un contrat ouvert pour le symbole actuel
     let openContracts = websocketupdating(); // Variable mise à jour par votre WebSocket
+    console.log("OPEN CONTRACTS :", openContracts);
+    
     if (!openContracts || openContracts.length === 0) {
       // Si aucun contrat n'est ouvert mais que le manager est ON, on affiche "WAITING"
       document.getElementById('pnl-value-label').innerText = "NO POSITION";
