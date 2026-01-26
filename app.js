@@ -3567,10 +3567,10 @@ document.addEventListener("DOMContentLoaded", () => {
         pnlLabel.innerText = "READY";       // On repasse en mode attente
         pnlLabel.style.color = "#3b82f6";   // Retour au bleu "Ready"
         pnlLabel.classList.add('ready-pulse'); // On relance le clignotement
-        pnlLabel.classList.remove('pnl-active-ts', 'pnl-near-sl');
+        pnlLabel.classList.remove('pnl-active-ts', 'pnl-near-sl');  
       }
 
-      console.log("🛑 Risk Manager : DÉSACTIVÉ. Retour au mode READY.");
+      console.log("🛑 Risk Manager : DÉSACTIVÉ. Retour au mode READY.");  
     } else {
       // --- ACTIVATION ---  
       // On initialise l'objet avec les valeurs des sélecteurs HTML
