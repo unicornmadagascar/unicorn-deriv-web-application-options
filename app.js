@@ -3481,7 +3481,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const volKey = ['volume', 'v', 'tick_volume'].find(k => k in currentCandle);
     const hasNoVolumeData = !volKey || currentCandle[volKey] === 0;
 
-    // --- CAS A : SANS VOLUME ou SYNTHÉTIQUE (Affichage du GAP) ---
+    // --- CAS A : SANS VOLUME ou SYNTHÉTIQUE (Affichage du GAP) ---  
     if (hasNoVolumeData || profileName.includes("⚡")) {  
       if (currentEma20 && currentEma50) {
         const gap = Math.abs(((currentEma20 - currentEma50) / currentEma50) * 100);
