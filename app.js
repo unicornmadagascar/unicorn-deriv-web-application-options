@@ -3686,8 +3686,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let activeContract = contrats4update.find(c => c.symbol === currentSymbol);
     console.log("Active Contract :", activeContract);  
     if (!activeContract) {
-      const pnlLabel = document.getElementById('pnl-value-label');
-      if (pnlLabel && pnlLabel.innerText !== "READY") {  
+      const pnlLabel = document.getElementById('pnl-value-label');  
+      if (pnlLabel && pnlLabel.innerText !== "READY") {   
         pnlLabel.style.color = "#64748b";
       }
       return;
