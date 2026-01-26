@@ -3688,7 +3688,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!activeContract) {
       const pnlLabel = document.getElementById('pnl-value-label');
       if (pnlLabel && pnlLabel.innerText !== "READY") {
-        pnlLabel.innerText = "NO POSITION";  
+        pnlLabel.innerText = "NO POSITION";
         pnlLabel.style.color = "#64748b";
       }
       return;
@@ -7403,8 +7403,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!currentSymbol) return;
     await loadSymbol(currentSymbol, currentInterval, currentChartType);
     setupChartInteractions(chart);
-    window.restoreTradingSession();
-    window.initPortfolioStream();
+    // 1. Charger les préférences et dessins (MasterStorage)
+    if (typeof window.restoreTradingSession === 'function') {
+      window.restoreTradingSession();
+    }
+
+    // 2. Initialiser le flux du Portfolio (WebSocket)
+    // Cela va remplir la variable 'contrats4update' en arrière-plan
+    if (typeof window.initPortfolioStream === 'function') {
+      window.initPortfolioStream();
+    }
   };
 
   // Simulation : mise à jour toutes les 2 secondes
