@@ -3070,43 +3070,52 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const dragElement = (elementId) => {
+  const makeElementDraggable = (elementId) => {
     const el = document.getElementById(elementId);
     if (!el) return;
 
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 
     const dragMouseDown = (e) => {
+      // On ne déclenche le drag que si on clique sur l'élément, pas sur un bouton interne
+      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+
       e.preventDefault();
-      // Position initiale de la souris
       pos3 = e.clientX;
       pos4 = e.clientY;
+
       document.onmouseup = closeDragElement;
       document.onmousemove = elementDrag;
       el.style.cursor = "grabbing";
+      el.style.transition = "none"; // Désactive les transitions CSS pendant le drag
     };
 
     const elementDrag = (e) => {
       e.preventDefault();
-      // Calcul du déplacement
       pos1 = pos3 - e.clientX;
       pos2 = pos4 - e.clientY;
       pos3 = e.clientX;
       pos4 = e.clientY;
 
-      // Nouvelle position de l'élément
-      el.style.top = (el.offsetTop - pos2) + "px";
-      el.style.left = (el.offsetLeft - pos1) + "px";
-      el.style.right = "auto"; // On annule le 'right' s'il était fixé en CSS
+      // Calcul des nouvelles coordonnées
+      let newTop = el.offsetTop - pos2;
+      let newLeft = el.offsetLeft - pos1;
+
+      // Application des styles
+      el.style.top = newTop + "px";
+      el.style.left = newLeft + "px";
+      el.style.bottom = "auto";
+      el.style.right = "auto";
     };
 
     const closeDragElement = () => {
       document.onmouseup = null;
       document.onmousemove = null;
       el.style.cursor = "grab";
+      el.style.transition = "all 0.3s ease"; // Réactive la fluidité après le drag
     };
 
-    el.onmousedown = dragMouseDown;
+    el.onmousedown = dragMouseDown;   
     el.style.cursor = "grab";
   };
 
@@ -7565,10 +7574,11 @@ document.addEventListener("DOMContentLoaded", () => {
     setupChartInteractions(chart);
   };
 
-  // Initialisation au chargement
-  window.addEventListener('load', () => {  
-    dragElement("ma-sniper-label");  
-  });  
+  // Initialisation de vos deux badges
+  window.addEventListener('load', () => {
+    makeElementDraggable("ma-sniper-label");
+    makeElementDraggable("volatility-label");
+  });
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
