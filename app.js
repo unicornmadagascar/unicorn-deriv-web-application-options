@@ -4000,7 +4000,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- FONCTION DE NETTOYAGE ---
   window.removeRiskLines = function () {  
     if (currentSeries) {
-      if (bePriceLine) {
+      if (bePriceLine) {  
         currentSeries.removePriceLine(bePriceLine);
         bePriceLine = null; // Important pour pouvoir la recréer au prochain trade
       }
