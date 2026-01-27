@@ -3953,7 +3953,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     if (!bePriceLine) {
-      bePriceLine = currentSeries.createPriceLine(beOptions);
+      bePriceLine = currentSeries.createPriceLine(beOptions);  
     } else {
       bePriceLine.applyOptions({ price: bePrice });
     }
