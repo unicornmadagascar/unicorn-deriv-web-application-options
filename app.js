@@ -4097,7 +4097,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
     ws_close.onopen = () => {
       console.log("📡 WS de clôture connecté");
-      ws_close.send(JSON.stringify({ authorize: TOKEN }));
+      ws_close.send(JSON.stringify({ authorize: TOKEN }));  
     };
 
     ws_close.onmessage = (event) => {
