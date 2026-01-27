@@ -1149,6 +1149,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (lastBar && isWsInitialized) {
           // Mise à jour de Lightweight Charts
           currentSeries.update(lastBar);
+          
+          const currentPrice = parseFloat(lastBar.close);
+          // On lance la vérification mathématique BE/TS
+          if (typeof window.runSmartRiskManager === 'function') {
+            window.runSmartRiskManager(currentPrice);
+          }
 
           // Mise à jour du cache local
           if (cache.length > 0) {
@@ -2176,6 +2182,7 @@ document.addEventListener("DOMContentLoaded", () => {
     tradeManager.highestPnL = 0;         // On remet le pic à zéro
     tradeManager.isBE = false;           // On reset le Breakeven
     tradeManager.isActive = true;        // On arme le manager
+    tradeManager.side = type;            // On arme le manager
 
     multiplier = parseInt(Number(document.getElementById("multiplierSelect").value)) || 40;
     stake = parseFloat(Number(document.getElementById("stakeInput").value)) || 1.0;
@@ -2210,7 +2217,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`🚀 Envoi de ${count} ordres ${type} sur ${currentSymbol}`);
 
     for (let i = 0; i < count; i++) {
-      ws.send(JSON.stringify(payload));   
+      ws.send(JSON.stringify(payload));
     }
 
     showToast(`Placing ${count} ${type} orders: ${currentSymbol}`, 'info');
