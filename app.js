@@ -3686,7 +3686,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 1. MISE À JOUR DU PEAK (Pour le Trailing)
     if (pnl > tradeManager.highestPnL) {
-      tradeManager.highestPnL = pnl;
+      tradeManager.highestPnL = pnl;   
     }
 
     // 2. LOGIQUE BREAKEVEN (BE)
