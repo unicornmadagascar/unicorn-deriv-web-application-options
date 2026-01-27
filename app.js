@@ -5746,7 +5746,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       Openpositionlines(currentSeries);
       // 2. Load portfolio socket
-      if (typeof window.initPortfolioStream === 'function') {
+      if (typeof window.initPortfolioStream === 'function') {   
         window.initPortfolioStream();   
       }
     };
