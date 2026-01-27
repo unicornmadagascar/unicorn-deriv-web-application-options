@@ -3070,6 +3070,46 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  const dragElement = (elementId) => {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+    const dragMouseDown = (e) => {
+      e.preventDefault();
+      // Position initiale de la souris
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      document.onmouseup = closeDragElement;
+      document.onmousemove = elementDrag;
+      el.style.cursor = "grabbing";
+    };
+
+    const elementDrag = (e) => {
+      e.preventDefault();
+      // Calcul du déplacement
+      pos1 = pos3 - e.clientX;
+      pos2 = pos4 - e.clientY;
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+
+      // Nouvelle position de l'élément
+      el.style.top = (el.offsetTop - pos2) + "px";
+      el.style.left = (el.offsetLeft - pos1) + "px";
+      el.style.right = "auto"; // On annule le 'right' s'il était fixé en CSS
+    };
+
+    const closeDragElement = () => {
+      document.onmouseup = null;
+      document.onmousemove = null;
+      el.style.cursor = "grab";
+    };
+
+    el.onmousedown = dragMouseDown;
+    el.style.cursor = "grab";
+  };
+
   window.requestNotificationPermission = function () {
     if (!("Notification" in window)) {
       console.log("Ce navigateur ne supporte pas les notifications desktop");
@@ -3682,11 +3722,11 @@ document.addEventListener("DOMContentLoaded", () => {
   window.runSmartRiskManager = function (currentPrice) {
     const c = window.currentActiveContract;
 
-    if (!c) { console.error("❌ Erreur: Aucun contrat actif détecté dans le manager"); return; }  
+    if (!c) { console.error("❌ Erreur: Aucun contrat actif détecté dans le manager"); return; }
     if (!c || !tradeManager.isActive) return;
 
     // Le broker nous donne le profit en % directement
-    const pnl = parseFloat(c.profit_percentage);    
+    const pnl = parseFloat(c.profit_percentage);
 
     // 1. MISE À JOUR DU PEAK (Pour le Trailing)
     if (pnl > tradeManager.highestPnL) {
@@ -3728,19 +3768,19 @@ document.addEventListener("DOMContentLoaded", () => {
   window.executeClosePosition = function (reason) {
     // --- 0. RÉCUPÉRATION DE L'ID AVANT RÉINITIALISATION ---
     const activeContract = window.currentActiveContract;
-    const contractId = activeContract ? activeContract.contract_id : null;  
+    const contractId = activeContract ? activeContract.contract_id : null;
 
     // --- 1. EXÉCUTION RÉELLE CHEZ LE BROKER ---
     // On essaie d'abord de vendre le contrat spécifique par son ID
-    if (contractId && typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {  
-      console.log(`Sending SELL request for contract: ${contractId}`);  
-      ws.send(JSON.stringify({  
-        sell: contractId,  
+    if (contractId && typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
+      console.log(`Sending SELL request for contract: ${contractId}`);
+      ws.send(JSON.stringify({
+        sell: contractId,
         price: 0 // 0 = Vendre au prix actuel du marché
       }));
-    } else if (typeof closeAllPositionsStandalone === 'function') {  
+    } else if (typeof closeAllPositionsStandalone === 'function') {
       // Fallback sur la fonction globale si l'ID n'est pas disponible
-      closeAllPositionsStandalone();  
+      closeAllPositionsStandalone();
     }
 
     // --- 2. DÉSACTIVATION IMMÉDIATE DU MOTEUR DE CALCUL ---
@@ -3986,14 +4026,14 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     ws4update.onerror = (err) => {
-      ws4update.close(); 
-      ws4update = null;  
-      setTimeout(initPortfolioStream, 2000);            
+      ws4update.close();
+      ws4update = null;
+      setTimeout(initPortfolioStream, 2000);
     };
 
     ws4update.onclose = () => {
-      console.warn("⚠️ Connexion Portfolio perdue. Reconnexion dans 2s...");  
-      setTimeout(initPortfolioStream, 2000);    
+      console.warn("⚠️ Connexion Portfolio perdue. Reconnexion dans 2s...");
+      setTimeout(initPortfolioStream, 2000);
     };
   };
 
@@ -7524,6 +7564,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setupChartInteractions(chart);
   };
+
+  // Initialisation au chargement
+  window.addEventListener('load', () => {
+    dragElement("ma-sniper-label");  
+  });
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {

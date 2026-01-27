@@ -580,7 +580,7 @@
       /* Permet de dessiner */
       background: transparent !important;
       /* Indispensable pour voir le chart derrière */
-      pointer-events: none;  
+      pointer-events: none;
       /* Indispensable pour capter le mousedown */
     }
 
@@ -3677,6 +3677,17 @@
     }
 
     /* ------------MA----------------- */
+    #ma-sniper-label {
+      position: absolute;
+      /* Crucial pour le déplacement */
+      z-index: 10001;
+      /* Au-dessus du graphique et des checklists */
+      user-select: none;
+      /* Empêche de sélectionner le texte en faisant glisser */
+      touch-action: none;
+      /* Empêche le scroll sur mobile pendant le drag */
+    }
+
     .sniper-dynamic-badge {
       background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(10px);
@@ -4600,7 +4611,7 @@
           <button id="ZigZag" onclick="toggleZigZag(this)">ZZ</button>
           <hr class="separator">
           <button class="btn-drawing" onclick="enableBands(this)">BB</button>
-          <button id = "btn-fibo-analysis" class="btn-drawing" onclick="enableFibonacci(this)">Fibo</button>
+          <button id="btn-fibo-analysis" class="btn-drawing" onclick="enableFibonacci(this)">Fibo</button>
           <button class="btn-drawing" onclick="enableTrendline(this)">Trend</button>
           <button class="btn-drawing" onclick="enableRectangle(this)">Rect</button>
           <button class="btn-drawing" onclick="enableTPSL(this)">TP/SL</button>
