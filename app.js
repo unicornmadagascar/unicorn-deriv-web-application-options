@@ -4095,7 +4095,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let contractsToClose = 0;
     let closedCount = 0;
   
-    ws_close.onopen = () => {
+    ws_close.onopen = () => {  
       console.log("📡 WS de clôture connecté");
       ws_close.send(JSON.stringify({ authorize: TOKEN }));  
     };
@@ -4106,7 +4106,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.error) {
         console.error("❌ Erreur Deriv :", data.error.message);
         // On ne ferme pas forcément, sauf si erreur d'autorisation
-        if (data.msg_type === 'authorize') ws_close.close();
+        if (data.msg_type === 'authorize') ws_close.close();  
         return;
       }
 
