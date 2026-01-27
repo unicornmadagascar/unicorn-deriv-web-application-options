@@ -7620,7 +7620,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tradeManager.tsTrailingDist = parseFloat(e.target.value);
       console.log("Nouveau TS configuré:", tradeManager.tsTrailingDist);
     }
-  });
+  });   
 
   document.getElementById('set-max-loss').addEventListener('change', (e) => {
     tradeManager.maxLoss = parseFloat(e.target.value);
