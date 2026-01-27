@@ -3641,7 +3641,7 @@ document.addEventListener("DOMContentLoaded", () => {
         label.innerText = "READY";
         label.style.color = "#3b82f6"; // Bleu Sniper
         label.classList.add('ready-pulse');
-      } else {  
+      } else {
         label.innerText = "NO POSITION";
         label.style.color = "#cbd5e1"; // Gris
         label.classList.remove('ready-pulse');
@@ -3682,13 +3682,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!c || !tradeManager.isActive) return;
 
     // Le broker nous donne le profit en % directement
-    const pnl = parseFloat(c.profit_percentage);
+    const pnl = parseFloat(c.profit_percentage);  
 
     // 1. MISE À JOUR DU PEAK (Pour le Trailing)
     if (pnl > tradeManager.highestPnL) {
       tradeManager.highestPnL = pnl;
     }
-   
+
     // 2. LOGIQUE BREAKEVEN (BE)
     // On se base sur le pourcentage réel du broker
     if (pnl >= tradeManager.beActivation && !tradeManager.isBE) {
@@ -5620,8 +5620,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (typeof window.initPortfolioStream === 'function') {
-        window.initPortfolioStream();
-      }
+      window.initPortfolioStream();
+    }
   }
 
   /**
@@ -5750,8 +5750,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       Openpositionlines(currentSeries);
       // 2. Load portfolio socket
-      if (typeof window.initPortfolioStream === 'function') {   
-        window.initPortfolioStream();   
+      if (typeof window.initPortfolioStream === 'function') {
+        window.initPortfolioStream();
       }
     };
 
