@@ -7625,7 +7625,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById('set-max-loss').addEventListener('change', (e) => {
     tradeManager.maxLoss = parseFloat(e.target.value);
     // Petit feedback visuel
-    e.target.style.borderColor = "#3b82f6";
+    e.target.style.borderColor = "#3b82f6";  
     setTimeout(() => e.target.style.borderColor = "#334155", 500);
   });
 
