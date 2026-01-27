@@ -7566,7 +7566,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Initialisation au chargement
-  window.addEventListener('load', () => {
+  window.addEventListener('load', () => {  
     dragElement("ma-sniper-label");  
   });  
 
