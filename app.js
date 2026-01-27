@@ -3127,12 +3127,12 @@ document.addEventListener("DOMContentLoaded", () => {
         return; // On sort de la fonction, on ne bloque rien
       }
 
-      e.preventDefault();  
-      pos3 = e.clientX;    
+      e.preventDefault();
+      pos3 = e.clientX;
       pos4 = e.clientY;
-  
-      document.onmouseup = closeDragElement;  
-      document.onmousemove = elementDrag;  
+
+      document.onmouseup = closeDragElement;
+      document.onmousemove = elementDrag;
       el.style.cursor = "grabbing";
       el.style.transition = "none"; // Désactive les transitions CSS pendant le drag
     };
@@ -7610,6 +7610,17 @@ document.addEventListener("DOMContentLoaded", () => {
       connectDeriv_table();
     }
   }, 500);
+
+  document.addEventListener('change', (e) => {     
+    if (e.target.id === 'set-max-loss') {
+      tradeManager.maxLoss = parseFloat(e.target.value);  
+      console.log("Nouveau SL configuré:", tradeManager.maxLoss);
+    }
+    if (e.target.id === 'set-ts-dist') {
+      tradeManager.tsTrailingDist = parseFloat(e.target.value);
+      console.log("Nouveau TS configuré:", tradeManager.tsTrailingDist);
+    }
+  });
 
   // === Trade Evaluation Panel Toggle ===
   tradeEvalToggle.addEventListener("click", () => {
