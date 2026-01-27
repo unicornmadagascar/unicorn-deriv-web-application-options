@@ -3811,7 +3811,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const dropFromPeak = tradeManager.highestPnL - pnl;
 
       if (dropFromPeak >= tradeManager.tsTrailingDist) {
-        window.executeClosePosition(`🔥 TS HIT : Chute de ${dropFromPeak.toFixed(2)}% depuis Peak (${window.tradeManager.highestPnL.toFixed(2)}%)`);
+        window.executeClosePosition(`🔥 TS HIT : Chute de ${dropFromPeak.toFixed(2)}% depuis Peak (${tradeManager.highestPnL.toFixed(2)}%)`);
         return;
       }
     }
@@ -3820,7 +3820,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (pnl <= tradeManager.maxLoss) {
       window.executeClosePosition(`🚨 SL HIT : Perte de ${pnl.toFixed(2)}%`);
       return;
-    }
+    }    
 
     // --- 6. MISES À JOUR VISUELLES ---
     // On met à jour l'interface (label, couleurs, pulsations)
