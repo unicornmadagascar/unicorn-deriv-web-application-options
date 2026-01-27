@@ -4046,7 +4046,6 @@ document.addEventListener("DOMContentLoaded", () => {
           window.subscribeToContract(c.contract_id);  
         });
       }
-
     };
 
     ws4update.onerror = (err) => {
