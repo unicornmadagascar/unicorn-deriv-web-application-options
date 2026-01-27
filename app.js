@@ -1201,6 +1201,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (msg.msg_type === "ping") ws.send(JSON.stringify({ ping: 1 }));
 
       Openpositionlines(currentSeries);
+      initPortfolioStream();
     };
 
     ws.onclose = () => {
@@ -1371,6 +1372,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Rafraîchit les indicateurs (MA, ZigZag) sur le nouveau point
       renderIndicators();
       Openpositionlines(currentSeries);
+      initPortfolioStream();
     }
   }
 
@@ -3861,7 +3863,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  window.initPortfolioStream = function () {
+  function initPortfolioStream() {
     // Éviter les connexions multiples si une est déjà active
     if (ws4update === null) {
       ws4update = new WebSocket(WS_URL);
@@ -5613,8 +5615,8 @@ document.addEventListener("DOMContentLoaded", () => {
       Openpositionlines(currentSeries);
     }
 
-    if (typeof window.initPortfolioStream === 'function') {
-      window.initPortfolioStream();
+    if (typeof initPortfolioStream === 'function') {
+      initPortfolioStream();
     }
   }
 
@@ -5744,8 +5746,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       Openpositionlines(currentSeries);
       // 2. Load portfolio socket
-      if (typeof window.initPortfolioStream === 'function') {
-        window.initPortfolioStream();
+      if (typeof initPortfolioStream === 'function') {
+        initPortfolioStream();
       }
     };
 
