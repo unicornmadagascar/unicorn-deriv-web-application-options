@@ -3936,14 +3936,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const side = tradeManager.side;
 
     // Sécurité au cas où LightweightCharts n'est pas chargé via window
-    const LineStyle = (LightweightCharts && LightweightCharts.LineStyle)
-      ? LightweightCharts.LineStyle
+    const LineStyle = (window.LightweightCharts && window.LightweightCharts.LineStyle)  
+      ? window.LightweightCharts.LineStyle
       : { Solid: 0, Dashed: 2 };
 
     // --- 2. LIGNE BREAKEVEN (BE) ---
-    const bePrice = (side === 'BUY') ? entry * 1.0001 : entry * 0.9999;
+    const bePrice = (side === 'BUY') ? entry * 1.0001 : entry * 0.9999; 
 
-    const beOptions = {
+    const beOptions = {  
       price: bePrice,
       color: '#3b82f6',
       lineWidth: 2,
@@ -3958,6 +3958,8 @@ document.addEventListener("DOMContentLoaded", () => {
       bePriceLine.applyOptions({ price: bePrice });
     }
 
+    console.log("Dessin BE à :", bePrice, "sur la série :", currentSeries);
+  
     // --- 3. LIGNE TRAILING STOP (TS) ---
     const tsActivation = parseFloat(tradeManager.tsActivation);
 
