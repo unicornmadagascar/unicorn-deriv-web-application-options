@@ -4046,12 +4046,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- VOTRE FONCTION MISE À JOUR ---
   window.triggerMASniperAlert = function (signal, candle, e20, e50) {
-    const maSniperLabel = document.getElementById('ma-sniper-label');
+    const maSniperLabel = document.getElementById('ma-sniper-label');  
     const alertBadge = document.getElementById('ma-sniper-alert-badge');
 
     // SÉCURITÉ : Valeurs numériques
     const val20 = parseFloat(e20);
-    const val50 = parseFloat(e50);    
+    const val50 = parseFloat(e50);     
 
     // Récupération du contexte actuel (Symbole et Timeframe)
     const currentSym = currentSymbol || "cryBTCUSD";
