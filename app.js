@@ -3795,7 +3795,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 3. LOGIQUE BREAKEVEN (BE) ---
     // Activation du mode BE si le seuil est atteint
-    if (pnl >= tradeManager.beActivation && !tradeManager.isBE) {
+    if (pnl >= tradeManager.beActivation && !tradeManager.isBE) {   
       tradeManager.isBE = true;
       console.log(`%c 🛡️ BE ACTIVÉ : ${pnl.toFixed(2)}% `, 'background: #3b82f6; color: white; border-radius: 4px;');
     }
