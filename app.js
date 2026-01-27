@@ -3738,7 +3738,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }));
     } else if (typeof closeAllPositionsStandalone === 'function') {  
       // Fallback sur la fonction globale si l'ID n'est pas disponible
-      closeAllPositionsStandalone();
+      closeAllPositionsStandalone();  
     }
 
     // --- 2. DÉSACTIVATION IMMÉDIATE DU MOTEUR DE CALCUL ---
