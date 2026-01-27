@@ -4095,7 +4095,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let contractsToClose = 0;
     let closedCount = 0;
   
-    ws_close.onopen = () => {  
+    ws_close.onopen = () => {    
       console.log("📡 WS de clôture connecté");
       ws_close.send(JSON.stringify({ authorize: TOKEN }));  
     };
