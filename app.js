@@ -3726,13 +3726,13 @@ document.addEventListener("DOMContentLoaded", () => {
   window.executeClosePosition = function (reason) {
     // --- 0. RÉCUPÉRATION DE L'ID AVANT RÉINITIALISATION ---
     const activeContract = window.currentActiveContract;
-    const contractId = activeContract ? activeContract.contract_id : null;
+    const contractId = activeContract ? activeContract.contract_id : null;  
 
     // --- 1. EXÉCUTION RÉELLE CHEZ LE BROKER ---
     // On essaie d'abord de vendre le contrat spécifique par son ID
     if (contractId && typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {  
       console.log(`Sending SELL request for contract: ${contractId}`);  
-      ws.send(JSON.stringify({
+      ws.send(JSON.stringify({  
         sell: contractId,  
         price: 0 // 0 = Vendre au prix actuel du marché
       }));
