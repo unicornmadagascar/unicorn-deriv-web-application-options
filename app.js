@@ -3987,7 +3987,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       // Supprimer la ligne TS si le profit n'est plus suffisant pour l'activer
       if (tsPriceLine) {  
-        currentSeries.removePriceLine(tsPriceLine);
+        currentSeries.removePriceLine(tsPriceLine);  
         tsPriceLine = null;
       }
     }
