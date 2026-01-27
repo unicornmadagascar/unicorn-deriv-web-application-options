@@ -3109,6 +3109,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (volPercent) volPercent.innerHTML = "G: 0.000%";
       }
 
+      // À ajouter dans votre fonction reset
+      const streak = document.getElementById('streak-counter');
+      if (streak) streak.style.display = "none";
+
       // 9. Feedback sonore et Logs
       if (typeof playSniperSound === 'function') {
         playSniperSound('RESET');
@@ -3926,6 +3930,10 @@ document.addEventListener("DOMContentLoaded", () => {
       pnlLabel.classList.remove('pnl-active-ts', 'pnl-near-sl');
       pnlLabel.classList.add('ready-pulse');
     }
+
+    // À ajouter dans votre fonction reset
+    const streak = document.getElementById('streak-counter');
+    if (streak) streak.style.display = "none";
   };
 
   /**
