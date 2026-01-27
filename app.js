@@ -7568,7 +7568,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialisation au chargement
   window.addEventListener('load', () => {
     dragElement("ma-sniper-label");  
-  });
+  });  
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
