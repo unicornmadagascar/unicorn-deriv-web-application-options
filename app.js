@@ -3666,7 +3666,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } else {
       label.style.color = "#ef4444"; // Rouge Perte
-      label.classList.remove('pnl-active-ts');   
+      label.classList.remove('pnl-active-ts');
 
       // Alerte critique si proche du Stop Loss (marge de 0.2%)
       if (pnl <= (tradeManager.maxLoss + 0.2)) {
@@ -3675,7 +3675,7 @@ document.addEventListener("DOMContentLoaded", () => {
         label.classList.remove('pnl-near-sl');
       }
     }
-  };  
+  };
 
   window.runSmartRiskManager = function (currentPrice) {
     const c = window.currentActiveContract;
@@ -3863,11 +3863,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.initPortfolioStream = function () {
     // Éviter les connexions multiples si une est déjà active
-    if (ws4update && (ws4update.readyState === WebSocket.OPEN || ws4update.readyState === WebSocket.CONNECTING)) {
-      return;
+    if (ws4update === null) {
+      ws4update = new WebSocket(WS_URL);
+      ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    ws4update = new WebSocket(WS_URL);
+    if (ws4update && (ws4update.readyState === WebSocket.OPEN || ws4update.readyState === WebSocket.CONNECTING)) {
+      ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
+    }
+
+    if (wsTranscation && (ws4update.readyState === WebSocket.CLOSED || ws4update.readyState === WebSocket.CLOSING)) {
+      ws4update = new WebSocket(WS_URL);
+      ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
+    }
 
     ws4update.onopen = () => {
       console.log("📡 Flux Portfolio Connecté");
@@ -4046,12 +4054,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- VOTRE FONCTION MISE À JOUR ---
   window.triggerMASniperAlert = function (signal, candle, e20, e50) {
-    const maSniperLabel = document.getElementById('ma-sniper-label');  
+    const maSniperLabel = document.getElementById('ma-sniper-label');
     const alertBadge = document.getElementById('ma-sniper-alert-badge');
 
     // SÉCURITÉ : Valeurs numériques
     const val20 = parseFloat(e20);
-    const val50 = parseFloat(e50);     
+    const val50 = parseFloat(e50);
 
     // Récupération du contexte actuel (Symbole et Timeframe)
     const currentSym = currentSymbol || "cryBTCUSD";
@@ -5737,6 +5745,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       Openpositionlines(currentSeries);
+      // 2. Load portfolio socket
+      if (typeof window.initPortfolioStream === 'function') {
+        window.initPortfolioStream();   
+      }
     };
 
     // --- ÉVÉNEMENT : FERMETURE ---
@@ -7473,10 +7485,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. Charger les préférences et dessins (MasterStorage)
     if (typeof window.restoreTradingSession === 'function') {
       window.restoreTradingSession();
-    }
-    // 2. Load portfolio socket
-    if (typeof window.initPortfolioStream === 'function') {
-      window.initPortfolioStream();
     }
 
     setupChartInteractions(chart);
