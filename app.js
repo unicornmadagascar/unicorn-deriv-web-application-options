@@ -4051,7 +4051,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // SÉCURITÉ : Valeurs numériques
     const val20 = parseFloat(e20);
-    const val50 = parseFloat(e50);
+    const val50 = parseFloat(e50);    
 
     // Récupération du contexte actuel (Symbole et Timeframe)
     const currentSym = currentSymbol || "cryBTCUSD";
