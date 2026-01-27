@@ -3110,8 +3110,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const closeDragElement = () => {
       document.onmouseup = null;
-      document.onmousemove = null;
-      el.style.cursor = "grab";
+      document.onmousemove = null;  
+      el.style.cursor = "grab";  
       el.style.transition = "all 0.3s ease"; // Réactive la fluidité après le drag
     };
 
