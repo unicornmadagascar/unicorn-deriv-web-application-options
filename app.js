@@ -3106,7 +3106,7 @@ document.addEventListener("DOMContentLoaded", () => {
       el.style.left = newLeft + "px";
       el.style.bottom = "auto";
       el.style.right = "auto";
-    };
+    };  
 
     const closeDragElement = () => {
       document.onmouseup = null;
