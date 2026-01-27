@@ -3122,7 +3122,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const dragMouseDown = (e) => {
       // On ne déclenche le drag que si on clique sur l'élément, pas sur un bouton interne
-      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+      const ignoredTags = ['SELECT', 'OPTION', 'INPUT', 'BUTTON', 'TEXTAREA'];
+      if (ignoredTags.includes(el.target.tagName)) {
+        return; // On sort de la fonction, on ne bloque rien
+      }
 
       e.preventDefault();
       pos3 = e.clientX;
@@ -3936,14 +3939,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const side = tradeManager.side;
 
     // Sécurité au cas où LightweightCharts n'est pas chargé via window
-    const LineStyle = (window.LightweightCharts && window.LightweightCharts.LineStyle)  
+    const LineStyle = (window.LightweightCharts && window.LightweightCharts.LineStyle)
       ? window.LightweightCharts.LineStyle
       : { Solid: 0, Dashed: 2 };
 
     // --- 2. LIGNE BREAKEVEN (BE) ---
-    const bePrice = (side === 'BUY') ? entry * 1.0001 : entry * 0.9999; 
+    const bePrice = (side === 'BUY') ? entry * 1.0001 : entry * 0.9999;
 
-    const beOptions = {  
+    const beOptions = {
       price: bePrice,
       color: '#3b82f6',
       lineWidth: 2,
@@ -3953,13 +3956,13 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     if (!bePriceLine) {
-      bePriceLine = currentSeries.createPriceLine(beOptions);  
+      bePriceLine = currentSeries.createPriceLine(beOptions);
     } else {
       bePriceLine.applyOptions({ price: bePrice });
     }
 
     console.log("Dessin BE à :", bePrice, "sur la série :", currentSeries);
-  
+
     // --- 3. LIGNE TRAILING STOP (TS) ---
     const tsActivation = parseFloat(tradeManager.tsActivation);
 
@@ -3976,7 +3979,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const distanceToTS = Math.abs((currentPrice - tsPrice) / tsPrice * 100);
       const isNear = distanceToTS < 0.05;
 
-      const tsOptions = {  
+      const tsOptions = {
         price: tsPrice,
         color: isNear ? '#fb923c' : '#10b981',
         lineWidth: isNear ? 3 : 2,
