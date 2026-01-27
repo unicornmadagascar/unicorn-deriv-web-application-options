@@ -3843,6 +3843,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const activeContract = window.currentActiveContract;
     const contractId = activeContract ? activeContract.contract_id : null;
 
+    tradeManager.isActive = false;
+    tradeManager.highestPnL = -99; // On met une valeur très basse par sécurité
+    tradeManager.isBE = false;
+
     // --- 1. EXÉCUTION RÉELLE CHEZ LE BROKER ---
     // On essaie d'abord de vendre le contrat spécifique par son ID
     if (contractId && typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
@@ -7605,18 +7609,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
-    if (connectBtn.textContent !== "Connect") {  
+    if (connectBtn.textContent !== "Connect") {
       // Subscribing Tables  S  
       connectDeriv_table();
     }
   }, 500);
 
-  document.addEventListener('change', (e) => {     
-    if (e.target.id === 'set-max-loss') {  
-      tradeManager.maxLoss = parseFloat(e.target.value);  
-      console.log("Nouveau SL configuré:", tradeManager.maxLoss);  
+  document.addEventListener('change', (e) => {
+    if (e.target.id === 'set-max-loss') {
+      tradeManager.maxLoss = parseFloat(e.target.value);
+      console.log("Nouveau SL configuré:", tradeManager.maxLoss);
     }
-    if (e.target.id === 'set-ts-dist') {   
+    if (e.target.id === 'set-ts-dist') {
       tradeManager.tsTrailingDist = parseFloat(e.target.value);
       console.log("Nouveau TS configuré:", tradeManager.tsTrailingDist);
     }
