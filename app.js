@@ -7605,7 +7605,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Simulation : mise à jour toutes les 2 secondes
   setInterval(() => {
-    if (connectBtn.textContent !== "Connect") {
+    if (connectBtn.textContent !== "Connect") {  
       // Subscribing Tables  S  
       connectDeriv_table();
     }
