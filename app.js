@@ -4007,7 +4007,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (tsPriceLine) {
         currentSeries.removePriceLine(tsPriceLine);
         tsPriceLine = null;
-      }
+      }   
     }
   };
   
