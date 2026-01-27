@@ -166,6 +166,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let ws4update = null;
   let ws_close = null;
   window.currentActiveContract = null;
+  window.tradingStats = {
+    winStreak: 0,
+    bestStreak: 0,
+    totalWins: 0
+  };
   // ================== x ==================  
 
   let wsReady = false;
@@ -3680,49 +3685,67 @@ document.addEventListener("DOMContentLoaded", () => {
         label.classList.add('critical-shake');
         setTimeout(() => label.classList.remove('critical-shake'), 500);
       }
-      console.warn("⚠️ Impossible d'armer le Risk Manager : MA SNIPER est sur OFF.");
+      if (typeof playSniperSound === 'function') playSniperSound('CRITICAL');
+      console.warn("⚠️ Impossible d'armer : Activez d'abord le MA SNIPER.");
       return;
     }
 
     // --- 2. LOGIQUE TOGGLE ---
+    // Utilisation systématique de window.tradeManager pour éviter les erreurs "undefined"
     if (tradeManager && tradeManager.isActive) {
-      // --- DÉSACTIVATION ---
-      tradeManager.isActive = false;
 
-      if (btn) btn.classList.remove('active');
+      // --- DÉSACTIVATION : On utilise le Reset centralisé ---
+      window.resetRiskManager();
 
-      if (pnlLabel) {
-        pnlLabel.innerText = "READY";       // On repasse en mode attente
-        pnlLabel.style.color = "#3b82f6";   // Retour au bleu "Ready"
-        pnlLabel.classList.add('ready-pulse'); // On relance le clignotement
-        pnlLabel.classList.remove('pnl-active-ts', 'pnl-near-sl');
+      if (btn) {
+        btn.classList.remove('active');
+        btn.style.backgroundColor = "";
+        btn.innerHTML = "🎯 ARM RISK";
       }
 
-      console.log("🛑 Risk Manager : DÉSACTIVÉ. Retour au mode READY.");
+      if (typeof playSniperSound === 'function') playSniperSound('RESET');
+      console.log("🛑 Risk Manager : DÉSACTIVÉ et Réinitialisé.");
+
     } else {
+
       // --- ACTIVATION ---  
-      // On initialise l'objet avec les valeurs des sélecteurs HTML
+      // Récupération dynamique des valeurs des sélecteurs HTML
+      const slInput = document.getElementById('set-max-loss');
+      const tsInput = document.getElementById('set-ts-dist');
+
+      const selectedSL = slInput ? parseFloat(slInput.value) : -1.5;
+      const selectedTS = tsInput ? parseFloat(tsInput.value) : 0.2;
+
+      // On (re)crée l'objet de gestion
       tradeManager = {
         isActive: true,
-        entryPrice: window.currentClosePrice || 0, // Assurez-vous que cette variable globale existe
+        startTime: Date.now(),      // Démarre le chrono pour le délai de grâce
+        hasAlertedArmed: false,     // Reset du flag pour le son sonar
+        entryPrice: window.currentClosePrice || 0,
         side: window.lastSignalSide || 'BUY',
         highestPnL: 0,
         isBE: false,
-        maxLoss: parseFloat(document.getElementById('set-max-loss').value),
-        tsTrailingDist: parseFloat(document.getElementById('set-ts-dist').value),
-        beActivation: 0.3, // BE s'active à +0.3%
-        tsActivation: 0.6  // TS s'active à +0.6%
+        maxLoss: selectedSL,
+        tsTrailingDist: selectedTS,
+        beActivation: 0.3,          // Seuil d'activation du Breakeven
+        tsActivation: 0.6           // Seuil d'activation du Trailing
       };
 
-      if (btn) btn.classList.add('active');
-
-      if (pnlLabel) {
-        pnlLabel.classList.remove('ready-pulse'); // On arrête le clignotement "Ready"
-        pnlLabel.innerText = "0.00%";             // On affiche le départ du calcul
-        pnlLabel.style.color = "#10b981";         // Couleur neutre/profit
+      if (btn) {
+        btn.classList.add('active');
+        btn.style.backgroundColor = "#ef4444"; // Rouge "Alerte"
+        btn.innerHTML = "🛡️ RISK ARMED";
       }
 
-      console.log(`🎯 Risk Manager : ARMÉ sur ${tradeManager.side} | SL: ${tradeManager.maxLoss}% | TS Dist: ${tradeManager.tsTrailingDist}%`);
+      if (pnlLabel) {
+        pnlLabel.classList.remove('ready-pulse');
+        pnlLabel.innerText = "ARMED";
+        pnlLabel.style.color = "#fb923c"; // Orange "Préparation"
+      }
+
+      if (typeof playSniperSound === 'function') playSniperSound('RISK_ON');
+
+      console.log(`🎯 Risk Manager : ARMÉ | SL: ${selectedSL}% | TS: ${selectedTS}%`);
     }
   };
 
@@ -3731,17 +3754,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const label = document.getElementById('pnl-value-label');
     if (!label) return;
 
+    // --- MISE À JOUR DE LA SÉRIE (STREAK) ---
+    // On appelle cette fonction systématiquement pour que le feu 🔥 
+    // reste visible même entre deux trades.
+    if (typeof window.updateStreakUI === 'function') {
+      window.updateStreakUI();
+    }
+
     // --- 1. ÉTAT : PAS DE POSITION ACTIVE ---
     if (!tradeManager || !tradeManager.isActive) {
       label.classList.remove('pnl-active-ts', 'pnl-near-sl');
 
       if (maSniperActive) {
         label.innerText = "READY";
-        label.style.color = "#3b82f6"; // Bleu Sniper
+        label.style.color = "#3b82f6";
         label.classList.add('ready-pulse');
       } else {
         label.innerText = "NO POSITION";
-        label.style.color = "#cbd5e1"; // Gris
+        label.style.color = "#cbd5e1";
         label.classList.remove('ready-pulse');
       }
       return;
@@ -3753,20 +3783,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 3. COULEURS ET ALERTES DYNAMIQUES ---
     if (pnl >= 0) {
-      label.style.color = "#10b981"; // Vert Profit
+      label.style.color = "#10b981";
       label.classList.remove('pnl-near-sl');
 
-      // Animation si le Trailing Stop est "armé"
       if (pnl >= tradeManager.tsActivation) {
         label.classList.add('pnl-active-ts');
       } else {
         label.classList.remove('pnl-active-ts');
       }
     } else {
-      label.style.color = "#ef4444"; // Rouge Perte
+      label.style.color = "#ef4444";
       label.classList.remove('pnl-active-ts');
 
-      // Alerte critique si proche du Stop Loss (marge de 0.2%)
       if (pnl <= (tradeManager.maxLoss + 0.2)) {
         label.classList.add('pnl-near-sl');
       } else {
@@ -3775,12 +3803,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  window.updateStreakUI = function () {
+    const streakElement = document.getElementById('streak-counter');
+    if (!streakElement) return;
+
+    const stats = window.tradingStats;
+
+    if (stats && stats.winStreak >= 2) {
+      const currentText = `🔥 ${stats.winStreak} STREAK`;
+
+      // Si la série vient de changer, on peut ajouter un petit effet
+      if (streakElement.innerText !== currentText) {
+        streakElement.style.transform = "scale(1.2)";
+        setTimeout(() => streakElement.style.transform = "scale(1)", 200);
+      }
+
+      streakElement.innerHTML = currentText;
+      streakElement.style.display = "block";
+      streakElement.style.color = "#fbbf24"; // Ambre/Or
+      streakElement.style.transition = "transform 0.2s ease-in-out";
+    } else {
+      streakElement.style.display = "none";
+    }
+  };
+
   window.runSmartRiskManager = function (currentPrice) {
     const c = window.currentActiveContract;
 
     // --- 1. SÉCURITÉS PRÉALABLES ---
     if (!c || !tradeManager || !tradeManager.isActive) {
-      console.debug("Risk Manager en attente de contrat actif...");
       return;
     }
 
@@ -3788,49 +3839,92 @@ document.addEventListener("DOMContentLoaded", () => {
     const pnl = parseFloat(c.profit_percentage || 0);
     const currentSpot = parseFloat(currentPrice || c.current_spot);
 
+    // Calcul du temps écoulé depuis l'achat (en secondes)
+    const now = Date.now();
+    const tradeDuration = (now - (tradeManager.startTime || 0)) / 1000;
+
     // --- 2. MISE À JOUR DU PEAK (Plus haut profit atteint) ---
     if (pnl > tradeManager.highestPnL) {
       tradeManager.highestPnL = pnl;
     }
 
     // --- 3. LOGIQUE BREAKEVEN (BE) ---  
-    // Activation du mode BE si le seuil est atteint
-    if (pnl >= tradeManager.beActivation && !tradeManager.isBE) {   
+    if (pnl >= tradeManager.beActivation && !tradeManager.isBE) {
       tradeManager.isBE = true;
       console.log(`%c 🛡️ BE ACTIVÉ : ${pnl.toFixed(2)}% `, 'background: #3b82f6; color: white; border-radius: 4px;');
-    }  
+    }
 
-    // Exécution du BE : Si activé et que le profit retombe à 0 (ou une micro-marge de sécurité)
     if (tradeManager.isBE && pnl <= 0.05) {
       window.executeClosePosition(`🛡️ BREAKEVEN HIT : Retour à ${pnl.toFixed(2)}%`);
-      return; // On arrête tout après une clôture
+      return;
     }
 
     // --- 4. LOGIQUE TRAILING STOP (TS) ---
-    if (pnl >= tradeManager.tsActivation) {    
+    if (pnl >= tradeManager.tsActivation) {
       const dropFromPeak = tradeManager.highestPnL - pnl;
 
       if (dropFromPeak >= tradeManager.tsTrailingDist) {
-        window.executeClosePosition(`🔥 TS HIT : Chute de ${dropFromPeak.toFixed(2)}% depuis Peak (${tradeManager.highestPnL.toFixed(2)}%)`);
+        window.executeClosePosition(`🔥 TS HIT : Chute de ${dropFromPeak.toFixed(2)}% depuis Peak (${window.tradeManager.highestPnL.toFixed(2)}%)`);
         return;
       }
     }
 
-    // --- 5. STOP LOSS (Sécurité Max) ---
+    // --- 5. STOP LOSS (Sécurité Max avec Délai de Grâce) ---
     if (pnl <= tradeManager.maxLoss) {
-      window.executeClosePosition(`🚨 SL HIT : Perte de ${pnl.toFixed(2)}%`);
-      return;
-    }    
+      // On n'autorise la fermeture que si le trade a plus de 5 secondes
+      if (tradeDuration > 5) {
+        window.executeClosePosition(`🚨 SL HIT : Perte de ${pnl.toFixed(2)}%`);
+        return;
+      } else {
+        // Log discret pour indiquer qu'on ignore le spread de départ
+        console.warn(`⏳ SL ignoré durant stabilisation (${pnl.toFixed(2)}%) - Age: ${tradeDuration.toFixed(1)}s`);
+      }
+    }
+
+    // NOUVEAU : Signal sonore une seule fois quand on passe les 5 secondes
+    if (Math.floor(tradeDuration) === 5 && !tradeManager.hasAlertedArmed) {
+      if (typeof playSniperSound === 'function') playSniperSound('ARMED_ACTIVE');
+      tradeManager.hasAlertedArmed = true; // Pour ne pas répéter le son
+      console.log("🛡️ Protection SL active !");
+    }
 
     // --- 6. MISES À JOUR VISUELLES ---
-    // On met à jour l'interface (label, couleurs, pulsations)
     if (typeof window.updatePnLUI === 'function') {
       window.updatePnLUI(pnl);
     }
 
-    // On met à jour les lignes BE et TS sur le graphique
     if (typeof window.updateRiskLinesOnChart === 'function') {
       window.updateRiskLinesOnChart(pnl, currentSpot);
+    }
+  };
+
+  window.resetRiskManager = function () {
+    console.log("🧹 Nettoyage du Risk Manager...");
+
+    // 1. Reset des variables logiques
+    if (tradeManager) {
+      tradeManager.isActive = false;
+      tradeManager.highestPnL = 0; // 0 est plus sûr que -999 ici
+      tradeManager.isBE = false;
+      tradeManager.startTime = 0;
+      tradeManager.hasAlertedArmed = false;
+    }
+
+    // 2. Nettoyage Visuel et Références
+    window.currentActiveContract = null;
+
+    // On nettoie les lignes sur le graphique
+    if (typeof window.removeRiskLines === 'function') {
+      window.removeRiskLines();
+    }
+
+    // 3. Reset du Label (Attention à utiliser le BON ID ici)
+    const pnlLabel = document.getElementById('pnl-value-label'); // Vérifie bien cet ID
+    if (pnlLabel) {
+      pnlLabel.innerText = "READY";
+      pnlLabel.style.color = "#3b82f6"; // Bleu Ready
+      pnlLabel.classList.remove('pnl-active-ts', 'pnl-near-sl');
+      pnlLabel.classList.add('ready-pulse');
     }
   };
 
@@ -3839,63 +3933,80 @@ document.addEventListener("DOMContentLoaded", () => {
  * @param {string} reason - La raison de la clôture (ex: "TS HIT", "MANUAL", "SL HIT")
  */
   window.executeClosePosition = function (reason) {
-    // --- 0. RÉCUPÉRATION DE L'ID AVANT RÉINITIALISATION ---
+    // --- 0. RÉCUPÉRATION DES DONNÉES AVANT RESET ---
     const activeContract = window.currentActiveContract;
     const contractId = activeContract ? activeContract.contract_id : null;
 
-    tradeManager.isActive = false;
-    tradeManager.highestPnL = -99; // On met une valeur très basse par sécurité
-    tradeManager.isBE = false;
+    // On capture le profit pour le son avant de vider le contrat
+    const pnl = activeContract ? parseFloat(activeContract.profit_percentage || 0) : 0;
 
-    // --- 1. EXÉCUTION RÉELLE CHEZ LE BROKER ---
-    // On essaie d'abord de vendre le contrat spécifique par son ID
-    if (contractId && typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
-      console.log(`Sending SELL request for contract: ${contractId}`);
-      ws.send(JSON.stringify({
-        sell: contractId,
-        price: 0 // 0 = Vendre au prix actuel du marché
-      }));
-    } else if (typeof closeAllPositionsStandalone === 'function') {
-      // Fallback sur la fonction globale si l'ID n'est pas disponible
-      closeAllPositionsStandalone();
-    }
-
-    // --- 2. DÉSACTIVATION IMMÉDIATE DU MOTEUR DE CALCUL ---
-    // On coupe l'activité AVANT de lancer les délais pour éviter tout calcul résiduel
+    // --- 1. DÉSACTIVATION IMMÉDIATE DU MOTEUR (Sécurité) ---
     if (tradeManager) {
       tradeManager.isActive = false;
       tradeManager.highestPnL = 0;
       tradeManager.isBE = false;
+      tradeManager.hasAlertedArmed = false; // Reset du flag sonore
     }
 
-    // --- 3. NETTOYAGE GRAPHIQUE ---
+    // --- 2. EXÉCUTION RÉELLE CHEZ LE BROKER ---
+    if (contractId && typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
+      console.log(`Sending SELL request for contract: ${contractId}`);
+      ws.send(JSON.stringify({
+        sell: contractId,
+        price: 0
+      }));
+    } else if (typeof closeAllPositionsStandalone === 'function') {
+      closeAllPositionsStandalone();
+    }
+
+    // --- 3. FEEDBACK SONORE & STATS ---
+    if (typeof playSniperSound === 'function') {
+      if (pnl >= 10) {
+        playSniperSound('JACKPOT');
+        window.tradingStats.winStreak++; // Incrémente la série
+        window.tradingStats.totalWins++;
+      } else if (pnl > 0) {
+        playSniperSound('CLOSE_WIN');
+        window.tradingStats.winStreak++; // Incrémente la série
+        window.tradingStats.totalWins++;
+      } else if (pnl < 0) {
+        playSniperSound('CLOSE_LOSS');
+        window.tradingStats.winStreak = 0; // RESET de la série sur une perte
+      }
+
+      // Mise à jour de la meilleure série
+      if (window.tradingStats.winStreak > window.tradingStats.bestStreak) {
+        window.tradingStats.bestStreak = window.tradingStats.winStreak;
+      }
+    }
+
+    // --- 4. NETTOYAGE GRAPHIQUE ET UI ---
     if (typeof window.removeRiskLines === 'function') {
       window.removeRiskLines();
     }
 
-    // Nettoyer aussi la ligne d'entrée spécifique si elle existe encore
     if (contractId && window.removePriceLine) {
       window.removePriceLine(contractId);
     }
 
-    // --- 4. FEEDBACK VISUEL DU BOUTON 🎯 ---
+    // Feedback du bouton
     const btn = document.getElementById('btn-arm-risk');
     if (btn) {
       btn.classList.remove('active');
       btn.style.backgroundColor = "";
-      btn.innerHTML = "🎯 ARM RISK"; // Reset du texte du bouton
+      btn.innerHTML = "🎯 ARM RISK";
     }
 
     // --- 5. INTERFACE PnL (LABEL) ---
     const pnlLabel = document.getElementById('pnl-value-label');
     if (pnlLabel) {
-      pnlLabel.innerText = "EXIT";
-      pnlLabel.style.color = "#fb923c"; // Orange pour indiquer la transition
+      // Affichage du résultat final pendant la transition
+      pnlLabel.innerText = pnl > 0 ? `+${pnl.toFixed(2)}%` : `${pnl.toFixed(2)}%`;
+      pnlLabel.style.color = pnl >= 0 ? "#00ff80" : "#ff4d4d";
       pnlLabel.classList.remove('pnl-active-ts', 'pnl-near-sl', 'ready-pulse');
 
-      // Retour au mode READY ou STANDBY après 3 secondes de délai visuel
       setTimeout(() => {
-        // On ne repasse en READY que si aucune nouvelle position n'a été ouverte entre temps
+        // Vérifier si un nouveau trade n'a pas été ouvert entre temps
         if (!tradeManager.isActive) {
           if (maSniperActive) {
             pnlLabel.innerText = "READY";
@@ -3904,32 +4015,26 @@ document.addEventListener("DOMContentLoaded", () => {
           } else {
             pnlLabel.innerText = "0.00%";
             pnlLabel.style.color = "#cbd5e1";
-            pnlLabel.classList.remove('ready-pulse');
           }
         }
       }, 3000);
     }
 
-    // --- 6. LOGS ET ALERTES ---
-    console.warn(`🚀 POSITION CLOSE : ${reason}`);
+    // --- 6. LOGS ET SCREENSHOT ---
+    console.warn(`🚀 POSITION CLOSE : ${reason} (PnL: ${pnl}%)`);
 
-    // --- 7. CAPTURE D'ÉCRAN (Optionnel) ---
     if (window.autoScreenshotActive && typeof window.captureSniperShot === 'function') {
-      window.captureSniperShot({ subtype: 'EXIT_TRADE', reason: reason }, window.currentSymbol);
+      window.captureSniperShot({ subtype: 'EXIT_TRADE', reason: reason, pnl: pnl }, currentSymbol);
     }
 
-    // --- 8. FEEDBACK SONORE ---
-    if (typeof playSniperSound === 'function') {
-      // Si la raison contient TS ou profit, on joue un son de victoire
-      if (reason.includes("TS") || reason.includes("BE") || reason.includes("PROFIT")) {
-        playSniperSound('CLOSE_WIN');
-      } else {
-        playSniperSound('CLOSE_LOSS');
-      }
-    }
-
-    // On vide enfin la référence du contrat courant
+    // --- 7. FINALISATION ---
     window.currentActiveContract = null;
+
+    // --- TOUT À LA FIN ---
+    setTimeout(() => {
+      window.resetRiskManager(); // <--- APPEL ICI
+      console.log("♻️ Manager prêt pour le prochain trade.");
+    }, 3100);
   };
 
   window.updateRiskLinesOnChart = function (pnl, currentPrice) {
@@ -4338,7 +4443,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- 5. Fonctions Utilitaires (Audio, Logs, Export) ---
   function playSniperSound(type) {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Initialisation ou récupération du contexte audio (Singleton suggéré pour performance)
+    if (!window.sniperAudioCtx) {
+      window.sniperAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    const audioCtx = window.sniperAudioCtx;
+
+    // Débloquer l'AudioContext si le navigateur l'a mis en pause
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
     const now = audioCtx.currentTime;
 
     const playTone = (freq, start, duration, wave = 'sine', volume = 0.1) => {
@@ -4346,8 +4461,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const gain = audioCtx.createGain();
       osc.type = wave;
       osc.frequency.setValueAtTime(freq, start);
-      gain.gain.setValueAtTime(volume, start);
-      gain.gain.exponentialRampToValueAtTime(0.01, start + duration);
+
+      // Enveloppe de volume pour éviter les "clics" audio
+      gain.gain.setValueAtTime(0.001, start);
+      gain.gain.exponentialRampToValueAtTime(volume, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start(start);
@@ -4355,48 +4474,60 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     switch (type) {
-      case 'ARMED': // Activation du Sniper (🚀)
+      case 'ARMED': // Activation initiale du bouton
         playTone(880, now, 0.1, 'sine', 0.1);
-        setTimeout(() => playTone(1760, audioCtx.currentTime, 0.1, 'sine', 0.1), 100);
+        playTone(1760, now + 0.1, 0.1, 'sine', 0.1);
         break;
 
-      case 'RISK_ON': // Armement du Risk Manager (🎯)
+      case 'ARMED_ACTIVE': // NOUVEAU : Fin du délai de grâce (SL maintenant actif)
+        // Son type "Sonar" double bip rapide
+        playTone(1200, now, 0.05, 'sine', 0.1);
+        playTone(1200, now + 0.15, 0.05, 'sine', 0.1);
+        break;
+
+      case 'RISK_ON': // Armement global
         playTone(660, now, 0.05, 'sine', 0.1);
         playTone(880, now + 0.1, 0.05, 'sine', 0.1);
         playTone(1320, now + 0.2, 0.1, 'sine', 0.1);
         break;
 
-      case 'SIGNAL': // Signal standard
+      case 'SIGNAL': // Notification de signal technique
         playTone(1200, now, 0.05, 'sine', 0.05);
         break;
 
-      case 'CRITICAL': // Alerte Gap (Sirène)
-        playTone(880, now, 0.15, 'square', 0.1);
-        playTone(660, now + 0.2, 0.2, 'square', 0.1);
+      case 'CRITICAL': // Alerte de volatilité (Sirène)
+        playTone(880, now, 0.2, 'square', 0.05);
+        playTone(660, now + 0.25, 0.2, 'square', 0.05);
         break;
 
-      case 'CLOSE_WIN': // Sortie Profit / TS Hit (Son ascendant joyeux)
-        playTone(523.25, now, 0.1, 'sine', 0.1); // C5
-        playTone(659.25, now + 0.1, 0.1, 'sine', 0.1); // E5
-        playTone(783.99, now + 0.2, 0.3, 'sine', 0.1); // G5
+      case 'CLOSE_WIN': // Sortie Profit (Accords majeurs)
+        playTone(523.25, now, 0.1, 'sine', 0.1); // Do
+        playTone(659.25, now + 0.1, 0.1, 'sine', 0.1); // Mi
+        playTone(783.99, now + 0.2, 0.3, 'sine', 0.1); // Sol
         break;
 
-      case 'CLOSE_LOSS': // Sortie Stop Loss (Bip grave préventif)
-        playTone(220, now, 0.2, 'triangle', 0.1);
-        playTone(220, now + 0.3, 0.2, 'triangle', 0.1);
+      case 'CLOSE_LOSS': // Sortie Perte (Double bip sourd)
+        playTone(220, now, 0.15, 'triangle', 0.15);
+        playTone(180, now + 0.2, 0.3, 'triangle', 0.15);
         break;
 
-      case 'RESET': // Nettoyage
+      case 'RESET': // Nettoyage / Désarmement
         const oscR = audioCtx.createOscillator();
         const gainR = audioCtx.createGain();
         oscR.frequency.setValueAtTime(440, now);
         oscR.frequency.exponentialRampToValueAtTime(110, now + 0.3);
         gainR.gain.setValueAtTime(0.1, now);
-        gainR.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        gainR.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
         oscR.connect(gainR);
         gainR.connect(audioCtx.destination);
         oscR.start();
         oscR.stop(now + 0.3);
+        break;
+
+      case 'JACKPOT': // Sortie Profit Exceptionnel (Cascade triomphale)
+        [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((freq, i) => {
+          playTone(freq, now + (i * 0.08), 0.15, 'sine', 0.1);
+        });
         break;
     }
   }
@@ -7620,15 +7751,15 @@ document.addEventListener("DOMContentLoaded", () => {
       tradeManager.tsTrailingDist = parseFloat(e.target.value);
       console.log("Nouveau TS configuré:", tradeManager.tsTrailingDist);
     }
-  });   
+  });
 
   document.getElementById('set-max-loss').addEventListener('change', (e) => {
     tradeManager.maxLoss = parseFloat(e.target.value);
     // Petit feedback visuel
-    e.target.style.borderColor = "#3b82f6";  
+    e.target.style.borderColor = "#3b82f6";
     setTimeout(() => e.target.style.borderColor = "#334155", 500);
-  });   
-   
+  });
+
   // === Trade Evaluation Panel Toggle ===  
   tradeEvalToggle.addEventListener("click", () => {
     tradeEvalPanel.classList.toggle("active");
@@ -8470,6 +8601,22 @@ document.addEventListener("DOMContentLoaded", () => {
     contextMenu.style.display = 'none';
     render();
   };
+
+  const riskBtn = document.getElementById('arm-risk-btn');
+  riskBtn.addEventListener('click', () => {
+    const isActivating = riskBtn.classList.toggle('active'); // Change l'état visuel
+
+    if (isActivating) {
+      console.log("🚀 Risk Manager ARMÉ");
+      tradeManager.isActive = true;
+      riskBtn.innerText = "RISK ARMED";
+      riskBtn.style.background = "#ef4444"; // Rouge pour indiquer la surveillance
+    } else {
+      window.resetRiskManager(); // Appel de la fonction de nettoyage
+      riskBtn.innerText = "ARM RISK";
+      riskBtn.style.background = "#3b82f6"; // Bleu par défaut
+    }
+  });
 
   // Initialisation
   window.addEventListener('resize', resizeCanvas);
