@@ -3679,16 +3679,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  window.runSmartRiskManager = function (currentPrice) {  
+  window.runSmartRiskManager = function (currentPrice) {
     const c = window.currentActiveContract;
     if (!c || !tradeManager.isActive) return;
 
     // Le broker nous donne le profit en % directement
-    const pnl = parseFloat(c.profit_percentage);  
+    const pnl = parseFloat(c.profit_percentage);
 
     // 1. MISE À JOUR DU PEAK (Pour le Trailing)
     if (pnl > tradeManager.highestPnL) {
-      tradeManager.highestPnL = pnl;     
+      tradeManager.highestPnL = pnl;
     }
 
     // 2. LOGIQUE BREAKEVEN (BE)
@@ -3719,66 +3719,98 @@ document.addEventListener("DOMContentLoaded", () => {
     window.updateRiskLinesOnChart(pnl, currentPrice);
   };
 
+  /**
+ * Ferme la position en cours, nettoie le graphique et réinitialise le Risk Manager
+ * @param {string} reason - La raison de la clôture (ex: "TS HIT", "MANUAL", "SL HIT")
+ */
   window.executeClosePosition = function (reason) {
-    // --- 0. EXÉCUTION RÉELLE CHEZ LE BROKER ---
-    if (typeof window.closeAllPositionsStandalone === 'function') {
-      window.closeAllPositionsStandalone();
+    // --- 0. RÉCUPÉRATION DE L'ID AVANT RÉINITIALISATION ---
+    const activeContract = window.currentActiveContract;
+    const contractId = activeContract ? activeContract.contract_id : null;
+
+    // --- 1. EXÉCUTION RÉELLE CHEZ LE BROKER ---
+    // On essaie d'abord de vendre le contrat spécifique par son ID
+    if (contractId && typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
+      console.log(`Sending SELL request for contract: ${contractId}`);
+      ws.send(JSON.stringify({
+        sell: contractId,
+        price: 0 // 0 = Vendre au prix actuel du marché
+      }));
+    } else if (typeof closeAllPositionsStandalone === 'function') {
+      // Fallback sur la fonction globale si l'ID n'est pas disponible
+      closeAllPositionsStandalone();
     }
 
-    // --- 1. DÉSACTIVATION DU MOTEUR DE CALCUL ---
+    // --- 2. DÉSACTIVATION IMMÉDIATE DU MOTEUR DE CALCUL ---
+    // On coupe l'activité AVANT de lancer les délais pour éviter tout calcul résiduel
     if (tradeManager) {
       tradeManager.isActive = false;
-      tradeManager.highestPnL = 0; // Reset du peak pour le prochain trade
+      tradeManager.highestPnL = 0;
+      tradeManager.isBE = false;
     }
 
-    // --- 2. NETTOYAGE GRAPHIQUE IMMÉDIAT ---
+    // --- 3. NETTOYAGE GRAPHIQUE ---
     if (typeof window.removeRiskLines === 'function') {
       window.removeRiskLines();
     }
 
-    // --- 3. FEEDBACK VISUEL (BOUTON 🎯) ---
+    // Nettoyer aussi la ligne d'entrée spécifique si elle existe encore
+    if (contractId && window.removePriceLine) {
+      window.removePriceLine(contractId);
+    }
+
+    // --- 4. FEEDBACK VISUEL DU BOUTON 🎯 ---
     const btn = document.getElementById('btn-arm-risk');
     if (btn) {
       btn.classList.remove('active');
       btn.style.backgroundColor = "";
+      btn.innerHTML = "🎯 ARM RISK"; // Reset du texte du bouton
     }
-
-    // --- 4. LOGS ET ALERTES ---
-    console.warn(`🚀 POSITION CLOSE : ${reason}`);
 
     // --- 5. INTERFACE PnL (LABEL) ---
     const pnlLabel = document.getElementById('pnl-value-label');
     if (pnlLabel) {
       pnlLabel.innerText = "EXIT";
-      pnlLabel.style.color = "#fb923c"; // Orange
+      pnlLabel.style.color = "#fb923c"; // Orange pour indiquer la transition
       pnlLabel.classList.remove('pnl-active-ts', 'pnl-near-sl', 'ready-pulse');
 
-      // Retour au mode READY ou STANDBY après 3 secondes
+      // Retour au mode READY ou STANDBY après 3 secondes de délai visuel
       setTimeout(() => {
-        if (maSniperActive) {
-          pnlLabel.innerText = "READY";
-          pnlLabel.style.color = "#3b82f6";
-          pnlLabel.classList.add('ready-pulse');
-        } else {
-          pnlLabel.innerText = "0.00%";
-          pnlLabel.style.color = "#cbd5e1";
+        // On ne repasse en READY que si aucune nouvelle position n'a été ouverte entre temps
+        if (!tradeManager.isActive) {
+          if (maSniperActive) {
+            pnlLabel.innerText = "READY";
+            pnlLabel.style.color = "#3b82f6";
+            pnlLabel.classList.add('ready-pulse');
+          } else {
+            pnlLabel.innerText = "0.00%";
+            pnlLabel.style.color = "#cbd5e1";
+            pnlLabel.classList.remove('ready-pulse');
+          }
         }
       }, 3000);
     }
 
-    // --- 6. CAPTURE D'ÉCRAN ---
+    // --- 6. LOGS ET ALERTES ---
+    console.warn(`🚀 POSITION CLOSE : ${reason}`);
+
+    // --- 7. CAPTURE D'ÉCRAN (Optionnel) ---
     if (window.autoScreenshotActive && typeof window.captureSniperShot === 'function') {
-      window.captureSniperShot({ subtype: 'EXIT_TRADE' }, currentSymbol);
+      window.captureSniperShot({ subtype: 'EXIT_TRADE', reason: reason }, window.currentSymbol);
     }
 
-    // --- 7. FEEDBACK SONORE ---
+    // --- 8. FEEDBACK SONORE ---
     if (typeof playSniperSound === 'function') {
-      if (reason.includes("TRAILING") || reason.includes("HIT")) {
+      // Si la raison contient TS ou profit, on joue un son de victoire
+      if (reason.includes("TS") || reason.includes("BE") || reason.includes("PROFIT")) {
         playSniperSound('CLOSE_WIN');
       } else {
         playSniperSound('CLOSE_LOSS');
       }
     }
+
+    // On vide enfin la référence du contrat courant
+    window.currentActiveContract = null;
   };
 
   window.updateRiskLinesOnChart = function (pnl, currentPrice) {
@@ -3873,7 +3905,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (ws4update && (ws4update.readyState === WebSocket.OPEN || ws4update.readyState === WebSocket.CONNECTING)) {
       ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
     }
-    
+
     if (ws4update && (ws4update.readyState === WebSocket.CLOSED || ws4update.readyState === WebSocket.CLOSING)) {
       ws4update = new WebSocket(WS_URL);
       ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
@@ -3885,7 +3917,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- A. AUTHENTIFICATION RÉUSSIE ---
       if (data.msg_type === "authorize") {
         // Une fois autorisé, on demande la liste des contrats ouverts (Portfolio)
-        ws4update.send(JSON.stringify({ portfolio: 1 }));  
+        ws4update.send(JSON.stringify({ portfolio: 1 }));
 
         // On garde la connexion en vie (Ping) 
         setInterval(() => {
@@ -3921,10 +3953,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const currentSpot = parseFloat(c.current_spot);
             window.runSmartRiskManager(currentSpot);
           }
-        }  
+        }
         // 3. Gestion État Fermé (Fin du trade)
         else {
-          delete activeContracts[id];   
+          delete activeContracts[id];
 
           // Si c'était le contrat suivi par le manager, on nettoie tout
           if (window.currentActiveContract && window.currentActiveContract.contract_id === id) {
@@ -3958,7 +3990,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     ws4update.onclose = () => {
       console.warn("⚠️ Connexion Portfolio perdue. Reconnexion dans 2s...");
-      setTimeout(window.initPortfolioStream, 2000);
+      setTimeout(initPortfolioStream, 2000);
     };
   };
 
@@ -3973,7 +4005,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  window.closeAllPositionsStandalone = function () {
+  function closeAllPositionsStandalone() {
     // Vérification si l'URL et le Token sont dispos
     if (typeof WS_URL === 'undefined' || typeof TOKEN === 'undefined') {
       console.error("❌ WS_URL ou TOKEN non défini.");
