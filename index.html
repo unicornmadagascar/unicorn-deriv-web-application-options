@@ -3742,8 +3742,13 @@
       border-radius: 6px;
       padding: 2px 4px;
       cursor: pointer;
+      position: relative;
+      z-index: 10005;
+      /* Plus haut que le fond du badge */
+      pointer-events: auto;
+      /* Force l'acceptation des clics */
     }
-
+   
     .sniper-checklist {
       background: white;
       border: 1px solid #e2e8f0;
