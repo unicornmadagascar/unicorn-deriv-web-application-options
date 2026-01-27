@@ -3927,17 +3927,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.updateRiskLinesOnChart = function (pnl, currentPrice) {
     // 1. SÉCURITÉ : Vérification des objets requis
-    if (!window.tradeManager || !window.tradeManager.isActive || !window.currentSeries) {
+    if (!tradeManager || !tradeManager.isActive || !currentSeries) {
       window.removeRiskLines();
       return;
     }
 
-    const entry = parseFloat(window.tradeManager.entryPrice);
-    const side = window.tradeManager.side;
+    const entry = parseFloat(tradeManager.entryPrice);
+    const side = tradeManager.side;
 
     // Sécurité au cas où LightweightCharts n'est pas chargé via window
-    const LineStyle = (window.LightweightCharts && window.LightweightCharts.LineStyle)
-      ? window.LightweightCharts.LineStyle
+    const LineStyle = (LightweightCharts && LightweightCharts.LineStyle)
+      ? LightweightCharts.LineStyle
       : { Solid: 0, Dashed: 2 };
 
     // --- 2. LIGNE BREAKEVEN (BE) ---
@@ -3953,28 +3953,28 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     if (!bePriceLine) {
-      bePriceLine = window.currentSeries.createPriceLine(beOptions);
+      bePriceLine = currentSeries.createPriceLine(beOptions);
     } else {
       bePriceLine.applyOptions({ price: bePrice });
     }
 
     // --- 3. LIGNE TRAILING STOP (TS) ---
-    const tsActivation = parseFloat(window.tradeManager.tsActivation);
+    const tsActivation = parseFloat(tradeManager.tsActivation);
 
     if (pnl >= tsActivation) {
       // Calcul du prix du sommet (Peak)
       const peakPrice = (side === 'BUY')
-        ? entry * (1 + (window.tradeManager.highestPnL / 100))
-        : entry * (1 - (window.tradeManager.highestPnL / 100));
+        ? entry * (1 + (tradeManager.highestPnL / 100))
+        : entry * (1 - (tradeManager.highestPnL / 100));
 
-      const tsDistancePrice = entry * (window.tradeManager.tsTrailingDist / 100);
+      const tsDistancePrice = entry * (tradeManager.tsTrailingDist / 100);
       const tsPrice = (side === 'BUY') ? peakPrice - tsDistancePrice : peakPrice + tsDistancePrice;
 
       // Alerte visuelle (isNear)
       const distanceToTS = Math.abs((currentPrice - tsPrice) / tsPrice * 100);
       const isNear = distanceToTS < 0.05;
 
-      const tsOptions = {
+      const tsOptions = {  
         price: tsPrice,
         color: isNear ? '#fb923c' : '#10b981',
         lineWidth: isNear ? 3 : 2,
@@ -3984,33 +3984,33 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       if (!tsPriceLine) {
-        tsPriceLine = window.currentSeries.createPriceLine(tsOptions);
+        tsPriceLine = currentSeries.createPriceLine(tsOptions);
       } else {
         tsPriceLine.applyOptions(tsOptions);
       }
     } else {
       // Nettoyage automatique si le profit chute sous le seuil d'activation
       if (tsPriceLine) {
-        window.currentSeries.removePriceLine(tsPriceLine);
+        currentSeries.removePriceLine(tsPriceLine);
         tsPriceLine = null;
       }
     }
   };
-  
+
   // --- FONCTION DE NETTOYAGE ---
-  window.removeRiskLines = function () {  
+  window.removeRiskLines = function () {
     if (currentSeries) {
-      if (bePriceLine) {  
+      if (bePriceLine) {
         currentSeries.removePriceLine(bePriceLine);
         bePriceLine = null; // Important pour pouvoir la recréer au prochain trade
       }
       if (tsPriceLine) {
         currentSeries.removePriceLine(tsPriceLine);
         tsPriceLine = null;
-      }   
-    }  
+      }
+    }
   };
-  
+
   function initPortfolioStream() {
     // Éviter les connexions multiples si une est déjà active
     if (ws4update === null) {
