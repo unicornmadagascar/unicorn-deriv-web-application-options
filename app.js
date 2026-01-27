@@ -1280,7 +1280,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // --- 2. MISE À JOUR DU RISK MANAGER (CONTRAT OUVERT) ---
         window.currentActiveContract = c; // Injecter les données fraîches
-        console.log("currentActiveContrat :", window.currentActiveContract); 
+        console.log("currentActiveContrat :", window.currentActiveContract);
         // Extraction et conversion des données
         const entryPrice = parseFloat(c.entry_tick_display_value || c.entry_spot);
         const profit = parseFloat(c.profit || 0);
@@ -3775,43 +3775,60 @@ document.addEventListener("DOMContentLoaded", () => {
   window.runSmartRiskManager = function (currentPrice) {
     const c = window.currentActiveContract;
 
-    if (!c) { console.error("❌ Erreur: Aucun contrat actif détecté dans le manager"); return; }
-    if (!c || !tradeManager.isActive) return;
+    // --- 1. SÉCURITÉS PRÉALABLES ---
+    if (!c || !tradeManager || !tradeManager.isActive) {
+       console.debug("Risk Manager en attente de contrat actif...");
+      return;
+    }
 
-    // Le broker nous donne le profit en % directement
-    const pnl = parseFloat(c.profit_percentage);
+    // Conversion forcée pour s'assurer de manipuler des nombres
+    const pnl = parseFloat(c.profit_percentage || 0);
+    const currentSpot = parseFloat(currentPrice || c.current_spot);
 
-    // 1. MISE À JOUR DU PEAK (Pour le Trailing)
+    // --- 2. MISE À JOUR DU PEAK (Plus haut profit atteint) ---
     if (pnl > tradeManager.highestPnL) {
       tradeManager.highestPnL = pnl;
     }
 
-    // 2. LOGIQUE BREAKEVEN (BE)
-    // On se base sur le pourcentage réel du broker
+    // --- 3. LOGIQUE BREAKEVEN (BE) ---
+    // Activation du mode BE si le seuil est atteint
     if (pnl >= tradeManager.beActivation && !tradeManager.isBE) {
       tradeManager.isBE = true;
-      console.log("🛡️ BE activé à:", pnl.toFixed(2), "%");
-      // Optionnel: On pourrait ici modifier le SL sur le broker via API
+      console.log(`%c 🛡️ BE ACTIVÉ : ${pnl.toFixed(2)}% `, 'background: #3b82f6; color: white; border-radius: 4px;');
     }
 
-    // 3. LOGIQUE TRAILING STOP (TS)
+    // Exécution du BE : Si activé et que le profit retombe à 0 (ou une micro-marge de sécurité)
+    if (tradeManager.isBE && pnl <= 0.05) {
+      window.executeClosePosition(`🛡️ BREAKEVEN HIT : Retour à ${pnl.toFixed(2)}%`);
+      return; // On arrête tout après une clôture
+    }
+
+    // --- 4. LOGIQUE TRAILING STOP (TS) ---
     if (pnl >= tradeManager.tsActivation) {
       const dropFromPeak = tradeManager.highestPnL - pnl;
+
       if (dropFromPeak >= tradeManager.tsTrailingDist) {
-        window.executeClosePosition(`TS HIT: Chute de ${dropFromPeak.toFixed(2)}% depuis le sommet`);
+        window.executeClosePosition(`🔥 TS HIT : Chute de ${dropFromPeak.toFixed(2)}% depuis Peak (${window.tradeManager.highestPnL.toFixed(2)}%)`);
         return;
       }
     }
 
-    // 4. STOP LOSS (Sécurité)
+    // --- 5. STOP LOSS (Sécurité Max) ---
     if (pnl <= tradeManager.maxLoss) {
-      window.executeClosePosition(`SL HIT: ${pnl.toFixed(2)}%`);
+      window.executeClosePosition(`🚨 SL HIT : Perte de ${pnl.toFixed(2)}%`);
+      return;
     }
 
-    // Mise à jour UI
-    window.updatePnLUI(pnl);
-    // MISE À JOUR VISUELLE DES LIGNES
-    window.updateRiskLinesOnChart(pnl, currentPrice);
+    // --- 6. MISES À JOUR VISUELLES ---
+    // On met à jour l'interface (label, couleurs, pulsations)
+    if (typeof window.updatePnLUI === 'function') {
+      window.updatePnLUI(pnl);
+    }  
+
+    // On met à jour les lignes BE et TS sur le graphique
+    if (typeof window.updateRiskLinesOnChart === 'function') {
+      window.updateRiskLinesOnChart(pnl, currentSpot);
+    }
   };
 
   /**
@@ -3995,11 +4012,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (ws4update === null) {
       ws4update = new WebSocket(WS_URL);
       ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
-    } 
+    }
 
     if (ws4update && (ws4update.readyState === WebSocket.OPEN || ws4update.readyState === WebSocket.CONNECTING)) {
       ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
-    }  
+    }
 
     if (ws4update && (ws4update.readyState === WebSocket.CLOSED || ws4update.readyState === WebSocket.CLOSING)) {
       ws4update = new WebSocket(WS_URL);
