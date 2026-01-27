@@ -3733,10 +3733,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (contractId && typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
       console.log(`Sending SELL request for contract: ${contractId}`);
       ws.send(JSON.stringify({
-        sell: contractId,
+        sell: contractId,  
         price: 0 // 0 = Vendre au prix actuel du marché
       }));
-    } else if (typeof closeAllPositionsStandalone === 'function') {
+    } else if (typeof closeAllPositionsStandalone === 'function') {  
       // Fallback sur la fonction globale si l'ID n'est pas disponible
       closeAllPositionsStandalone();
     }
