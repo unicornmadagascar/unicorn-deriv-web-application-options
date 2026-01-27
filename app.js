@@ -8610,22 +8610,6 @@ document.addEventListener("DOMContentLoaded", () => {
     render();
   };
 
-  const riskBtn = document.getElementById('arm-risk-btn');
-  riskBtn.addEventListener('click', () => {
-    const isActivating = riskBtn.classList.toggle('active'); // Change l'état visuel
-
-    if (isActivating) {
-      console.log("🚀 Risk Manager ARMÉ");
-      tradeManager.isActive = true;
-      riskBtn.innerText = "RISK ARMED";
-      riskBtn.style.background = "#ef4444"; // Rouge pour indiquer la surveillance
-    } else {
-      window.resetRiskManager(); // Appel de la fonction de nettoyage
-      riskBtn.innerText = "ARM RISK";
-      riskBtn.style.background = "#3b82f6"; // Bleu par défaut
-    }
-  });
-
   // Initialisation
   window.addEventListener('resize', resizeCanvas);
   setTimeout(resizeCanvas, 100); // Petit délai pour laisser le layout flex se stabiliser
