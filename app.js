@@ -3394,7 +3394,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (warningEl) {
       const profileColors = {
         "⚡ SYNTH": { bg: "#8b5cf6", text: "#ffffff" },
-        "👑 METAL": { bg: "#fbbf24", text: "#000000" },
+        "👑 METAL": { bg: "#fbbf24", text: "#ffffff" },
         "₿ CRYPTO": { bg: "#f59e0b", text: "#ffffff" },
         "💱 FOREX": { bg: "#3b82f6", text: "#ffffff" },
         "🔍 AUTO": { bg: "#64748b", text: "#ffffff" }
@@ -3505,7 +3505,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (profileName.includes("₿")) warningEl.style.color = "#ffffff";        // Orange Crypto
       else if (profileName.includes("⚡")) warningEl.style.color = "#ffffff";  // Violet Synth
       else if (profileName.includes("👑")) warningEl.style.color = "#ffffff";  // Or Metals
-      else warningEl.style.color = "#3b82f6";                                   // Bleu Forex
+      else warningEl.style.color = "#ffffff";                                   // Bleu Forex
     }
 
     // Détection de la clé de volume  
@@ -3641,7 +3641,7 @@ document.addEventListener("DOMContentLoaded", () => {
         label.innerText = "READY";
         label.style.color = "#3b82f6"; // Bleu Sniper
         label.classList.add('ready-pulse');
-      } else {
+      } else {  
         label.innerText = "NO POSITION";
         label.style.color = "#cbd5e1"; // Gris
         label.classList.remove('ready-pulse');
@@ -3688,7 +3688,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (pnl > tradeManager.highestPnL) {
       tradeManager.highestPnL = pnl;
     }
-
+   
     // 2. LOGIQUE BREAKEVEN (BE)
     // On se base sur le pourcentage réel du broker
     if (pnl >= tradeManager.beActivation && !tradeManager.isBE) {
@@ -5618,6 +5618,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof Openpositionlines === "function" && typeof currentSeries !== "undefined") {
       Openpositionlines(currentSeries);
     }
+
+    if (typeof window.initPortfolioStream === 'function') {
+        window.initPortfolioStream();
+      }
   }
 
   /**
