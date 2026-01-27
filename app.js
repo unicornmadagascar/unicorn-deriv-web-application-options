@@ -3922,7 +3922,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         // 3. Gestion État Fermé (Fin du trade)
         else {
-          delete activeContracts[id];
+          delete activeContracts[id];  
 
           // Si c'était le contrat suivi par le manager, on nettoie tout
           if (window.currentActiveContract && window.currentActiveContract.contract_id === id) {
