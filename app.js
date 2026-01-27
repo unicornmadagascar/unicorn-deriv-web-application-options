@@ -3883,7 +3883,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- A. AUTHENTIFICATION RÉUSSIE ---
       if (data.msg_type === "authorize") {
         // Une fois autorisé, on demande la liste des contrats ouverts (Portfolio)
-        ws4update.send(JSON.stringify({ portfolio: 1 }));
+        ws4update.send(JSON.stringify({ portfolio: 1 }));  
 
         // On garde la connexion en vie (Ping) 
         setInterval(() => {
