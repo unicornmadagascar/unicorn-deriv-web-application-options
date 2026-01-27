@@ -1241,30 +1241,65 @@ document.addEventListener("DOMContentLoaded", () => {
         const c = data.proposal_open_contract;
         const id = c.contract_id;
 
-        // --- CAS : CONTRAT CLOS ---
-        if (c.status === "sold" || !!c.is_sold) {
+        // --- 1. GESTION DU CAS : CONTRAT CLOS (Vendu, Expiré, etc.) ---
+        // On utilise c.is_sold qui est l'indicateur le plus fiable chez Deriv
+        if (c.is_sold === 1 || c.status === "sold" || c.status === "won" || c.status === "lost") {
+
+          // Nettoyage de la ligne de prix sur le chart
           if (priceLines4openlines[id]) {
             currentSeries.removePriceLine(priceLines4openlines[id].line);
             delete priceLines4openlines[id];
           }
-          return;
+
+          // Nettoyage des données de suivi
+          delete activeContracts[id];
+
+          // Si c'était le contrat suivi par le manager, reset complet
+          if (window.currentActiveContract && window.currentActiveContract.contract_id === id) {
+            window.currentActiveContract = null;
+
+            if (tradeManager) {
+              tradeManager.isActive = false;
+              tradeManager.highestPnL = 0;
+              tradeManager.isBE = false;
+            }
+
+            // Supprimer les lignes visuelles BE/TS
+            if (typeof window.removeRiskLines === 'function') {
+              window.removeRiskLines();
+            }
+          }
+
+          // Appel de la fonction de fermeture globale (nettoyage UI/Boutons)
+          if (typeof window.executeClosePosition === 'function') {
+            window.executeClosePosition("Broker Closure Confirm");
+          }
+
+          return; // On arrête l'exécution ici pour ce message
         }
 
-        // --- CAS : CONTRAT ACTIF ---
-        const entryPrice = parseFloat(c.entry_tick_display_value);
+        // --- 2. MISE À JOUR DU RISK MANAGER (CONTRAT OUVERT) ---
+        window.currentActiveContract = c; // Injecter les données fraîches
+        console.log("currentActiveContrat :", window.currentActiveContract); 
+        // Extraction et conversion des données
+        const entryPrice = parseFloat(c.entry_tick_display_value || c.entry_spot);
         const profit = parseFloat(c.profit || 0);
+        const profitPercentage = parseFloat(c.profit_percentage || 0);
+        const currentSpot = parseFloat(c.current_spot);
+
         if (isNaN(entryPrice)) return;
 
-        // Style dynamique selon le profit
+        // Mise à jour pour les donuts/stats
+        activeContracts[id] = profit;
+
+        // --- 3. STYLE DYNAMIQUE DE LA LIGNE D'ENTRÉE ---
         const isWin = profit >= 0;
         const color = isWin ? "#00ff80" : "#ff4d4d";
         const lineStyle = isWin ? LightweightCharts.LineStyle.Solid : LightweightCharts.LineStyle.Dashed;
+        const labelText = `${c.contract_type} | ${profitPercentage.toFixed(2)}% (${profit.toFixed(2)} ${CURRENCY})`;
 
-        // Label avec Bouton X simulé et Profit
-        const labelText = `${c.contract_type} at @${entryPrice} | ${isWin ? '+' : ''}${profit.toFixed(2)} ${CURRENCY.toString()}`;
-
+        // Gestion de la ligne sur le graphique
         if (!priceLines4openlines[id]) {
-          // Création initiale
           const line = currentSeries.createPriceLine({
             price: entryPrice,
             color: color,
@@ -1273,15 +1308,24 @@ document.addEventListener("DOMContentLoaded", () => {
             axisLabelVisible: true,
             title: labelText,
           });
-          // On stocke la ligne, le prix et l'ID pour le clic
           priceLines4openlines[id] = { line, entryPrice, id };
         } else {
-          // Mise à jour en temps réel (Fluide)
           priceLines4openlines[id].line.applyOptions({
             title: labelText,
             color: color,
             lineStyle: lineStyle,
           });
+        }
+
+        // --- 4. DÉCLENCHEMENT DU CERVEAU (Risk Manager & UI) ---
+        // On met à jour l'interface PnL
+        if (typeof window.updatePnLUI === 'function') {
+          window.updatePnLUI(profitPercentage);
+        }
+
+        // On lance la vérification mathématique BE/TS
+        if (typeof window.runSmartRiskManager === 'function') {
+          window.runSmartRiskManager(currentSpot);
         }
       }
 
@@ -3106,16 +3150,16 @@ document.addEventListener("DOMContentLoaded", () => {
       el.style.left = newLeft + "px";
       el.style.bottom = "auto";
       el.style.right = "auto";
-    };  
+    };
 
-    const closeDragElement = () => {  
+    const closeDragElement = () => {
       document.onmouseup = null;
-      document.onmousemove = null;  
-      el.style.cursor = "grab";  
+      document.onmousemove = null;
+      el.style.cursor = "grab";
       el.style.transition = "all 0.3s ease"; // Réactive la fluidité après le drag
     };
 
-    el.onmousedown = dragMouseDown;   
+    el.onmousedown = dragMouseDown;
     el.style.cursor = "grab";
   };
 
@@ -3951,11 +3995,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (ws4update === null) {
       ws4update = new WebSocket(WS_URL);
       ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
-    }
+    } 
 
     if (ws4update && (ws4update.readyState === WebSocket.OPEN || ws4update.readyState === WebSocket.CONNECTING)) {
       ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
-    }
+    }  
 
     if (ws4update && (ws4update.readyState === WebSocket.CLOSED || ws4update.readyState === WebSocket.CLOSING)) {
       ws4update = new WebSocket(WS_URL);
@@ -3985,53 +4029,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
-      // --- C. FLUX TEMPS RÉEL DU CONTRAT (Le "Cœur" du système) ---
-      if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
-        const c = data.proposal_open_contract;
-        const id = c.contract_id;
-
-        // 1. Mise à jour de la référence globale
-        window.currentActiveContract = c;
-
-        // 2. Gestion État Ouvert  
-        if (c.is_sold === 0) {
-          // Mise à jour pour les Donuts  
-          activeContracts[id] = Number(c.profit || 0);
-
-          // Lancement du Risk Manager avec le spot du contrat  
-          if (typeof window.runSmartRiskManager === 'function') {
-            // On utilise c.current_spot qui est le prix actuel du marché fourni par le flux du contrat
-            const currentSpot = parseFloat(c.current_spot);
-            window.runSmartRiskManager(currentSpot);
-          }
-        }
-        // 3. Gestion État Fermé (Fin du trade)
-        else {
-          delete activeContracts[id];
-
-          // Si c'était le contrat suivi par le manager, on nettoie tout
-          if (window.currentActiveContract && window.currentActiveContract.contract_id === id) {
-            window.currentActiveContract = null;
-
-            // On désactive le manager pour arrêter les calculs
-            if (tradeManager) {
-              tradeManager.isActive = false;
-              tradeManager.highestPnL = 0; // Reset pour le prochain trade
-            }
-
-            // SUPPRESSION IMMÉDIATE DES LIGNES (BE/TS)
-            if (typeof window.removeRiskLines === 'function') {
-              window.removeRiskLines();
-            }
-          }
-
-          // Supprimer la ligne de prix d'entrée spécifique au contrat
-          if (window.removePriceLine) window.removePriceLine(id);
-        }
-
-        // Mise à jour UI
-        if (typeof updateDonutCharts === 'function') updateDonutCharts();
-      }
     };
 
     ws4update.onerror = (err) => {
