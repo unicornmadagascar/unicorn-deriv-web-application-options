@@ -3131,7 +3131,7 @@ document.addEventListener("DOMContentLoaded", () => {
       pos3 = e.clientX;  
       pos4 = e.clientY;
 
-      document.onmouseup = closeDragElement;
+      document.onmouseup = closeDragElement;  
       document.onmousemove = elementDrag;  
       el.style.cursor = "grabbing";
       el.style.transition = "none"; // Désactive les transitions CSS pendant le drag
