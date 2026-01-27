@@ -3986,7 +3986,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ws4update.onerror = (err) => {
       ws4update.close();
       ws4update = null;
-      setTimeout(initPortfolioStream, 2000);        
+      setTimeout(initPortfolioStream, 2000);          
     };
 
     ws4update.onclose = () => {
