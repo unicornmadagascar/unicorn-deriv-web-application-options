@@ -3798,7 +3798,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (pnl >= tradeManager.beActivation && !tradeManager.isBE) {   
       tradeManager.isBE = true;
       console.log(`%c 🛡️ BE ACTIVÉ : ${pnl.toFixed(2)}% `, 'background: #3b82f6; color: white; border-radius: 4px;');
-    }
+    }  
 
     // Exécution du BE : Si activé et que le profit retombe à 0 (ou une micro-marge de sécurité)
     if (tradeManager.isBE && pnl <= 0.05) {
@@ -3807,7 +3807,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- 4. LOGIQUE TRAILING STOP (TS) ---
-    if (pnl >= tradeManager.tsActivation) {  
+    if (pnl >= tradeManager.tsActivation) {    
       const dropFromPeak = tradeManager.highestPnL - pnl;
 
       if (dropFromPeak >= tradeManager.tsTrailingDist) {
