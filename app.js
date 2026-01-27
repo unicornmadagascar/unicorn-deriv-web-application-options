@@ -3128,9 +3128,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       e.preventDefault();  
-      pos3 = e.clientX;  
+      pos3 = e.clientX;    
       pos4 = e.clientY;
-
+  
       document.onmouseup = closeDragElement;  
       document.onmousemove = elementDrag;  
       el.style.cursor = "grabbing";
