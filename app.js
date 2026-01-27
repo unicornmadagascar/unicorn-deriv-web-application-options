@@ -3777,7 +3777,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 1. SÉCURITÉS PRÉALABLES ---
     if (!c || !tradeManager || !tradeManager.isActive) {
-       console.debug("Risk Manager en attente de contrat actif...");
+      console.debug("Risk Manager en attente de contrat actif...");
       return;
     }
 
@@ -3823,7 +3823,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // On met à jour l'interface (label, couleurs, pulsations)
     if (typeof window.updatePnLUI === 'function') {
       window.updatePnLUI(pnl);
-    }  
+    }
 
     // On met à jour les lignes BE et TS sur le graphique
     if (typeof window.updateRiskLinesOnChart === 'function') {
@@ -3926,79 +3926,83 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.updateRiskLinesOnChart = function (pnl, currentPrice) {
-    // 1. SÉCURITÉ : Nettoyage si inactif
-    if (!tradeManager || !tradeManager.isActive || !currentSeries) {
+    // 1. SÉCURITÉ : Vérification des objets requis
+    if (!window.tradeManager || !window.tradeManager.isActive || !window.currentSeries) {
       window.removeRiskLines();
       return;
     }
 
-    const entry = tradeManager.entryPrice;
-    const side = tradeManager.side;
+    const entry = parseFloat(window.tradeManager.entryPrice);
+    const side = window.tradeManager.side;
+
+    // Sécurité au cas où LightweightCharts n'est pas chargé via window
+    const LineStyle = (window.LightweightCharts && window.LightweightCharts.LineStyle)
+      ? window.LightweightCharts.LineStyle
+      : { Solid: 0, Dashed: 2 };
 
     // --- 2. LIGNE BREAKEVEN (BE) ---
-    // On calcule le prix exact de l'entrée (avec une micro-marge pour couvrir les frais si souhaité)
     const bePrice = (side === 'BUY') ? entry * 1.0001 : entry * 0.9999;
 
     const beOptions = {
       price: bePrice,
-      color: '#3b82f6', // Bleu
+      color: '#3b82f6',
       lineWidth: 2,
-      lineStyle: LightweightCharts.LineStyle.Dashed,
+      lineStyle: LineStyle.Dashed,
       axisLabelVisible: true,
       title: 'BE PROTECT',
     };
 
     if (!bePriceLine) {
-      bePriceLine = currentSeries.createPriceLine(beOptions);
+      bePriceLine = window.currentSeries.createPriceLine(beOptions);
     } else {
-      // Optionnel : On peut mettre à jour le prix si l'entrée change
       bePriceLine.applyOptions({ price: bePrice });
     }
 
     // --- 3. LIGNE TRAILING STOP (TS) ---
-    if (pnl >= tradeManager.tsActivation) {
-      // Calcul du prix du sommet (Peak) atteint pendant le trade
-      const peakPrice = (side === 'BUY')
-        ? entry * (1 + (tradeManager.highestPnL / 100))
-        : entry * (1 - (tradeManager.highestPnL / 100));
+    const tsActivation = parseFloat(window.tradeManager.tsActivation);
 
-      // Calcul de la distance de recul autorisée
-      const tsDistancePrice = entry * (tradeManager.tsTrailingDist / 100);
+    if (pnl >= tsActivation) {
+      // Calcul du prix du sommet (Peak)
+      const peakPrice = (side === 'BUY')
+        ? entry * (1 + (window.tradeManager.highestPnL / 100))
+        : entry * (1 - (window.tradeManager.highestPnL / 100));
+
+      const tsDistancePrice = entry * (window.tradeManager.tsTrailingDist / 100);
       const tsPrice = (side === 'BUY') ? peakPrice - tsDistancePrice : peakPrice + tsDistancePrice;
 
-      // Calcul de la proximité (Alerte visuelle à 0.05%)
+      // Alerte visuelle (isNear)
       const distanceToTS = Math.abs((currentPrice - tsPrice) / tsPrice * 100);
       const isNear = distanceToTS < 0.05;
 
       const tsOptions = {
         price: tsPrice,
-        color: isNear ? '#fb923c' : '#10b981', // Orange si danger, sinon Vert
+        color: isNear ? '#fb923c' : '#10b981',
         lineWidth: isNear ? 3 : 2,
-        lineStyle: LightweightCharts.LineStyle.Solid,
+        lineStyle: LineStyle.Solid,
         axisLabelVisible: true,
         title: isNear ? '⚠️ TS WARNING' : 'TS ACTIVE',
       };
 
       if (!tsPriceLine) {
-        tsPriceLine = currentSeries.createPriceLine(tsOptions);
+        tsPriceLine = window.currentSeries.createPriceLine(tsOptions);
       } else {
-        tsPriceLine.applyOptions(tsOptions);  
+        tsPriceLine.applyOptions(tsOptions);
       }
     } else {
-      // Supprimer la ligne TS si le profit n'est plus suffisant pour l'activer
-      if (tsPriceLine) {  
-        currentSeries.removePriceLine(tsPriceLine);  
+      // Nettoyage automatique si le profit chute sous le seuil d'activation
+      if (tsPriceLine) {
+        window.currentSeries.removePriceLine(tsPriceLine);
         tsPriceLine = null;
       }
     }
   };
 
   // --- FONCTION DE NETTOYAGE ---
-  window.removeRiskLines = function () {
+  window.removeRiskLines = function () {  
     if (currentSeries) {
       if (bePriceLine) {
         currentSeries.removePriceLine(bePriceLine);
-        bePriceLine = null;
+        bePriceLine = null; // Important pour pouvoir la recréer au prochain trade
       }
       if (tsPriceLine) {
         currentSeries.removePriceLine(tsPriceLine);
@@ -4043,7 +4047,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("PORTFOLIO CONTRACT LENGTH :", contracts.length);
         contracts.forEach(c => {
           // On s'abonne à chaque contrat pour avoir le flux temps réel
-          window.subscribeToContract(c.contract_id);  
+          window.subscribeToContract(c.contract_id);
         });
       }
     };
