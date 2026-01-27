@@ -4043,7 +4043,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("PORTFOLIO CONTRACT LENGTH :", contracts.length);
         contracts.forEach(c => {
           // On s'abonne à chaque contrat pour avoir le flux temps réel
-          window.subscribeToContract(c.contract_id);
+          window.subscribeToContract(c.contract_id);  
         });
       }
 
