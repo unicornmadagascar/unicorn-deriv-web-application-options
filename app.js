@@ -3127,7 +3127,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return; // On sort de la fonction, on ne bloque rien
       }
 
-      e.preventDefault();
+      e.preventDefault();  
       pos3 = e.clientX;  
       pos4 = e.clientY;
 
