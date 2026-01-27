@@ -3919,7 +3919,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const currentSpot = parseFloat(c.current_spot);
             window.runSmartRiskManager(currentSpot);
           }
-        }
+        }  
         // 3. Gestion État Fermé (Fin du trade)
         else {
           delete activeContracts[id];   
