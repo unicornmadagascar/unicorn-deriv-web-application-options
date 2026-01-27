@@ -3871,8 +3871,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (ws4update && (ws4update.readyState === WebSocket.OPEN || ws4update.readyState === WebSocket.CONNECTING)) {
       ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
     }
-
-    if (wsTranscation && (ws4update.readyState === WebSocket.CLOSED || ws4update.readyState === WebSocket.CLOSING)) {
+    
+    if (ws4update && (ws4update.readyState === WebSocket.CLOSED || ws4update.readyState === WebSocket.CLOSING)) {
       ws4update = new WebSocket(WS_URL);
       ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
     }
