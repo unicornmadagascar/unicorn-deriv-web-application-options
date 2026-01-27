@@ -7616,7 +7616,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tradeManager.maxLoss = parseFloat(e.target.value);  
       console.log("Nouveau SL configuré:", tradeManager.maxLoss);
     }
-    if (e.target.id === 'set-ts-dist') {
+    if (e.target.id === 'set-ts-dist') {   
       tradeManager.tsTrailingDist = parseFloat(e.target.value);
       console.log("Nouveau TS configuré:", tradeManager.tsTrailingDist);
     }
