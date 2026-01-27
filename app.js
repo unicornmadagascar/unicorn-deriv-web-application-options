@@ -3793,7 +3793,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tradeManager.highestPnL = pnl;
     }
 
-    // --- 3. LOGIQUE BREAKEVEN (BE) ---
+    // --- 3. LOGIQUE BREAKEVEN (BE) ---  
     // Activation du mode BE si le seuil est atteint
     if (pnl >= tradeManager.beActivation && !tradeManager.isBE) {   
       tradeManager.isBE = true;
