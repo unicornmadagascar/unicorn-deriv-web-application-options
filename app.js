@@ -1289,7 +1289,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (isNaN(entryPrice)) return;
 
-        // Mise à jour pour les donuts/stats
+        // Mise à jour pour les donuts/stats  
         activeContracts[id] = profit;
 
         // --- 3. STYLE DYNAMIQUE DE LA LIGNE D'ENTRÉE ---
