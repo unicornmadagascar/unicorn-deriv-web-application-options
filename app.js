@@ -3807,7 +3807,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- 4. LOGIQUE TRAILING STOP (TS) ---
-    if (pnl >= tradeManager.tsActivation) {
+    if (pnl >= tradeManager.tsActivation) {  
       const dropFromPeak = tradeManager.highestPnL - pnl;
 
       if (dropFromPeak >= tradeManager.tsTrailingDist) {
