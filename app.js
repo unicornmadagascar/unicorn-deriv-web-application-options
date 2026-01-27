@@ -7627,8 +7627,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Petit feedback visuel
     e.target.style.borderColor = "#3b82f6";  
     setTimeout(() => e.target.style.borderColor = "#334155", 500);
-  });
-
+  });   
+   
   // === Trade Evaluation Panel Toggle ===  
   tradeEvalToggle.addEventListener("click", () => {
     tradeEvalPanel.classList.toggle("active");
