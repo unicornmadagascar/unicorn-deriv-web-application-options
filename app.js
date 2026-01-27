@@ -3877,12 +3877,6 @@ document.addEventListener("DOMContentLoaded", () => {
       ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
     }
 
-    ws4update.onopen = () => {
-      console.log("📡 Flux Portfolio Connecté");
-      // 1. Authentification
-      ws4update.send(JSON.stringify({ authorize: TOKEN }));
-    };
-
     ws4update.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
 
