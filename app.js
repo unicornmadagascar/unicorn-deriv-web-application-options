@@ -3681,6 +3681,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.runSmartRiskManager = function (currentPrice) {
     const c = window.currentActiveContract;
+
+    if (!c) { console.error("❌ Erreur: Aucun contrat actif détecté dans le manager"); return; }
     if (!c || !tradeManager.isActive) return;
 
     // Le broker nous donne le profit en % directement
