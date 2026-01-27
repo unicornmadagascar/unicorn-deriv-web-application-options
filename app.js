@@ -4094,10 +4094,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const ws_close = new WebSocket(WS_URL);
     let contractsToClose = 0;
     let closedCount = 0;
-  
-    ws_close.onopen = () => {    
+
+    ws_close.onopen = () => {
       console.log("📡 WS de clôture connecté");
-      ws_close.send(JSON.stringify({ authorize: TOKEN }));  
+      ws_close.send(JSON.stringify({ authorize: TOKEN }));
     };
 
     ws_close.onmessage = (event) => {
@@ -4106,7 +4106,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.error) {
         console.error("❌ Erreur Deriv :", data.error.message);
         // On ne ferme pas forcément, sauf si erreur d'autorisation
-        if (data.msg_type === 'authorize') ws_close.close();     
+        if (data.msg_type === 'authorize') ws_close.close();
         return;
       }
 
@@ -7616,17 +7616,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 500);
 
   document.addEventListener('change', (e) => {
-    if (e.target.id === 'set-max-loss') {
-      tradeManager.maxLoss = parseFloat(e.target.value);
-      console.log("Nouveau SL configuré:", tradeManager.maxLoss);
-    }
     if (e.target.id === 'set-ts-dist') {
       tradeManager.tsTrailingDist = parseFloat(e.target.value);
       console.log("Nouveau TS configuré:", tradeManager.tsTrailingDist);
     }
   });
 
-  // === Trade Evaluation Panel Toggle ===
+  document.getElementById('set-max-loss').addEventListener('change', (e) => {
+    tradeManager.maxLoss = parseFloat(e.target.value);
+    // Petit feedback visuel
+    e.target.style.borderColor = "#3b82f6";
+    setTimeout(() => e.target.style.borderColor = "#334155", 500);
+  });
+
+  // === Trade Evaluation Panel Toggle ===  
   tradeEvalToggle.addEventListener("click", () => {
     tradeEvalPanel.classList.toggle("active");
 
