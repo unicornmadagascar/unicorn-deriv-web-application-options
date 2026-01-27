@@ -3123,12 +3123,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const dragMouseDown = (e) => {
       // On ne déclenche le drag que si on clique sur l'élément, pas sur un bouton interne
       const ignoredTags = ['SELECT', 'OPTION', 'INPUT', 'BUTTON', 'TEXTAREA'];
-      if (ignoredTags.includes(el.target.tagName)) {
+      if (ignoredTags.includes(e.target.tagName)) {
         return; // On sort de la fonction, on ne bloque rien
       }
 
       e.preventDefault();
-      pos3 = e.clientX;
+      pos3 = e.clientX;  
       pos4 = e.clientY;
 
       document.onmouseup = closeDragElement;
