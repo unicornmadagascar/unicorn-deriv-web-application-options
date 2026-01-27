@@ -3814,20 +3814,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const stats = window.tradingStats;
 
     if (stats && stats.winStreak >= 2) {
-      const currentText = `🔥 ${stats.winStreak} STREAK`;
-
-      // Si la série vient de changer, on peut ajouter un petit effet
-      if (streakElement.innerText !== currentText) {
-        streakElement.style.transform = "scale(1.2)";
-        setTimeout(() => streakElement.style.transform = "scale(1)", 200);
-      }
-
-      streakElement.innerHTML = currentText;
+      streakElement.innerHTML = `🔥 ${stats.winStreak} STREAK`;
       streakElement.style.display = "block";
-      streakElement.style.color = "#fbbf24"; // Ambre/Or
-      streakElement.style.transition = "transform 0.2s ease-in-out";
+
+      // --- EFFET SPÉCIAL SI SÉRIE >= 5 ---
+      if (stats.winStreak >= 5) {
+        streakElement.classList.add('streak-hot');
+      } else {
+        streakElement.classList.remove('streak-hot');
+      }
     } else {
       streakElement.style.display = "none";
+      streakElement.classList.remove('streak-hot');
     }
   };
 
