@@ -4008,7 +4008,7 @@ document.addEventListener("DOMContentLoaded", () => {
         currentSeries.removePriceLine(tsPriceLine);
         tsPriceLine = null;
       }   
-    }
+    }  
   };
   
   function initPortfolioStream() {
