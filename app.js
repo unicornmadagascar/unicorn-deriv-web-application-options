@@ -3982,7 +3982,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!tsPriceLine) {
         tsPriceLine = currentSeries.createPriceLine(tsOptions);
       } else {
-        tsPriceLine.applyOptions(tsOptions);
+        tsPriceLine.applyOptions(tsOptions);  
       }
     } else {
       // Supprimer la ligne TS si le profit n'est plus suffisant pour l'activer
