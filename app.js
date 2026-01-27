@@ -3996,7 +3996,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   };
-
+  
   // --- FONCTION DE NETTOYAGE ---
   window.removeRiskLines = function () {  
     if (currentSeries) {
@@ -4010,7 +4010,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   };
-
+  
   function initPortfolioStream() {
     // Éviter les connexions multiples si une est déjà active
     if (ws4update === null) {
