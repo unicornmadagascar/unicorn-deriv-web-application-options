@@ -2171,6 +2171,12 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // Au moment où l'achat est confirmé par le broker :
+    tradeManager.startTime = Date.now(); // On lance le chrono
+    tradeManager.highestPnL = 0;         // On remet le pic à zéro
+    tradeManager.isBE = false;           // On reset le Breakeven
+    tradeManager.isActive = true;        // On arme le manager
+
     multiplier = parseInt(Number(document.getElementById("multiplierSelect").value)) || 40;
     stake = parseFloat(Number(document.getElementById("stakeInput").value)) || 1.0;
 
@@ -2478,7 +2484,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Seuil de proximité (0.01% de marge pour considérer qu'on "touche" la bande)
     const margin = current.middle * 0.0001;
 
-    // --- LOGIQUE DE DÉTECTION ---
+    // --- LOGIQUE DE DÉTECTION ---  
 
     // 1. SIGNAL D'ACHAT (BUY)
     // On déclenche si le HAUT de la bougie touche ou dépasse la bande supérieure
