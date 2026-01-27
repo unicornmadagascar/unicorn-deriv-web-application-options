@@ -2210,7 +2210,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`🚀 Envoi de ${count} ordres ${type} sur ${currentSymbol}`);
 
     for (let i = 0; i < count; i++) {
-      ws.send(JSON.stringify(payload));
+      ws.send(JSON.stringify(payload));   
     }
 
     showToast(`Placing ${count} ${type} orders: ${currentSymbol}`, 'info');
