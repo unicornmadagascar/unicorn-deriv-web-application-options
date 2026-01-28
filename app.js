@@ -2100,6 +2100,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log("Reversing positions...");
 
+    // Au moment où l'achat est confirmé par le broker :
+    tradeManager.startTime = Date.now(); // On lance le chrono
+    tradeManager.highestPnL = 0;         // On remet le pic à zéro
+    tradeManager.isBE = false;           // On reset le Breakeven
+    tradeManager.isActive = true;        // On arme le manager
+
     wsContracts_reverse = new WebSocket(WS_URL);
     wsContracts_reverse.onopen = () => { wsContracts_reverse.send(JSON.stringify({ authorize: TOKEN })); };
 
@@ -2131,6 +2137,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Determine opposite direction
       const oppositeType = (contracttype__ === "MULTUP") ? "MULTDOWN" : "MULTUP";
+      tradeManager.type = oppositeType;     
 
       // User inputs
       const stake = parseFloat(stakeInput.value) || 1;
@@ -2184,7 +2191,7 @@ document.addEventListener("DOMContentLoaded", () => {
     tradeManager.startTime = Date.now(); // On lance le chrono
     tradeManager.highestPnL = 0;         // On remet le pic à zéro
     tradeManager.isBE = false;           // On reset le Breakeven
-    tradeManager.isActive = true;        // On arme le manager
+    tradeManager.isActive = false;        // On arme le manager
     tradeManager.side = type;            // On arme le manager
 
     multiplier = parseInt(Number(document.getElementById("multiplierSelect").value)) || 40;
@@ -2231,6 +2238,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wsContracts_winning) { wsContracts_winning.close(); wsContracts_winning = null; }
 
     console.log("Closing all profitable trades...");
+
+    // Au moment où l'achat est confirmé par le broker :
+    tradeManager.startTime = Date.now(); // On lance le chrono
+    tradeManager.highestPnL = 0;         // On remet le pic à zéro
+    tradeManager.isBE = false;           // On reset le Breakeven
+    tradeManager.isActive = false;        // On arme le manager
 
     wsContracts_winning = new WebSocket(WS_URL);
     wsContracts_winning.onopen = () => { wsContracts_winning.send(JSON.stringify({ authorize: TOKEN })); };
@@ -2302,6 +2315,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log("Closing all profitable trades...");
 
+    // Au moment où l'achat est confirmé par le broker :
+    tradeManager.startTime = Date.now(); // On lance le chrono
+    tradeManager.highestPnL = 0;         // On remet le pic à zéro
+    tradeManager.isBE = false;           // On reset le Breakeven
+    tradeManager.isActive = false;        // On arme le manager
+
     wsContracts_losing = new WebSocket(WS_URL);
     wsContracts_losing.onopen = () => { wsContracts_losing.send(JSON.stringify({ authorize: TOKEN })); };
     wsContracts_losing.onerror = (e) => {
@@ -2371,6 +2390,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wsContracts__close) { wsContracts__close.close(); wsContracts__close = null; }
 
     console.log("Closing all trades...");
+
+    // Au moment où l'achat est confirmé par le broker :
+    tradeManager.startTime = Date.now(); // On lance le chrono
+    tradeManager.highestPnL = 0;         // On remet le pic à zéro
+    tradeManager.isBE = false;           // On reset le Breakeven
+    tradeManager.isActive = false;        // On arme le manager
 
     wsContracts__close = new WebSocket(WS_URL);
     wsContracts__close.onopen = () => { wsContracts__close.send(JSON.stringify({ authorize: TOKEN })); };
@@ -3861,7 +3886,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("CURRENT SPOT :", c.current_spot);
 
     // Calcul du temps écoulé depuis l'achat (en secondes)
-    const now = Date.now();
+    const now = Date.now();  
     const tradeDuration = (now - (tradeManager.startTime || 0)) / 1000;
 
     // --- 2. MISE À JOUR DU PEAK (Plus haut profit atteint) ---
