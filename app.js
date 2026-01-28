@@ -3928,7 +3928,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // NOUVEAU : Signal sonore une seule fois quand on passe les 5 secondes
-    if (Math.floor(tradeDuration) === 5 && !tradeManager.hasAlertedArmed) {
+    if (Math.floor(tradeDuration) === 10 && !tradeManager.hasAlertedArmed) {
       if (typeof playSniperSound === 'function') playSniperSound('ARMED_ACTIVE');
       tradeManager.hasAlertedArmed = true; // Pour ne pas répéter le son
       console.log("🛡️ Protection SL active !");
