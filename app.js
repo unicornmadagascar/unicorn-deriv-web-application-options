@@ -1165,7 +1165,7 @@ document.addEventListener("DOMContentLoaded", () => {
               cache[lastCacheIndex] = lastBar;
             } else {
               // Nouvelle bougie : on ajoute
-              cache.push(lastBar);
+              cache.push(lastBar);  
               if (cache.length > 1000) cache.shift();
             }
           }
