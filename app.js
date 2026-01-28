@@ -5771,7 +5771,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Nettoie le tableau avant de remplir
-    document.getElementById("autoTradeBody").innerHTML = "";
+    document.getElementById("autoTradeBody").innerHTML = '';
 
     // Abonne chaque contrat
     contracts.forEach(c => {
@@ -5798,7 +5798,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("🛠️ Première initialisation de la table...");
         initTable();
         // On récupère la référence fraîchement créée
-        autoTradeBody = document.getElementById("autoTradeBody");
+        autoTradeBody = document.getElementById("autoTradeBody");  
       } else {
         // Si même le parent n'est pas là, on ne peut rien faire
         return;
@@ -5874,10 +5874,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Important : On vérifie si currentSeries existe pour les lignes sur le chart
     if (typeof Openpositionlines === "function" && typeof currentSeries !== "undefined") {
       Openpositionlines(currentSeries);
-    }
-
-    if (typeof initPortfolioStream === 'function') {
-      initPortfolioStream();
     }
   }
 
@@ -6006,10 +6002,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       Openpositionlines(currentSeries);
-      // 2. Load portfolio socket
-      if (typeof initPortfolioStream === 'function') {
-        initPortfolioStream();
-      }
     };
 
     // --- ÉVÉNEMENT : FERMETURE ---
