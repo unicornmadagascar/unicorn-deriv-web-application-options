@@ -391,7 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
 
   // --- SYMBOLS ---
-  function displaySymbols(currentInterval, currentChartType) {
+  function displaySymbols(currentInterval, currentChartType) {   
     const symbolList = document.getElementById("symbolList");
     if (!symbolList) return;
     symbolList.innerHTML = "";
