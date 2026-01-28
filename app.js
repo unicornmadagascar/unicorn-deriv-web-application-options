@@ -3924,7 +3924,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         // Log discret pour indiquer qu'on ignore le spread de départ
         console.warn(`⏳ SL ignoré durant stabilisation (${pnl.toFixed(2)}%) - Age: ${tradeDuration.toFixed(1)}s`);
-      }
+      }  
     }
 
     // NOUVEAU : Signal sonore une seule fois quand on passe les 5 secondes
