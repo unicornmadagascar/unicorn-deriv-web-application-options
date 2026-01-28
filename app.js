@@ -2098,7 +2098,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function reversefunction() {
     if (wsContracts_reverse) { wsContracts_reverse.close(); wsContracts_reverse = null; }
 
-    console.log("Reversing positions...");
+    console.log("Reversing positions...");  
   
     // Au moment où l'achat est confirmé par le broker :
     tradeManager.startTime = Date.now(); // On lance le chrono
