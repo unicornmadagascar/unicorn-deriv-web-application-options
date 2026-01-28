@@ -1263,7 +1263,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
 
           // Nettoyage des données de suivi
-          delete activeContracts[id];
+          delete activeContracts[id];  
 
           // Si c'était le contrat suivi par le manager, reset complet
           if (window.currentActiveContract && window.currentActiveContract.contract_id === id) {
@@ -1298,8 +1298,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const profitPercentage = parseFloat(c.profit_percentage || 0);
         const currentSpot = parseFloat(c.current_spot);
         
-        console.log("ENTRY PRICE :", entryPrice);
-        console.log("CURRENT SPOT :", currentSpot);
+        console.log("ENTRY PRICE :", entryPrice);  
+        console.log("CURRENT SPOT :", currentSpot);  
 
         if (isNaN(entryPrice)) return;
 
