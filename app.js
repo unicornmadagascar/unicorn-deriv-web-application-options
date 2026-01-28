@@ -1172,9 +1172,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // Mise à jour et rendu des indicateurs
           updateIndicatorData(lastBar.time, lastBar);
-          renderIndicators();
+          renderIndicators();  
 
-          // Force le rafraîchissement des dessins et du Volume Profile
+          // Force le rafraîchissement des dessins et du Volume Profile  
           render();
 
           // --- AJOUT : Mise à jour des jauges en temps réel ---
@@ -4867,7 +4867,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     text: `BB: ${signal.name} (${volSign}${volRatio}%)`,
                     size: 1 // Un peu plus petit pour laisser la flèche MA dominer visuellement
                   };
-                  allMarkers.push(newMarker);
+                  allMarkers.push(newMarker);  
                   window.syncAllChartMarkers();
 
                   // --- 5. SCREENSHOT ---
