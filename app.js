@@ -1297,6 +1297,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const profit = parseFloat(c.profit || 0);
         const profitPercentage = parseFloat(c.profit_percentage || 0);
         const currentSpot = parseFloat(c.current_spot);
+        
+        console.log("ENTRY PRICE :", entryPrice);
+        console.log("CURRENT SPOT :", currentSpot);
 
         if (isNaN(entryPrice)) return;
 
@@ -3853,6 +3856,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Conversion forcée pour s'assurer de manipuler des nombres
     const pnl = parseFloat(c.profit_percentage || 0);
     const currentSpot = parseFloat(currentPrice || c.current_spot);
+
+    console.log("CURRENT PRICE :", parseFloat(currentPrice));
+    console.log("CURRENT SPOT :", c.current_spot);
 
     // Calcul du temps écoulé depuis l'achat (en secondes)
     const now = Date.now();
