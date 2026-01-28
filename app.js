@@ -3888,7 +3888,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Calcul du temps écoulé depuis l'achat (en secondes)
     const now = Date.now();  
     const tradeDuration = (now - (tradeManager.startTime || 0)) / 1000;
-
+  
     // --- 2. MISE À JOUR DU PEAK (Plus haut profit atteint) ---
     if (pnl > tradeManager.highestPnL) {
       tradeManager.highestPnL = pnl;
