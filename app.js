@@ -2099,12 +2099,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (wsContracts_reverse) { wsContracts_reverse.close(); wsContracts_reverse = null; }
 
     console.log("Reversing positions...");
-
+  
     // Au moment où l'achat est confirmé par le broker :
     tradeManager.startTime = Date.now(); // On lance le chrono
     tradeManager.highestPnL = 0;         // On remet le pic à zéro
     tradeManager.isBE = false;           // On reset le Breakeven
-    tradeManager.isActive = true;        // On arme le manager
+    tradeManager.isActive = false;        // On arme le manager
 
     wsContracts_reverse = new WebSocket(WS_URL);
     wsContracts_reverse.onopen = () => { wsContracts_reverse.send(JSON.stringify({ authorize: TOKEN })); };
