@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
     isBE: false,           // État du Breakeven
     maxLoss: -1.0,         // Valeur par défaut
     tsTrailingDist: 0.2,   // Valeur par défaut
-    beActivation: 0.3,
+    beActivation: 0.3, 
     tsActivation: 0.6
   };
 
