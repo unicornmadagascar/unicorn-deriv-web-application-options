@@ -4866,7 +4866,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   // Sécurité ultime contre les valeurs non numériques
                   if (isNaN(volRatio) || !isFinite(volRatio)) volRatio = 0;
 
-                  lastSignalTime = currentCandleTime;
+                  lastSignalTime = currentCandleTime;   
 
                   // --- 2. FEEDBACKS VISUELS ---
                   /*if (typeof drawSniperTooltip === "function") {
