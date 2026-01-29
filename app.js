@@ -4060,28 +4060,25 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.updateRiskLinesOnChart = function (pnl, currentPrice) {
-    // 1. SÉCURITÉ : On vérifie si un contrat est ouvert (même si le manager est OFF)
     const hasContract = window.currentActiveContract !== null;
 
-    if (!hasContract || !window.currentSeries) {
+    // Utilisation de window.currentSeries pour être sûr de pointer sur le graphique
+    if (!hasContract || !currentSeries) {
       window.removeRiskLines();
-      return;
+      return;  
     }
 
-    // Extraction précise des données du contrat ouvert
     const entry = parseFloat(window.currentActiveContract?.entry_tick || window.currentActiveContract?.buy_price);
     const side = (window.currentActiveContract?.contract_type?.includes('UP') ||
-      window.currentActiveContract?.contract_type === 'MULTUP') ? 'BUY' : 'SELL';  
+      window.currentActiveContract?.contract_type === 'MULTUP') ? 'BUY' : 'SELL';
 
     if (!entry) return;
 
-    // Définition des styles TradingView
     const LineStyle = (window.LightweightCharts && window.LightweightCharts.LineStyle)
       ? window.LightweightCharts.LineStyle
       : { Solid: 0, Dashed: 2 };
 
-    // --- 2. LIGNE BREAKEVEN (BE) ---
-    // Cette ligne est statique par rapport à l'entrée, elle s'affiche toujours.
+    // --- LIGNE BREAKEVEN ---
     const bePrice = (side === 'BUY') ? entry * 1.0001 : entry * 0.9999;
 
     if (!bePriceLine) {
@@ -4097,8 +4094,7 @@ document.addEventListener("DOMContentLoaded", () => {
       bePriceLine.applyOptions({ price: bePrice });
     }
 
-    // --- 3. LIGNE TRAILING STOP (TS) ---
-    // On ne l'affiche que si le Risk Manager est ACTIF et que le profit a atteint le seuil
+    // --- LIGNE TRAILING STOP ---
     const isArmed = tradeManager && tradeManager.isActive;
     const tsActivationThreshold = parseFloat(tradeManager?.tsActivation || 0.6);
 
@@ -4106,24 +4102,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const highestPnL = parseFloat(tradeManager.highestPnL || 0);
       const tsDistPercent = parseFloat(tradeManager.tsTrailingDist || 0.2);
 
-      // CALCUL DU PRIX TS : Suit le "Peak" de profit
-      // En BUY : Prix = Entrée + (Peak - Distance)%   
-      // En SELL : Prix = Entrée - (Peak - Distance)%
       const tsPrice = (side === 'BUY')
-        ? entry * (1 + (highestPnL - tsDistPercent) / 100)  
-        : entry * (1 - (highestPnL - tsDistPercent) / 100);      
-
-      // Détection de proximité pour alerte visuelle (isNear)
-      const distanceToTS = Math.abs((currentPrice - tsPrice) / tsPrice * 100);    
-      const isNear = distanceToTS < 0.03; // Alerte si à moins de 0.03% du stop
+        ? entry * (1 + (highestPnL - tsDistPercent) / 100)
+        : entry * (1 - (highestPnL - tsDistPercent) / 100);
 
       const tsOptions = {
         price: tsPrice,
-        color: isNear ? '#fb923c' : '#10b981', // Orange si proche, Vert sinon
-        lineWidth: isNear ? 3 : 2,
+        color: '#10b981',
+        lineWidth: 2,
         lineStyle: LineStyle.Solid,
         axisLabelVisible: true,
-        title: isNear ? '⚠️ TS DANGER' : 'TS ACTIVE',
+        title: 'TS ACTIVE',
       };
 
       if (!tsPriceLine) {
@@ -4132,9 +4121,8 @@ document.addEventListener("DOMContentLoaded", () => {
         tsPriceLine.applyOptions(tsOptions);
       }
     } else {
-      // Supprime la ligne TS si le manager est désactivé ou profit insuffisant
       if (tsPriceLine) {
-        currentSeries.removePriceLine(window.tsPriceLine);
+        currentSeries.removePriceLine(tsPriceLine);
         tsPriceLine = null;
       }
     }
