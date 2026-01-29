@@ -4902,7 +4902,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   // --- 5. SCREENSHOT ---
                   if (signal.name.includes("SQUEEZE") && volRatio > 0) {
-                    setTimeout(() => takeSniperScreenshot(`${signal.name}_V${volRatio}`), 1000);
+                    setTimeout(() => takeSniperScreenshot(`${signal.name}_V${volRatio}`), 1000);  
                   }     
                 }
               }
