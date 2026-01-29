@@ -1304,12 +1304,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (isNaN(entryPrice)) return;
 
         // Mise à jour pour les donuts/stats  
-        activeContracts[id] = profit;
+        activeContracts[id] = profit;  
 
         // --- 3. STYLE DYNAMIQUE DE LA LIGNE D'ENTRÉE ---
         const isWin = profit >= 0;
         const color = isWin ? "#00ff80" : "#ff4d4d";  
-        const lineStyle = isWin ? LightweightCharts.LineStyle.Solid : LightweightCharts.LineStyle.Dashed;
+        const lineStyle = isWin ? LightweightCharts.LineStyle.Solid : LightweightCharts.LineStyle.Dashed;  
         const labelText = `${c.contract_type} @${entryPrice} | ${profitPercentage.toFixed(2)}% (${profit.toFixed(2)} ${CURRENCY})`;
 
         // Gestion de la ligne sur le graphique
