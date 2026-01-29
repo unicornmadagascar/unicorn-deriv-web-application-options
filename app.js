@@ -4107,7 +4107,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const tsDistPercent = parseFloat(tradeManager.tsTrailingDist || 0.2);
 
       // CALCUL DU PRIX TS : Suit le "Peak" de profit
-      // En BUY : Prix = Entrée + (Peak - Distance)%
+      // En BUY : Prix = Entrée + (Peak - Distance)%   
       // En SELL : Prix = Entrée - (Peak - Distance)%
       const tsPrice = (side === 'BUY')
         ? entry * (1 + (highestPnL - tsDistPercent) / 100)  
