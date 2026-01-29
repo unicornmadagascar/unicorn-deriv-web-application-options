@@ -3890,7 +3890,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (tradeManager.isBE && pnl < 0.01) { // Seuil légèrement réduit pour plus de marge
-      window.executeClosePosition("🛡️ BE PROTECT");  
+      window.executeClosePosition("🛡️ BE PROTECT");
       return;
     }
 
@@ -3911,41 +3911,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // UI Updates
     if (typeof window.updatePnLUI === 'function') window.updatePnLUI(pnl);
-    if (typeof window.updateRiskLinesOnChart === 'function') {    
-      window.updateRiskLinesOnChart(pnl, currentPrice);  
+    if (typeof window.updateRiskLinesOnChart === 'function') {
+      window.updateRiskLinesOnChart(pnl, currentPrice);
     }
   };
 
   window.resetRiskManager = function () {
-    console.log("🧹 Nettoyage du Risk Manager...");  
+    console.log("🧹 Nettoyage du Risk Manager...");
 
-    // 1. Reset des variables logiques
+    // 1. Reset des variables logiques (Indispensable pour bloquer le moteur)
     if (tradeManager) {
-      tradeManager.isActive = false;   
-      tradeManager.highestPnL = 0; // 0 est plus sûr que -999 ici
+      tradeManager.isActive = false;
+      tradeManager.highestPnL = 0;
       tradeManager.isBE = false;
       tradeManager.startTime = 0;
       tradeManager.hasAlertedArmed = false;
     }
 
-    // 2. Nettoyage Visuel et Références
+    // 2. Nettoyage des Références
     window.currentActiveContract = null;
 
-    // On nettoie les lignes sur le graphique
+    // 3. Nettoyage Graphique (Uniquement si on veut tout effacer d'un coup)
     if (typeof window.removeRiskLines === 'function') {
       window.removeRiskLines();
     }
 
-    // 3. Reset du Label (Attention à utiliser le BON ID ici)
-    const pnlLabel = document.getElementById('pnl-value-label'); // Vérifie bien cet ID
+    // 4. Reset de l'interface (Label PnL)
+    const pnlLabel = document.getElementById('pnl-value-label');
     if (pnlLabel) {
-      pnlLabel.innerText = "READY";
-      pnlLabel.style.color = "#3b82f6"; // Bleu Ready
+      // On ne remet READY que si MA Sniper est activé globalement
+      if (window.maSniperActive) {
+        pnlLabel.innerText = "READY";
+        pnlLabel.style.color = "#3b82f6";
+        pnlLabel.classList.add('ready-pulse');
+      } else {
+        pnlLabel.innerText = "0.00%";
+        pnlLabel.style.color = "#cbd5e1";
+        pnlLabel.classList.remove('ready-pulse');
+      }
       pnlLabel.classList.remove('pnl-active-ts', 'pnl-near-sl');
-      pnlLabel.classList.add('ready-pulse');
     }
 
-    // À ajouter dans votre fonction reset
+    // 5. Cacher le compteur de Streak
     const streak = document.getElementById('streak-counter');
     if (streak) streak.style.display = "none";
   };
@@ -3958,78 +3965,83 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 0. RÉCUPÉRATION DES DONNÉES AVANT RESET ---
     const activeContract = window.currentActiveContract;
     const contractId = activeContract ? activeContract.contract_id : null;
-
-    // On capture le profit pour le son avant de vider le contrat
     const pnl = activeContract ? parseFloat(activeContract.profit_percentage || 0) : 0;
 
-    // --- 1. DÉSACTIVATION IMMÉDIATE DU MOTEUR (Sécurité) ---
+    // --- 1. DÉSACTIVATION DU MOTEUR (Sécurité Logique) ---
     if (tradeManager) {
       tradeManager.isActive = false;
-      tradeManager.highestPnL = 0;
-      tradeManager.isBE = false;
-      tradeManager.hasAlertedArmed = false; // Reset du flag sonore
     }
 
     // --- 2. EXÉCUTION RÉELLE CHEZ LE BROKER ---
     if (contractId && typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
-      console.log(`Sending SELL request for contract: ${contractId}`);
-      ws.send(JSON.stringify({
-        sell: contractId,
-        price: 0
-      }));
+      console.log(`Sending SELL request: ${contractId}`);
+      ws.send(JSON.stringify({ sell: contractId, price: 0 }));
     } else if (typeof closeAllPositionsStandalone === 'function') {
       closeAllPositionsStandalone();
     }
 
     // --- 3. FEEDBACK SONORE & STATS ---
     if (typeof playSniperSound === 'function') {
-      if (pnl >= 10) {
-        playSniperSound('JACKPOT');
-        window.tradingStats.winStreak++; // Incrémente la série
-        window.tradingStats.totalWins++;
-      } else if (pnl > 0) {
-        playSniperSound('CLOSE_WIN');
-        window.tradingStats.winStreak++; // Incrémente la série
-        window.tradingStats.totalWins++;
-      } else if (pnl < 0) {
-        playSniperSound('CLOSE_LOSS');
-        window.tradingStats.winStreak = 0; // RESET de la série sur une perte
-      }
-
-      // Mise à jour de la meilleure série
-      if (window.tradingStats.winStreak > window.tradingStats.bestStreak) {
-        window.tradingStats.bestStreak = window.tradingStats.winStreak;
-      }
+      if (pnl >= 10) playSniperSound('JACKPOT');
+      else if (pnl > 0) playSniperSound('CLOSE_WIN');
+      else if (pnl < 0) playSniperSound('CLOSE_LOSS');
     }
 
-    // --- 4. NETTOYAGE GRAPHIQUE ET UI ---
-    if (typeof window.removeRiskLines === 'function') {
-      window.removeRiskLines();
+    // Mise à jour des statistiques
+    if (pnl > 0) {
+      window.tradingStats.winStreak++;
+      window.tradingStats.totalWins++;
+    } else if (pnl < 0) {
+      window.tradingStats.winStreak = 0;    
+    }  
+
+    if (window.tradingStats.winStreak > window.tradingStats.bestStreak) {
+      window.tradingStats.bestStreak = window.tradingStats.winStreak;
     }
 
-    if (contractId && window.removePriceLine) {
-      window.removePriceLine(contractId);
-    }
+    if (typeof window.updateStreakUI === 'function') window.updateStreakUI();
 
-    // Feedback du bouton
+    // --- 4. INTERFACE PnL ---
+    const pnlLabel = document.getElementById('pnl-value-label');
     const btn = document.getElementById('btn-arm-risk');
+
+    if (pnlLabel) {
+      pnlLabel.innerText = pnl > 0 ? `+${pnl.toFixed(2)}%` : `${pnl.toFixed(2)}%`;
+      pnlLabel.style.color = pnl >= 0 ? "#00ff80" : "#ff4d4d";
+      pnlLabel.classList.remove('pnl-active-ts', 'pnl-near-sl', 'ready-pulse');
+    }
+
     if (btn) {
       btn.classList.remove('active');
       btn.style.backgroundColor = "";
       btn.innerHTML = "🎯 ARM RISK";
     }
 
-    // --- 5. INTERFACE PnL (LABEL) ---
-    const pnlLabel = document.getElementById('pnl-value-label');
-    if (pnlLabel) {
-      // Affichage du résultat final pendant la transition
-      pnlLabel.innerText = pnl > 0 ? `+${pnl.toFixed(2)}%` : `${pnl.toFixed(2)}%`;
-      pnlLabel.style.color = pnl >= 0 ? "#00ff80" : "#ff4d4d";
-      pnlLabel.classList.remove('pnl-active-ts', 'pnl-near-sl', 'ready-pulse');
+    // --- 5. LOGS ET SCREENSHOT ---
+    console.warn(`🚀 POSITION CLOSE : ${reason} (PnL: ${pnl}%)`);
 
-      setTimeout(() => {
-        // Vérifier si un nouveau trade n'a pas été ouvert entre temps
-        if (!tradeManager.isActive) {
+    // Correction ici : Utilisation de window.currentSymbol pour éviter l'erreur "undefined"
+    if (window.autoScreenshotActive && typeof window.captureSniperShot === 'function') {
+      window.captureSniperShot({ subtype: 'EXIT_TRADE', reason: reason, pnl: pnl }, currentSymbol || "UNKNOWN");
+    }
+
+    // --- 6. LE NETTOYAGE DIFFÉRÉ (Le secret de la visualisation) ---
+    setTimeout(() => {
+      // Sécurité : On ne reset QUE si un nouveau trade n'a pas été ouvert entre-temps
+      if (window.currentActiveContract === null || window.currentActiveContract.contract_id === contractId) {
+
+        if (typeof window.removeRiskLines === 'function') {
+          window.removeRiskLines();
+        }
+
+        if (contractId && window.removePriceLine) {  
+          window.removePriceLine(contractId);   
+        }
+
+        window.resetRiskManager();
+        window.currentActiveContract = null; 
+
+        if (pnlLabel && (!tradeManager || !tradeManager.isActive)) {
           if (maSniperActive) {
             pnlLabel.innerText = "READY";
             pnlLabel.style.color = "#3b82f6";
@@ -4039,24 +4051,9 @@ document.addEventListener("DOMContentLoaded", () => {
             pnlLabel.style.color = "#cbd5e1";
           }
         }
-      }, 3000);
-    }
-
-    // --- 6. LOGS ET SCREENSHOT ---
-    console.warn(`🚀 POSITION CLOSE : ${reason} (PnL: ${pnl}%)`);
-
-    if (window.autoScreenshotActive && typeof window.captureSniperShot === 'function') {
-      window.captureSniperShot({ subtype: 'EXIT_TRADE', reason: reason, pnl: pnl }, currentSymbol);
-    }
-
-    // --- 7. FINALISATION ---
-    window.currentActiveContract = null;
-
-    // --- TOUT À LA FIN ---
-    setTimeout(() => {
-      window.resetRiskManager(); // <--- APPEL ICI
-      console.log("♻️ Manager prêt pour le prochain trade.");
-    }, 3100);  
+      }
+      console.log("♻️ Nettoyage post-clôture terminé.");
+    }, 3000);
   };
 
   window.updateRiskLinesOnChart = function (pnl, currentPrice) {
@@ -4064,8 +4061,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Utilisation de window.currentSeries pour être sûr de pointer sur le graphique
     if (!hasContract || !currentSeries) {
-      window.removeRiskLines();   
-      return;  
+      window.removeRiskLines();
+      return;
     }
 
     const entry = parseFloat(window.currentActiveContract?.entry_tick || window.currentActiveContract?.buy_price);
@@ -4125,11 +4122,11 @@ document.addEventListener("DOMContentLoaded", () => {
         currentSeries.removePriceLine(tsPriceLine);
         tsPriceLine = null;
       }
-    }  
+    }
   };
 
   // --- FONCTION DE NETTOYAGE ---
-  window.removeRiskLines = function () {   
+  window.removeRiskLines = function () {
     if (currentSeries) {
       if (bePriceLine) {
         currentSeries.removePriceLine(bePriceLine);
