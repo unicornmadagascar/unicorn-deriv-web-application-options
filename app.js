@@ -391,7 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const safe = v => (typeof v === "number" && !isNaN(v)) ? v : 0;
 
   // --- SYMBOLS ---
-  function displaySymbols(currentInterval, currentChartType) {   
+  function displaySymbols(currentInterval, currentChartType) {
     const symbolList = document.getElementById("symbolList");
     if (!symbolList) return;
     symbolList.innerHTML = "";
@@ -1149,12 +1149,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (lastBar && isWsInitialized) {
           // Mise à jour de Lightweight Charts
           currentSeries.update(lastBar);
-          
-          const currentPrice = parseFloat(lastBar.close);
-          // On lance la vérification mathématique BE/TS
-          if (typeof window.runSmartRiskManager === 'function') {
-            window.runSmartRiskManager(currentPrice);
-          }
 
           // Mise à jour du cache local
           if (cache.length > 0) {
@@ -1165,14 +1159,14 @@ document.addEventListener("DOMContentLoaded", () => {
               cache[lastCacheIndex] = lastBar;
             } else {
               // Nouvelle bougie : on ajoute
-              cache.push(lastBar);  
+              cache.push(lastBar);
               if (cache.length > 1000) cache.shift();
             }
           }
 
           // Mise à jour et rendu des indicateurs
           updateIndicatorData(lastBar.time, lastBar);
-          renderIndicators();  
+          renderIndicators();
 
           // Force le rafraîchissement des dessins et du Volume Profile  
           render();
@@ -1263,7 +1257,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
 
           // Nettoyage des données de suivi
-          delete activeContracts[id];  
+          delete activeContracts[id];
 
           // Si c'était le contrat suivi par le manager, reset complet
           if (window.currentActiveContract && window.currentActiveContract.contract_id === id) {
@@ -1297,25 +1291,27 @@ document.addEventListener("DOMContentLoaded", () => {
         const profit = parseFloat(c.profit || 0);
         const profitPercentage = parseFloat(c.profit_percentage || 0);
         const currentSpot = parseFloat(c.current_spot);
-        
-        console.log("ENTRY PRICE :", entryPrice);  
-        console.log("CURRENT SPOT :", currentSpot);  
+
+        // On lance la vérification mathématique BE/TS
+        if (typeof window.runSmartRiskManager === 'function') {
+          window.runSmartRiskManager(currentSpot);
+        }
 
         if (isNaN(entryPrice)) return;
 
         // Mise à jour pour les donuts/stats  
-        activeContracts[id] = profit;  
+        activeContracts[id] = profit;
 
         // --- 3. STYLE DYNAMIQUE DE LA LIGNE D'ENTRÉE ---
         const isWin = profit >= 0;
-        const color = isWin ? "#00ff80" : "#ff4d4d";  
-        const lineStyle = isWin ? LightweightCharts.LineStyle.Solid : LightweightCharts.LineStyle.Dashed;  
+        const color = isWin ? "#00ff80" : "#ff4d4d";
+        const lineStyle = isWin ? LightweightCharts.LineStyle.Solid : LightweightCharts.LineStyle.Dashed;
         const labelText = `${c.contract_type} @${entryPrice} | ${profitPercentage.toFixed(2)}% (${profit.toFixed(2)} ${CURRENCY})`;
 
         // Gestion de la ligne sur le graphique
         if (!priceLines4openlines[id]) {
-          const line = currentSeries.createPriceLine({  
-            price: entryPrice,  
+          const line = currentSeries.createPriceLine({
+            price: entryPrice,
             color: color,
             lineWidth: 2,
             lineStyle: lineStyle,
@@ -2098,8 +2094,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function reversefunction() {
     if (wsContracts_reverse) { wsContracts_reverse.close(); wsContracts_reverse = null; }
 
-    console.log("Reversing positions...");  
-  
+    console.log("Reversing positions...");
+
     // Au moment où l'achat est confirmé par le broker :
     tradeManager.startTime = Date.now(); // On lance le chrono
     tradeManager.highestPnL = 0;         // On remet le pic à zéro
@@ -2115,7 +2111,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 1. Authorization
       if (data.msg_type === "authorize") {
         wsContracts_reverse.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
-        wsContracts_reverse.send(JSON.stringify({ portfolio: 1 }));  
+        wsContracts_reverse.send(JSON.stringify({ portfolio: 1 }));
         return;
       }
 
@@ -2137,7 +2133,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Determine opposite direction
       const oppositeType = (contracttype__ === "MULTUP") ? "MULTDOWN" : "MULTUP";
-      tradeManager.type = oppositeType;     
+      tradeManager.type = oppositeType;
 
       // User inputs
       const stake = parseFloat(stakeInput.value) || 1;
@@ -3883,12 +3879,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentSpot = parseFloat(currentPrice || c.current_spot);
 
     console.log("CURRENT PRICE :", parseFloat(currentPrice));
-    console.log("CURRENT SPOT :", c.current_spot);
+    console.log("CURRENT SPOT :", parseFloat(c.current_spot));
 
     // Calcul du temps écoulé depuis l'achat (en secondes)
-    const now = Date.now();  
+    const now = Date.now();
     const tradeDuration = (now - (tradeManager.startTime || 0)) / 1000;
-  
+
     // --- 2. MISE À JOUR DU PEAK (Plus haut profit atteint) ---
     if (pnl > tradeManager.highestPnL) {
       tradeManager.highestPnL = pnl;
@@ -3924,7 +3920,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         // Log discret pour indiquer qu'on ignore le spread de départ
         console.warn(`⏳ SL ignoré durant stabilisation (${pnl.toFixed(2)}%) - Age: ${tradeDuration.toFixed(1)}s`);
-      }  
+      }
     }
 
     // NOUVEAU : Signal sonore une seule fois quand on passe les 5 secondes
@@ -3937,7 +3933,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 6. MISES À JOUR VISUELLES ---
     if (typeof window.updatePnLUI === 'function') {
       window.updatePnLUI(pnl);
-    }
+    }  
 
     if (typeof window.updateRiskLinesOnChart === 'function') {
       window.updateRiskLinesOnChart(pnl, currentSpot);
@@ -4898,7 +4894,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     text: `BB: ${signal.name} (${volSign}${volRatio}%)`,
                     size: 1 // Un peu plus petit pour laisser la flèche MA dominer visuellement
                   };
-                  allMarkers.push(newMarker);  
+                  allMarkers.push(newMarker);
                   window.syncAllChartMarkers();
 
                   // --- 5. SCREENSHOT ---
@@ -5829,7 +5825,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("🛠️ Première initialisation de la table...");
         initTable();
         // On récupère la référence fraîchement créée
-        autoTradeBody = document.getElementById("autoTradeBody");  
+        autoTradeBody = document.getElementById("autoTradeBody");
       } else {
         // Si même le parent n'est pas là, on ne peut rien faire
         return;
