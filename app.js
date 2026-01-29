@@ -3921,7 +3921,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 1. Reset des variables logiques
     if (tradeManager) {
-      tradeManager.isActive = false;
+      tradeManager.isActive = false;   
       tradeManager.highestPnL = 0; // 0 est plus sûr que -999 ici
       tradeManager.isBE = false;
       tradeManager.startTime = 0;
