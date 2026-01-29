@@ -4110,7 +4110,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // En BUY : Prix = Entrée + (Peak - Distance)%
       // En SELL : Prix = Entrée - (Peak - Distance)%
       const tsPrice = (side === 'BUY')
-        ? entry * (1 + (highestPnL - tsDistPercent) / 100)
+        ? entry * (1 + (highestPnL - tsDistPercent) / 100)  
         : entry * (1 - (highestPnL - tsDistPercent) / 100);
 
       // Détection de proximité pour alerte visuelle (isNear)
