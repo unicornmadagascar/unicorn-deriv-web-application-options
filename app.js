@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
     tsTrailingDist: 0.2,   // Valeur par défaut
     beActivation: 0.3, 
     tsActivation: 0.6
-  };
+  };  
 
   let bePriceLine = null; // Ligne bleue pour le Breakeven   
   let tsPriceLine = null; // Ligne verte pour le Trailing Stop
