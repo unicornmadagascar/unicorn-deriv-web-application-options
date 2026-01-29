@@ -1310,12 +1310,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const isWin = profit >= 0;
         const color = isWin ? "#00ff80" : "#ff4d4d";
         const lineStyle = isWin ? LightweightCharts.LineStyle.Solid : LightweightCharts.LineStyle.Dashed;
-        const labelText = `${c.contract_type} | ${profitPercentage.toFixed(2)}% (${profit.toFixed(2)} ${CURRENCY})`;
+        const labelText = `${c.contract_type} @${entryPrice} | ${profitPercentage.toFixed(2)}% (${profit.toFixed(2)} ${CURRENCY})`;
 
         // Gestion de la ligne sur le graphique
         if (!priceLines4openlines[id]) {
           const line = currentSeries.createPriceLine({
-            price: entryPrice,
+            price: entryPrice,  
             color: color,
             lineWidth: 2,
             lineStyle: lineStyle,
@@ -2115,7 +2115,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 1. Authorization
       if (data.msg_type === "authorize") {
         wsContracts_reverse.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
-        wsContracts_reverse.send(JSON.stringify({ portfolio: 1 }));
+        wsContracts_reverse.send(JSON.stringify({ portfolio: 1 }));  
         return;
       }
 
