@@ -4056,7 +4056,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       window.resetRiskManager(); // <--- APPEL ICI
       console.log("♻️ Manager prêt pour le prochain trade.");
-    }, 3100);
+    }, 3100);  
   };
 
   window.updateRiskLinesOnChart = function (pnl, currentPrice) {
