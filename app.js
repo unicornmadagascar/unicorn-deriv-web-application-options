@@ -4064,7 +4064,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Utilisation de window.currentSeries pour être sûr de pointer sur le graphique
     if (!hasContract || !currentSeries) {
-      window.removeRiskLines();
+      window.removeRiskLines();   
       return;  
     }
 
