@@ -1308,7 +1308,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // --- 3. STYLE DYNAMIQUE DE LA LIGNE D'ENTRÉE ---
         const isWin = profit >= 0;
-        const color = isWin ? "#00ff80" : "#ff4d4d";
+        const color = isWin ? "#00ff80" : "#ff4d4d";  
         const lineStyle = isWin ? LightweightCharts.LineStyle.Solid : LightweightCharts.LineStyle.Dashed;
         const labelText = `${c.contract_type} @${entryPrice} | ${profitPercentage.toFixed(2)}% (${profit.toFixed(2)} ${CURRENCY})`;
 
