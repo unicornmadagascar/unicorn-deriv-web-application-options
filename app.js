@@ -4102,7 +4102,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!entry) return;
 
     const LineStyle = (window.LightweightCharts && window.LightweightCharts.LineStyle)
-      ? window.LightweightCharts.LineStyle
+      ? window.LightweightCharts.LineStyle  
       : { Solid: 0, Dashed: 2 };
 
     // --- 2. LIGNE BREAKEVEN (BE) ---
