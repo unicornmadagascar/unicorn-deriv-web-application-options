@@ -3906,7 +3906,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const dropFromPeak = tradeManager.highestPnL - pnl;
 
       if (dropFromPeak >= tradeManager.tsTrailingDist) {
-        window.executeClosePosition(`🔥 TS HIT : Chute de ${dropFromPeak.toFixed(2)}% depuis Peak (${window.tradeManager.highestPnL.toFixed(2)}%)`);
+        window.executeClosePosition(`🔥 TS HIT : Chute de ${dropFromPeak.toFixed(2)}% depuis Peak (${tradeManager.highestPnL.toFixed(2)}%)`);
         return;
       }
     }
