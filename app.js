@@ -4865,14 +4865,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   // Sécurité ultime contre les valeurs non numériques
                   if (isNaN(volRatio) || !isFinite(volRatio)) volRatio = 0;
-
+   
                   lastSignalTime = currentCandleTime;   
 
                   // --- 2. FEEDBACKS VISUELS ---
-                  /*if (typeof drawSniperTooltip === "function") {
+                  if (typeof drawSniperTooltip === "function") {
                     drawSniperTooltip(signal, currentCandleTime, volRatio);
-                  }*/    
-
+                  }    
+   
                   if (typeof showFloatingSignal === "function") {
                     showFloatingSignal(signal);
                   }
