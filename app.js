@@ -4118,7 +4118,7 @@ document.addEventListener("DOMContentLoaded", () => {
         title: 'BE LEVEL',
       });
     } else {
-      bePriceLine.applyOptions({ price: bePrice });
+      bePriceLine.applyOptions({ price: bePrice });  
     }
 
     // --- 3. LIGNE TRAILING STOP (TS) ---
