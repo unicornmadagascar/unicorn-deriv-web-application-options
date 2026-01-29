@@ -2730,7 +2730,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       alertBadge.style.display = 'inline-block';
       alertBadge.style.opacity = '1';
-    });
+    });  
 
     // 4. Gestion du Timer pour la disparition automatique
     // On annule le timer précédent s'il y en avait un pour éviter les conflits
