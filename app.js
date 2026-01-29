@@ -150,20 +150,20 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- INITIALISATION GLOBALE ---
   let tradeManager = {
     isActive: false,       // Le verrou principal est fermé
-    entryPrice: 0, 
+    entryPrice: 0,
     side: null,            // 'BUY' ou 'SELL'
     highestPnL: 0,         // Record pour le Trailing
     isBE: false,           // État du Breakeven
     maxLoss: -1.0,         // Valeur par défaut
     tsTrailingDist: 0.2,   // Valeur par défaut
-    beActivation: 0.3, 
+    beActivation: 0.3,
     tsActivation: 0.6
-  };  
+  };
 
   let bePriceLine = null; // Ligne bleue pour le Breakeven   
   let tsPriceLine = null; // Ligne verte pour le Trailing Stop  
   let contrats4update = [];
-  let ws4update = null;  
+  let ws4update = null;
   let ws_close = null;
   window.currentActiveContract = null;
   window.tradingStats = {
@@ -1291,7 +1291,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const profit = parseFloat(c.profit || 0);
         const profitPercentage = parseFloat(c.profit_percentage || 0);
         const currentSpot = parseFloat(c.current_spot);
-        tradeManager.entryPrice = entryPrice;  
+        tradeManager.entryPrice = entryPrice;
 
         // On lance la vérification mathématique BE/TS
         if (typeof window.runSmartRiskManager === 'function') {
@@ -3934,7 +3934,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 6. MISES À JOUR VISUELLES ---  
     if (typeof window.updatePnLUI === 'function') {
       window.updatePnLUI(pnl);
-    }  
+    }
 
     if (typeof window.updateRiskLinesOnChart === 'function') {
       window.updateRiskLinesOnChart(pnl, currentSpot);
@@ -4007,9 +4007,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- 3. FEEDBACK SONORE & STATS ---
-    if (typeof playSniperSound === 'function') {   
+    if (typeof playSniperSound === 'function') {
       if (pnl >= 10) {
-        playSniperSound('JACKPOT');  
+        playSniperSound('JACKPOT');
         window.tradingStats.winStreak++; // Incrémente la série
         window.tradingStats.totalWins++;
       } else if (pnl > 0) {
@@ -5664,6 +5664,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       showToast(`${selectedCheckboxes.length} Contracts were closed`, 'info');
 
+      tradeManager.startTime = Date.now(); // On lance le chrono
+      tradeManager.highestPnL = 0;         // On remet le pic à zéro
+      tradeManager.isBE = false;           // On reset le Breakeven
+      tradeManager.isActive = false;
+
       // 4. Reset de la case "Tout sélectionner"
       const selectAllCb = document.getElementById('selectAll');
       if (selectAllCb) selectAllCb.checked = false;
@@ -5779,6 +5784,11 @@ document.addEventListener("DOMContentLoaded", () => {
         closeContract(contractId);
       }
     });
+
+    tradeManager.startTime = Date.now(); // On lance le chrono
+    tradeManager.highestPnL = 0;         // On remet le pic à zéro
+    tradeManager.isBE = false;           // On reset le Breakeven
+    tradeManager.isActive = false;  
 
     // 5. Réinitialisation du bouton après un délai de sécurité
     setTimeout(() => {
