@@ -1248,39 +1248,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // --- 1. GESTION DU CAS : CONTRAT CLOS (Vendu, Expiré, etc.) ---
         // On utilise c.is_sold qui est l'indicateur le plus fiable chez Deriv
-        if (c.is_sold === 1 || c.status === "sold" || c.status === "won" || c.status === "lost") {
+        // On ne déclenche le nettoyage QUE si le contrat est officiellement vendu
+        if (c.is_sold) {
 
-          // Nettoyage de la ligne de prix sur le chart
-          if (priceLines4openlines[id]) {
-            currentSeries.removePriceLine(priceLines4openlines[id].line);
-            delete priceLines4openlines[id];
-          }
+          // 1. Désactivation immédiate de l'envoi d'ordres (Sécurité)
+          if (tradeManager) tradeManager.isActive = false;
 
-          // Nettoyage des données de suivi
-          delete activeContracts[id];
-
-          // Si c'était le contrat suivi par le manager, reset complet
-          if (window.currentActiveContract && window.currentActiveContract.contract_id === id) {
-            window.currentActiveContract = null;
-
-            if (tradeManager) {
-              tradeManager.isActive = false;
-              tradeManager.highestPnL = 0;
-              tradeManager.isBE = false;
+          // 2. On laisse les lignes visibles pour analyse (1.5s ou 3s selon votre goût)
+          setTimeout(() => {
+            if (priceLines4openlines[id]) {
+              currentSeries.removePriceLine(priceLines4openlines[id].line);
+              delete priceLines4openlines[id];
             }
 
-            // Supprimer les lignes visuelles BE/TS
             if (typeof window.removeRiskLines === 'function') {
               window.removeRiskLines();
             }
-          }
 
-          // Appel de la fonction de fermeture globale (nettoyage UI/Boutons)
+            if (window.currentActiveContract && window.currentActiveContract.contract_id === id) {
+              window.currentActiveContract = null;
+            }
+
+            console.log("🧹 Nettoyage visuel effectué après confirmation de vente.");
+          }, 1500);
+
+          // 3. On ferme l'UI immédiatement
           if (typeof window.executeClosePosition === 'function') {
-            window.executeClosePosition("Broker Closure Confirm");
+            window.executeClosePosition("Broker Confirmed Sold");
           }
 
-          return; // On arrête l'exécution ici pour ce message
+          return;
         }
 
         // --- 2. MISE À JOUR DU RISK MANAGER (CONTRAT OUVERT) ---
@@ -3992,8 +3989,8 @@ document.addEventListener("DOMContentLoaded", () => {
       window.tradingStats.winStreak++;
       window.tradingStats.totalWins++;
     } else if (pnl < 0) {
-      window.tradingStats.winStreak = 0;    
-    }  
+      window.tradingStats.winStreak = 0;
+    }
 
     if (window.tradingStats.winStreak > window.tradingStats.bestStreak) {
       window.tradingStats.bestStreak = window.tradingStats.winStreak;
@@ -4034,12 +4031,12 @@ document.addEventListener("DOMContentLoaded", () => {
           window.removeRiskLines();
         }
 
-        if (contractId && window.removePriceLine) {  
-          window.removePriceLine(contractId);   
+        if (contractId && window.removePriceLine) {
+          window.removePriceLine(contractId);
         }
 
         window.resetRiskManager();
-        window.currentActiveContract = null; 
+        window.currentActiveContract = null;
 
         if (pnlLabel && (!tradeManager || !tradeManager.isActive)) {
           if (maSniperActive) {
