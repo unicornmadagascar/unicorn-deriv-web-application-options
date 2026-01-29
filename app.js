@@ -3917,7 +3917,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.resetRiskManager = function () {
-    console.log("🧹 Nettoyage du Risk Manager...");
+    console.log("🧹 Nettoyage du Risk Manager...");  
 
     // 1. Reset des variables logiques
     if (tradeManager) {
