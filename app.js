@@ -3871,40 +3871,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.runSmartRiskManager = function (currentPrice) {
     const c = window.currentActiveContract;
-    if (!c || !window.tradeManager || !window.tradeManager.isActive) return;
+    if (!c || !tradeManager || !tradeManager.isActive) return;
 
     const pnl = parseFloat(c.profit_percentage || 0);
     const now = Date.now();
-    const tradeDuration = (now - (window.tradeManager.startTime || 0)) / 1000;
+    const tradeDuration = (now - (tradeManager.startTime || 0)) / 1000;
 
     // 1. MISE À JOUR DU PEAK (Uniquement en profit positif)
-    if (pnl > 0 && pnl > window.tradeManager.highestPnL) {
-      window.tradeManager.highestPnL = pnl;
+    if (pnl > 0 && pnl > tradeManager.highestPnL) {
+      tradeManager.highestPnL = pnl;
     }
 
     // 2. LOGIQUE BREAKEVEN (BE)
     // On n'active le BE que si on a atteint la cible ET qu'on a passé 3s de stabilité
-    if (pnl >= window.tradeManager.beActivation && !window.tradeManager.isBE) {
-      window.tradeManager.isBE = true;
+    if (pnl >= tradeManager.beActivation && !tradeManager.isBE) {
+      tradeManager.isBE = true;
       console.log("🛡️ BE ARMÉ");
     }
 
-    if (window.tradeManager.isBE && pnl < 0.01) { // Seuil légèrement réduit pour plus de marge
-      window.executeClosePosition("🛡️ BE PROTECT");
+    if (tradeManager.isBE && pnl < 0.01) { // Seuil légèrement réduit pour plus de marge
+      window.executeClosePosition("🛡️ BE PROTECT");  
       return;
     }
 
     // 3. LOGIQUE TRAILING STOP (TS)
-    if (pnl >= window.tradeManager.tsActivation) {
-      const dropFromPeak = window.tradeManager.highestPnL - pnl;
-      if (dropFromPeak >= window.tradeManager.tsTrailingDist) {
+    if (pnl >= tradeManager.tsActivation) {
+      const dropFromPeak = tradeManager.highestPnL - pnl;
+      if (dropFromPeak >= tradeManager.tsTrailingDist) {
         window.executeClosePosition("🔥 TS EXIT");
         return;
       }
     }
 
     // 4. STOP LOSS (Avec verrou de sécurité temporel strict)
-    if (pnl <= window.tradeManager.maxLoss && tradeDuration > 5) {
+    if (pnl <= tradeManager.maxLoss && tradeDuration > 5) {
       window.executeClosePosition("🚨 SL HIT");
       return;
     }
