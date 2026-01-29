@@ -150,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- INITIALISATION GLOBALE ---
   let tradeManager = {
     isActive: false,       // Le verrou principal est fermé
-    entryPrice: 0,
+    entryPrice: 0, 
     side: null,            // 'BUY' ou 'SELL'
     highestPnL: 0,         // Record pour le Trailing
     isBE: false,           // État du Breakeven
