@@ -2730,7 +2730,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       alertBadge.style.display = 'inline-block';
       alertBadge.style.opacity = '1';
-    });  
+    });
 
     // 4. Gestion du Timer pour la disparition automatique
     // On annule le timer précédent s'il y en avait un pour éviter les conflits
@@ -4087,16 +4087,20 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.updateRiskLinesOnChart = function (pnl, currentPrice) {
-    // 1. SÉCURITÉ : Vérification des objets requis
-    if (!tradeManager || !tradeManager.isActive || !currentSeries) {
+    // MODIFICATION ICI : On vérifie si un contrat existe, peu importe si le manager est "Armé" ou non
+    const hasContract = window.currentActiveContract !== null;
+
+    if (!hasContract || !currentSeries) {
       window.removeRiskLines();
       return;
     }
 
-    const entry = parseFloat(tradeManager.entryPrice);
-    const side = tradeManager.side;
+    // On récupère les infos du contrat ou du manager
+    const entry = parseFloat(window.currentActiveContract?.entry_tick || tradeManager?.entryPrice);
+    const side = window.currentActiveContract?.contract_type === 'MULTUP' ? 'BUY' : 'SELL';
 
-    // Sécurité au cas où LightweightCharts n'est pas chargé via window
+    if (!entry) return;
+
     const LineStyle = (window.LightweightCharts && window.LightweightCharts.LineStyle)
       ? window.LightweightCharts.LineStyle
       : { Solid: 0, Dashed: 2 };
@@ -4104,46 +4108,38 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 2. LIGNE BREAKEVEN (BE) ---
     const bePrice = (side === 'BUY') ? entry * 1.0001 : entry * 0.9999;
 
-    const beOptions = {
-      price: bePrice,
-      color: '#3b82f6',
-      lineWidth: 2,
-      lineStyle: LineStyle.Dashed,
-      axisLabelVisible: true,
-      title: 'BE PROTECT',
-    };
-
     if (!bePriceLine) {
-      bePriceLine = currentSeries.createPriceLine(beOptions);
+      bePriceLine = currentSeries.createPriceLine({
+        price: bePrice,
+        color: '#3b82f6',
+        lineWidth: 2,
+        lineStyle: LineStyle.Dashed,
+        axisLabelVisible: true, 
+        title: 'BE LEVEL',
+      });
     } else {
       bePriceLine.applyOptions({ price: bePrice });
     }
 
-    console.log("Dessin BE à :", bePrice, "sur la série :", currentSeries);
-
     // --- 3. LIGNE TRAILING STOP (TS) ---
-    const tsActivation = parseFloat(tradeManager.tsActivation);
+    // On n'affiche le TS que si le Risk Manager est ACTIF (Armé) ET que le seuil est atteint
+    const isArmed = tradeManager && tradeManager.isActive;
 
-    if (pnl >= tsActivation) {
-      // Calcul du prix du sommet (Peak)
-      const peakPrice = (side === 'BUY')
-        ? entry * (1 + (tradeManager.highestPnL / 100))
-        : entry * (1 - (tradeManager.highestPnL / 100));
-
-      const tsDistancePrice = entry * (tradeManager.tsTrailingDist / 100);
-      const tsPrice = (side === 'BUY') ? peakPrice - tsDistancePrice : peakPrice + tsDistancePrice;
-
-      // Alerte visuelle (isNear)
-      const distanceToTS = Math.abs((currentPrice - tsPrice) / tsPrice * 100);
-      const isNear = distanceToTS < 0.05;
+    if (isArmed && pnl >= tradeManager.tsActivation) {
+      const highestPnL = parseFloat(tradeManager.highestPnL || 0);
+      const tsDistPercent = parseFloat(tradeManager.tsTrailingDist);
+    
+      const tsPrice = (side === 'BUY')
+        ? entry * (1 + (highestPnL - tsDistPercent) / 100)
+        : entry * (1 - (highestPnL - tsDistPercent) / 100);  
 
       const tsOptions = {
         price: tsPrice,
-        color: isNear ? '#fb923c' : '#10b981',
-        lineWidth: isNear ? 3 : 2,
+        color: '#10b981',
+        lineWidth: 2,
         lineStyle: LineStyle.Solid,
         axisLabelVisible: true,
-        title: isNear ? '⚠️ TS WARNING' : 'TS ACTIVE',
+        title: 'TS ACTIVE',
       };
 
       if (!tsPriceLine) {
@@ -4152,7 +4148,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tsPriceLine.applyOptions(tsOptions);
       }
     } else {
-      // Nettoyage automatique si le profit chute sous le seuil d'activation
+      // Supprime uniquement la ligne TS si le manager est OFF ou seuil non atteint
       if (tsPriceLine) {
         currentSeries.removePriceLine(tsPriceLine);
         tsPriceLine = null;
@@ -4865,14 +4861,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
                   // Sécurité ultime contre les valeurs non numériques
                   if (isNaN(volRatio) || !isFinite(volRatio)) volRatio = 0;
-   
-                  lastSignalTime = currentCandleTime;   
+
+                  lastSignalTime = currentCandleTime;
 
                   // --- 2. FEEDBACKS VISUELS ---
                   if (typeof drawSniperTooltip === "function") {
                     drawSniperTooltip(signal, currentCandleTime, volRatio);
-                  }    
-   
+                  }
+
                   if (typeof showFloatingSignal === "function") {
                     showFloatingSignal(signal);
                   }
@@ -4898,12 +4894,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     size: 1 // Un peu plus petit pour laisser la flèche MA dominer visuellement
                   };
                   allMarkers.push(newMarker);
-                  window.syncAllChartMarkers();     
+                  window.syncAllChartMarkers();
 
                   // --- 5. SCREENSHOT ---
                   if (signal.name.includes("SQUEEZE") && volRatio > 0) {
-                    setTimeout(() => takeSniperScreenshot(`${signal.name}_V${volRatio}`), 1000);  
-                  }     
+                    setTimeout(() => takeSniperScreenshot(`${signal.name}_V${volRatio}`), 1000);
+                  }
                 }
               }
             } else {
@@ -5790,7 +5786,7 @@ document.addEventListener("DOMContentLoaded", () => {
     tradeManager.startTime = Date.now(); // On lance le chrono
     tradeManager.highestPnL = 0;         // On remet le pic à zéro
     tradeManager.isBE = false;           // On reset le Breakeven
-    tradeManager.isActive = false;  
+    tradeManager.isActive = false;
 
     // 5. Réinitialisation du bouton après un délai de sécurité
     setTimeout(() => {
