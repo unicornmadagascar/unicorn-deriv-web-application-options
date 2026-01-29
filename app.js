@@ -2494,11 +2494,13 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.innerHTML = "📡"; // On change l'icône pour montrer que le radar SCANNE
       console.log("Radar activé");
       showToast(`📡 Radar activated`, 'info');
+      isSniperArmed = true;
     } else {
       btn.classList.remove('armed');
       btn.innerHTML = "🎯"; // On revient à la cible
       console.log("Radar désactivé");
       showToast(`🎯 Radar deactivated`, 'info');
+      isSniperArmed = false;
     }
   }
 
@@ -4867,9 +4869,9 @@ document.addEventListener("DOMContentLoaded", () => {
                   lastSignalTime = currentCandleTime;
 
                   // --- 2. FEEDBACKS VISUELS ---
-                  if (typeof drawSniperTooltip === "function") {
+                  /*if (typeof drawSniperTooltip === "function") {
                     drawSniperTooltip(signal, currentCandleTime, volRatio);
-                  }
+                  }*/  
 
                   if (typeof showFloatingSignal === "function") {
                     showFloatingSignal(signal);
@@ -4896,7 +4898,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     size: 1 // Un peu plus petit pour laisser la flèche MA dominer visuellement
                   };
                   allMarkers.push(newMarker);
-                  window.syncAllChartMarkers();
+                  window.syncAllChartMarkers(); 
 
                   // --- 5. SCREENSHOT ---
                   if (signal.name.includes("SQUEEZE") && volRatio > 0) {
@@ -5145,7 +5147,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (vpData) {
         ctx.save();
         const { profile, maxTotalVolume, rowHeight, vah, val } = vpData;
-        const maxWidth = 300;
+        const maxWidth = 500;
         const offsetFromPriceScale = 70;
         const startX = canvas.width - offsetFromPriceScale;
 
