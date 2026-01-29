@@ -4008,7 +4008,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 3. FEEDBACK SONORE & STATS ---
     if (typeof playSniperSound === 'function') {   
       if (pnl >= 10) {
-        playSniperSound('JACKPOT');
+        playSniperSound('JACKPOT');  
         window.tradingStats.winStreak++; // Incrémente la série
         window.tradingStats.totalWins++;
       } else if (pnl > 0) {
