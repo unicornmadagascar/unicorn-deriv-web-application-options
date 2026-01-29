@@ -4871,7 +4871,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   // --- 2. FEEDBACKS VISUELS ---
                   /*if (typeof drawSniperTooltip === "function") {
                     drawSniperTooltip(signal, currentCandleTime, volRatio);
-                  }*/  
+                  }*/    
 
                   if (typeof showFloatingSignal === "function") {
                     showFloatingSignal(signal);
