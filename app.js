@@ -3930,7 +3930,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("🛡️ Protection SL active !");
     }
 
-    // --- 6. MISES À JOUR VISUELLES ---
+    // --- 6. MISES À JOUR VISUELLES ---  
     if (typeof window.updatePnLUI === 'function') {
       window.updatePnLUI(pnl);
     }  
