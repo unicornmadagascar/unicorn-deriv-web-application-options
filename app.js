@@ -3911,7 +3911,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // UI Updates
     if (typeof window.updatePnLUI === 'function') window.updatePnLUI(pnl);
-    if (typeof window.updateRiskLinesOnChart === 'function') {
+    if (typeof window.updateRiskLinesOnChart === 'function') {  
       window.updateRiskLinesOnChart(pnl, currentPrice);
     }
   };
