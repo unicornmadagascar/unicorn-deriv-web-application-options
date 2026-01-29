@@ -5421,7 +5421,7 @@ document.addEventListener("DOMContentLoaded", () => {
       endTime: clickTime, // Sera étiré par le mouvement de souris ou par défaut
       entryPrice: clickPrice,
       tpPrice: clickPrice + (clickPrice * 0.01), // +1% par défaut
-      slPrice: clickPrice - (clickPrice * 0.005) // -0.5% par défaut
+      slPrice: clickPrice - (clickPrice * 0.005) // -0.5% par défaut  
     };
 
     // On définit directement la poignée droite comme active pour étirer la largeur au premier clic
