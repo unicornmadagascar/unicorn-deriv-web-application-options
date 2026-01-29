@@ -1288,7 +1288,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const profit = parseFloat(c.profit || 0);
         const profitPercentage = parseFloat(c.profit_percentage || 0);
         const currentSpot = parseFloat(c.current_spot);
-        tradeManager.entryPrice = entryPrice;
+        tradeManager.entryPrice = entryPrice;  
 
         // On lance la vérification mathématique BE/TS
         if (typeof window.runSmartRiskManager === 'function') {
