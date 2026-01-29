@@ -4898,7 +4898,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     size: 1 // Un peu plus petit pour laisser la flèche MA dominer visuellement
                   };
                   allMarkers.push(newMarker);
-                  window.syncAllChartMarkers(); 
+                  window.syncAllChartMarkers();   
 
                   // --- 5. SCREENSHOT ---
                   if (signal.name.includes("SQUEEZE") && volRatio > 0) {
