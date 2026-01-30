@@ -2212,7 +2212,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- RÉINITIALISATION DU MANAGER (CRUCIAL) ---
     // On nettoie AVANT d'envoyer l'ordre pour être prêt à recevoir le premier tick
     if (tradeManager) {
-      tradeManager.startTime = Date.now();
+      tradeManager.startTime = Date.now();  
       tradeManager.highestPnL = 0;
       tradeManager.isBE = false;
       tradeManager.isActive = false;        // <--- CORRIGÉ : On active le moteur !
