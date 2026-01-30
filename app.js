@@ -3896,7 +3896,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 3. LOGIQUE TRAILING STOP (TS) ---  
     if (pnl >= tm.tsActivation) {
-      const dropFromPeak = tm.highestPnL - pnl;     
+      const dropFromPeak = tm.highestPnL - pnl;       
 
       // On ne ferme QUE si le drop est supérieur à la distance autorisée
       if (dropFromPeak >= tm.tsTrailingDist) {   
