@@ -3930,7 +3930,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // On passe le PnL actuel pour que la fonction de dessin sache si elle doit afficher le TS
       window.updateRiskLinesOnChart(pnl, currentSpot);
     }
-  };
+  };  
 
   window.resetRiskManager = function () {
     console.log("🧹 Nettoyage du Risk Manager...");
