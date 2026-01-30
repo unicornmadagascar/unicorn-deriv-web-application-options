@@ -1269,7 +1269,7 @@ document.addEventListener("DOMContentLoaded", () => {
               window.currentActiveContract = null;
             }
     
-            console.log("🧹 Nettoyage visuel effectué après confirmation de vente.");   
+            console.log("🧹 Nettoyage visuel effectué après confirmation de vente.");     
           }, 1500);
 
           // 3. On ferme l'UI immédiatement
