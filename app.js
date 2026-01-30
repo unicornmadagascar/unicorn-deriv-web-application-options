@@ -3874,7 +3874,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!c || c.is_sold === 1 || !tm || !tm.isActive) return;
 
     const pnl = parseFloat(c.profit_percentage || 0);
-    const now = Date.now();
+    const now = Date.now();  
     const tradeDuration = (now - (tm.startTime || 0)) / 1000;
 
     // --- 1. MISE À JOUR DU PEAK (Crucial pour le suivi TS) ---
