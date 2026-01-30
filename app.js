@@ -3867,7 +3867,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.runSmartRiskManager = function (currentPrice) {
-    const c = window.currentActiveContract;
+    const c = window.currentActiveContract;   
 
     // SÉCURITÉ : On n'exécute le manager que si le contrat est ACTIF (is_sold === 0)
     if (!c || c.is_sold === 1 || !tradeManager || !tradeManager.isActive) {
