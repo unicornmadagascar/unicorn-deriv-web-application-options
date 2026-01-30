@@ -3895,7 +3895,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (tradeManager.isBE && pnl <= 0.01 && tradeDuration > 5) {
       //window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`);
       return;
-    }  
+    }    
 
     // 3. LOGIQUE TRAILING STOP (TS)
     // Le TS ne doit se déclencher que si on est BIEN au-dessus du seuil d'activation
