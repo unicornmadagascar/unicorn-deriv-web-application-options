@@ -3868,63 +3868,55 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.runSmartRiskManager = function (currentPrice) {
     const c = window.currentActiveContract;
+    // Utilisation systématique de window.tradeManager pour éviter les conflits de scope
+    const tm = tradeManager;
 
-    // SÉCURITÉ : On n'exécute le manager que si le contrat est ACTIF (is_sold === 0)
-    if (!c || c.is_sold === 1 || !tradeManager || !tradeManager.isActive) {
-      return;
-    }    
+    if (!c || c.is_sold === 1 || !tm || !tm.isActive) return;
 
     const pnl = parseFloat(c.profit_percentage || 0);
     const now = Date.now();
-    const tradeDuration = (now - (tradeManager.startTime || 0)) / 1000;
+    const tradeDuration = (now - (tm.startTime || 0)) / 1000;
 
-    // 1. MISE À JOUR DU PEAK (On attend une stabilisation de 2 secondes)
-    if (tradeDuration > 2 && pnl > 0 && pnl > tradeManager.highestPnL) {
-      tradeManager.highestPnL = pnl;  
+    // --- 1. MISE À JOUR DU PEAK (Crucial pour le suivi TS) ---
+    // Si le PnL actuel est supérieur au Peak enregistré, on met à jour le Peak.
+    if (pnl > tm.highestPnL) {
+      tm.highestPnL = pnl;
     }
 
-    // 2. LOGIQUE BREAKEVEN (BE)
-    // On n'active le BE que si pnl >= activation ET qu'on a un profit réel stable
-    if (pnl >= tradeManager.beActivation && !tradeManager.isBE && tradeDuration > 3) {
-      tradeManager.isBE = true;
-      console.log(`%c 🛡️ BE ARMÉ à ${pnl}% `, 'background: #3b82f6; color: white;');
+    // --- 2. LOGIQUE BREAKEVEN (BE) ---
+    if (pnl >= tm.beActivation && !tm.isBE) {
+      tm.isBE = true;
     }
 
-    // PROTECTION BE : On ajoute une marge de sécurité (0.01) et un verrou temporel
-    // On ne ferme pas en BE si le trade a moins de 5 secondes pour éviter le bruit du spread
-    if (tradeManager.isBE && pnl <= 0.01 && tradeDuration > 5) {
-      window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`);
+    // On ne sort en BE que si on a réellement touché le niveau après activation
+    if (tm.isBE && pnl <= 0.01 && tradeDuration > 5) {
+      window.executeClosePosition(`🛡️ BE PROTECT`);
       return;
     }
 
-    // 3. LOGIQUE TRAILING STOP (TS)
-    // Le TS ne doit se déclencher que si on est BIEN au-dessus du seuil d'activation
-    if (pnl >= tradeManager.tsActivation) {
-      const dropFromPeak = tradeManager.highestPnL - pnl;
+    // --- 3. LOGIQUE TRAILING STOP (TS) ---
+    if (pnl >= tm.tsActivation) {
+      const dropFromPeak = tm.highestPnL - pnl;
 
-      // Sécurité : On ne déclenche le TS que si le Peak est valide
-      if (tradeManager.highestPnL >= tradeManager.tsActivation) {
-        if (dropFromPeak >= tradeManager.tsTrailingDist) {
-          window.executeClosePosition(`🔥 TS EXIT (Drop: ${dropFromPeak.toFixed(2)}%)`);
-          return;
-        }
+      // On ne ferme QUE si le drop est supérieur à la distance autorisée
+      if (dropFromPeak >= tm.tsTrailingDist) {
+        window.executeClosePosition(`🔥 TS EXIT (Drop: ${dropFromPeak.toFixed(2)}%)`);
+        return;
       }
     }
 
-    // 4. STOP LOSS (Strictement après 5 secondes pour ignorer le spread d'entrée)
-    if (pnl <= tradeManager.maxLoss) {
-      if (tradeDuration > 5) {
-        window.executeClosePosition(`🚨 SL HIT (${pnl.toFixed(2)}%)`);
-        return;
-      }
+    // --- 4. STOP LOSS ---
+    if (pnl <= tm.maxLoss && tradeDuration > 8) { // Augmenté à 8s pour laisser respirer le contrat
+      window.executeClosePosition(`🚨 SL HIT`);
+      return;
     }
 
     // --- MISE À JOUR VISUELLE ---
     if (typeof window.updatePnLUI === 'function') window.updatePnLUI(pnl);
 
-    // On envoie le spot actuel pour que les lignes suivent le prix
+    // TRÈS IMPORTANT : On passe tm.highestPnL à la fonction de dessin
     if (typeof window.updateRiskLinesOnChart === 'function') {
-      const currentSpot = parseFloat(currentPrice || c.current_spot);     
+      const currentSpot = parseFloat(currentPrice || c.current_spot);
       window.updateRiskLinesOnChart(pnl, currentSpot);
     }
   };
@@ -4070,71 +4062,45 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.updateRiskLinesOnChart = function (pnl, currentPrice) {
-    const hasContract = window.currentActiveContract !== null;
+    const c = window.currentActiveContract;
+    const tm = tradeManager;
+    if (!c || !currentSeries) return;
 
-    // Utilisation de window.currentSeries pour être sûr de pointer sur le graphique
-    if (!hasContract || !currentSeries) {
-      window.removeRiskLines();
-      return;
-    }
+    const entry = parseFloat(c.entry_tick || c.buy_price);
+    const side = (c.contract_type?.includes('UP') || c.contract_type === 'MULTUP') ? 'BUY' : 'SELL';
 
-    const entry = parseFloat(window.currentActiveContract?.entry_tick || window.currentActiveContract?.buy_price);
-    const side = (window.currentActiveContract?.contract_type?.includes('UP') ||
-      window.currentActiveContract?.contract_type === 'MULTUP') ? 'BUY' : 'SELL';
-
-    if (!entry) return;
-
-    const LineStyle = (window.LightweightCharts && window.LightweightCharts.LineStyle)
-      ? window.LightweightCharts.LineStyle
-      : { Solid: 0, Dashed: 2 };
-
-    // --- LIGNE BREAKEVEN ---
+    // --- LIGNE BE ---
     const bePrice = (side === 'BUY') ? entry * 1.0001 : entry * 0.9999;
-
     if (!bePriceLine) {
       bePriceLine = currentSeries.createPriceLine({
-        price: bePrice,
-        color: '#3b82f6',
-        lineWidth: 2,
-        lineStyle: LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: 'BE LEVEL',
+        price: bePrice, color: '#3b82f6', lineWidth: 2, lineStyle: 2, title: 'BE LEVEL'
       });
     } else {
       bePriceLine.applyOptions({ price: bePrice });
     }
 
-    // --- LIGNE TRAILING STOP ---
-    const isArmed = tradeManager && tradeManager.isActive;
-    const tsActivationThreshold = parseFloat(tradeManager?.tsActivation || 0.6);
+    // --- LIGNE TS ACTIVE (Celle qui doit suivre le prix) ---
+    if (tm && tm.isActive && pnl >= tm.tsActivation) {
+      // On utilise le Peak mis à jour pour calculer le prix de la ligne
+      const peakPnL = tm.highestPnL;
+      const dist = tm.tsTrailingDist;
 
-    if (isArmed && pnl >= tsActivationThreshold) {
-      const highestPnL = parseFloat(tradeManager.highestPnL || 0);
-      const tsDistPercent = parseFloat(tradeManager.tsTrailingDist || 0.2);
-
+      // La ligne TS se place à "Peak - Distance"
       const tsPrice = (side === 'BUY')
-        ? entry * (1 + (highestPnL - tsDistPercent) / 100)
-        : entry * (1 - (highestPnL - tsDistPercent) / 100);
-
-      const tsOptions = {
-        price: tsPrice,
-        color: '#10b981',
-        lineWidth: 2,
-        lineStyle: LineStyle.Solid,
-        axisLabelVisible: true,
-        title: 'TS ACTIVE',
-      };
+        ? entry * (1 + (peakPnL - dist) / 100)
+        : entry * (1 - (peakPnL - dist) / 100);
 
       if (!tsPriceLine) {
-        tsPriceLine = currentSeries.createPriceLine(tsOptions);
+        tsPriceLine = currentSeries.createPriceLine({
+          price: tsPrice, color: '#10b981', lineWidth: 2, title: 'TS ACTIVE'
+        });
       } else {
-        tsPriceLine.applyOptions(tsOptions);
+        // Mise à jour dynamique de la position sur le chart
+        tsPriceLine.applyOptions({ price: tsPrice });
       }
-    } else {
-      if (tsPriceLine) {
-        currentSeries.removePriceLine(tsPriceLine);
-        tsPriceLine = null;
-      }
+    } else if (tsPriceLine) {
+      currentSeries.removePriceLine(tsPriceLine);
+      tsPriceLine = null;
     }
   };
 
