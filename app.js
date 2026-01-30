@@ -4129,7 +4129,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tsPriceLine = currentSeries.createPriceLine(tsOptions);
       } else {
         tsPriceLine.applyOptions(tsOptions);
-      }
+      }  
     } else {
       if (tsPriceLine) {
         currentSeries.removePriceLine(tsPriceLine);
