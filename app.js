@@ -1244,22 +1244,22 @@ document.addEventListener("DOMContentLoaded", () => {
       // 2. Gestion des contrats
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
         const c = data.proposal_open_contract;
-        const id = c.contract_id;   
+        const id = c.contract_id;
 
         // --- 1. GESTION DU CAS : CONTRAT CLOS (Vendu, Expiré, etc.) ---
         // On utilise c.is_sold qui est l'indicateur le plus fiable chez Deriv
         // On ne déclenche le nettoyage QUE si le contrat est officiellement vendu
-        if (c.is_sold === 1) {  
+        if (c.is_sold === 1) {
 
           // 1. Désactivation immédiate de l'envoi d'ordres (Sécurité)
-          if (tradeManager) tradeManager.isActive = false;  
+          if (tradeManager) tradeManager.isActive = false;
 
           // 2. On laisse les lignes visibles pour analyse (1.5s ou 3s selon votre goût)
-          setTimeout(() => {  
+          setTimeout(() => {
             if (priceLines4openlines[id]) {
               currentSeries.removePriceLine(priceLines4openlines[id].line);
               delete priceLines4openlines[id];
-            }  
+            }
 
             if (typeof window.removeRiskLines === 'function') {
               //window.removeRiskLines();
@@ -1268,12 +1268,12 @@ document.addEventListener("DOMContentLoaded", () => {
             if (window.currentActiveContract && window.currentActiveContract.contract_id === id) {
               window.currentActiveContract = null;
             }
-    
-            console.log("🧹 Nettoyage visuel effectué après confirmation de vente.");     
+
+            console.log("🧹 Nettoyage visuel effectué après confirmation de vente.");
           }, 1500);
 
           // 3. On ferme l'UI immédiatement
-          if (typeof window.executeClosePosition === 'function') {   
+          if (typeof window.executeClosePosition === 'function') {
             //window.executeClosePosition("Broker Confirmed Sold");  
           }
 
@@ -1288,7 +1288,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const profit = parseFloat(c.profit || 0);
         const profitPercentage = parseFloat(c.profit_percentage || 0);
         const currentSpot = parseFloat(c.current_spot);
-        tradeManager.entryPrice = entryPrice;  
+        tradeManager.entryPrice = entryPrice;
 
         // On lance la vérification mathématique BE/TS
         if (typeof window.runSmartRiskManager === 'function') {
@@ -3868,48 +3868,64 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.runSmartRiskManager = function (currentPrice) {
     const c = window.currentActiveContract;
-    if (!c || !tradeManager || !tradeManager.isActive) return;
+
+    // SÉCURITÉ : On n'exécute le manager que si le contrat est ACTIF (is_sold === 0)
+    if (!c || c.is_sold === 1 || !tradeManager || !tradeManager.isActive) {
+      return;
+    }
 
     const pnl = parseFloat(c.profit_percentage || 0);
     const now = Date.now();
     const tradeDuration = (now - (tradeManager.startTime || 0)) / 1000;
 
-    // 1. MISE À JOUR DU PEAK (Uniquement en profit positif)
-    if (pnl > 0 && pnl > tradeManager.highestPnL) {
+    // 1. MISE À JOUR DU PEAK (On attend une stabilisation de 2 secondes)
+    if (tradeDuration > 2 && pnl > 0 && pnl > tradeManager.highestPnL) {
       tradeManager.highestPnL = pnl;
     }
 
     // 2. LOGIQUE BREAKEVEN (BE)
-    // On n'active le BE que si on a atteint la cible ET qu'on a passé 3s de stabilité
-    if (pnl >= tradeManager.beActivation && !tradeManager.isBE) {
+    // On n'active le BE que si pnl >= activation ET qu'on a un profit réel stable
+    if (pnl >= tradeManager.beActivation && !tradeManager.isBE && tradeDuration > 3) {
       tradeManager.isBE = true;
-      console.log("🛡️ BE ARMÉ");
+      console.log(`%c 🛡️ BE ARMÉ à ${pnl}% `, 'background: #3b82f6; color: white;');
     }
 
-    if (tradeManager.isBE && pnl < 0.01) { // Seuil légèrement réduit pour plus de marge
-      window.executeClosePosition("🛡️ BE PROTECT");
+    // PROTECTION BE : On ajoute une marge de sécurité (0.01) et un verrou temporel
+    // On ne ferme pas en BE si le trade a moins de 5 secondes pour éviter le bruit du spread
+    if (tradeManager.isBE && pnl <= 0.01 && tradeDuration > 5) {
+      window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`);
       return;
     }
 
     // 3. LOGIQUE TRAILING STOP (TS)
-    if (pnl >= tradeManager.tsActivation) {    
+    // Le TS ne doit se déclencher que si on est BIEN au-dessus du seuil d'activation
+    if (pnl >= tradeManager.tsActivation) {
       const dropFromPeak = tradeManager.highestPnL - pnl;
-      if (dropFromPeak >= tradeManager.tsTrailingDist) {
-        window.executeClosePosition("🔥 TS EXIT");
+
+      // Sécurité : On ne déclenche le TS que si le Peak est valide
+      if (tradeManager.highestPnL >= tradeManager.tsActivation) {
+        if (dropFromPeak >= tradeManager.tsTrailingDist) {
+          window.executeClosePosition(`🔥 TS EXIT (Drop: ${dropFromPeak.toFixed(2)}%)`);
+          return;
+        }
+      }
+    }
+
+    // 4. STOP LOSS (Strictement après 5 secondes pour ignorer le spread d'entrée)
+    if (pnl <= tradeManager.maxLoss) {
+      if (tradeDuration > 5) {
+        window.executeClosePosition(`🚨 SL HIT (${pnl.toFixed(2)}%)`);
         return;
       }
     }
 
-    // 4. STOP LOSS (Avec verrou de sécurité temporel strict)
-    if (pnl <= tradeManager.maxLoss && tradeDuration > 5) {  
-      window.executeClosePosition("🚨 SL HIT");
-      return;
-    }
-
-    // UI Updates
+    // --- MISE À JOUR VISUELLE ---
     if (typeof window.updatePnLUI === 'function') window.updatePnLUI(pnl);
+
+    // On envoie le spot actuel pour que les lignes suivent le prix
     if (typeof window.updateRiskLinesOnChart === 'function') {
-      window.updateRiskLinesOnChart(pnl, currentPrice);
+      const currentSpot = parseFloat(currentPrice || c.current_spot);     
+      window.updateRiskLinesOnChart(pnl, currentSpot);
     }
   };
 
