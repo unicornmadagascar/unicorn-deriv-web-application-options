@@ -3871,7 +3871,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Utilisation systématique de window.tradeManager pour éviter les conflits de scope
     const tm = tradeManager;
 
-    if (!c || c.is_sold === 1 || !tm || !tm.isActive) return;
+    if (!c || c.is_sold === 1 || !tm || !tm.isActive) return;  
 
     const pnl = parseFloat(c.profit_percentage || 0);
     const now = Date.now();  
