@@ -4106,7 +4106,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const tsPrice = (side === 'BUY')
         ? entry * (1 + (highestPnL - tsDistPercent) / 100)
-        : entry * (1 - (highestPnL - tsDistPercent) / 100);
+        : entry * (1 - (highestPnL - tsDistPercent) / 100);  
 
       const tsOptions = {
         price: tsPrice,
