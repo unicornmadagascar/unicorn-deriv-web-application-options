@@ -4129,7 +4129,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }   
   };  
-
+     
   // --- FONCTION DE NETTOYAGE ---
   window.removeRiskLines = function () {
     if (currentSeries) {
