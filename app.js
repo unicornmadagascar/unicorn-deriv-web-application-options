@@ -1244,7 +1244,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 2. Gestion des contrats
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
         const c = data.proposal_open_contract;
-        const id = c.contract_id;
+        const id = c.contract_id;   
 
         // --- 1. GESTION DU CAS : CONTRAT CLOS (Vendu, Expiré, etc.) ---
         // On utilise c.is_sold qui est l'indicateur le plus fiable chez Deriv
