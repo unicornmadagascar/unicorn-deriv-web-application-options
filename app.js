@@ -3871,16 +3871,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // Utilisation systématique de window.tradeManager pour éviter les conflits de scope
     const tm = tradeManager;
 
-    if (!c || c.is_sold === 1 || !tm || !tm.isActive) return;  
+    if (!c || c.is_sold === 1 || !tm || !tm.isActive) return;
 
     const pnl = parseFloat(c.profit_percentage || 0);
-    const now = Date.now();  
+    const now = Date.now();
     const tradeDuration = (now - (tm.startTime || 0)) / 1000;
 
     // --- 1. MISE À JOUR DU PEAK (Crucial pour le suivi TS) ---
     // Si le PnL actuel est supérieur au Peak enregistré, on met à jour le Peak.
     if (pnl > tm.highestPnL) {
-      tm.highestPnL = pnl;  
+      tm.highestPnL = pnl;
     }
 
     // --- 2. LOGIQUE BREAKEVEN (BE) ---
@@ -4062,47 +4062,73 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.updateRiskLinesOnChart = function (pnl, currentPrice) {
-    const c = window.currentActiveContract;
-    const tm = tradeManager;
-    if (!c || !currentSeries) return;
+    const hasContract = window.currentActiveContract !== null;
 
-    const entry = parseFloat(c.entry_tick || c.buy_price);
-    const side = (c.contract_type?.includes('UP') || c.contract_type === 'MULTUP') ? 'BUY' : 'SELL';
+    // Utilisation de window.currentSeries pour être sûr de pointer sur le graphique
+    if (!hasContract || !currentSeries) {
+      window.removeRiskLines();
+      return;
+    }
 
-    // --- LIGNE BE ---
+    const entry = parseFloat(window.currentActiveContract?.entry_tick || window.currentActiveContract?.buy_price);
+    const side = (window.currentActiveContract?.contract_type?.includes('UP') ||
+      window.currentActiveContract?.contract_type === 'MULTUP') ? 'BUY' : 'SELL';
+
+    if (!entry) return;
+
+    const LineStyle = (window.LightweightCharts && window.LightweightCharts.LineStyle)
+      ? window.LightweightCharts.LineStyle
+      : { Solid: 0, Dashed: 2 };
+
+    // --- LIGNE BREAKEVEN ---
     const bePrice = (side === 'BUY') ? entry * 1.0001 : entry * 0.9999;
+
     if (!bePriceLine) {
       bePriceLine = currentSeries.createPriceLine({
-        price: bePrice, color: '#3b82f6', lineWidth: 2, lineStyle: 2, title: 'BE LEVEL'
+        price: bePrice,
+        color: '#3b82f6',
+        lineWidth: 2,
+        lineStyle: LineStyle.Dashed,
+        axisLabelVisible: true,
+        title: 'BE LEVEL',
       });
     } else {
       bePriceLine.applyOptions({ price: bePrice });
     }
 
-    // --- LIGNE TS ACTIVE (Celle qui doit suivre le prix) ---
-    if (tm && tm.isActive && pnl >= tm.tsActivation) {
-      // On utilise le Peak mis à jour pour calculer le prix de la ligne
-      const peakPnL = tm.highestPnL;
-      const dist = tm.tsTrailingDist;
+    // --- LIGNE TRAILING STOP ---
+    const isArmed = tradeManager && tradeManager.isActive;
+    const tsActivationThreshold = parseFloat(tradeManager?.tsActivation || 0.6);
 
-      // La ligne TS se place à "Peak - Distance"
+    if (isArmed && pnl >= tsActivationThreshold) {
+      const highestPnL = parseFloat(tradeManager.highestPnL || 0);
+      const tsDistPercent = parseFloat(tradeManager.tsTrailingDist || 0.2);
+
       const tsPrice = (side === 'BUY')
-        ? entry * (1 + (peakPnL - dist) / 100)
-        : entry * (1 - (peakPnL - dist) / 100);
+        ? entry * (1 + (highestPnL - tsDistPercent) / 100)
+        : entry * (1 - (highestPnL - tsDistPercent) / 100);
+
+      const tsOptions = {
+        price: tsPrice,
+        color: '#10b981',
+        lineWidth: 2,
+        lineStyle: LineStyle.Solid,
+        axisLabelVisible: true,
+        title: 'TS ACTIVE',
+      };
 
       if (!tsPriceLine) {
-        tsPriceLine = currentSeries.createPriceLine({
-          price: tsPrice, color: '#10b981', lineWidth: 2, title: 'TS ACTIVE'
-        });
+        tsPriceLine = currentSeries.createPriceLine(tsOptions);
       } else {
-        // Mise à jour dynamique de la position sur le chart
-        tsPriceLine.applyOptions({ price: tsPrice });
+        tsPriceLine.applyOptions(tsOptions);
       }
-    } else if (tsPriceLine) {
-      currentSeries.removePriceLine(tsPriceLine);
-      tsPriceLine = null;
+    } else {
+      if (tsPriceLine) {
+        currentSeries.removePriceLine(tsPriceLine);
+        tsPriceLine = null;
+      }
     }
-  };
+  };  
 
   // --- FONCTION DE NETTOYAGE ---
   window.removeRiskLines = function () {
@@ -8601,13 +8627,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const newDist = parseFloat(e.target.value);
     if (tradeManager) {
       tradeManager.tsTrailingDist = newDist;
-      console.log(`🎯 Distance TS mise à jour : ${newDist}%`);  
+      console.log(`🎯 Distance TS mise à jour : ${newDist}%`);
 
       // Optionnel : Forcer la mise à jour des lignes sur le graphique
       if (window.currentActiveContract && typeof window.updateRiskLinesOnChart === 'function') {
         const pnl = parseFloat(window.currentActiveContract.profit_percentage || 0);
         const spot = parseFloat(window.currentActiveContract.current_spot);
-        window.updateRiskLinesOnChart(pnl, spot);  
+        window.updateRiskLinesOnChart(pnl, spot);
       }
     }
   });
