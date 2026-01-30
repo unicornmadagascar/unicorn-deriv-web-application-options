@@ -3867,53 +3867,54 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.runSmartRiskManager = function (currentPrice) {
-    const c = window.currentActiveContract;   
+    const c = window.currentActiveContract;
 
-    // SÉCURITÉ : On n'exécute le manager que si le contrat est ACTIF (is_sold === 0)
+    // 1. SÉCURITÉ : On n'exécute le manager que si le contrat est ACTIF (is_sold === 0)
     if (!c || c.is_sold === 1 || !tradeManager || !tradeManager.isActive) {
-      return;  
+      return;
     }
 
     const pnl = parseFloat(c.profit_percentage || 0);
     const now = Date.now();
-    const tradeDuration = (now - (tradeManager.startTime || 0)) / 1000;      
+    const tradeDuration = (now - (tradeManager.startTime || 0)) / 1000;
+    const tm = tradeManager;
 
-    // 1. MISE À JOUR DU PEAK (On attend une stabilisation de 2 secondes)
-    if (tradeDuration > 2 && pnl > 0 && pnl > tradeManager.highestPnL) {
-      tradeManager.highestPnL = pnl;
+    // 2. MISE À JOUR DU PEAK (On s'assure que le Peak suit toujours le profit maximum)
+    if (pnl > tm.highestPnL) {
+      tm.highestPnL = pnl;
     }
 
-    // 2. LOGIQUE BREAKEVEN (BE)
-    // On n'active le BE que si pnl >= activation ET qu'on a un profit réel stable
-    if (pnl >= tradeManager.beActivation && !tradeManager.isBE && tradeDuration > 3) {
-      tradeManager.isBE = true;
+    // 3. LOGIQUE BREAKEVEN (BE)
+    if (pnl >= tm.beActivation && !tm.isBE && tradeDuration > 3) {
+      tm.isBE = true;
       console.log(`%c 🛡️ BE ARMÉ à ${pnl}% `, 'background: #3b82f6; color: white;');
     }
 
-    // PROTECTION BE : On ajoute une marge de sécurité (0.01) et un verrou temporel
-    // On ne ferme pas en BE si le trade a moins de 5 secondes pour éviter le bruit du spread
-    if (tradeManager.isBE && pnl <= 0.01 && tradeDuration > 5) {
+    // Sortie BE : On ne ferme que si on repasse sous 0.01% APRÈS activation
+    if (tm.isBE && pnl <= 0.01 && tradeDuration > 5) {
       //window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`);
       return;
-    }    
+    }
 
-    // 3. LOGIQUE TRAILING STOP (TS)
-    // Le TS ne doit se déclencher que si on est BIEN au-dessus du seuil d'activation
-    if (pnl >= tradeManager.tsActivation) {
-      const dropFromPeak = tradeManager.highestPnL - pnl;
-      console.log("DROP FROM PEAK :", dropFromPeak);
+    // 4. LOGIQUE TRAILING STOP (TS) - RECTIFIÉE
+    if (pnl >= tm.tsActivation) {
+      // SÉCURITÉ CRUCIALE : On ne calcule le drop que si le Peak est supérieur à la distance
+      // Sinon, (Peak - Distance) donne un chiffre négatif qui ferme le trade prématurément.
+      if (tm.highestPnL > tm.tsTrailingDist) {
 
-      // Sécurité : On ne déclenche le TS que si le Peak est valide
-      if (tradeManager.highestPnL >= tradeManager.tsActivation) {
-        if (dropFromPeak >= tradeManager.tsTrailingDist) {
+        const dropFromPeak = tm.highestPnL - pnl;
+
+        // On ne déclenche la fermeture que si le profit actuel est redescendu 
+        // en dessous du niveau de stop calculé (Peak - Distance)
+        if (dropFromPeak >= tm.tsTrailingDist) {
           //window.executeClosePosition(`🔥 TS EXIT (Drop: ${dropFromPeak.toFixed(2)}%)`);
           return;
         }
       }
     }
 
-    // 4. STOP LOSS (Strictement après 5 secondes pour ignorer le spread d'entrée)
-    if (pnl <= tradeManager.maxLoss) {
+    // 5. STOP LOSS (Avec verrou temporel pour le spread)
+    if (pnl <= tm.maxLoss) {
       if (tradeDuration > 5) {
         //window.executeClosePosition(`🚨 SL HIT (${pnl.toFixed(2)}%)`);
         return;
@@ -3923,9 +3924,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- MISE À JOUR VISUELLE ---
     if (typeof window.updatePnLUI === 'function') window.updatePnLUI(pnl);
 
-    // On envoie le spot actuel pour que les lignes suivent le prix
+    // Envoi des données vers le graphique pour mise à jour des lignes
     if (typeof window.updateRiskLinesOnChart === 'function') {
       const currentSpot = parseFloat(currentPrice || c.current_spot);
+      // On passe le PnL actuel pour que la fonction de dessin sache si elle doit afficher le TS
       window.updateRiskLinesOnChart(pnl, currentSpot);
     }
   };
@@ -4073,7 +4075,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.updateRiskLinesOnChart = function (pnl, currentPrice) {
     const hasContract = window.currentActiveContract !== null;
 
-    // Utilisation de window.currentSeries pour être sûr de pointer sur le graphique
+    // Utilisation du scope window pour la série du graphique
     if (!hasContract || !currentSeries) {
       window.removeRiskLines();
       return;
@@ -4089,7 +4091,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ? window.LightweightCharts.LineStyle
       : { Solid: 0, Dashed: 2 };
 
-    // --- LIGNE BREAKEVEN ---
+    // --- 1. LIGNE BREAKEVEN (BE) ---
     const bePrice = (side === 'BUY') ? entry * 1.0001 : entry * 0.9999;
 
     if (!bePriceLine) {
@@ -4105,17 +4107,20 @@ document.addEventListener("DOMContentLoaded", () => {
       bePriceLine.applyOptions({ price: bePrice });
     }
 
-    // --- LIGNE TRAILING STOP ---
+    // --- 2. LIGNE TRAILING STOP (TS) ---
     const isArmed = tradeManager && tradeManager.isActive;
     const tsActivationThreshold = parseFloat(tradeManager?.tsActivation || 0.6);
+    const highestPnL = parseFloat(tradeManager?.highestPnL || 0);
+    const tsDistPercent = parseFloat(tradeManager?.tsTrailingDist || 0.2);
 
-    if (isArmed && pnl >= tsActivationThreshold) {
-      const highestPnL = parseFloat(tradeManager.highestPnL || 0);
-      const tsDistPercent = parseFloat(tradeManager.tsTrailingDist || 0.2);
+    // Condition de sécurité : On n'affiche le TS que si le profit a dépassé la distance de recul
+    // Cela évite que la ligne ne "saute" devant le prix actuel.
+    if (isArmed && pnl >= tsActivationThreshold && highestPnL > tsDistPercent) {
 
+      const tsOffset = highestPnL - tsDistPercent;
       const tsPrice = (side === 'BUY')
-        ? entry * (1 + (highestPnL - tsDistPercent) / 100)
-        : entry * (1 - (highestPnL - tsDistPercent) / 100);
+        ? entry * (1 + tsOffset / 100)
+        : entry * (1 - tsOffset / 100);
 
       const tsOptions = {
         price: tsPrice,
@@ -4123,15 +4128,16 @@ document.addEventListener("DOMContentLoaded", () => {
         lineWidth: 2,
         lineStyle: LineStyle.Solid,
         axisLabelVisible: true,
-        title: 'TS ACTIVE',
+        title: `TS ACTIVE (-${tsDistPercent}%)`,
       };
 
-      if (!tsPriceLine) {
+      if (!window.tsPriceLine) {
         tsPriceLine = currentSeries.createPriceLine(tsOptions);
       } else {
         tsPriceLine.applyOptions(tsOptions);
-      }  
+      }
     } else {
+      // Nettoyage si les conditions ne sont plus remplies (ou profit insuffisant)
       if (tsPriceLine) {
         currentSeries.removePriceLine(tsPriceLine);
         tsPriceLine = null;
