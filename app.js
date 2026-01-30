@@ -2091,7 +2091,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.reverseFunction = function () {
     if (wsContracts_reverse) {
-      wsContracts_reverse.close();  
+      wsContracts_reverse.close();
       wsContracts_reverse = null;
     }
 
@@ -2113,16 +2113,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // A. Authorization
       if (data.msg_type === "authorize") {
-        wsContracts_reverse.send(JSON.stringify({ portfolio: 1 }));  
-        return;  
-      }  
+        wsContracts_reverse.send(JSON.stringify({ portfolio: 1 }));
+        return;
+      }
 
       // B. Analyze Portfolio to determine direction to flip
       if (data.msg_type === "portfolio") {
         const contracts = data.portfolio?.contracts || [];
-        if (contracts.length === 0) {  
+        if (contracts.length === 0) {
           showToast("No active positions to reverse.", "warning");
-          return;  
+          return;
         }
 
         // Detect the current contract type from the first available contract
@@ -4137,9 +4137,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.updateRiskLinesOnChart = function (pnl, currentPrice) {
     const hasContract = window.currentActiveContract !== null;
+    const tm = tradeManager;
 
-    // Utilisation du scope window pour la série du graphique
-    if (!hasContract || !currentSeries) {
+    // 1. Safety Check: If no contract or manager isn't armed, wipe everything
+    if (!hasContract || !currentSeries || !tm || !tm.isActive) {
       window.removeRiskLines();
       return;
     }
@@ -4154,7 +4155,8 @@ document.addEventListener("DOMContentLoaded", () => {
       ? window.LightweightCharts.LineStyle
       : { Solid: 0, Dashed: 2 };
 
-    // --- 1. LIGNE BREAKEVEN (BE) ---
+    // --- 2. BREAKEVEN (BE) LINE ---
+    // Always draws when armed and contract is active
     const bePrice = (side === 'BUY') ? entry * 1.0001 : entry * 0.9999;
 
     if (!bePriceLine) {
@@ -4170,41 +4172,32 @@ document.addEventListener("DOMContentLoaded", () => {
       bePriceLine.applyOptions({ price: bePrice });
     }
 
-    // --- 2. LIGNE TRAILING STOP (TS) ---
-    const isArmed = tradeManager && tradeManager.isActive;
-    const tsActivationThreshold = parseFloat(tradeManager?.tsActivation || 0.6);
-    const highestPnL = parseFloat(tradeManager?.highestPnL || 0);
-    const tsDistPercent = parseFloat(tradeManager?.tsTrailingDist || 0.2);
+    // --- 3. TRAILING STOP (TS) LINE ---
+    // RECTIFICATION: Removed pnl >= tsActivationThreshold so it draws immediately
+    const highestPnL = parseFloat(tm.highestPnL || 0);
+    const tsDistPercent = parseFloat(tm.tsTrailingDist || 0.2);
 
-    // Condition de sécurité : On n'affiche le TS que si le profit a dépassé la distance de recul
-    // Cela évite que la ligne ne "saute" devant le prix actuel.
-    if (isArmed && pnl >= tsActivationThreshold && highestPnL > tsDistPercent) {
+    // We only need to ensure the calculation doesn't result in a negative offset 
+    // that would put the line on the wrong side of the price.
+    const tsOffset = highestPnL - tsDistPercent;
 
-      const tsOffset = highestPnL - tsDistPercent;
-      const tsPrice = (side === 'BUY')
-        ? entry * (1 + tsOffset / 100)
-        : entry * (1 - tsOffset / 100);
+    const tsPrice = (side === 'BUY')
+      ? entry * (1 + tsOffset / 100)
+      : entry * (1 - tsOffset / 100);
 
-      const tsOptions = {
-        price: tsPrice,
-        color: '#10b981',
-        lineWidth: 2,
-        lineStyle: LineStyle.Solid,
-        axisLabelVisible: true,
-        title: `TS ACTIVE (-${tsDistPercent}%)`,
-      };
+    const tsOptions = {
+      price: tsPrice,
+      color: '#10b981',
+      lineWidth: 2,
+      lineStyle: LineStyle.Solid,
+      axisLabelVisible: true,
+      title: `TS LEVEL (-${tsDistPercent}%)`,
+    };
 
-      if (!tsPriceLine) {
-        tsPriceLine = currentSeries.createPriceLine(tsOptions);
-      } else {
-        tsPriceLine.applyOptions(tsOptions);
-      }
+    if (!tsPriceLine) {
+      tsPriceLine = currentSeries.createPriceLine(tsOptions);
     } else {
-      // Nettoyage si les conditions ne sont plus remplies (ou profit insuffisant)
-      if (tsPriceLine) {
-        currentSeries.removePriceLine(tsPriceLine);
-        tsPriceLine = null;
-      }
+      tsPriceLine.applyOptions(tsOptions);
     }
   };
 
