@@ -1273,7 +1273,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }, 1500);
 
           // 3. On ferme l'UI immédiatement
-          if (typeof window.executeClosePosition === 'function') {
+          if (typeof window.executeClosePosition === 'function') {   
             //window.executeClosePosition("Broker Confirmed Sold");  
           }
 
