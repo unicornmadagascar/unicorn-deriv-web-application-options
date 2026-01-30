@@ -4025,6 +4025,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (contractId && typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
       console.log(`Sending SELL request: ${contractId}`);
       ws.send(JSON.stringify({ sell: contractId, price: 0 }));
+      showToast(`Trade ${contractId}`,'info');  
     } else if (typeof closeAllPositionsStandalone === 'function') {
       closeAllPositionsStandalone();
     }
