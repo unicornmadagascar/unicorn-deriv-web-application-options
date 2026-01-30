@@ -2120,7 +2120,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // B. Analyze Portfolio to determine direction to flip
       if (data.msg_type === "portfolio") {
         const contracts = data.portfolio?.contracts || [];
-        if (contracts.length === 0) {
+        if (contracts.length === 0) {  
           showToast("No active positions to reverse.", "warning");
           return;
         }
