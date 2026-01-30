@@ -4035,7 +4035,7 @@ document.addEventListener("DOMContentLoaded", () => {
       else if (pnl > 0) playSniperSound('CLOSE_WIN');
       else if (pnl < 0) playSniperSound('CLOSE_LOSS');
     }
-
+   
     // Mise à jour des statistiques
     if (pnl > 0) {
       window.tradingStats.winStreak++;
