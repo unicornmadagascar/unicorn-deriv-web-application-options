@@ -3875,7 +3875,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const pnl = parseFloat(c.profit_percentage || 0);
     const now = Date.now();
-    const tradeDuration = (now - (tm.startTime || 0)) / 1000;
+    const tradeDuration = (now - (tm.startTime || 0)) / 1000;    
 
     // --- 1. MISE À JOUR DU PEAK (Crucial pour le suivi TS) ---
     // Si le PnL actuel est supérieur au Peak enregistré, on met à jour le Peak.
@@ -3890,7 +3890,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // On ne sort en BE que si on a réellement touché le niveau après activation
     if (tm.isBE && pnl <= 0.01 && tradeDuration > 5) {
-      window.executeClosePosition(`🛡️ BE PROTECT`);
+      //window.executeClosePosition(`🛡️ BE PROTECT`);
       return;
     }
 
@@ -3907,7 +3907,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // --- 4. STOP LOSS ---
     if (pnl <= tm.maxLoss && tradeDuration > 8) { // Augmenté à 8s pour laisser respirer le contrat
-      window.executeClosePosition(`🚨 SL HIT`);   
+      //window.executeClosePosition(`🚨 SL HIT`);   
       return;
     }
 
