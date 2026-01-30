@@ -3899,7 +3899,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const dropFromPeak = tm.highestPnL - pnl;
 
       // On ne ferme QUE si le drop est supérieur à la distance autorisée
-      if (dropFromPeak >= tm.tsTrailingDist) {
+      if (dropFromPeak >= tm.tsTrailingDist) {   
         window.executeClosePosition(`🔥 TS EXIT (Drop: ${dropFromPeak.toFixed(2)}%)`);
         return;
       }
