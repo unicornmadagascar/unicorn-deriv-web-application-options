@@ -3900,7 +3900,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // On ne ferme QUE si le drop est supérieur à la distance autorisée
       if (dropFromPeak >= tm.tsTrailingDist) {   
-        window.executeClosePosition(`🔥 TS EXIT (Drop: ${dropFromPeak.toFixed(2)}%)`);
+        //window.executeClosePosition(`🔥 TS EXIT (Drop: ${dropFromPeak.toFixed(2)}%)`);
         return;
       }
     }  
@@ -3909,7 +3909,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (pnl <= tm.maxLoss && tradeDuration > 8) { // Augmenté à 8s pour laisser respirer le contrat
       //window.executeClosePosition(`🚨 SL HIT`);   
       return;
-    }
+    }  
 
     // --- MISE À JOUR VISUELLE ---
     if (typeof window.updatePnLUI === 'function') window.updatePnLUI(pnl);
