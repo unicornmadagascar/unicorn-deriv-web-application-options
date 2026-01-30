@@ -3892,7 +3892,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 3. LOGIQUE TRAILING STOP (TS)
-    if (pnl >= tradeManager.tsActivation) {
+    if (pnl >= tradeManager.tsActivation) {    
       const dropFromPeak = tradeManager.highestPnL - pnl;
       if (dropFromPeak >= tradeManager.tsTrailingDist) {
         window.executeClosePosition("🔥 TS EXIT");
