@@ -4030,7 +4030,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- 3. FEEDBACK SONORE & STATS ---
-    if (typeof playSniperSound === 'function') {
+    if (typeof playSniperSound === 'function') {  
       if (pnl >= 10) playSniperSound('JACKPOT');
       else if (pnl > 0) playSniperSound('CLOSE_WIN');
       else if (pnl < 0) playSniperSound('CLOSE_LOSS');
@@ -4118,7 +4118,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const side = (window.currentActiveContract?.contract_type?.includes('UP') ||
       window.currentActiveContract?.contract_type === 'MULTUP') ? 'BUY' : 'SELL';
 
-    if (!entry) return;
+    if (!entry) return;  
 
     const LineStyle = (window.LightweightCharts && window.LightweightCharts.LineStyle)
       ? window.LightweightCharts.LineStyle
@@ -4152,7 +4152,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const tsOffset = highestPnL - tsDistPercent;
       const tsPrice = (side === 'BUY')
-        ? entry * (1 + tsOffset / 100)
+        ? entry * (1 + tsOffset / 100)  
         : entry * (1 - tsOffset / 100);
 
       const tsOptions = {
@@ -4247,10 +4247,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- FONCTION D'ABONNEMENT ---
   window.subscribeToContract = function (contractId) {
-    if (ws4update && ws4update.readyState === WebSocket.OPEN) {
+    if (ws4update && ws4update.readyState === WebSocket.OPEN) {  
       ws4update.send(JSON.stringify({
-        proposal_open_contract: 1,
-        contract_id: contractId,
+        proposal_open_contract: 1,  
+        contract_id: contractId,  
         subscribe: 1
       }));
     }
@@ -4310,9 +4310,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 3️⃣ Confirmation de vente pour chaque contrat
       if (data.msg_type === 'sell') {
-        closedCount++;
+        closedCount++;  
         console.log(`✅ Contrat ${data.sell.contract_id} fermé avec succès (${data.sell.sell_price} USD)`);
-
+        showToast(`Trade ${data.sell.contract_id}`,'info');
         // Si tous les contrats sont fermés, on quitte proprement
         if (closedCount >= contractsToClose) {
           console.log("🏁 Tous les contrats ont été liquidés.");
