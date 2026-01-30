@@ -2122,7 +2122,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const contracts = data.portfolio?.contracts || [];
         if (contracts.length === 0) {  
           showToast("No active positions to reverse.", "warning");
-          return;
+          return;  
         }
 
         // Detect the current contract type from the first available contract
