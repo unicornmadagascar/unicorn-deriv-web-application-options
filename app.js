@@ -2121,7 +2121,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.msg_type === "portfolio") {
         const contracts = data.portfolio?.contracts || [];
         if (contracts.length === 0) {
-          showToast("No active positions to reverse.", "warning");
+          showToast(`No active positions to reverse.`, 'warning');
           return;
         }
 
@@ -2215,7 +2215,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tradeManager.startTime = Date.now();
       tradeManager.highestPnL = 0;
       tradeManager.isBE = false;
-      tradeManager.isActive = true;        // <--- CORRIGÉ : On active le moteur !
+      tradeManager.isActive = false;        // <--- CORRIGÉ : On active le moteur !
       tradeManager.side = type;
       tradeManager.hasAlertedArmed = false;
     }
@@ -2296,7 +2296,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.msg_type === "portfolio") {
         const contracts = data.portfolio?.contracts || [];
         if (contracts.length === 0) {
-          showToast("None active contract found.", "info");
+          showToast(`None active contract found.`, 'info');  
           return;
         }
 
@@ -2369,7 +2369,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.msg_type === "portfolio") {
         const contracts = data.portfolio?.contracts || [];
         if (contracts.length === 0) {
-          showToast("Aucune perte à couper.", "info");
+          showToast(`No contract to close.`, 'info');
           return;
         }
 
@@ -2446,7 +2446,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const contracts = data.portfolio?.contracts || [];
 
         if (contracts.length === 0) {
-          showToast("Aucun contrat à fermer.", "info");
+          showToast(`No contract to closed.`, 'info');
           // On remet l'UI en état "Ready" car rien n'a été trouvé
           if (typeof window.removeRiskLines === 'function') window.removeRiskLines();
           return;
