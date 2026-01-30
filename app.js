@@ -4127,7 +4127,7 @@ document.addEventListener("DOMContentLoaded", () => {
         currentSeries.removePriceLine(tsPriceLine);
         tsPriceLine = null;
       }
-    }
+    }   
   };  
 
   // --- FONCTION DE NETTOYAGE ---
