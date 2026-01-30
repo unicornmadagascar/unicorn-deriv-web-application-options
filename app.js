@@ -4144,7 +4144,7 @@ document.addEventListener("DOMContentLoaded", () => {
       window.removeRiskLines();
       return;  
     }
-
+   
     const entry = parseFloat(window.currentActiveContract?.entry_tick || window.currentActiveContract?.buy_price);
     const side = (window.currentActiveContract?.contract_type?.includes('UP') ||
       window.currentActiveContract?.contract_type === 'MULTUP') ? 'BUY' : 'SELL';
