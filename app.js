@@ -4186,10 +4186,10 @@ document.addEventListener("DOMContentLoaded", () => {
       : entry * (1 - tsOffset / 100);
 
     const tsOptions = {
-      price: tsPrice,
+      price: tsPrice,  
       color: '#10b981',
       lineWidth: 2,
-      lineStyle: LineStyle.Solid,
+      lineStyle: LineStyle.Solid,  
       axisLabelVisible: true,
       title: `TS LEVEL (-${tsDistPercent}%)`,
     };
