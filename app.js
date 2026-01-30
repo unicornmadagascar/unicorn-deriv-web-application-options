@@ -1274,7 +1274,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // 3. On ferme l'UI immédiatement
           if (typeof window.executeClosePosition === 'function') {
-            //window.executeClosePosition("Broker Confirmed Sold");
+            //window.executeClosePosition("Broker Confirmed Sold");  
           }
 
           return;
