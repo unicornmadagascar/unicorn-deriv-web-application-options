@@ -4117,7 +4117,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Cela évite que la ligne ne "saute" devant le prix actuel.
     if (isArmed && pnl >= tsActivationThreshold && highestPnL > tsDistPercent) {
 
-      const tsOffset = highestPnL - tsDistPercent;
+      const tsOffset = highestPnL - tsDistPercent;  
       const tsPrice = (side === 'BUY')
         ? entry * (1 + tsOffset / 100)
         : entry * (1 - tsOffset / 100);
