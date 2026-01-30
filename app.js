@@ -1255,11 +1255,11 @@ document.addEventListener("DOMContentLoaded", () => {
           if (tradeManager) tradeManager.isActive = false;  
 
           // 2. On laisse les lignes visibles pour analyse (1.5s ou 3s selon votre goût)
-          setTimeout(() => {
+          setTimeout(() => {  
             if (priceLines4openlines[id]) {
               currentSeries.removePriceLine(priceLines4openlines[id].line);
               delete priceLines4openlines[id];
-            }
+            }  
 
             if (typeof window.removeRiskLines === 'function') {
               window.removeRiskLines();
