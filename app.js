@@ -1249,10 +1249,10 @@ document.addEventListener("DOMContentLoaded", () => {
         // --- 1. GESTION DU CAS : CONTRAT CLOS (Vendu, Expiré, etc.) ---
         // On utilise c.is_sold qui est l'indicateur le plus fiable chez Deriv
         // On ne déclenche le nettoyage QUE si le contrat est officiellement vendu
-        if (c.is_sold) {
+        if (c.is_sold === 1) {  
 
           // 1. Désactivation immédiate de l'envoi d'ordres (Sécurité)
-          if (tradeManager) tradeManager.isActive = false;
+          if (tradeManager) tradeManager.isActive = false;  
 
           // 2. On laisse les lignes visibles pour analyse (1.5s ou 3s selon votre goût)
           setTimeout(() => {
