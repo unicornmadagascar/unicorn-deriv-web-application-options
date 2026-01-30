@@ -3896,7 +3896,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 3. LOGIQUE TRAILING STOP (TS) ---
     if (pnl >= tm.tsActivation) {
-      const dropFromPeak = tm.highestPnL - pnl;
+      const dropFromPeak = tm.highestPnL - pnl;   
 
       // On ne ferme QUE si le drop est supérieur à la distance autorisée
       if (dropFromPeak >= tm.tsTrailingDist) {   
@@ -3907,7 +3907,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 4. STOP LOSS ---
     if (pnl <= tm.maxLoss && tradeDuration > 8) { // Augmenté à 8s pour laisser respirer le contrat
-      window.executeClosePosition(`🚨 SL HIT`);
+      window.executeClosePosition(`🚨 SL HIT`);   
       return;
     }
 
