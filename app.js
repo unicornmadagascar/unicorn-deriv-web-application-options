@@ -3894,7 +3894,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // --- 3. LOGIQUE TRAILING STOP (TS) ---
+    // --- 3. LOGIQUE TRAILING STOP (TS) ---  
     if (pnl >= tm.tsActivation) {
       const dropFromPeak = tm.highestPnL - pnl;   
 
