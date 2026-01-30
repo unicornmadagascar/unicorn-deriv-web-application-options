@@ -566,7 +566,7 @@
     #Trendoverlay__ {
       position: absolute;
       /* Sort du flux flex */
-      top: 0;   
+      top: 0;
       left: 0;
       /* On utilise calc pour déduire les marges de 12px du parent */
       width: calc(100% - 24px);
@@ -574,7 +574,7 @@
       margin: 12px;
       /* Doit être identique à #chartInner */
 
-      z-index: 10050;  
+      z-index: 10050;
       cursor: crosshair;
       pointer-events: all;
       /* Permet de dessiner */
@@ -585,7 +585,7 @@
     }
 
     /* Style du Menu Contextuel */
-    #context-menu { 
+    #context-menu {
       display: none;
       position: absolute;
       z-index: 10100;
@@ -1986,7 +1986,7 @@
       position: fixed;
       z-index: 10100;
       left: 0;
-      top: 0;   
+      top: 0;
       width: 100%;
       height: 100%;
       background-color: rgba(15, 23, 42, 0.4);
@@ -1996,9 +1996,9 @@
     }
 
     .modal-content {
-      background-color: #ffffff;    
+      background-color: #ffffff;
       margin: 10% auto;
-      padding: 0;    
+      padding: 0;
       border-radius: 20px;
       width: 90%;
       max-width: 450px;
@@ -2009,7 +2009,7 @@
 
     /* Header de la modale */
     .modal-header {
-      padding: 20px 24px;  
+      padding: 20px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -3261,8 +3261,8 @@
       color: #131722 !important;
       /* Texte gris foncé/noir pour le contraste */
       border: 1px solid #d1d4dc;
-      /* Bordure grise légère */  
-      border-radius: 8px;  
+      /* Bordure grise légère */
+      border-radius: 8px;
       position: absolute;
       top: 10px;
       right: 60px;
@@ -3675,11 +3675,11 @@
       cursor: pointer;
       font-size: 20px;
     }
-    
+
     /* ------------MA----------------- */
     .overlay_ {
       z-index: 10087;
-    }  
+    }
 
     /* ------------MA----------------- */
     #ma-sniper-label {
@@ -4329,7 +4329,6 @@
       animation: streak-glow 1.5s infinite ease-in-out;
       display: inline-block;
     }
-    
   </style>
 </head>
 
@@ -4624,9 +4623,12 @@
                 <option value="-10.0">SL: -10.0% (Large)</option>
               </select>
               <select id="set-ts-dist" class="sniper-select" style="flex: 1; font-size: 9px; height: 22px;">
+                <option value="0.05">TS: 0.05% (Aggro)</option>
                 <option value="0.1">TS: 0.1%</option>
-                <option value="0.2" selected>TS: 0.2%</option>
+                <option value="0.2" selected>TS: 0.2% (Std)</option>
+                <option value="0.3">TS: 0.3%</option>
                 <option value="0.5">TS: 0.5%</option>
+                <option value="1.0">TS: 1.0% (Swing)</option>
               </select>
             </div>
           </div>
@@ -4658,8 +4660,8 @@
           <button class="btn-drawing" onclick="enableRectangle(this)">Rect</button>
           <button class="btn-drawing" onclick="enableTPSL(this)">TP/SL</button>
         </div>
-      </div>    
-    
+      </div>
+
     </div>
   </div>
 

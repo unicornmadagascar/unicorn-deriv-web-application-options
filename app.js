@@ -3875,12 +3875,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const pnl = parseFloat(c.profit_percentage || 0);
     const now = Date.now();
-    const tradeDuration = (now - (tm.startTime || 0)) / 1000;    
+    const tradeDuration = (now - (tm.startTime || 0)) / 1000;
 
     // --- 1. MISE À JOUR DU PEAK (Crucial pour le suivi TS) ---
     // Si le PnL actuel est supérieur au Peak enregistré, on met à jour le Peak.
     if (pnl > tm.highestPnL) {
-      tm.highestPnL = pnl;  
+      tm.highestPnL = pnl;
     }
 
     // --- 2. LOGIQUE BREAKEVEN (BE) ---
@@ -3896,20 +3896,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 3. LOGIQUE TRAILING STOP (TS) ---  
     if (pnl >= tm.tsActivation) {
-      const dropFromPeak = tm.highestPnL - pnl;       
+      const dropFromPeak = tm.highestPnL - pnl;
 
       // On ne ferme QUE si le drop est supérieur à la distance autorisée
-      if (dropFromPeak >= tm.tsTrailingDist) {   
+      if (dropFromPeak >= tm.tsTrailingDist) {
         //window.executeClosePosition(`🔥 TS EXIT (Drop: ${dropFromPeak.toFixed(2)}%)`);
         return;
       }
-    }  
-    
+    }
+
     // --- 4. STOP LOSS ---
     if (pnl <= tm.maxLoss && tradeDuration > 8) { // Augmenté à 8s pour laisser respirer le contrat
       //window.executeClosePosition(`🚨 SL HIT`);   
       return;
-    }  
+    }
 
     // --- MISE À JOUR VISUELLE ---
     if (typeof window.updatePnLUI === 'function') window.updatePnLUI(pnl);
@@ -8596,6 +8596,34 @@ document.addEventListener("DOMContentLoaded", () => {
     contextMenu.style.display = 'none';
     render();
   };
+
+  document.getElementById('set-ts-dist').addEventListener('change', function (e) {
+    const newDist = parseFloat(e.target.value);
+    if (tradeManager) {
+      tradeManager.tsTrailingDist = newDist;
+      console.log(`🎯 Distance TS mise à jour : ${newDist}%`);  
+
+      // Optionnel : Forcer la mise à jour des lignes sur le graphique
+      if (window.currentActiveContract && typeof window.updateRiskLinesOnChart === 'function') {
+        const pnl = parseFloat(window.currentActiveContract.profit_percentage || 0);
+        const spot = parseFloat(window.currentActiveContract.current_spot);
+        window.updateRiskLinesOnChart(pnl, spot);  
+      }
+    }
+  });
+
+  document.getElementById('set-max-loss').addEventListener('change', function (e) {
+    const newSL = parseFloat(e.target.value);
+    if (tradeManager) {
+      tradeManager.maxLoss = newSL;
+      console.log(`🚨 Nouveau Stop Loss configuré : ${newSL}%`);
+
+      // Optionnel : Afficher un feedback visuel immédiat dans la console ou UI
+      if (typeof showToast === 'function') {
+        showToast(`SL réglé à ${newSL}%`, 'warning');
+      }
+    }
+  });
 
   // Initialisation
   window.addEventListener('resize', resizeCanvas);
