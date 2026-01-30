@@ -4142,7 +4142,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. Safety Check: If no contract or manager isn't armed, wipe everything
     if (!hasContract || !currentSeries || !tm || !tm.isActive) {
       window.removeRiskLines();
-      return;
+      return;  
     }
 
     const entry = parseFloat(window.currentActiveContract?.entry_tick || window.currentActiveContract?.buy_price);
@@ -4185,7 +4185,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ? entry * (1 + tsOffset / 100)
       : entry * (1 - tsOffset / 100);
 
-    const tsOptions = {
+    const tsOptions = {  
       price: tsPrice,  
       color: '#10b981',
       lineWidth: 2,
