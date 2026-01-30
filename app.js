@@ -1262,7 +1262,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }  
 
             if (typeof window.removeRiskLines === 'function') {
-              window.removeRiskLines();
+              //window.removeRiskLines();
             }
 
             if (window.currentActiveContract && window.currentActiveContract.contract_id === id) {
@@ -1274,7 +1274,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // 3. On ferme l'UI immédiatement
           if (typeof window.executeClosePosition === 'function') {
-            window.executeClosePosition("Broker Confirmed Sold");
+            //window.executeClosePosition("Broker Confirmed Sold");
           }
 
           return;
