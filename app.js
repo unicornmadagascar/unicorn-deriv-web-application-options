@@ -3904,7 +3904,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
     }  
-
+    
     // --- 4. STOP LOSS ---
     if (pnl <= tm.maxLoss && tradeDuration > 8) { // Augmenté à 8s pour laisser respirer le contrat
       window.executeClosePosition(`🚨 SL HIT`);   
