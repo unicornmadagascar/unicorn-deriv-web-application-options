@@ -3880,7 +3880,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 1. MISE À JOUR DU PEAK (Crucial pour le suivi TS) ---
     // Si le PnL actuel est supérieur au Peak enregistré, on met à jour le Peak.
     if (pnl > tm.highestPnL) {
-      tm.highestPnL = pnl;
+      tm.highestPnL = pnl;  
     }
 
     // --- 2. LOGIQUE BREAKEVEN (BE) ---
