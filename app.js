@@ -4131,7 +4131,7 @@ document.addEventListener("DOMContentLoaded", () => {
         title: `TS ACTIVE (-${tsDistPercent}%)`,
       };
 
-      if (!window.tsPriceLine) {
+      if (!tsPriceLine) {
         tsPriceLine = currentSeries.createPriceLine(tsOptions);
       } else {
         tsPriceLine.applyOptions(tsOptions);
@@ -4143,7 +4143,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tsPriceLine = null;
       }
     }
-  };
+  };  
 
   // --- FONCTION DE NETTOYAGE ---
   window.removeRiskLines = function () {
