@@ -3901,7 +3901,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 4. STOP LOSS (Avec verrou de sécurité temporel strict)
-    if (pnl <= tradeManager.maxLoss && tradeDuration > 5) {
+    if (pnl <= tradeManager.maxLoss && tradeDuration > 5) {  
       window.executeClosePosition("🚨 SL HIT");
       return;
     }
