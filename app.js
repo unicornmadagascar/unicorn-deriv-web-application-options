@@ -3876,7 +3876,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const pnl = parseFloat(c.profit_percentage || 0);
     const now = Date.now();
-    const tradeDuration = (now - (tradeManager.startTime || 0)) / 1000;   
+    const tradeDuration = (now - (tradeManager.startTime || 0)) / 1000;      
 
     // 1. MISE À JOUR DU PEAK (On attend une stabilisation de 2 secondes)
     if (tradeDuration > 2 && pnl > 0 && pnl > tradeManager.highestPnL) {
