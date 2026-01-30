@@ -3872,7 +3872,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // SÉCURITÉ : On n'exécute le manager que si le contrat est ACTIF (is_sold === 0)
     if (!c || c.is_sold === 1 || !tradeManager || !tradeManager.isActive) {
       return;
-    }
+    }    
 
     const pnl = parseFloat(c.profit_percentage || 0);
     const now = Date.now();
@@ -3880,7 +3880,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 1. MISE À JOUR DU PEAK (On attend une stabilisation de 2 secondes)
     if (tradeDuration > 2 && pnl > 0 && pnl > tradeManager.highestPnL) {
-      tradeManager.highestPnL = pnl;
+      tradeManager.highestPnL = pnl;  
     }
 
     // 2. LOGIQUE BREAKEVEN (BE)
