@@ -2114,7 +2114,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // A. Authorization
       if (data.msg_type === "authorize") {
         wsContracts_reverse.send(JSON.stringify({ portfolio: 1 }));  
-        return;
+        return;  
       }  
 
       // B. Analyze Portfolio to determine direction to flip
