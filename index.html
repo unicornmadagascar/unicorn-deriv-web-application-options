@@ -2241,7 +2241,7 @@
       align-items: center;
       justify-content: center;
       backdrop-filter: blur(5px);
-      z-index: 10087;
+      z-index: 10090;
       font-family: 'Inter', sans-serif;  
     }
 
@@ -2822,7 +2822,7 @@
       transform: translateY(-50%);
       /* Décale vers le haut de 50% de sa propre hauteur */
 
-      z-index: 2000 !important;
+      z-index: 10087 !important;
       /* On passe au-dessus de tout le reste */
       display: block !important;
       background: transparent;
@@ -3284,7 +3284,7 @@
       /* 95px est généralement suffisant pour ne pas toucher les chiffres */
       right: 95px;
 
-      z-index: 10070;
+      z-index: 10080;
       padding: 6px 12px;
       border-radius: 6px;
       font-family: 'Inter', sans-serif;
@@ -3677,15 +3677,10 @@
     }
 
     /* ------------MA----------------- */
-    .overlay_ {
-      z-index: 10087;
-    }
-
-    /* ------------MA----------------- */
     #ma-sniper-label {
       position: absolute;
       /* Crucial pour le déplacement */
-      z-index: 10087;
+      z-index: 10080;
       /* Au-dessus du graphique et des checklists */
       user-select: none;
       /* Empêche de sélectionner le texte en faisant glisser */
