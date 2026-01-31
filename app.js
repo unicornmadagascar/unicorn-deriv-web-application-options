@@ -4391,14 +4391,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="msg-close-btn" onclick="if(window.closeSniperAlert) closeSniperAlert(); else this.parentElement.remove();" style="cursor:pointer">✕</div>
             </div>
             ${(isCritical || isLocked) ? `
-                <div class="sniper-checklist" id="current-sniper-checklist" style="position: absolute; top: 95px; right: 0; width: 190px; background: white; border: 1px solid #ccc; padding: 10px; z-index: 1000; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                <div class="sniper-checklist" id="current-sniper-checklist" style="position: absolute; top: 95px; right: 0; width: 190px; background: white; border: 1px solid #ccc; padding: 10px; z-index: 10087; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
                     <div style="font-size:10px; font-weight:900; color: #ef4444; margin-bottom:5px;">⚠️ VÉRIFICATION REQUISE</div>
                     <div style="font-size:11px; line-height: 1.4;">
                         ⬜ ${isLocked ? 'EXTRÊME : ATTENDRE' : 'VOLATILITÉ HAUTE'}<br>
                         ⬜ PRIX CONFIRMÉ ?<br>  
                         ⬜ RR RATIO VALIDE ?  
                     </div>
-                </div>` : ''}       
+                </div>` : ''}        
         `;
     }
 
