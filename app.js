@@ -3549,7 +3549,7 @@ document.addEventListener("DOMContentLoaded", () => {
         gapBar.classList.add('critical-flash');
       } else if (gap >= threshold) {
         // ÉTAT TENSION (Alerte)
-        gapBar.style.background = '#f59e0b';
+        gapBar.style.background = '#f59e0b';  
       } else {
         // ÉTAT NORMAL
         gapBar.style.background = '#3b82f6';
