@@ -4394,8 +4394,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="sniper-checklist" id="current-sniper-checklist" style="position: absolute; top: 95px; right: 0; width: 190px; background: white; border: 1px solid #ccc; padding: 10px; z-index: 10087; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
                     <div style="font-size:10px; font-weight:900; color: #ef4444; margin-bottom:5px;">⚠️ VÉRIFICATION REQUISE</div>
                     <div style="font-size:11px; line-height: 1.4;">
-                        ⬜ ${isLocked ? 'EXTRÊME : ATTENDRE' : 'VOLATILITÉ HAUTE'}<br>
-                        ⬜ PRIX CONFIRMÉ ?<br>  
+                        ⬜ ${isLocked ? 'EXTREM : WAIT' : 'HIGH VOLATILITY'}<br>
+                        ⬜ PRICE CONFIRMED ?<br>  
                         ⬜ RR RATIO VALIDE ?  
                     </div>
                 </div>` : ''}        
@@ -4428,7 +4428,7 @@ document.addEventListener("DOMContentLoaded", () => {
       position: signal.type === 'BUY' ? 'belowBar' : 'aboveBar',
       color: isLocked ? '#ff4d4d' : (isCritical ? '#f59e0b' : signal.color),
       shape: signal.type === 'BUY' ? 'arrowUp' : 'arrowDown',
-      text: `${isLocked ? '🚫' : (isCritical ? '🔥' : '')}${signal.subtype} (${emaGap}%)`,
+      text: `${isLocked ? '🚫' : (isCritical ? '🔥' : '')}${signal.subtype} (${emaGap}%)`,  
       size: isLocked ? 3 : 2
     };
 
