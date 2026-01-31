@@ -4430,7 +4430,7 @@ document.addEventListener("DOMContentLoaded", () => {
       shape: signal.type === 'BUY' ? 'arrowUp' : 'arrowDown',
       text: `${isLocked ? '🚫' : (isCritical ? '🔥' : '')}${signal.subtype} (${emaGap}%)`,  
       size: isLocked ? 3 : 2
-    };
+    };  
 
     // --- LOGIQUE LOCALSTORAGE ---
     let savedHistory = JSON.parse(localStorage.getItem('ma_sniper_markers_history')) || [];
