@@ -3550,7 +3550,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else if (gap >= threshold) {
         // ÉTAT TENSION (Alerte)
         gapBar.style.background = '#f59e0b';  
-      } else {
+      } else {  
         // ÉTAT NORMAL
         gapBar.style.background = '#3b82f6';
       }
