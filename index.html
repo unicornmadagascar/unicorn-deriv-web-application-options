@@ -552,14 +552,20 @@
 
     /* Le graphique de fond */
     #chartInner {
-      flex: 0;
-      min-height: 750px;
+      flex: 1;
+      /* Changez flex: 0 en flex: 1 pour qu'il occupe l'espace restant */
+      min-height: 400px;
+      /* Réduit la min-height pour laisser de la place aux ADX */
+      height: 750px;
+      /* Hauteur par défaut */
       background: #fff;
       margin: 12px;
       border-radius: 8px;
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
       overflow: hidden;
       position: relative;
+      transition: height 0.3s ease;
+      /* Transition fluide */
     }
 
     /* Le Canvas de Trendline */
@@ -1888,18 +1894,18 @@
       overflow-x: auto;
       padding: 12px;
       white-space: nowrap;
-      
-      background: rgba(255, 255, 255, 0.15);  
+
+      background: rgba(255, 255, 255, 0.15);
       border-radius: 18px;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
 
-      border: 1px solid rgba(255, 255, 255, 0.3);   
+      border: 1px solid rgba(255, 255, 255, 0.3);
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
 
-      scrollbar-width: thin;   
+      scrollbar-width: thin;
       scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
-    }  
+    }
 
     /* Item individuel */
     .symbol-item {
@@ -2242,7 +2248,7 @@
       justify-content: center;
       backdrop-filter: blur(5px);
       z-index: 10090;
-      font-family: 'Inter', sans-serif;  
+      font-family: 'Inter', sans-serif;
     }
 
     .cashier-panel {
@@ -2994,20 +3000,20 @@
     .btn-main-action:hover {
       background: #1e53e5;
     }
-    
+
     /* Effet de clic (légère réduction de taille) */
     .btn-main-action:active {
       transform: scale(0.98);
-    }  
+    }
 
     .tv-modal-overlay {
-      position: fixed;  
+      position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.5);
       /* Fond assombri pour faire ressortir le blanc */
       display: none;
       align-items: center;
-      justify-content: center; 
+      justify-content: center;
       z-index: 10100;
     }
 
@@ -4324,6 +4330,54 @@
       animation: streak-glow 1.5s infinite ease-in-out;
       display: inline-block;
     }
+
+    /* ----- ADX ----- */
+    .adx-pane {
+      height: 200px;
+      margin: 0 12px 12px 12px;
+      /* Aligné avec les marges du chartInner */
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .close-adx {
+      cursor: pointer;
+      padding: 0 5px;
+      color: #999;
+      font-size: 16px;
+      line-height: 1;
+      border-right: 1px solid #eee;
+      margin-right: 5px;
+    }
+
+    .close-adx:hover {
+      color: #ef5350;
+    }
+
+    .adx-legend {
+      position: absolute;
+      top: 5px;
+      left: 10px;
+      z-index: 5;
+      font-size: 10px;
+      font-weight: bold;
+      pointer-events: none;
+      display: flex;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+
+    /* Style pour les boutons actifs dans la barre latérale */
+    .side-toolbar button.active {
+      background-color: white;
+      color: #007bff;
+    }
+    
   </style>
 </head>
 
@@ -4546,7 +4600,29 @@
   <div id="container__">
     <div id="chartArea" style="position: relative;">
       <div id="toast-container"></div>
+      <!-- Chart Container -->
       <div id="chartInner"></div>
+      <!-- Chart Container for ADX MT5 (Gemini)-->
+      <div id="adxMt5Container" class="adx-pane" style="display: none;">
+        <div id="adxMt5Chart"></div>
+        <div class="adx-legend" id="legend-mt5">
+          <span class="close-adx" onclick="toggleADX('mt5', document.getElementById('btn-adx-mt5'))">×</span>
+          <span style="color:#007bff">ADX MT5: --</span>
+          <span style="color:#26A69A">+DI: --</span>
+          <span style="color:#EF5350">-DI: --</span>
+        </div>
+      </div>
+      <!-- Chart Container for ADX WILDER (Gemini)-->
+      <div id="adxWilderContainer" class="adx-pane" style="display: none;">
+        <div id="adxWilderChart"></div>
+        <div class="adx-legend" id="legend-wilder">
+          <span class="close-adx" onclick="toggleADX('wilder', document.getElementById('btn-adx-wilder'))">×</span>
+          <span style="color:#9C27B0">ADX Wilder: --</span>
+          <span style="color:#26A69A">+DI: --</span>
+          <span style="color:#EF5350">-DI: --</span>
+        </div>
+      </div>
+
       <div id="chart-tooltip"></div>
       <canvas id="Trendoverlay__"></canvas>
 
@@ -4647,7 +4723,8 @@
           <button id="ma20" onclick="toggleMA(20, this)">20</button>
           <button id="ma50" onclick="toggleMA(50, this)">50</button>
           <button id="ma200" onclick="toggleMA(200, this)">200</button>
-          <button id="ZigZag" onclick="toggleZigZag(this)">ZZ</button>
+          <button id="btn-adx-mt5" onclick="toggleADX('mt5', this)">ADXM</button>
+          <button id="btn-adx-wilder" onclick="toggleADX('wilder', this)">ADXW</button>
           <hr class="separator">
           <button class="btn-drawing" onclick="enableBands(this)">BB</button>
           <button id="btn-fibo-analysis" class="btn-drawing" onclick="enableFibonacci(this)">Fibo</button>
