@@ -553,11 +553,10 @@
     /* Le graphique de fond */
     #chartInner {
       flex: 1;
-      /* Changez flex: 0 en flex: 1 pour qu'il occupe l'espace restant */
-      min-height: 400px;
-      /* Réduit la min-height pour laisser de la place aux ADX */
+      /* On enlève la min-height fixe de 750px qui peut bloquer le redimensionnement */
+      min-height: 300px;
       height: 750px;
-      /* Hauteur par défaut */
+      /* Hauteur par défaut au démarrage */
       background: #fff;
       margin: 12px;
       border-radius: 8px;
@@ -565,7 +564,6 @@
       overflow: hidden;
       position: relative;
       transition: height 0.3s ease;
-      /* Transition fluide */
     }
 
     /* Le Canvas de Trendline */
@@ -4377,7 +4375,6 @@
       background-color: white;
       color: #007bff;
     }
-    
   </style>
 </head>
 

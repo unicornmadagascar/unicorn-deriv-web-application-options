@@ -5129,9 +5129,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById(legendId);
     if (!container) return;
 
-    const adxSpan = container.children[0];
-    const plusSpan = container.children[1];
-    const minusSpan = container.children[2];
+    const adxSpan = container.children[1];
+    const plusSpan = container.children[2];
+    const minusSpan = container.children[3];
 
     if (!param.time) {
       // Valeurs par défaut si le réticule est hors du graphique
