@@ -899,20 +899,6 @@ document.addEventListener("DOMContentLoaded", () => {
     priceDataZZ = [];
     isWsInitialized = false;
 
-    // 2. RÉINITIALISER LES GRAPHIQUES ADX S'ILS EXISTENT
-    ['mt5', 'wilder'].forEach(type => {
-      if (adxCharts[type]) {
-        // On vide les données des séries existantes
-        if (adxSeries[type].adx) adxSeries[type].adx.setData([]);
-        if (adxSeries[type].plus) adxSeries[type].plus.setData([]);
-        if (adxSeries[type].minus) adxSeries[type].minus.setData([]);
-
-        // Optionnel : Si vous voulez un nettoyage radical, supprimez le chart
-        // adxCharts[type].remove();
-        // adxCharts[type] = null;
-      }
-    });
-
     // CRÉATION DU NOUVEAU GRAPHIQUE (Optimisé Fond Blanc)
     chart = LightweightCharts.createChart(container, {
       layout: {
@@ -1013,6 +999,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+    // 2. RÉINITIALISER LES GRAPHIQUES ADX S'ILS EXISTENT
+    ['mt5', 'wilder'].forEach(type => {
+      if (adxSeries[type] && adxSeries[type].adx) {
+        adxSeries[type].adx.setData([]);
+        adxSeries[type].plus.setData([]);
+        adxSeries[type].minus.setData([]);
+      }
+    });
+
     // --- RESET DES OBJETS ADX (Nouveau) ---
     // On détruit les instances de graphiques ADX pour qu'ils soient recréés proprement
     ['mt5', 'wilder'].forEach(type => {
@@ -1037,6 +1032,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const chartInner = document.getElementById("chartInner");
     chartInner.style.height = "750px";
     chartInner.style.minHeight = "750px";
+
+    if (chart) chart.resize(chartInner.clientWidth, 750);
 
     if (activePeriods.length > 0) {
       initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200 via le nouveau chart
@@ -5120,24 +5117,28 @@ document.addEventListener("DOMContentLoaded", () => {
     // Appliquer la hauteur au DOM et redimensionner le moteur graphique
     chartInner.style.height = newHeight + "px";
     if (chart) {
-      chart.resize(chartInner.clientWidth, newHeight);   
+      chart.resize(chartInner.clientWidth, newHeight);
     }
 
     // Ajuster tous les indicateurs ouverts
-    ['mt5', 'wilder'].forEach(t => {     
+    ['mt5', 'wilder'].forEach(t => {
       if (isAdxActive[t] && adxCharts[t]) {
         adxCharts[t].resize(container.clientWidth, 200);
         refreshADX(t); // Mise à jour des données
       }
     });
-  };  
+  };
 
   // --- CALCULS ET REFRESH ---
   function refreshADX(type) {
-    if (!isAdxActive[type] || !adxCharts[type] || priceDataZZ.length < 30) return;
+
+    const data = cache; // Utilise vos bougies de Deriv
+
+    if (!isAdxActive[type] || !adxCharts[type] || !data || data.length < 30) {
+      return;
+    }
 
     const p = 14;
-    const data = priceDataZZ; // Utilise vos bougies de Deriv
 
     let tr = [], pdm = [], mdm = [], tms = [];
     for (let i = 1; i < data.length; i++) {
