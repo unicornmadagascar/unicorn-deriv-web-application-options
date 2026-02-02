@@ -3630,11 +3630,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   window.captureSniperShot = function (signal, symbol) {
-    // 1. Cibler le conteneur principal du graphique
+    // 1. Cibler le conteneur principal du graphique  
     const chartElement = document.getElementById('chartInner');
     const overlayCanvas = document.getElementById('Trendoverlay__');
     if (!chartElement) return;
-
+  
     // 2. Récupérer les canvas internes de Lightweight Charts
     const chartCanvases = chartElement.querySelectorAll('canvas');
     if (chartCanvases.length === 0) return;
