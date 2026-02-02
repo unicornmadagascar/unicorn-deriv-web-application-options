@@ -897,9 +897,21 @@ document.addEventListener("DOMContentLoaded", () => {
     priceData = [];     // Votre historique ticks (300)
     priceDataZZ = [];   // Source unifiée pour ZigZag/MA
     priceDataZZ = [];
-    if (adxSeries.mt5.adx) adxSeries.mt5.adx.setData([]);
-    if (adxSeries.wilder.adx) adxSeries.wilder.adx.setData([]);
     isWsInitialized = false;
+
+    // 2. RÉINITIALISER LES GRAPHIQUES ADX S'ILS EXISTENT
+    ['mt5', 'wilder'].forEach(type => {
+      if (adxCharts[type]) {
+        // On vide les données des séries existantes
+        if (adxSeries[type].adx) adxSeries[type].adx.setData([]);
+        if (adxSeries[type].plus) adxSeries[type].plus.setData([]);
+        if (adxSeries[type].minus) adxSeries[type].minus.setData([]);
+
+        // Optionnel : Si vous voulez un nettoyage radical, supprimez le chart
+        // adxCharts[type].remove();
+        // adxCharts[type] = null;
+      }
+    });
 
     // CRÉATION DU NOUVEAU GRAPHIQUE (Optimisé Fond Blanc)
     chart = LightweightCharts.createChart(container, {
