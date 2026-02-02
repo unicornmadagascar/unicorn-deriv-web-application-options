@@ -3623,7 +3623,7 @@ document.addEventListener("DOMContentLoaded", () => {
       warningEl.classList.remove('profile-switch');
       void warningEl.offsetWidth;
       warningEl.classList.add('profile-switch');
-    }
+    }       
 
     console.log(`📡 Profil activé : ${profile.label} pour ${sym}`);
     return profile;
@@ -3641,7 +3641,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 3. Créer un canvas temporaire "Master" à la taille du graphique
     const firstCanvas = chartCanvases[0];
-    const tempCanvas = document.createElement('canvas');
+    const tempCanvas = document.createElement('canvas');  
     tempCanvas.width = firstCanvas.width;
     tempCanvas.height = firstCanvas.height;
     const ctx = tempCanvas.getContext('2d');
