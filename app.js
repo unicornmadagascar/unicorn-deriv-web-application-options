@@ -4986,7 +4986,17 @@ document.addEventListener("DOMContentLoaded", () => {
       height: 180,
       layout: { background: { color: '#ffffff' }, textColor: '#333' },
       grid: { vertLines: { color: '#f0f0f0' }, horzLines: { color: '#f0f0f0' } },
-      rightPriceScale: { borderVisible: false },
+      rightPriceScale: {
+        borderVisible: false,
+        autoScale: false, // On désactive l'auto-scale pour fixer les bornes
+        scaleMargins: {
+          top: 0.1,
+          bottom: 0.1,
+        },
+        // On force l'échelle à rester entre 0 et 100
+        minValue: 0,
+        maxValue: 100,
+      },
       timeScale: { visible: false, borderVisible: false }, // Sync avec chart principal
       crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
     };
@@ -4999,6 +5009,16 @@ document.addEventListener("DOMContentLoaded", () => {
     adxSeries[type].adx = chart.addLineSeries({ color: colorAdx, lineWidth: 2, priceLineVisible: false });
     adxSeries[type].plus = chart.addLineSeries({ color: '#26A69A', lineWidth: 1, priceLineVisible: false });
     adxSeries[type].minus = chart.addLineSeries({ color: '#EF5350', lineWidth: 1, priceLineVisible: false });
+
+    // Dans initAdxChart(type, containerId)
+    const levelLine = adxSeries[type].adx.createPriceLine({
+      price: 25,
+      color: 'rgba(120, 120, 120, 0.5)', // Gris discret
+      lineWidth: 1,
+      lineStyle: LightweightCharts.LineStyle.Dash, // Pointillés
+      axisLabelVisible: true,
+      title: 'TREND LIMIT',
+    });
 
     // Synchronisation du mouvement du réticule (Crosshair)
     chart.subscribeCrosshairMove(param => {
@@ -5017,7 +5037,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const chartInner = document.getElementById("chartInner");
 
     // Toggle l'état
-    isAdxActive[type] = btn.classList.toggle("active");  
+    isAdxActive[type] = btn.classList.toggle("active");
 
     // Calcul de la nouvelle hauteur du graphique principal
     // Si 0 ADX : 750px, si 1 ADX : 540px, si 2 ADX : 330px
