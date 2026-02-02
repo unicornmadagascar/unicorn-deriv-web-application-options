@@ -1033,7 +1033,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initBollingerSeries();  // Bollinger Bands INITIALIZATION
     window.restoreTradingSession();
 
-    // 1. Réinitialisation de la mémoire des contrats
+    // 1. Réinitialisation de la mémoire des contrats  
     activeContractsData = {};
     activeContracts = {};
     lastTotalPnL = 0; // On remet aussi la mémoire de tendance à zéro
