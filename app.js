@@ -5017,7 +5017,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const chartInner = document.getElementById("chartInner");
 
     // Toggle l'état
-    isAdxActive[type] = btn.classList.toggle("active");
+    isAdxActive[type] = btn.classList.toggle("active");  
 
     // Calcul de la nouvelle hauteur du graphique principal
     // Si 0 ADX : 750px, si 1 ADX : 540px, si 2 ADX : 330px
