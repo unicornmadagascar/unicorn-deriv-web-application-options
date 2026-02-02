@@ -1196,7 +1196,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (isAdxActive.wilder) refreshADX('wilder');
 
           // Mise à jour et rendu des indicateurs
-          updateIndicatorData(lastBar.time, lastBar);
+          updateIndicatorData(lastBar.time, lastBar);  
           renderIndicators();
 
           // Force le rafraîchissement des dessins et du Volume Profile  
