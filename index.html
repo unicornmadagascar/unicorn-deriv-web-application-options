@@ -552,20 +552,20 @@
 
     /* Le graphique de fond */
     #chartInner {
-      display: block;  
-      flex: none !important;
-      /* On sort du flux flex strict pour maîtriser la hauteur */
+      display: block;
       width: auto;
       height: 750px !important;
-      /* Force la hauteur au démarrage */
-      min-height: 400px;
+      /* Force la hauteur initiale */
+      min-height: 450px;
+      /* Sécurité pour ne jamais être trop petit avec les ADX */  
       background: #fff;
       margin: 12px;
       border-radius: 8px;
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
       position: relative;
-      transition: height 0.2s ease;        
-    }  
+      flex: none !important;
+      /* Empêche le flexbox de réduire l'élément */
+    }
 
     /* Le Canvas de Trendline */
     #Trendoverlay__ {
