@@ -5130,7 +5130,7 @@ document.addEventListener("DOMContentLoaded", () => {
         refreshADX(t); // Mise à jour des données
       }
     });
-  };
+  };  
 
   // --- CALCULS ET REFRESH ---
   function refreshADX(type) {
