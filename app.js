@@ -1183,6 +1183,9 @@ document.addEventListener("DOMContentLoaded", () => {
           // Mise à jour et rendu des indicateurs
           updateIndicatorData(lastBar.time, lastBar);
           renderIndicators();
+          // ADX Render
+          if (isAdxActive.mt5) refreshADX('mt5');
+          if (isAdxActive.wilder) refreshADX('wilder');  
 
           // Force le rafraîchissement des dessins et du Volume Profile  
           render();
@@ -5033,23 +5036,26 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- FONCTION TOGGLE ---
   window.toggleADX = function (type, btn) {
     const container = document.getElementById(type === 'mt5' ? 'adxMt5Container' : 'adxWilderContainer');
-    const chartId = type === 'mt5' ? 'adxMt5Chart' : 'adxWilderChart';
     const chartInner = document.getElementById("chartInner");
 
-    // Toggle l'état
     isAdxActive[type] = btn.classList.toggle("active");
 
-    // Calcul de la nouvelle hauteur du graphique principal
-    // Si 0 ADX : 750px, si 1 ADX : 540px, si 2 ADX : 330px
-    let activeCount = (isAdxActive.mt5 ? 1 : 0) + (isAdxActive.wilder ? 1 : 0);
-    let calculatedHeight = 750 - (activeCount * 210);
+    // DÉFINITION DES TAILLES (Ajustez ces chiffres selon votre écran)
+    let activeCount = (isAdxActive.mt5 ? 1 : 0) + (isAdxActive.wilder ? 1 : 0);  
+
+    let newHeight;
+    if (activeCount === 0) {
+      newHeight = 750; // Hauteur normale
+    } else if (activeCount === 1) {
+      newHeight = 550; // Un seul indicateur : le prix reste grand
+    } else {
+      newHeight = 450; // Deux indicateurs : le prix est au minimum syndical
+    }
 
     if (isAdxActive[type]) {
       container.style.display = 'block';
-      if (!adxCharts[type]) {
-        initAdxChart(type, chartId);
-      }
-      // Synchroniser le zoom immédiatement
+      if (!adxCharts[type]) initAdxChart(type, type === 'mt5' ? 'adxMt5Chart' : 'adxWilderChart');
+
       const range = chart.timeScale().getVisibleLogicalRange();
       if (range) adxCharts[type].timeScale().setVisibleLogicalRange(range);
       refreshADX(type);
@@ -5057,17 +5063,22 @@ document.addEventListener("DOMContentLoaded", () => {
       container.style.display = 'none';
     }
 
-    // Appliquer la nouvelle hauteur au graphique de prix
-    chartInner.style.height = `${calculatedHeight}px`;
-    chartInner.style.minHeight = `${calculatedHeight}px`;
+    // APPLICATION STRICTE
+    chartInner.style.height = newHeight + "px";
+    chartInner.style.minHeight = newHeight + "px";
 
-    // Forcer Lightweight Charts à recalculer les dimensions
-    setTimeout(() => {
-      chart.resize(chartInner.clientWidth, calculatedHeight);
-      if (adxCharts[type]) {
-        adxCharts[type].resize(container.clientWidth, 200);
+    // Redimensionnement immédiat
+    if (chart) {
+      chart.resize(chartInner.clientWidth, newHeight);
+    }
+
+    // On redimensionne aussi les ADX actifs
+    ['mt5', 'wilder'].forEach(t => {
+      if (isAdxActive[t] && adxCharts[t]) {
+        const pane = document.getElementById(t === 'mt5' ? 'adxMt5Container' : 'adxWilderContainer');
+        adxCharts[t].resize(pane.clientWidth, 200);
       }
-    }, 50); // Petit délai pour laisser le CSS s'appliquer
+    });
   };
 
   // --- CALCULS ET REFRESH ---
