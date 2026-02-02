@@ -1217,17 +1217,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           }
 
-          // --- CRUCIAL : Maintenir priceDataZZ à jour pour l'ADX ---
-          if (priceDataZZ.length > 0) {
-            const lastIdx = priceDataZZ.length - 1;
-            if (priceDataZZ[lastIdx].time === lastBar.time) {
-              priceDataZZ[lastIdx] = lastBar;
-            } else {
-              priceDataZZ.push(lastBar);
-              if (priceDataZZ.length > 1000) priceDataZZ.shift();
-            }
-          }
-
           // Vos appels ADX utiliseront maintenant les données fraîches
           if (isAdxActive.mt5) refreshADX('mt5');
           if (isAdxActive.wilder) refreshADX('wilder');
