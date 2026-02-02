@@ -1180,12 +1180,24 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           }
 
+          // --- CRUCIAL : Maintenir priceDataZZ à jour pour l'ADX ---
+          if (priceDataZZ.length > 0) {
+            const lastIdx = priceDataZZ.length - 1;
+            if (priceDataZZ[lastIdx].time === lastBar.time) {
+              priceDataZZ[lastIdx] = lastBar;
+            } else {
+              priceDataZZ.push(lastBar);
+              if (priceDataZZ.length > 1000) priceDataZZ.shift();
+            }
+          }
+
+          // Vos appels ADX utiliseront maintenant les données fraîches
+          if (isAdxActive.mt5) refreshADX('mt5');
+          if (isAdxActive.wilder) refreshADX('wilder');
+
           // Mise à jour et rendu des indicateurs
           updateIndicatorData(lastBar.time, lastBar);
           renderIndicators();
-          // ADX Render
-          if (isAdxActive.mt5) refreshADX('mt5');
-          if (isAdxActive.wilder) refreshADX('wilder');  
 
           // Force le rafraîchissement des dessins et du Volume Profile  
           render();
@@ -5041,7 +5053,7 @@ document.addEventListener("DOMContentLoaded", () => {
     isAdxActive[type] = btn.classList.toggle("active");
 
     // DÉFINITION DES TAILLES (Ajustez ces chiffres selon votre écran)
-    let activeCount = (isAdxActive.mt5 ? 1 : 0) + (isAdxActive.wilder ? 1 : 0);  
+    let activeCount = (isAdxActive.mt5 ? 1 : 0) + (isAdxActive.wilder ? 1 : 0);
 
     let newHeight;
     if (activeCount === 0) {
