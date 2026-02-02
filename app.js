@@ -896,6 +896,9 @@ document.addEventListener("DOMContentLoaded", () => {
     cache = [];         // Votre historique bougies
     priceData = [];     // Votre historique ticks (300)
     priceDataZZ = [];   // Source unifiée pour ZigZag/MA
+    priceDataZZ = [];
+    if (adxSeries.mt5.adx) adxSeries.mt5.adx.setData([]);
+    if (adxSeries.wilder.adx) adxSeries.wilder.adx.setData([]);
     isWsInitialized = false;
 
     // CRÉATION DU NOUVEAU GRAPHIQUE (Optimisé Fond Blanc)
@@ -997,6 +1000,31 @@ document.addEventListener("DOMContentLoaded", () => {
         adxCharts.wilder.timeScale().setVisibleLogicalRange(range);
       }
     });
+
+    // --- RESET DES OBJETS ADX (Nouveau) ---
+    // On détruit les instances de graphiques ADX pour qu'ils soient recréés proprement
+    ['mt5', 'wilder'].forEach(type => {
+      if (adxCharts[type]) {
+        try {
+          adxCharts[type].remove(); // Détruit physiquement le chart du DOM
+        } catch (e) { console.error("Erreur destruction ADX:", e); }
+        adxCharts[type] = null;
+      }
+    });
+
+    // On vide les références des séries
+    adxSeries = { mt5: {}, wilder: {} };
+
+    // On s'assure que les conteneurs HTML sont vidés avant la recréation
+    document.getElementById("adxMt5Chart").innerHTML = "";
+    document.getElementById("adxWilderChart").innerHTML = "";
+
+    // ... (suite de votre création de chart principal) ...
+
+    // Réactiver le redimensionnement par défaut (Pleine hauteur)
+    const chartInner = document.getElementById("chartInner");
+    chartInner.style.height = "750px";
+    chartInner.style.minHeight = "750px";
 
     if (activePeriods.length > 0) {
       initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200 via le nouveau chart
@@ -1196,7 +1224,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (isAdxActive.wilder) refreshADX('wilder');
 
           // Mise à jour et rendu des indicateurs
-          updateIndicatorData(lastBar.time, lastBar);  
+          updateIndicatorData(lastBar.time, lastBar);
           renderIndicators();
 
           // Force le rafraîchissement des dessins et du Volume Profile  
@@ -5047,48 +5075,56 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- FONCTION TOGGLE ---
   window.toggleADX = function (type, btn) {
-    const container = document.getElementById(type === 'mt5' ? 'adxMt5Container' : 'adxWilderContainer');
+    const containerId = type === 'mt5' ? 'adxMt5Container' : 'adxWilderContainer';
+    const chartId = type === 'mt5' ? 'adxMt5Chart' : 'adxWilderChart';
+    const container = document.getElementById(containerId);
     const chartInner = document.getElementById("chartInner");
 
+    // On synchronise l'état avec la classe active du bouton
     isAdxActive[type] = btn.classList.toggle("active");
 
-    // DÉFINITION DES TAILLES (Ajustez ces chiffres selon votre écran)
+    // Calcul des hauteurs
     let activeCount = (isAdxActive.mt5 ? 1 : 0) + (isAdxActive.wilder ? 1 : 0);
-
-    let newHeight;
-    if (activeCount === 0) {
-      newHeight = 750; // Hauteur normale
-    } else if (activeCount === 1) {
-      newHeight = 550; // Un seul indicateur : le prix reste grand
-    } else {
-      newHeight = 450; // Deux indicateurs : le prix est au minimum syndical
-    }
+    let newHeight = activeCount === 0 ? 750 : (activeCount === 1 ? 550 : 450);
 
     if (isAdxActive[type]) {
       container.style.display = 'block';
-      if (!adxCharts[type]) initAdxChart(type, type === 'mt5' ? 'adxMt5Chart' : 'adxWilderChart');
 
-      const range = chart.timeScale().getVisibleLogicalRange();
-      if (range) adxCharts[type].timeScale().setVisibleLogicalRange(range);
+      // Si le graphique n'existe pas, on l'initialise
+      if (!adxCharts[type]) {
+        initAdxChart(type, chartId);
+      }
+
+      // FORCE la mise à jour des données (pour le nouveau symbole/timeframe)
+      // C'est ici qu'on règle votre problème de changement de symbole
       refreshADX(type);
+
+      // Synchronisation du zoom
+      setTimeout(() => {
+        if (chart && adxCharts[type]) {
+          const range = chart.timeScale().getVisibleLogicalRange();
+          if (range) adxCharts[type].timeScale().setVisibleLogicalRange(range);
+        }
+      }, 50);
     } else {
       container.style.display = 'none';
     }
 
-    // APPLICATION STRICTE
+    // Mise à jour des dimensions
     chartInner.style.height = newHeight + "px";
     chartInner.style.minHeight = newHeight + "px";
 
-    // Redimensionnement immédiat
     if (chart) {
       chart.resize(chartInner.clientWidth, newHeight);
     }
 
-    // On redimensionne aussi les ADX actifs
+    // Redimensionnement de TOUS les indicateurs actifs
     ['mt5', 'wilder'].forEach(t => {
       if (isAdxActive[t] && adxCharts[t]) {
         const pane = document.getElementById(t === 'mt5' ? 'adxMt5Container' : 'adxWilderContainer');
         adxCharts[t].resize(pane.clientWidth, 200);
+        // On rafraîchit les données pour chaque volet ouvert
+        refreshADX(t);
       }
     });
   };
