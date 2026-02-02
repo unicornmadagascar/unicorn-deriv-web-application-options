@@ -5120,7 +5120,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Appliquer la hauteur au DOM et redimensionner le moteur graphique
     chartInner.style.height = newHeight + "px";
     if (chart) {
-      chart.resize(chartInner.clientWidth, newHeight);
+      chart.resize(chartInner.clientWidth, newHeight);   
     }
 
     // Ajuster tous les indicateurs ouverts
