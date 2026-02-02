@@ -5087,56 +5087,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- FONCTION TOGGLE ---
   window.toggleADX = function (type, btn) {
-    const containerId = type === 'mt5' ? 'adxMt5Container' : 'adxWilderContainer';
-    const chartId = type === 'mt5' ? 'adxMt5Chart' : 'adxWilderChart';
-    const container = document.getElementById(containerId);
+    const container = document.getElementById(type === 'mt5' ? 'adxMt5Container' : 'adxWilderContainer');
     const chartInner = document.getElementById("chartInner");
 
-    // On synchronise l'état avec la classe active du bouton
+    // On bascule l'état
     isAdxActive[type] = btn.classList.toggle("active");
 
-    // Calcul des hauteurs
+    // Calculer la nouvelle hauteur en fonction du nombre d'indicateurs actifs
     let activeCount = (isAdxActive.mt5 ? 1 : 0) + (isAdxActive.wilder ? 1 : 0);
-    let newHeight = activeCount === 0 ? 750 : (activeCount === 1 ? 550 : 450);
+    let newHeight = 750; // Par défaut
+    if (activeCount === 1) newHeight = 550;
+    if (activeCount === 2) newHeight = 400;
 
     if (isAdxActive[type]) {
       container.style.display = 'block';
 
-      // Si le graphique n'existe pas, on l'initialise
+      // Initialisation si nécessaire
       if (!adxCharts[type]) {
-        initAdxChart(type, chartId);
+        initAdxChart(type, type === 'mt5' ? 'adxMt5Chart' : 'adxWilderChart');
       }
 
-      // FORCE la mise à jour des données (pour le nouveau symbole/timeframe)
-      // C'est ici qu'on règle votre problème de changement de symbole
+      // On force le calcul immédiat avec les nouvelles données (priceDataZZ)
       refreshADX(type);
 
-      // Synchronisation du zoom
-      setTimeout(() => {
-        if (chart && adxCharts[type]) {
-          const range = chart.timeScale().getVisibleLogicalRange();
-          if (range) adxCharts[type].timeScale().setVisibleLogicalRange(range);
-        }
-      }, 50);
+      // Sync TimeScale
+      const range = chart.timeScale().getVisibleLogicalRange();
+      if (range && adxCharts[type]) adxCharts[type].timeScale().setVisibleLogicalRange(range);
     } else {
       container.style.display = 'none';
     }
 
-    // Mise à jour des dimensions
+    // Appliquer la hauteur au DOM et redimensionner le moteur graphique
     chartInner.style.height = newHeight + "px";
-    chartInner.style.minHeight = newHeight + "px";
-
     if (chart) {
       chart.resize(chartInner.clientWidth, newHeight);
     }
 
-    // Redimensionnement de TOUS les indicateurs actifs
-    ['mt5', 'wilder'].forEach(t => {
+    // Ajuster tous les indicateurs ouverts
+    ['mt5', 'wilder'].forEach(t => {  
       if (isAdxActive[t] && adxCharts[t]) {
-        const pane = document.getElementById(t === 'mt5' ? 'adxMt5Container' : 'adxWilderContainer');
-        adxCharts[t].resize(pane.clientWidth, 200);
-        // On rafraîchit les données pour chaque volet ouvert
-        refreshADX(t);
+        adxCharts[t].resize(container.clientWidth, 200);
+        refreshADX(t); // Mise à jour des données
       }
     });
   };
