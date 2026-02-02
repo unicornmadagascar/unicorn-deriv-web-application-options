@@ -5124,7 +5124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Ajuster tous les indicateurs ouverts
-    ['mt5', 'wilder'].forEach(t => {  
+    ['mt5', 'wilder'].forEach(t => {     
       if (isAdxActive[t] && adxCharts[t]) {
         adxCharts[t].resize(container.clientWidth, 200);
         refreshADX(t); // Mise à jour des données
