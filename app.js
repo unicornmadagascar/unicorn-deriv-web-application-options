@@ -1030,8 +1030,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // On s'assure que les conteneurs HTML sont vidés avant la recréation
-    //document.getElementById("adxMt5Chart").innerHTML = "";
-    //document.getElementById("adxWilderChart").innerHTML = "";
+    document.getElementById("adxMt5Chart").innerHTML = "";
+    document.getElementById("adxWilderChart").innerHTML = "";
 
     // ... (suite de votre création de chart principal) ...
 
