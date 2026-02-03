@@ -5024,7 +5024,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- INITIALISATION DES CHARTS ADX ---
-  function initAdxChart(type, containerId) {
+  function initAdxChart(type, containerId) {  
     const options = {
       width: document.getElementById(containerId).clientWidth,
       height: 180,
