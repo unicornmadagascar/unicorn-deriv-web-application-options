@@ -544,29 +544,29 @@
     /* chart area */
     #chartArea {
       position: relative;
-      /* Référentiel pour l'absolute */
       flex: 1;
       display: flex;
       flex-direction: column;
+      height: 100%;
+      /* S'assure d'occuper tout l'espace disponible */
+      gap: 10px;
+      /* Ajoute un petit espace constant entre les éléments */
     }
 
-    /* Le graphique de fond */
+    /* Le graphique de prix principal */
     #chartInner {
       display: block;
       width: auto;
-      height: 750px !important;  
-      /* Force la hauteur initiale */
-      min-height: 650px;
-      /* Sécurité pour ne jamais être trop petit avec les ADX */    
-      background: #fff;    
+      /* On enlève le height: 750px fixe ici, c'est le JS qui va piloter */
+      background: #fff;
       margin: 12px;
-      border-radius: 8px;   
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);     
+      border-radius: 8px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
       position: relative;
-      flex: none !important;   
-      /* Empêche le flexbox de réduire l'élément */   
-    }       
-  
+      transition: height 0.3s ease;
+      /* Optionnel : anime le changement de taille */
+    }
+
     /* Le Canvas de Trendline */
     #Trendoverlay__ {
       position: absolute;
@@ -4331,15 +4331,23 @@
     }
 
     /* ----- ADX ----- */
-    .adx-pane {
+    /*.adx-pane {
       height: 200px;
       margin: 0 12px 12px 12px;
-      /* Aligné avec les marges du chartInner */
       background: #fff;
       border-radius: 8px;
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
       position: relative;
       overflow: hidden;
+    } */
+
+    /* Vos conteneurs ADX (Assurez-vous qu'ils n'ont pas de marges excessives) */
+    .adx-pane {
+      margin: 0 12px;
+      border-radius: 8px;
+      overflow: hidden;
+      height: 180px;
+      /* Taille fixe pour les indicateurs */
     }
 
     .close-adx {
