@@ -1002,20 +1002,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // 2. RÉINITIALISER LES GRAPHIQUES ADX S'ILS EXISTENT
-    /*['mt5', 'wilder'].forEach(type => {
+    ['mt5', 'wilder'].forEach(type => {
       if (adxSeries[type] && adxSeries[type].adx) {
         adxSeries[type].adx.setData([]);
         adxSeries[type].plus.setData([]);
         adxSeries[type].minus.setData([]);
-      }
-    });*/
-
-    // 2. RÉINITIALISER LES GRAPHIQUES ADX S'ILS EXISTENT
-    ['mt5', 'wilder'].forEach(type => {
-      // Si le graphique existe déjà, on le détruit proprement pour éviter les fuites mémoire
-      if (adxCharts[type]) {
-        adxCharts[type].remove();
-        adxCharts[type] = null;
       }
     });
 
@@ -1023,9 +1014,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // On réinitialise les références des séries
     adxSeries = { mt5: { adx: null, plus: null, minus: null }, wilder: { adx: null, plus: null, minus: null } };
     isAdxActive = { mt5: false, wilder: false }; // On remet les états à false
-
-    // Réinitialiser les boutons (enlever la classe 'active')
-    document.querySelectorAll('.btn-adx').forEach(btn => btn.classList.remove('active'));
 
     // RÉGLAGE DE LA HAUTEUR : On retire le minHeight qui bloque tout
     const chartInner = document.getElementById("chartInner");
