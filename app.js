@@ -1009,7 +1009,7 @@ document.addEventListener("DOMContentLoaded", () => {
         adxSeries[type].adx.setData([]);
         adxSeries[type].plus.setData([]);
         adxSeries[type].minus.setData([]);
-      }
+      }  
     });
 
     ['mt5', 'wilder'].forEach(type => {
@@ -1018,7 +1018,7 @@ document.addEventListener("DOMContentLoaded", () => {
         adxCharts[type].remove();  
         adxCharts[type] = null;
       }  
-    });
+    }); 
 
     // On vide les références des séries
     // On réinitialise les références des séries
