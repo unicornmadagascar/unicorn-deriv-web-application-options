@@ -1015,9 +1015,9 @@ document.addEventListener("DOMContentLoaded", () => {
     ['mt5', 'wilder'].forEach(type => {
       // Si le graphique existe déjà, on le détruit proprement pour éviter les fuites mémoire
       if (adxCharts[type]) {
-        adxCharts[type].remove();
+        adxCharts[type].remove();  
         adxCharts[type] = null;
-      }
+      }  
     });
 
     // On vide les références des séries
