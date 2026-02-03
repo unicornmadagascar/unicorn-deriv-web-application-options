@@ -997,7 +997,7 @@ document.addEventListener("DOMContentLoaded", () => {
         adxCharts.mt5.timeScale().setVisibleLogicalRange(range);
       }
       if (isAdxActive.wilder && adxCharts.wilder) {
-        adxCharts.wilder.timeScale().setVisibleLogicalRange(range);
+        adxCharts.wilder.timeScale().setVisibleLogicalRange(range);  
       }
     });
 
