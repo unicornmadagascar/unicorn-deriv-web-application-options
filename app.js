@@ -345,8 +345,11 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   let adxCharts = { mt5: null, wilder: null };
-  let adxSeries = { mt5: {}, wilder: {} };
   let isAdxActive = { mt5: false, wilder: false };
+  let adxSeries = {
+    mt5: { adx: null, plus: null, minus: null },
+    wilder: { adx: null, plus: null, minus: null }
+  };
 
   window.MasterStorage = {
     key: 'sniper_master_db',
@@ -1166,27 +1169,31 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // --- DANS VOTRE ONSMESSAGE ---  
-
       // A. Gestion de l'HISTORIQUE (Initialisation)
       if (msg.msg_type === "candles") {
         const candles = msg.candles;
         if (Array.isArray(candles)) {
-          // On transforme et filtre toutes les bougies historiques
           const formattedData = candles.map(normalize).filter(Boolean);
 
           if (formattedData.length > 0) {
-            cache = formattedData; // On remplit le cache
-            currentSeries.setData(cache); // Chargement initial complet
+            cache = formattedData;
+            currentSeries.setData(cache);
             priceDataZZ = [...cache];
 
             chart.timeScale().fitContent();
             isWsInitialized = true;
 
-            // Calcul initial des indicateurs sur tout l'historique
+            // --- CALCUL DES INDICATEURS STANDARDS ---
             formattedData.forEach(bar => updateIndicatorData(bar.time, bar));
             renderIndicators();
 
-            // --- AJOUT : Mise à jour initiale des jauges ---
+            // --- AJOUT : CALCUL DES DEUX ADX ---
+            // On calcule l'ADX sur tout l'historique fraîchement chargé
+            if (typeof refreshADX === 'function') {
+              refreshADX('mt5');
+              refreshADX('wilder');
+            }
+
             if (typeof window.updateAllMarketGauges === 'function') {
               window.updateAllMarketGauges(cache);
             }
@@ -1194,39 +1201,38 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // B. Gestion du FLUX TEMPS RÉEL (Une seule barre à la fois)
+      // B. Gestion du FLUX TEMPS RÉEL (Tick par Tick)
       if (msg.msg_type === "ohlc") {
         const ohlc = msg.ohlc;
         const lastBar = normalize(ohlc);
 
         if (lastBar && isWsInitialized) {
-          // Mise à jour de Lightweight Charts
           currentSeries.update(lastBar);
 
-          // Mise à jour du cache local
           if (cache.length > 0) {
             const lastCacheIndex = cache.length - 1;
 
             if (cache[lastCacheIndex].time === lastBar.time) {
-              // Même bougie : on remplace
               cache[lastCacheIndex] = lastBar;
             } else {
-              // Nouvelle bougie : on ajoute
               cache.push(lastBar);
               if (cache.length > 1000) cache.shift();
             }
           }
 
-          // Mise à jour et rendu des indicateurs
+          // --- MISE À JOUR INDICATEURS STANDARDS ---
           updateIndicatorData(lastBar.time, lastBar);
           renderIndicators();
 
-          // Force le rafraîchissement des dessins et du Volume Profile  
+          // --- AJOUT : MISE À JOUR DES DEUX ADX EN TEMPS RÉEL ---
+          // refreshADX utilise le 'cache' mis à jour juste au-dessus
+          if (typeof refreshADX === 'function') {
+            refreshADX('mt5');
+            refreshADX('wilder');
+          }
+
           render();
 
-          // --- AJOUT : Mise à jour des jauges en temps réel ---
-          // On utilise le 'cache' mis à jour car nos fonctions de calcul
-          // (EMA200, ATR, Bull/Bear) ont besoin de l'historique complet présent dans le cache.
           if (typeof window.updateAllMarketGauges === 'function') {
             window.updateAllMarketGauges(cache);
           }
@@ -1292,7 +1298,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.msg_type === "authorize") {
         wsOpenLines.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
         return;
-      }  
+      }
 
       // 2. Gestion des contrats
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
@@ -3761,7 +3767,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (warningEl) {
       warningEl.innerText = profileName;
       // Couleur basée sur le texte du label
-      if (profileName.includes("₿")) warningEl.style.color = "#ffffff";        // Orange Crypto
+      if (profileName.includes("₿")) warningEl.style.color = "#ffffff";        // Orange Crypto 
       else if (profileName.includes("⚡")) warningEl.style.color = "#ffffff";  // Violet Synth
       else if (profileName.includes("👑")) warningEl.style.color = "#ffffff";  // Or Metals
       else warningEl.style.color = "#ffffff";                                   // Bleu Forex
@@ -5025,73 +5031,71 @@ document.addEventListener("DOMContentLoaded", () => {
       grid: { vertLines: { color: '#f0f0f0' }, horzLines: { color: '#f0f0f0' } },
       rightPriceScale: {
         borderVisible: false,
-        autoScale: false, // On désactive l'auto-scale pour fixer les bornes
-        scaleMargins: {
-          top: 0.1,
-          bottom: 0.1,
-        },
-        // On force l'échelle à rester entre 0 et 100
-        minValue: 0,
-        maxValue: 100,
+        autoScale: true,
+        scaleMargins: { top: 0.1, bottom: 0.1 },
       },
-      timeScale: { visible: false, borderVisible: false }, // Sync avec chart principal
+      timeScale: { visible: false, borderVisible: false },
       crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
     };
 
     const chart = LightweightCharts.createChart(document.getElementById(containerId), options);
     adxCharts[type] = chart;
 
-    // Ajout des séries
     const colorAdx = type === 'mt5' ? '#007bff' : '#9C27B0';
-    adxSeries[type].adx = chart.addLineSeries({ color: colorAdx, lineWidth: 2, priceLineVisible: false });
-    adxSeries[type].plus = chart.addLineSeries({ color: '#26A69A', lineWidth: 1, priceLineVisible: false });
-    adxSeries[type].minus = chart.addLineSeries({ color: '#EF5350', lineWidth: 1, priceLineVisible: false });
+    adxSeries[type].adx = chart.addLineSeries({ color: colorAdx, lineWidth: 2, priceLineVisible: false, title: 'ADX' });
+    adxSeries[type].plus = chart.addLineSeries({ color: '#26A69A', lineWidth: 1, priceLineVisible: false, title: '+DI' });
+    adxSeries[type].minus = chart.addLineSeries({ color: '#EF5350', lineWidth: 1, priceLineVisible: false, title: '-DI' });
 
-    // Dans initAdxChart(type, containerId)
-    const levelLine = adxSeries[type].adx.createPriceLine({
+    // Ligne de niveau 25
+    adxSeries[type].adx.createPriceLine({
       price: 25,
-      color: 'rgba(120, 120, 120, 0.5)', // Gris discret
+      color: 'rgba(120, 120, 120, 0.5)',
       lineWidth: 1,
-      lineStyle: LightweightCharts.LineStyle.Dash, // Pointillés
+      lineStyle: LightweightCharts.LineStyle.Dash,
       axisLabelVisible: true,
-      title: 'TREND LIMIT',
+      title: '25',
     });
 
-    // Synchronisation du mouvement du réticule (Crosshair)
-    chart.subscribeCrosshairMove(param => {
-      if (!param.time || !chart) return;
-      // Optionnel: Mettre à jour la légende ici
-      updateAdxLegend(type, param);
-    });
-
+    chart.subscribeCrosshairMove(param => updateAdxLegend(type, param));
     return chart;
   }
 
+  // --- FONCTIONS DE LISSAGE (Essentielles pour la précision) ---
+  const calcEMA = (data, p) => {
+    if (data.length === 0) return [];
+    let res = [], alpha = 2 / (p + 1);
+    res[0] = data[0];
+    for (let i = 1; i < data.length; i++) res[i] = data[i] * alpha + res[i - 1] * (1 - alpha);
+    return res;
+  };
+
+  const calcRMA = (data, p) => {
+    if (data.length === 0) return [];
+    let res = [], alpha = 1 / p;
+    res[0] = data[0];
+    for (let i = 1; i < data.length; i++) res[i] = data[i] * alpha + res[i - 1] * (1 - alpha);
+    return res;
+  };
+
+  // --- FONCTION TOGGLE ---
   // --- FONCTION TOGGLE ---
   window.toggleADX = function (type, btn) {
     const container = document.getElementById(type === 'mt5' ? 'adxMt5Container' : 'adxWilderContainer');
     const chartInner = document.getElementById("chartInner");
 
-    // On bascule l'état
     isAdxActive[type] = btn.classList.toggle("active");
 
-    // Calculer la nouvelle hauteur en fonction du nombre d'indicateurs actifs
     let activeCount = (isAdxActive.mt5 ? 1 : 0) + (isAdxActive.wilder ? 1 : 0);
-    let newHeight = 750; // Par défaut
+    let newHeight = 750;
     if (activeCount === 1) newHeight = 550;
-    if (activeCount === 2) newHeight = 400;
+    if (activeCount === 2) newHeight = 350;
 
     if (isAdxActive[type]) {
       container.style.display = 'block';
-
-      // Initialisation si nécessaire
       if (!adxCharts[type]) {
         initAdxChart(type, type === 'mt5' ? 'adxMt5Chart' : 'adxWilderChart');
       }
-
-      // On force le calcul immédiat avec les nouvelles données (priceDataZZ)
       refreshADX(type);
-
       // Sync TimeScale
       const range = chart.timeScale().getVisibleLogicalRange();
       if (range && adxCharts[type]) adxCharts[type].timeScale().setVisibleLogicalRange(range);
@@ -5099,104 +5103,92 @@ document.addEventListener("DOMContentLoaded", () => {
       container.style.display = 'none';
     }
 
-    // Appliquer la hauteur au DOM et redimensionner le moteur graphique
     chartInner.style.height = newHeight + "px";
-    if (chart) {
-      chart.resize(chartInner.clientWidth, newHeight);
-    }
+    if (chart) chart.resize(chartInner.clientWidth, newHeight);
 
-    // Ajuster tous les indicateurs ouverts
     ['mt5', 'wilder'].forEach(t => {
       if (isAdxActive[t] && adxCharts[t]) {
         adxCharts[t].resize(container.clientWidth, 200);
-        refreshADX(t); // Mise à jour des données
+        refreshADX(t);
       }
     });
   };
 
   // --- CALCULS ET REFRESH ---
   function refreshADX(type) {
-
-    const data = cache; // Utilise vos bougies de Deriv
-
-    if (!isAdxActive[type] || !adxCharts[type] || !data || data.length < 30) {
-      return;
-    }
+    const data = priceDataZZ; // Utilise vos bougies de Deriv (cache)
+    if (!isAdxActive[type] || !adxCharts[type] || !data || data.length < 30) return;
 
     const p = 14;
+    let tms = [], trs = [], pdms = [], mdms = [], plusSdiMT4 = [], minusSdiMT4 = [];
 
-    let tr = [], pdm = [], mdm = [], tms = [];
+    // 1. Préparation des données brutes
     for (let i = 1; i < data.length; i++) {
-      tms.push(data[i].time);
-      let h = data[i].high, l = data[i].low, pc = data[i - 1].close;
-      tr.push(Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc)));
-      let dH = h - data[i - 1].high, dL = data[i - 1].low - l;
-      pdm.push(dH > dL && dH > 0 ? dH : 0); mdm.push(dL > dH && dL > 0 ? dL : 0);
-    }
+      const cur = data[i], prev = data[i - 1];
+      tms.push(cur.time);
 
-    let adxVals, plusVals, minusVals;
+      let pdm = cur.high - prev.high;
+      let mdm = prev.low - cur.low;
+      if (pdm < 0) pdm = 0;
+      if (mdm < 0) mdm = 0;
+      if (pdm === mdm) { pdm = 0; mdm = 0; }
+      else if (pdm < mdm) pdm = 0;
+      else if (mdm < pdm) mdm = 0;
 
-    if (type === 'mt5') {
-      // Logique EMA (MQL4)
-      const alpha = 2 / (p + 1);
-      const ema = (arr) => {
-        let r = [arr[0]];
-        for (let i = 1; i < arr.length; i++) r.push(arr[i] * alpha + r[i - 1] * (1 - alpha));
-        return r;
-      };
-      let sdiP = tr.map((v, i) => v > 0 ? 100 * pdm[i] / v : 0);
-      let sdiM = tr.map((v, i) => v > 0 ? 100 * mdm[i] / v : 0);
-      plusVals = ema(sdiP); minusVals = ema(sdiM);
-      let dx = plusVals.map((v, i) => {
-        let sum = Math.abs(plusVals[i] + minusVals[i]);
-        return sum > 0 ? 100 * Math.abs(plusVals[i] - minusVals[i]) / sum : 0;
-      });
-      adxVals = ema(dx);
-    } else {
-      // Logique Wilder (RMA)
-      let sT = 0, sP = 0, sM = 0;
-      plusVals = []; minusVals = []; let dx = [];
-      for (let i = 0; i < tr.length; i++) {
-        sT = sT - (sT / p) + tr[i]; sP = sP - (sP / p) + pdm[i]; sM = sM - (sM / p) + mdm[i];
-        let pV = sT > 0 ? 100 * sP / sT : 0; let mV = sT > 0 ? 100 * sM / sT : 0;
-        plusVals.push(pV); minusVals.push(mV);
-        let sum = Math.abs(pV + mV);
-        dx.push(sum > 0 ? 100 * Math.abs(pV - mV) / sum : 0);
-      }
-      let lastA = 0; adxVals = dx.map(v => lastA = (lastA === 0 ? v : (lastA * (p - 1) + v) / p));
+      const tr = Math.max(cur.high - cur.low, Math.abs(cur.high - prev.close), Math.abs(cur.low - prev.close));
+
+      trs.push(tr);
+      pdms.push(pdm);
+      mdms.push(mdm);
+
+      // Pour MT4 : Ratio direct avant lissage
+      if (tr === 0) { plusSdiMT4.push(0); minusSdiMT4.push(0); }
+      else { plusSdiMT4.push(100.0 * pdm / tr); minusSdiMT4.push(100.0 * mdm / tr); }
     }
 
     const format = (arr) => arr.map((v, i) => ({ time: tms[i], value: v }));
-    adxSeries[type].adx.setData(format(adxVals));
-    adxSeries[type].plus.setData(format(plusVals));
-    adxSeries[type].minus.setData(format(minusVals));
+
+    if (type === 'mt5') {
+      // --- LOGIQUE MT4 EMA (Votre ADXM) ---
+      const plusDiM = calcEMA(plusSdiMT4, p);
+      const minusDiM = calcEMA(minusSdiMT4, p);
+      const dxM = plusDiM.map((v, i) => {
+        const sum = Math.abs(v + minusDiM[i]);
+        return sum === 0 ? 0 : 100 * (Math.abs(v - minusDiM[i]) / sum);
+      });
+      adxSeries.mt5.adx.setData(format(calcEMA(dxM, p)));
+      adxSeries.mt5.plus.setData(format(plusDiM));
+      adxSeries.mt5.minus.setData(format(minusDiM));
+    } else {
+      // --- LOGIQUE WILDER RMA (Votre ADXW) ---
+      const sTR = calcRMA(trs, p);
+      const sPDM = calcRMA(pdms, p);
+      const sMDM = calcRMA(mdms, p);
+
+      const plusDiW = sTR.map((v, i) => v === 0 ? 0 : 100 * sPDM[i] / v);
+      const minusDiW = sTR.map((v, i) => v === 0 ? 0 : 100 * sMDM[i] / v);
+      const dxW = plusDiW.map((v, i) => {
+        const sum = Math.abs(v + minusDiW[i]);
+        return sum === 0 ? 0 : 100 * (Math.abs(v - minusDiW[i]) / sum);
+      });
+      adxSeries.wilder.adx.setData(format(calcRMA(dxW, p)));
+      adxSeries.wilder.plus.setData(format(plusDiW));
+      adxSeries.wilder.minus.setData(format(minusDiW));
+    }
   }
 
   function updateAdxLegend(type, param) {
     const legendId = type === 'mt5' ? 'legend-mt5' : 'legend-wilder';
     const container = document.getElementById(legendId);
-    if (!container) return;
+    if (!container || !param.time) return;
 
-    const adxSpan = container.children[1];
-    const plusSpan = container.children[2];
-    const minusSpan = container.children[3];
-
-    if (!param.time) {
-      // Valeurs par défaut si le réticule est hors du graphique
-      adxSpan.innerText = `${type === 'mt5' ? 'ADX MT5' : 'ADX Wilder'}: --`;
-      plusSpan.innerText = `+DI: --`;
-      minusSpan.innerText = `-DI: --`;
-      return;
-    }
-
-    // Récupération des données de la série pour le point survolé
     const adxData = param.seriesData.get(adxSeries[type].adx);
     const plusData = param.seriesData.get(adxSeries[type].plus);
     const minusData = param.seriesData.get(adxSeries[type].minus);
 
-    if (adxData) adxSpan.innerText = `${type === 'mt5' ? 'ADX MT5' : 'ADX Wilder'}: ${adxData.value.toFixed(2)}`;
-    if (plusData) plusSpan.innerText = `+DI: ${plusData.value.toFixed(2)}`;
-    if (minusData) minusSpan.innerText = `-DI: ${minusData.value.toFixed(2)}`;
+    if (adxData) container.children[1].innerText = `${type === 'mt5' ? 'ADX MT4' : 'ADX Wilder'}: ${adxData.value.toFixed(2)}`;
+    if (plusData) container.children[2].innerText = `+DI: ${plusData.value.toFixed(2)}`;
+    if (minusData) container.children[3].innerText = `-DI: ${minusData.value.toFixed(2)}`;
   }
 
   /**
