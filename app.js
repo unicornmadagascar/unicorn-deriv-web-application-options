@@ -935,6 +935,8 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       rightPriceScale: {
         borderColor: '#D1D4DC', // Ligne de séparation propre à droite
+        width: 80, // Largeur fixe identique pour tous les graphiques
+        borderVisible: false,
       },
       handleScroll: {
         mouseWheel: true,
@@ -5030,6 +5032,7 @@ document.addEventListener("DOMContentLoaded", () => {
       grid: { vertLines: { color: '#f0f0f0' }, horzLines: { color: '#f0f0f0' } },
       rightPriceScale: {
         borderVisible: false,
+        width: 80, // Largeur fixe identique pour tous les graphiques
         autoScale: true,
         scaleMargins: { top: 0.1, bottom: 0.1 },
       },
