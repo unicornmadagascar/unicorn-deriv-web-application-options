@@ -1002,16 +1002,39 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // 2. RÉINITIALISER LES GRAPHIQUES ADX S'ILS EXISTENT
-    ['mt5', 'wilder'].forEach(type => {
+    /*['mt5', 'wilder'].forEach(type => {
       if (adxSeries[type] && adxSeries[type].adx) {
         adxSeries[type].adx.setData([]);
         adxSeries[type].plus.setData([]);
         adxSeries[type].minus.setData([]);
       }
+    });*/
+
+    // 2. RÉINITIALISER LES GRAPHIQUES ADX S'ILS EXISTENT
+    ['mt5', 'wilder'].forEach(type => {
+      // Si le graphique existe déjà, on le détruit proprement pour éviter les fuites mémoire
+      if (adxCharts[type]) {
+        adxCharts[type].remove();
+        adxCharts[type] = null;
+      }
     });
 
     // On vide les références des séries
-    adxSeries = { mt5: {}, wilder: {} };
+    // On réinitialise les références des séries
+    adxSeries = { mt5: { adx: null, plus: null, minus: null }, wilder: { adx: null, plus: null, minus: null } };
+    isAdxActive = { mt5: false, wilder: false }; // On remet les états à false
+
+    // Réinitialiser les boutons (enlever la classe 'active')
+    document.querySelectorAll('.btn-adx').forEach(btn => btn.classList.remove('active'));
+
+    // RÉGLAGE DE LA HAUTEUR : On retire le minHeight qui bloque tout
+    const chartInner = document.getElementById("chartInner");
+    chartInner.style.minHeight = "0px"; // Libère le verrou
+    chartInner.style.height = "750px";
+
+    if (chart) {
+      chart.resize(chartInner.clientWidth, 750);
+    }
 
     // On s'assure que les conteneurs HTML sont vidés avant la recréation
     //document.getElementById("adxMt5Chart").innerHTML = "";
@@ -1020,13 +1043,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // ... (suite de votre création de chart principal) ...
 
     // Réactiver le redimensionnement par défaut (Pleine hauteur)
-    const chartInner = document.getElementById("chartInner");
-    chartInner.style.height = "750px";  
-    chartInner.style.minHeight = "750px";        
+    /*const chartInner = document.getElementById("chartInner");
+    chartInner.style.height = "750px";
+    chartInner.style.minHeight = "750px";
 
-    if (chart) chart.resize(chartInner.clientWidth, 750);
-  
-    if (activePeriods.length > 0) {    
+    if (chart) chart.resize(chartInner.clientWidth, 750);*/
+
+    if (activePeriods.length > 0) {
       initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200 via le nouveau chart
     }
 
@@ -5112,7 +5135,7 @@ document.addEventListener("DOMContentLoaded", () => {
           adxCharts[t].resize(adxContainer.clientWidth, 180);
           refreshADX(t);
         }
-      });  
+      });
     }, 50);
   };
 

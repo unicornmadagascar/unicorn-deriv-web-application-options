@@ -547,9 +547,9 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      height: 100%;
+      height: auto;
       /* S'assure d'occuper tout l'espace disponible */
-      gap: 10px;
+      gap: 5px;
       /* Ajoute un petit espace constant entre les éléments */
     }
 
@@ -563,7 +563,7 @@
       border-radius: 8px;
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
       position: relative;
-      transition: height 0.3s ease;
+      transition: height 0.3s ease;  
       /* Optionnel : anime le changement de taille */
     }
 
@@ -4346,6 +4346,7 @@
       margin: 0 12px;
       border-radius: 8px;  
       overflow: hidden;  
+      width: 100%;
       height: 180px;
       /* Taille fixe pour les indicateurs */
     }
