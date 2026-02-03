@@ -1006,9 +1006,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. RÉINITIALISER LES GRAPHIQUES ADX S'ILS EXISTENT
     ['mt5', 'wilder'].forEach(type => {
       if (adxSeries[type] && adxSeries[type].adx) {
-        adxSeries[type].adx.setData([]);  
+        adxSeries[type].adx.setData([]);
         adxSeries[type].plus.setData([]);
-        adxSeries[type].minus.setData([]);   
+        adxSeries[type].minus.setData([]);
       }
     });
 
@@ -1018,10 +1018,10 @@ document.addEventListener("DOMContentLoaded", () => {
     isAdxActive = { mt5: false, wilder: false }; // On remet les états à false
 
     // Réinitialiser les boutons (enlever la classe 'active')  
-    document.querySelectorAll('.btn-adx').forEach(btn => btn.classList.remove('active'));    
+    document.querySelectorAll('.btn-adx').forEach(btn => btn.classList.remove('active'));
 
     // RÉGLAGE DE LA HAUTEUR : On retire le minHeight qui bloque tout
-    const chartInner = document.getElementById("chartInner");     
+    const chartInner = document.getElementById("chartInner");
     chartInner.style.minHeight = "0px"; // Libère le verrou
     chartInner.style.height = "750px";
 
@@ -1133,7 +1133,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     ws.onopen = () => {
       if (thisSessionId !== currentSessionId) return;
-      ws.send(JSON.stringify({ authorize: TOKEN }));
+      ws.send(JSON.stringify({ authorize: TOKEN }));  
+    };
+
+    ws.onclose = () => {
+      ws.close();
+      ws = null;
+      setTimeout(async () => {await loadSymbol();}, 300);
+    };
+
+    ws.onerror = () => {
+      ws.close();
+      ws = null;
+      setTimeout(async () => {await loadSymbol();}, 300);
     };
 
     ws.onmessage = ({ data }) => {
@@ -5027,12 +5039,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- INITIALISATION DES CHARTS ADX ---
-  function initAdxChart(type, containerId) {  
-    const options = {  
+  function initAdxChart(type, containerId) {
+    const options = {
       width: document.getElementById(containerId).clientWidth,
       height: 180,
       layout: { background: { color: '#ffffff' }, textColor: '#333' },
-      grid: { vertLines: { color: '#f0f0f0' }, horzLines: { color: '#f0f0f0' } },  
+      grid: { vertLines: { color: '#f0f0f0' }, horzLines: { color: '#f0f0f0' } },
       rightPriceScale: {
         borderVisible: false,
         width: 80, // Largeur fixe identique pour tous les graphiques
@@ -5102,11 +5114,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (isAdxActive[type]) {
       container.style.display = 'block';
-      if (!adxCharts[type]) {   
+      if (!adxCharts[type]) {
         initAdxChart(type, type === 'mt5' ? 'adxMt5Chart' : 'adxWilderChart');
       }
     } else {
-      container.style.display = 'none';    
+      container.style.display = 'none';
     }
 
     // Redimensionnement immédiat
