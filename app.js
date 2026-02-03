@@ -1004,9 +1004,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. RÉINITIALISER LES GRAPHIQUES ADX S'ILS EXISTENT
     ['mt5', 'wilder'].forEach(type => {
       if (adxSeries[type] && adxSeries[type].adx) {
-        adxSeries[type].adx.setData([]);
-        adxSeries[type].plus.setData([]);
-        adxSeries[type].minus.setData([]);    
+        adxSeries[type].adx.setData([]);   
+        adxSeries[type].plus.setData([]);  
+        adxSeries[type].minus.setData([]);      
       }
     });
 
