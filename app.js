@@ -1018,7 +1018,7 @@ document.addEventListener("DOMContentLoaded", () => {
     isAdxActive = { mt5: false, wilder: false }; // On remet les états à false
 
     // Réinitialiser les boutons (enlever la classe 'active')
-    document.querySelectorAll('.btn-adx').forEach(btn => btn.classList.remove('active'));  
+    document.querySelectorAll('.btn-adx').forEach(btn => btn.classList.remove('active'));    
 
     // RÉGLAGE DE LA HAUTEUR : On retire le minHeight qui bloque tout
     const chartInner = document.getElementById("chartInner");     
