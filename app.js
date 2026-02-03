@@ -1023,7 +1023,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // RÉGLAGE DE LA HAUTEUR : On retire le minHeight qui bloque tout
     const chartInner = document.getElementById("chartInner");
     chartInner.style.minHeight = "0px"; // Libère le verrou
-    chartInner.style.height = "750px";
+    chartInner.style.height = "750px";   
 
     if (chart) {
       chart.resize(chartInner.clientWidth, 750);  
