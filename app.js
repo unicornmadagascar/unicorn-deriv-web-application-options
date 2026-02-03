@@ -1012,6 +1012,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+    ['mt5', 'wilder'].forEach(type => {
+      // Si le graphique existe déjà, on le détruit proprement pour éviter les fuites mémoire
+      if (adxCharts[type]) {
+        adxCharts[type].remove();
+        adxCharts[type] = null;
+      }
+    });
+
     // On vide les références des séries
     // On réinitialise les références des séries
     adxSeries = { mt5: { adx: null, plus: null, minus: null }, wilder: { adx: null, plus: null, minus: null } };
@@ -1023,15 +1031,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // RÉGLAGE DE LA HAUTEUR : On retire le minHeight qui bloque tout
     const chartInner = document.getElementById("chartInner");
     chartInner.style.minHeight = "0px"; // Libère le verrou
-    chartInner.style.height = "750px";   
+    chartInner.style.height = "750px";
 
     if (chart) {
-      chart.resize(chartInner.clientWidth, 750);    
+      chart.resize(chartInner.clientWidth, 750);
     }
 
     // On s'assure que les conteneurs HTML sont vidés avant la recréation
     document.getElementById("adxMt5Chart").innerHTML = "";
-    document.getElementById("adxWilderChart").innerHTML = "";     
+    document.getElementById("adxWilderChart").innerHTML = "";
 
     // ... (suite de votre création de chart principal) ...
 
@@ -1133,19 +1141,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     ws.onopen = () => {
       if (thisSessionId !== currentSessionId) return;
-      ws.send(JSON.stringify({ authorize: TOKEN }));  
+      ws.send(JSON.stringify({ authorize: TOKEN }));
     };
 
     ws.onclose = () => {
       ws.close();
       ws = null;
-      setTimeout(async () => {await loadSymbol();}, 300);  
+      setTimeout(async () => { await loadSymbol(); }, 300);
     };
 
     ws.onerror = () => {
       ws.close();
       ws = null;
-      setTimeout(async () => {await loadSymbol();}, 300);
+      setTimeout(async () => { await loadSymbol(); }, 300);
     };
 
     ws.onmessage = ({ data }) => {
