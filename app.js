@@ -5093,22 +5093,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById(type === 'mt5' ? 'adxMt5Container' : 'adxWilderContainer');
     const chartInner = document.getElementById("chartInner");
 
-    // 1. Basculer l'état actif
     isAdxActive[type] = btn.classList.toggle("active");
 
-    // 2. Logique de calcul de hauteur dynamique
     let activeCount = (isAdxActive.mt5 ? 1 : 0) + (isAdxActive.wilder ? 1 : 0);
 
-    // On définit la hauteur du graphique principal selon le nombre d'indicateurs
-    let mainHeight;
-    if (activeCount === 0) mainHeight = 750;
-    else if (activeCount === 1) mainHeight = 550;
-    else mainHeight = 400;
+    // On définit la nouvelle hauteur
+    let newHeight = 750;
+    if (activeCount === 1) newHeight = 500;
+    if (activeCount === 2) newHeight = 350;
 
-    // 3. Appliquer la hauteur au DIV
-    chartInner.style.height = mainHeight + "px";
+    // APPLICATION : On force les deux propriétés
+    chartInner.style.minHeight = newHeight + "px";
+    chartInner.style.height = newHeight + "px";
 
-    // 4. Afficher/Masquer le conteneur ADX
     if (isAdxActive[type]) {
       container.style.display = 'block';
       if (!adxCharts[type]) {
@@ -5118,25 +5115,11 @@ document.addEventListener("DOMContentLoaded", () => {
       container.style.display = 'none';
     }
 
-    // 5. REDIMENSIONNEMENT CRUCIAL
-    // On utilise setTimeout pour laisser le DOM respirer et prendre ses nouvelles dimensions
-    setTimeout(() => {
-      const currentWidth = chartInner.clientWidth;
+    // Redimensionnement immédiat
+    if (chart) chart.resize(chartInner.clientWidth, newHeight);
 
-      // Redimensionner le chart principal
-      if (chart) {
-        chart.resize(currentWidth, mainHeight);
-      }
-
-      // Redimensionner les indicateurs actifs
-      ['mt5', 'wilder'].forEach(t => {
-        if (isAdxActive[t] && adxCharts[t]) {
-          const adxContainer = document.getElementById(t === 'mt5' ? 'adxMt5Chart' : 'adxWilderChart');
-          adxCharts[t].resize(adxContainer.clientWidth, 180);
-          refreshADX(t);
-        }
-      });
-    }, 50);
+    // Ajuster les ADX
+    autoResizeAllCharts();
   };
 
   // --- CALCULS ET REFRESH ---
