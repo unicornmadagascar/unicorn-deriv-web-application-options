@@ -5108,7 +5108,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (isAdxActive[type]) {
       container.style.display = 'block';
-      if (!adxCharts[type]) {
+      if (!adxCharts[type]) {   
         initAdxChart(type, type === 'mt5' ? 'adxMt5Chart' : 'adxWilderChart');
       }
     } else {
