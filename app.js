@@ -899,7 +899,6 @@ document.addEventListener("DOMContentLoaded", () => {
     cache = [];         // Votre historique bougies
     priceData = [];     // Votre historique ticks (300)
     priceDataZZ = [];   // Source unifiée pour ZigZag/MA
-    priceDataZZ = [];
     isWsInitialized = false;
 
     // CRÉATION DU NOUVEAU GRAPHIQUE (Optimisé Fond Blanc)
@@ -1011,32 +1010,21 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // --- RESET DES OBJETS ADX (Nouveau) ---
-    // On détruit les instances de graphiques ADX pour qu'ils soient recréés proprement
-    ['mt5', 'wilder'].forEach(type => {
-      if (adxCharts[type]) {
-        try {
-          adxCharts[type].remove(); // Détruit physiquement le chart du DOM
-        } catch (e) { console.error("Erreur destruction ADX:", e); }
-        adxCharts[type] = null;
-      }
-    });
-
     // On vide les références des séries
     adxSeries = { mt5: {}, wilder: {} };
 
     // On s'assure que les conteneurs HTML sont vidés avant la recréation
-    document.getElementById("adxMt5Chart").innerHTML = "";
-    document.getElementById("adxWilderChart").innerHTML = "";
+    //document.getElementById("adxMt5Chart").innerHTML = "";
+    //document.getElementById("adxWilderChart").innerHTML = "";
 
     // ... (suite de votre création de chart principal) ...
 
     // Réactiver le redimensionnement par défaut (Pleine hauteur)
     const chartInner = document.getElementById("chartInner");
-    chartInner.style.height = "750px";
-    chartInner.style.minHeight = "750px";
+    //chartInner.style.height = "750px";
+    //chartInner.style.minHeight = "750px";
 
-    if (chart) chart.resize(chartInner.clientWidth, 750);
+    //if (chart) chart.resize(chartInner.clientWidth, 750);
 
     if (activePeriods.length > 0) {
       initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200 via le nouveau chart
