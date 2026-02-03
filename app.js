@@ -1026,7 +1026,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chartInner.style.height = "750px";
 
     if (chart) {
-      chart.resize(chartInner.clientWidth, 750);
+      chart.resize(chartInner.clientWidth, 750);  
     }
 
     // On s'assure que les conteneurs HTML sont vidés avant la recréation
