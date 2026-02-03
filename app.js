@@ -1217,10 +1217,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           }
 
-          // Vos appels ADX utiliseront maintenant les données fraîches
-          if (isAdxActive.mt5) refreshADX('mt5');
-          if (isAdxActive.wilder) refreshADX('wilder');
-
           // Mise à jour et rendu des indicateurs
           updateIndicatorData(lastBar.time, lastBar);
           renderIndicators();
@@ -1296,7 +1292,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.msg_type === "authorize") {
         wsOpenLines.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
         return;
-      }
+      }  
 
       // 2. Gestion des contrats
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
