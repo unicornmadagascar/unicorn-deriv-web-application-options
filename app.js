@@ -1008,7 +1008,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (adxSeries[type] && adxSeries[type].adx) {
         adxSeries[type].adx.setData([]);
         adxSeries[type].plus.setData([]);
-        adxSeries[type].minus.setData([]);
+        adxSeries[type].minus.setData([]); 
       }  
     });
 
