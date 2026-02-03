@@ -1026,7 +1026,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (chart) chart.resize(chartInner.clientWidth, 750);
   
-    if (activePeriods.length > 0) {
+    if (activePeriods.length > 0) {    
       initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200 via le nouveau chart
     }
 
