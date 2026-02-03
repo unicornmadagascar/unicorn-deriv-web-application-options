@@ -1022,7 +1022,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Réactiver le redimensionnement par défaut (Pleine hauteur)
     const chartInner = document.getElementById("chartInner");
     chartInner.style.height = "750px";  
-    chartInner.style.minHeight = "750px";  
+    chartInner.style.minHeight = "750px";    
 
     if (chart) chart.resize(chartInner.clientWidth, 750);
   
