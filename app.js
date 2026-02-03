@@ -5112,7 +5112,7 @@ document.addEventListener("DOMContentLoaded", () => {
         initAdxChart(type, type === 'mt5' ? 'adxMt5Chart' : 'adxWilderChart');
       }
     } else {
-      container.style.display = 'none';
+      container.style.display = 'none';    
     }
 
     // Redimensionnement immédiat
