@@ -996,8 +996,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (isAdxActive.mt5 && adxCharts.mt5) {
         adxCharts.mt5.timeScale().setVisibleLogicalRange(range);
       }
-      if (isAdxActive.wilder && adxCharts.wilder) {
-        adxCharts.wilder.timeScale().setVisibleLogicalRange(range);  
+      if (isAdxActive.wilder && adxCharts.wilder) {    
+        adxCharts.wilder.timeScale().setVisibleLogicalRange(range);   
       }
     });
 
