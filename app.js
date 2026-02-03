@@ -1004,7 +1004,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. RÉINITIALISER LES GRAPHIQUES ADX S'ILS EXISTENT
     ['mt5', 'wilder'].forEach(type => {
       if (adxSeries[type] && adxSeries[type].adx) {
-        adxSeries[type].adx.setData([]);
+        adxSeries[type].adx.setData([]);  
         adxSeries[type].plus.setData([]);
         adxSeries[type].minus.setData([]);
       }
@@ -1016,7 +1016,7 @@ document.addEventListener("DOMContentLoaded", () => {
     isAdxActive = { mt5: false, wilder: false }; // On remet les états à false
 
     // RÉGLAGE DE LA HAUTEUR : On retire le minHeight qui bloque tout
-    const chartInner = document.getElementById("chartInner");
+    const chartInner = document.getElementById("chartInner");     
     chartInner.style.minHeight = "0px"; // Libère le verrou
     chartInner.style.height = "750px";
 
