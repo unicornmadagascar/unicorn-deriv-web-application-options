@@ -1159,7 +1159,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     ws.onmessage = ({ data }) => {
-      if (thisSessionId !== currentSessionId) {  
+      if (thisSessionId !== currentSessionId) {    
         if (ws) ws.close();
         return;
       }
