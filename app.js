@@ -1002,7 +1002,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // On met à jour les deux légendes ADX avec les données au point de la souris
         if (isAdxActive.mt5) updateAdxLegend('mt5', param);
         if (isAdxActive.wilder) updateAdxLegend('wilder', param);
-      }
+      }  
     });
 
     // ÉCOUTEUR DU ZOOM / SCROLL (TimeScale)
