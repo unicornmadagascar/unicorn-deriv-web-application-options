@@ -992,11 +992,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // AJOUT : SYNCHRONISATION ET LÉGENDES ADX
     // ==========================================
 
-    // ÉCOUTEUR DU RÉTICULE (Crosshair)
-    // C'est ici que les légendes numériques s'activent au survol
+    // AJOUTEZ CECI ICI :
     chart.subscribeCrosshairMove(param => {
-      if (isAdxActive.mt5) updateAdxLegend('mt5', param);
-      if (isAdxActive.wilder) updateAdxLegend('wilder', param);
+      // Sécurité : on vérifie que param existe
+      if (!param || param.time === undefined) {
+        // Optionnel : remettre à "--" quand la souris quitte le graphique
+        resetAdxLegends();
+      } else {
+        // On met à jour les deux légendes ADX avec les données au point de la souris
+        if (isAdxActive.mt5) updateAdxLegend('mt5', param);
+        if (isAdxActive.wilder) updateAdxLegend('wilder', param);
+      }
     });
 
     // ÉCOUTEUR DU ZOOM / SCROLL (TimeScale)
@@ -1047,15 +1053,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // On s'assure que les conteneurs HTML sont vidés avant la recréation
     document.getElementById("adxMt5Chart").innerHTML = "";
     document.getElementById("adxWilderChart").innerHTML = "";
-
-    // ... (suite de votre création de chart principal) ...
-
-    // Réactiver le redimensionnement par défaut (Pleine hauteur)
-    /*const chartInner = document.getElementById("chartInner");
-    chartInner.style.height = "750px";
-    chartInner.style.minHeight = "750px";
-
-    if (chart) chart.resize(chartInner.clientWidth, 750);*/
 
     if (activePeriods.length > 0) {
       initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200 via le nouveau chart
@@ -5635,10 +5632,19 @@ document.addEventListener("DOMContentLoaded", () => {
         const sum = Math.abs(v + minusDiW[i]);
         return sum === 0 ? 0 : 100 * (Math.abs(v - minusDiW[i]) / sum);
       });
-      adxSeries.wilder.adx.setData(format(calcRMA(dxW, p)));  
+      adxSeries.wilder.adx.setData(format(calcRMA(dxW, p)));
       adxSeries.wilder.plus.setData(format(plusDiW));
       adxSeries.wilder.minus.setData(format(minusDiW));
     }
+  }
+
+  function resetAdxLegends() {
+    document.querySelectorAll('.adx-legend span:not(.close-adx)').forEach(s => {
+      if (s.innerText.includes(':')) {
+        const label = s.innerText.split(':')[0];
+        s.innerText = `${label}: --`;
+      }
+    });
   }
 
   function updateAdxLegend(type, param) {
