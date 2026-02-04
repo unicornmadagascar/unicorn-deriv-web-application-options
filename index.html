@@ -4356,34 +4356,42 @@
       overflow: hidden;
     }
 
+    .adx-legend {
+      display: flex;
+      /* Aligne les spans sur une ligne */
+      align-items: center;
+      gap: 12px;
+      /* Espace régulier entre ADX, +DI et -DI */
+      padding: 5px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      /* Fond léger pour la lisibilité */
+      border-radius: 4px;
+      font-family: 'Monaco', 'Consolas', monospace;
+      /* Police stable pour les chiffres */
+      font-size: 12px;
+      pointer-events: none;
+      /* Laisse passer les clics vers le chart */
+    }
+
+    /* La croix de fermeture doit rester cliquable */
     .close-adx {
       cursor: pointer;
-      padding: 0 5px;
-      color: #999;
+      pointer-events: auto;
       font-size: 16px;
-      line-height: 1;
-      border-right: 1px solid #eee;
+      font-weight: bold;
       margin-right: 5px;
+      color: #94a3b8;
+      transition: color 0.2s;
     }
 
     .close-adx:hover {
-      color: #ef5350;
+      color: #ef4444;
+      /* Devient rouge au survol */
     }
 
-    .adx-legend {
-      position: absolute;
-      top: 5px;
-      left: 10px;
-      z-index: 5;
-      font-size: 10px;
-      font-weight: bold;
-      pointer-events: none;
-      display: flex;
-      gap: 10px;
-      background: rgba(255, 255, 255, 0.7);
-      padding: 2px 5px;
-      border-radius: 3px;
-      display: none !important;
+    .adx-legend span {
+      white-space: nowrap;
+      /* Évite les retours à la ligne moches */
     }
 
     /* Style pour les boutons actifs dans la barre latérale */
@@ -4742,7 +4750,7 @@
       <div id="adxMt5Container" class="adx-pane" style="display: none;">
         <div id="adxMt5Chart"></div>
         <div class="adx-legend" id="legend-mt5">
-          <span class="close-adx" onclick="toggleADX('mt5', document.getElementById('btn-adx-mt5'))">×</span>
+          <span class="close-adx" onclick="toggleADX('mt5', this)">×</span>
           <span style="color:#007bff">ADX MT5: --</span>
           <span style="color:#26A69A">+DI: --</span>
           <span style="color:#EF5350">-DI: --</span>

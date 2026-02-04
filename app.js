@@ -5644,15 +5644,36 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateAdxLegend(type, param) {
     const legendId = type === 'mt5' ? 'legend-mt5' : 'legend-wilder';
     const container = document.getElementById(legendId);
-    if (!container || !param.time) return;
 
-    const adxData = param.seriesData.get(adxSeries[type].adx);
-    const plusData = param.seriesData.get(adxSeries[type].plus);
-    const minusData = param.seriesData.get(adxSeries[type].minus);
+    if (!container || !param || !param.time) return;
 
-    if (adxData) container.children[1].innerText = `${type === 'mt5' ? 'ADX MT4' : 'ADX Wilder'}: ${adxData.value.toFixed(2)}`;
-    if (plusData) container.children[2].innerText = `+DI: ${plusData.value.toFixed(2)}`;
-    if (minusData) container.children[3].innerText = `-DI: ${minusData.value.toFixed(2)}`;
+    // Détection de l'index de départ
+    // Si le premier enfant est la croix de fermeture (close-adx), on commence à 1
+    const offset = container.children[0].classList.contains('close-adx') ? 1 : 0;
+
+    const adxData = adxSeries[type]?.adx ? param.seriesData.get(adxSeries[type].adx) : null;
+    const plusData = adxSeries[type]?.plus ? param.seriesData.get(adxSeries[type].plus) : null;
+    const minusData = adxSeries[type]?.minus ? param.seriesData.get(adxSeries[type].minus) : null;
+
+    // Mise à jour avec gestion des index dynamiques
+    if (adxData && adxData.value !== undefined) {
+      const label = type === 'mt5' ? 'ADX MT5' : 'ADX Wilder';
+      if (container.children[offset]) {
+        container.children[offset].innerText = `${label}: ${adxData.value.toFixed(2)}`;
+      }
+    }
+
+    if (plusData && plusData.value !== undefined) {
+      if (container.children[offset + 1]) {
+        container.children[offset + 1].innerText = `+DI: ${plusData.value.toFixed(2)}`;
+      }
+    }
+
+    if (minusData && minusData.value !== undefined) {
+      if (container.children[offset + 2]) {
+        container.children[offset + 2].innerText = `-DI: ${minusData.value.toFixed(2)}`;
+      }
+    }
   }
 
   /**
