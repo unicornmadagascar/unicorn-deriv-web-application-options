@@ -5283,7 +5283,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const emt_crash = 100 * Math.abs(diPlusMT5.value - adxMT5.value) / adxMT5.value;
 
     // --- LOGIQUE DE DÉTECTION AVEC FILTRE EMA ---
-    // Boom 1000 : Vendre uniquement si sous EMA 50 + Gaps valides
+    // Boom 1000 : Vendre uniquement si sous EMA 50 + Gaps valides  
     const isBoomSellSignal = (emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230);
 
     // Crash 1000 : Acheter uniquement si sous EMA 50 + Gaps valides
