@@ -1152,18 +1152,18 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     ws.onclose = () => {
-      ws.close();  
+      ws.close();
       ws = null;
       setTimeout(async () => { await loadSymbol(); }, 300);
     };
 
-    ws.onerror = () => {  
-      ws.close();  
+    ws.onerror = () => {
+      ws.close();
       setTimeout(async () => { await loadSymbol(); }, 300);
     };
 
     ws.onmessage = ({ data }) => {
-      if (thisSessionId !== currentSessionId) {  
+      if (thisSessionId !== currentSessionId) {
         if (ws) ws.close();
         return;
       }
@@ -5205,8 +5205,43 @@ document.addEventListener("DOMContentLoaded", () => {
         chart.resize(currentWidth, newHeight);
       }
       // Ajuste les graphiques ADX actifs pour qu'ils aient la même largeur
-      autoResizeAllCharts();
+      window.autoResizeAllCharts();
     });
+  };
+
+  window.autoResizeAllCharts = function () {
+    const container = document.getElementById('chartInner'); // Votre conteneur principal
+    const overlay = document.getElementById('Trendoverlay__');
+
+    if (!container || !window.chart) return;
+
+    // 1. Récupérer les dimensions actuelles du parent
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+
+    // 2. Redimensionner le graphique Lightweight Charts
+    // La méthode applyOptions ou resize met à jour le moteur de rendu
+    window.chart.resize(width, height);
+
+    // 3. Synchroniser le canvas Overlay
+    if (overlay) {
+      // On change les attributs de résolution du canvas
+      overlay.width = width;
+      overlay.height = height;
+
+      // On peut aussi forcer le style CSS pour être sûr
+      overlay.style.width = width + 'px';
+      overlay.style.height = height + 'px';
+
+      // Note : Si vous avez des dessins permanents sur l'overlay, 
+      // redimensionner le canvas efface le contenu. 
+      // Il faut souvent appeler votre fonction de dessin juste après.
+      if (typeof window.redrawTrendlines === 'function') {
+        window.redrawTrendlines();
+      }
+    }
+
+    console.log(`📏 Graphiques redimensionnés : ${width}x${height}`);
   };
 
   /**
@@ -8362,6 +8397,15 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener('load', () => {
     makeElementDraggable("ma-sniper-label");
     makeElementDraggable("volatility-label");
+  });
+
+  // Écouteur pour le redimensionnement de la fenêtre
+  window.addEventListener('resize', () => {
+    // On utilise un petit délai (debounce) pour ne pas surcharger le processeur
+    clearTimeout(window.resizeTimer);
+    window.resizeTimer = setTimeout(() => {
+      window.autoResizeAllCharts();
+    }, 100);
   });
 
   // Simulation : mise à jour toutes les 2 secondes
