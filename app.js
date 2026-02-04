@@ -171,6 +171,13 @@ document.addEventListener("DOMContentLoaded", () => {
     bestStreak: 0,
     totalWins: 0
   };
+  // 1. Déclaration de la variable d'état
+  let tradeCount = 0; // Si vous l'utilisez toujours
+  let maHistory = [];
+  let isAutoTradeEnabled = localStorage.getItem('autoTradePref') === 'true'; // Récupère la préférence
+  let isScreenshotEnabled = localStorage.getItem('screenshotPref') === 'true';
+  let currentActiveTrade = null; // Stocke l'objet du trade en cours
+  let lastWsHeartbeat = Date.now(); // Pour la sécurité de connexion
   // ================== x ==================  
 
   let wsReady = false;
@@ -1008,17 +1015,17 @@ document.addEventListener("DOMContentLoaded", () => {
       if (adxSeries[type] && adxSeries[type].adx) {
         adxSeries[type].adx.setData([]);
         adxSeries[type].plus.setData([]);
-        adxSeries[type].minus.setData([]); 
-      }  
+        adxSeries[type].minus.setData([]);
+      }
     });
 
     ['mt5', 'wilder'].forEach(type => {
       // Si le graphique existe déjà, on le détruit proprement pour éviter les fuites mémoire
       if (adxCharts[type]) {
-        adxCharts[type].remove();  
+        adxCharts[type].remove();
         adxCharts[type] = null;
-      }  
-    }); 
+      }
+    });
 
     // On vide les références des séries
     // On réinitialise les références des séries
@@ -1253,6 +1260,23 @@ document.addEventListener("DOMContentLoaded", () => {
           if (typeof refreshADX === 'function') {
             refreshADX('mt5');
             refreshADX('wilder');
+
+            if (currentActiveTrade !== null) {
+              checkExit(lastBar);
+            }
+
+            // 3. Lancer la détection si l'Auto-Trade est actif
+            if (isAutoTradeEnabled) {
+              const signal = checkStrategySignals();
+
+              if (signal) {
+                if (signal.boom) {
+                  triggerTrade('SELL', currentSymbol);
+                } else if (signal.crash) {
+                  triggerTrade('BUY', currentSymbol);
+                }
+              }
+            }
           }
 
           render();
@@ -3176,6 +3200,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (typeof window.updateGapMonitor === "function" && currentEma20 && currentEma50) {
           const direction = currentEma20 > currentEma50 ? "↑" : "↓";
           window.updateGapMonitor(currentEma20, currentEma50, direction);
+        }
+      }
+
+      // --- 5b. INITIALISATION DE L'AUTO-TRADE ---
+      // On lance la configuration des contrôles du badge
+      if (typeof window.setupAutoTradeControls === 'function') {
+        window.setupAutoTradeControls();
+
+        // Ajout d'un log temporaire dans le badge pour confirmer l'IA
+        if (alertBadge && isAutoTradeEnabled) {
+          const iaLog = document.createElement('div');
+          iaLog.innerHTML = `<span style="font-size: 9px; color: #008080;">🤖 IA de trading : EN LIGNE</span>`;
+          alertBadge.appendChild(iaLog);
         }
       }
 
@@ -5106,20 +5143,25 @@ document.addEventListener("DOMContentLoaded", () => {
   window.toggleADX = function (type, btn) {
     const container = document.getElementById(type === 'mt5' ? 'adxMt5Container' : 'adxWilderContainer');
     const chartInner = document.getElementById("chartInner");
+    const botPanel = document.getElementById('deriv-bot-panel-root');
+    const statusPill = document.getElementById('deriv-bot-signal-display');
+    const toggleInput = document.getElementById('deriv-bot-auto-toggle');
 
+    // 1. Basculer l'état actif de l'indicateur cliqué
     isAdxActive[type] = btn.classList.toggle("active");
 
+    // 2. Calcul du nombre d'indicateurs actifs et ajustement de la hauteur
     let activeCount = (isAdxActive.mt5 ? 1 : 0) + (isAdxActive.wilder ? 1 : 0);
 
-    // On définit la nouvelle hauteur
-    let newHeight = 750;
-    if (activeCount === 1) newHeight = 500;
-    if (activeCount === 2) newHeight = 350;
+    let newHeight = 750; // Hauteur par défaut (plein écran)
+    if (activeCount === 1) newHeight = 550;
+    if (activeCount === 2) newHeight = 400;
 
-    // APPLICATION : On force les deux propriétés
-    chartInner.style.minHeight = newHeight + "px";
+    // Appliquer la hauteur au conteneur du graphique de prix
     chartInner.style.height = newHeight + "px";
+    chartInner.style.minHeight = newHeight + "px"; // Force le verrouillage pour éviter l'espace vide
 
+    // 3. Afficher/Masquer le volet de l'indicateur concerné
     if (isAdxActive[type]) {
       container.style.display = 'block';
       if (!adxCharts[type]) {
@@ -5129,12 +5171,378 @@ document.addEventListener("DOMContentLoaded", () => {
       container.style.display = 'none';
     }
 
-    // Redimensionnement immédiat
-    if (chart) chart.resize(chartInner.clientWidth, newHeight);
+    // --- LOGIQUE DU BADGE FLOTTANT (AND GATE) ---
+    if (isAdxActive.mt5 && isAdxActive.wilder) {
+      // Apparition fluide du badge si les deux indicateurs sont ON
+      botPanel.style.display = 'block';
+      // Petit délai pour permettre au navigateur d'appliquer le display:block avant l'animation
+      requestAnimationFrame(() => {
+        botPanel.classList.add('visible');
+      });
+    } else {
+      // Disparition fluide si l'un des deux indicateurs est OFF
+      botPanel.classList.remove('visible');
+      setTimeout(() => {
+        if (!botPanel.classList.contains('visible')) {
+          botPanel.style.display = 'none';
+        }
+      }, 400); // Délai calé sur la transition CSS (.4s)
 
-    // Ajuster les ADX
-    autoResizeAllCharts();
+      // --- SÉCURITÉ : DÉSACTIVATION DE L'AUTOMATE ---
+      isAutoTradeEnabled = false;
+      if (toggleInput) toggleInput.checked = false;
+      if (statusPill) statusPill.style.display = 'none';
+
+      // Réinitialisation des calculs statistiques (Z-Score) pour éviter les erreurs de décalage
+      maHistory = [];
+      console.log("🤖 Auto-trading désactivé par sécurité (Indicateurs incomplets)");
+    }
+
+    // 4. Redimensionnement final pour un alignement parfait
+    // Utilisation de requestAnimationFrame pour garantir que le DOM est à jour
+    requestAnimationFrame(() => {
+      const currentWidth = chartInner.clientWidth;
+      if (chart) {
+        chart.resize(currentWidth, newHeight);
+      }
+      // Ajuste les graphiques ADX actifs pour qu'ils aient la même largeur
+      autoResizeAllCharts();
+    });
   };
+
+  /**
+ * @param {number} time - Timestamp (epoch)
+ * @param {string} label - 'OPEN' ou 'CLOSE'
+ * @param {string} side - 'BUY' ou 'SELL'
+ */
+  function addTradeMarker(time, label, side) {
+    if (!currentSeries) return;
+
+    // Récupération des marqueurs existants
+    const currentMarkers = currentSeries.getMarkers() || [];
+
+    // Définition des couleurs (Bleu pour OPEN, Orange pour CLOSE)
+    const isOpening = (label === 'OPEN');
+    const color = isOpening ? '#2196F3' : '#FF9800';
+
+    const newMarker = {
+      time: time,
+      position: 'aboveBar', // Positionné juste au-dessus de la mèche haute
+      color: color,
+      shape: 'arrowDown',   // Crée la ligne verticale pointant vers la bougie
+      text: `${label} ${side}`, // Texte simple sans fioritures
+      size: 2,              // Taille augmentée pour une ligne plus longue/visible
+    };
+
+    // On ajoute le nouveau et on trie par timestamp pour éviter les bugs d'affichage
+    const updatedMarkers = [...currentMarkers, newMarker].sort((a, b) => a.time - b.time);
+
+    currentSeries.setMarkers(updatedMarkers);
+  }
+
+  // Fonction utilitaire pour calculer l'EMA
+  function calculateEMAADX(data, period) {
+    if (data.length < period) return null;
+    const k = 2 / (period + 1);
+    let ema = data[0].close; // Initialisation avec la première clôture
+    for (let i = 1; i < data.length; i++) {
+      ema = (data[i].close * k) + (ema * (1 - k));
+    }
+    return ema;
+  }
+
+  function checkStrategySignals() {
+    const data = cache;
+    if (data.length < 50) return null; // Besoin d'au moins 50 bougies pour l'EMA 50
+
+    const lastBar = data[data.length - 1];
+    const ema50 = calculateEMAADX(data, 50);
+
+    // --- FILTRE DE TENDANCE BAISSIÈRE ---
+    // Le prix doit être strictement en dessous de l'EMA 50
+    const isPriceBelowEMA = lastBar.close < ema50;
+    if (!isPriceBelowEMA) return null; // On arrête tout si on est en tendance haussière
+
+    // --- RÉCUPÉRATION DES DONNÉES ADX (Post-refreshADX) ---
+    const adxMT5 = adxSeries.mt5.adx.data().pop();
+    const diMinusMT5 = adxSeries.mt5.minus.data().pop();
+    const adxWilder = adxSeries.wilder.adx.data().pop();
+    const diMinusWilder = adxSeries.wilder.minus.data().pop();
+
+    // Ajout pour Crash
+    const diPlusMT5 = adxSeries.mt5.plus.data().pop();
+    const diPlusWilder = adxSeries.wilder.plus.data().pop();
+
+    if (!adxMT5 || !adxWilder) return null;
+
+    // --- CALCUL DES GAPS (Votre logique MQL5) ---
+    const ew_boom = 100 * Math.abs(diMinusWilder.value - adxWilder.value) / adxWilder.value;
+    const emt_boom = 100 * Math.abs(diMinusMT5.value - adxMT5.value) / adxMT5.value;
+
+    const ew_crash = 100 * Math.abs(diPlusWilder.value - adxWilder.value) / adxWilder.value;
+    const emt_crash = 100 * Math.abs(diPlusMT5.value - adxMT5.value) / adxMT5.value;
+
+    // --- LOGIQUE DE DÉTECTION AVEC FILTRE EMA ---
+    // Boom 1000 : Vendre uniquement si sous EMA 50 + Gaps valides
+    const isBoomSellSignal = (emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230);
+
+    // Crash 1000 : Acheter uniquement si sous EMA 50 + Gaps valides
+    const isCrashBuySignal = (emt_crash > 2.1 && emt_crash <= 4 && ew_crash > 50 && ew_crash <= 170);
+
+    return {
+      boom: isBoomSellSignal,
+      crash: isCrashBuySignal,
+      ema: ema50,
+      price: lastBar.close
+    };
+  }
+
+  // --- SECTION ÉCOUTEURS D'ÉVÉNEMENTS (Après la création du Chart) ---
+  window.setupAutoTradeControls = function () {
+    const autoToggleInput = document.getElementById('deriv-bot-auto-toggle');
+    const statusPill = document.getElementById('deriv-bot-signal-display');
+    const screenshotToggle = document.getElementById('deriv-bot-screenshot-toggle');
+
+    if (autoToggleInput) {
+      // On synchronise le switch visuel avec la variable globale
+      autoToggleInput.checked = isAutoTradeEnabled;
+
+      // On gère l'affichage initial de la pilule
+      if (isAutoTradeEnabled) {
+        statusPill.style.display = 'block';
+        statusPill.innerText = "SCANNER ACTIF";
+        statusPill.style.backgroundColor = "#008080";
+      }
+
+      // Écouteur pour les changements manuels
+      autoToggleInput.onchange = function () {
+        isAutoTradeEnabled = this.checked;
+        localStorage.setItem('autoTradePref', isAutoTradeEnabled);
+        statusPill.style.display = isAutoTradeEnabled ? 'block' : 'none';
+        if (isAutoTradeEnabled) statusPill.innerText = "SCANNER ACTIF";
+      };
+
+      // Dans setupAutoTradeControls()
+      if (screenshotToggle) {
+        screenshotToggle.checked = isScreenshotEnabled;
+        screenshotToggle.onchange = function () {
+          isScreenshotEnabled = this.checked;
+          localStorage.setItem('screenshotPref', isScreenshotEnabled);
+        };
+      }
+    }
+  };
+
+  window.resetTradingSettings = function () {
+    if (confirm("Voulez-vous réinitialiser tous les paramètres et effacer la session ?")) {
+
+      // 1. Nettoyage du LocalStorage
+      const keys = [
+        'autoTradePref',
+        'screenshotPref',
+        'last_ema_20',
+        'last_ema_50',
+        'active_ma_periods',
+        'ma_sniper_armed',
+        'ma_sniper_sensitivity'
+      ];
+      keys.forEach(k => localStorage.removeItem(k));
+
+      // 2. Nettoyage Visuel Immédiat (Graphique)
+      if (currentSeries) {
+        currentSeries.setMarkers([]); // Efface les flèches OPEN/CLOSE
+      }
+
+      // 3. Vidage du Canvas Overlay
+      const overlay = document.getElementById('Trendoverlay__');
+      if (overlay) {
+        const ctx = overlay.getContext('2d');
+        ctx.clearRect(0, 0, overlay.width, overlay.height); // Efface les dessins de tendance
+      }
+
+      // 4. Feedback visuel sur le bouton
+      const btn = document.querySelector('a[onclick="window.resetTradingSettings()"]');
+      if (btn) {
+        btn.innerText = "Nettoyage...";
+        btn.style.color = "#64748b"; // Changement de couleur pour indiquer le traitement
+      }
+
+      // 5. Désactivation de l'automate en mémoire
+      isAutoTradeEnabled = false;
+
+      // 6. Rechargement
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    }
+  };
+
+  window.ADXtakeTradeScreenshot = function (status, asset) {
+    const chartContainer = document.getElementById('chartInner'); // Remplacez par votre ID de container
+    const chartCanvas = chartContainer.querySelector('canvas');
+    const overlayCanvas = document.getElementById('Trendoverlay__');
+
+    if (!chartCanvas) return;
+
+    // Création d'un canvas temporaire pour la fusion
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = chartCanvas.width;
+    tempCanvas.height = chartCanvas.height;
+    const ctx = tempCanvas.getContext('2d');
+
+    // 1. Dessiner le graphique principal
+    ctx.drawImage(chartCanvas, 0, 0);
+
+    // 2. Dessiner l'overlay par-dessus (si disponible)
+    if (overlayCanvas) {
+      ctx.drawImage(overlayCanvas, 0, 0);
+    }
+
+    // 3. Ajouter un horodatage et le texte sur l'image
+    ctx.fillStyle = "white";
+    ctx.font = "bold 16px Arial";
+    ctx.fillText(`SNIPER BOT - ${status} - ${asset}`, 20, 30);
+    ctx.font = "12px Arial";
+    ctx.fillText(new Date().toLocaleString(), 20, 50);
+
+    // 4. Téléchargement
+    const dateStr = new Date().toISOString().replace(/[:.]/g, '-');
+    const link = document.createElement('a');
+    link.download = `Trade_${status}_${asset}_${dateStr}.png`;
+    link.href = tempCanvas.toDataURL('image/png');
+    link.click();
+  };
+
+  /**
+ * Déclenche l'ouverture et gère la fermeture automatique d'un trade
+ * @param {string} side - 'BUY' ou 'SELL'
+ * @param {string} asset - Nom de l'actif (ex: 'Boom 1000')
+ */
+  function triggerTrade(side, asset) {
+    const lastBar = cache[cache.length - 1];
+    if (!lastBar || currentActiveTrade) return;
+
+    // asset contient ici votre currentSymbol (ex: 'BOOM1000')
+    currentActiveTrade = {
+      side: side,
+      asset: asset,
+      openTime: lastBar.time,
+      openPrice: lastBar.close
+    };
+
+    const pill = document.getElementById('deriv-bot-signal-display');
+    pill.innerText = `OPEN ${side} @ ${asset}`;
+    pill.style.backgroundColor = "#008080";
+    pill.style.display = 'block';
+
+    addTradeMarker(lastBar.time, 'OPEN', side);
+
+    // Capture automatique après un léger délai pour laisser le marqueur s'afficher
+    setTimeout(() => {
+      window.ADXtakeTradeScreenshot('OPEN', asset);
+    }, 200);
+
+    if (isScreenshotEnabled) {
+      setTimeout(() => window.ADXtakeTradeScreenshot('OPEN', asset), 500);
+    }
+
+    // Log formaté pour la console
+    console.log(`%c [TRADE START] ${side} sur ${asset} à ${lastBar.close}`, 'background: #008080; color: #fff; font-weight: bold;');
+  }
+
+  function checkExit(currentBar) {
+    if (!currentActiveTrade) return;
+
+    const pill = document.getElementById('deriv-bot-signal-display');
+    const timeSinceLastUpdate = Date.now() - lastWsHeartbeat;
+
+    // --- SÉCURITÉ 1 : WATCHDOG CONNEXION ---
+    if (timeSinceLastUpdate > 10000) {
+      executeClosingLogic(currentBar, "SÉCURITÉ : DÉCONNEXION");
+      return;
+    }
+
+    // Récupération des données pour le calcul
+    const ema50 = calculateEMAADX(cache, 50);
+    const zScore = calculateZScore(currentBar.close, ema50, 50);
+
+    // --- LOGIQUE 2 : CONDITIONS DE SORTIE ---
+
+    // A. Sortie par le Temps (3 bougies)
+    const elapsedMinutes = Math.floor((currentBar.time - currentActiveTrade.openTime) / 60);
+    const isTimeOut = elapsedMinutes >= 3;
+
+    // B. Sortie par Inversion de Tendance (Prix repasse l'EMA 50)
+    const isTrendReversed = (currentActiveTrade.side === 'SELL' && currentBar.close > ema50) ||
+      (currentActiveTrade.side === 'BUY' && currentBar.close < ema50);
+
+    // C. Sortie par Z-Score (Sur-extension / Profit Max atteint)
+    // Pour un SELL (Boom), un Z-Score très négatif (ex: < -2.5) signifie une chute extrême
+    const isOverExtended = Math.abs(zScore) > 2.0;
+
+    if (isTimeOut || isTrendReversed || isOverExtended) {
+      let reason = isTimeOut ? "TIME" : (isTrendReversed ? "EMA" : "VOLATILITY (Z)");
+      executeClosingLogic(currentBar, reason);
+    }
+  }
+
+  function calculateZScore(price, ema, period) {
+    const data = cache.slice(-period);
+    if (data.length < period) return 0;
+
+    // Calcul de l'écart-type (Standard Deviation)
+    const mean = ema;
+    const squareDiffs = data.map(bar => Math.pow(bar.close - mean, 2));
+    const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / period;
+    const stdDev = Math.sqrt(avgSquareDiff);
+
+    return stdDev === 0 ? 0 : (price - mean) / stdDev;
+  }
+
+  // Fonction interne pour centraliser la fermeture visuelle
+  function executeClosingLogic(bar, reason) {
+    const pill = document.getElementById('deriv-bot-signal-display');
+
+    // Marqueur Orange
+    addTradeMarker(bar.time, 'CLOSE', currentActiveTrade.side);
+
+    pill.innerText = `CLOSED (${reason})`;
+    pill.style.backgroundColor = "#FF9800"; // Orange
+
+    console.log(`[AUTOMATE] ✅ Trade clôturé : ${reason}`);
+
+    // Libérer la variable pour le prochain trade
+    currentActiveTrade = null;
+
+    // Retour au mode scan
+    setTimeout(() => {
+      if (isAutoTradeEnabled) {
+        pill.innerText = "RESEARCH SIGNAL...";
+        pill.style.backgroundColor = "#008080";
+      }
+    }, 5000);
+
+    // Capture automatique de la sortie
+    setTimeout(() => {
+      window.ADXtakeTradeScreenshot(`CLOSED_${reason}`, currentActiveTrade.asset);
+    }, 200);
+
+    if (isScreenshotEnabled) {
+      setTimeout(() => window.ADXtakeTradeScreenshot(`CLOSED_${reason}`, currentActiveTrade.asset), 500);
+    }
+  }
+
+  // Routine de sauvegarde de sécurité
+  function startSafetySaveRoutine() {
+    setInterval(() => {
+      if (isAutoTradeEnabled) {
+        // On sauvegarde l'état actuel pour la restauration
+        localStorage.setItem('autoTradePref', 'true');
+        // Sauvegardez ici d'autres métriques si nécessaire (ex: tradeCount)
+        console.log("💾 Sauvegarde de sécurité effectuée...");
+      }
+    }, 300000); // Toutes les 5 minutes (300 000 ms)
+  }
 
   // --- CALCULS ET REFRESH ---
   function refreshADX(type) {
@@ -7933,6 +8341,8 @@ document.addEventListener("DOMContentLoaded", () => {
   inithistoricalchart();
   // Appeler la demande au démarrage
   window.requestNotificationPermission();
+  // Lancer la routine au démarrage
+  startSafetySaveRoutine();
 
   if (typeof window.updateSymbols === 'function') {
     window.updateSymbols();

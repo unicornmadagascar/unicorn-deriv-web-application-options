@@ -4383,13 +4383,136 @@
       background: rgba(255, 255, 255, 0.7);
       padding: 2px 5px;
       border-radius: 3px;
-      display: none !important;   
+      display: none !important;
     }
 
     /* Style pour les boutons actifs dans la barre latérale */
     .side-toolbar button.active {
       background-color: white;
       color: #007bff;
+    }
+
+    /* ----------- ADX BADGE ------------- */
+    #deriv-bot-panel-root {
+      display: none;
+      /* Contrôlé par JS */
+      position: absolute;
+      top: 25px;
+      right: 85px;
+      z-index: 999;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 12px;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      min-width: 160px;
+
+      /* Animation de base */
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Classe pour déclencher l'entrée fluide */
+    #deriv-bot-panel-root.visible {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .deriv-bot-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .deriv-bot-panel-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #444;
+      letter-spacing: 0.5px;
+    }
+
+    .deriv-bot-pill-status {
+      background-color: #008080;
+      /* Teal */
+      color: white;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 50px;
+      margin-top: 10px;
+      text-align: center;
+      text-transform: uppercase;
+      animation: deriv-bot-fade-pulse 2s infinite;
+    }
+
+    /* Toggle Switch avec préfixes */
+    .deriv-bot-switch-container {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+    }
+
+    .deriv-bot-switch-container input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .deriv-bot-switch-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .3s;
+    }
+
+    .deriv-bot-switch-slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    .deriv-bot-radius-round {
+      border-radius: 34px;
+    }
+
+    input:checked+.deriv-bot-switch-slider {
+      background-color: #008080;
+    }
+
+    input:checked+.deriv-bot-switch-slider:before {
+      transform: translateX(16px);
+    }
+
+    @keyframes deriv-bot-fade-pulse {
+      0% {
+        opacity: 0.7;
+        transform: scale(0.98);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      100% {
+        opacity: 0.7;
+        transform: scale(0.98);
+      }
     }
   </style>
 </head>
@@ -4656,6 +4779,37 @@
           <div style="margin-left: auto; display: flex; align-items: center; gap: 5px;">
             <button class="btn-export" onclick="exportLogsToCSV()" title="Exporter le journal CSV">📥</button>
             <button class="btn-reset" onclick="clearSniperLogs()" title="Effacer le journal">🗑️</button>
+          </div>
+        </div>
+
+        <div id="deriv-bot-panel-root">
+          <div class="deriv-bot-panel-header">
+            <span class="deriv-bot-indicator-dot"></span>
+            <span class="deriv-bot-panel-title">AUTO-TRADE</span>
+            <label class="deriv-bot-switch-container">
+              <input type="checkbox" id="deriv-bot-auto-toggle">
+              <span class="deriv-bot-switch-slider deriv-bot-radius-round"></span>
+            </label>
+          </div>
+
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding: 0 5px;">
+            <span style="font-size: 9px; color: #94a3b8;">AUTO-SCREENSHOT</span>
+            <label class="deriv-bot-switch-container" style="width: 30px; height: 16px;">
+              <input type="checkbox" id="deriv-bot-screenshot-toggle">
+              <span class="deriv-bot-switch-slider deriv-bot-radius-round"></span>
+            </label>
+          </div>
+
+          <div id="deriv-bot-signal-display" class="deriv-bot-pill-status" style="display: none;">
+            RECHERCHE SIGNAL...
+          </div>
+
+          <div style="text-align: right; margin-top: 5px;">
+            <a href="javascript:void(0)" onclick="window.resetTradingSettings()"
+              style="font-size: 8px; color: #ef4444; text-decoration: none; opacity: 0.6; cursor: pointer;">
+              Effacer session
+            </a>
           </div>
         </div>
 
