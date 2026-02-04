@@ -993,16 +993,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
 
     // AJOUTEZ CECI ICI :
-    chart.subscribeCrosshairMove(param => {  
+    chart.subscribeCrosshairMove(param => {
       // Sécurité : on vérifie que param existe
-      if (!param || param.time === undefined) {   
+      if (!param || param.time === undefined) {
         // Optionnel : remettre à "--" quand la souris quitte le graphique
         resetAdxLegends();
       } else {
         // On met à jour les deux légendes ADX avec les données au point de la souris
-        if (isAdxActive.mt5) updateAdxLegend('mt5', param);  
-        if (isAdxActive.wilder) updateAdxLegend('wilder', param);   
-      }  
+        if (isAdxActive.mt5) updateAdxLegend('mt5', param);
+        if (isAdxActive.wilder) updateAdxLegend('wilder', param);
+      }
     });
 
     // ÉCOUTEUR DU ZOOM / SCROLL (TimeScale)
@@ -1159,11 +1159,11 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     ws.onmessage = ({ data }) => {
-      if (thisSessionId !== currentSessionId) {    
+      if (thisSessionId !== currentSessionId) {
         if (ws) ws.close();
         return;
       }
-   
+
       const msg = JSON.parse(data);
 
       // 1. Autorisation -> Envoi des Payloads (Market + Contracts)
@@ -5283,48 +5283,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function checkStrategySignals() {
     const data = cache;
-    if (data.length < 50) return null; // Besoin d'au moins 50 bougies pour l'EMA 50
+    if (data.length < 50) return null;
 
     const lastBar = data[data.length - 1];
     const ema50 = calculateEMAADX(data, 50);
 
-    // --- FILTRE DE TENDANCE BAISSIÈRE ---
-    // Le prix doit être strictement en dessous de l'EMA 50
     const isPriceBelowEMA = lastBar.close < ema50;
-    if (!isPriceBelowEMA) return null; // On arrête tout si on est en tendance haussière
+    if (!isPriceBelowEMA) return null;
 
-    // --- RÉCUPÉRATION DES DONNÉES ADX (Post-refreshADX) ---
-    const adxMT5 = adxSeries.mt5.adx.data().pop();
-    const diMinusMT5 = adxSeries.mt5.minus.data().pop();
-    const adxWilder = adxSeries.wilder.adx.data().pop();
-    const diMinusWilder = adxSeries.wilder.minus.data().pop();
+    // --- SÉCURITÉ : Vérifier si les séries ADX existent ---
+    // Si l'utilisateur n'a pas ouvert les panneaux ADX, adxSeries.mt5.adx peut être null
+    if (!adxSeries.mt5.adx || !adxSeries.wilder.adx) {
+      console.warn("[STRATEGY] Les séries ADX ne sont pas encore prêtes.");
+      return null;
+    }
 
-    // Ajout pour Crash
-    const diPlusMT5 = adxSeries.mt5.plus.data().pop();
-    const diPlusWilder = adxSeries.wilder.plus.data().pop();
+    try {
+      // Récupération sécurisée des dernières données
+      const getVal = (series) => {
+        const d = series.data();
+        return d.length > 0 ? d[d.length - 1] : null;
+      };
 
-    if (!adxMT5 || !adxWilder) return null;
+      const adxMT5 = getVal(adxSeries.mt5.adx);
+      const diMinusMT5 = getVal(adxSeries.mt5.minus);
+      const diPlusMT5 = getVal(adxSeries.mt5.plus);
 
-    // --- CALCUL DES GAPS (Votre logique MQL5) ---
-    const ew_boom = 100 * Math.abs(diMinusWilder.value - adxWilder.value) / adxWilder.value;
-    const emt_boom = 100 * Math.abs(diMinusMT5.value - adxMT5.value) / adxMT5.value;
+      const adxWilder = getVal(adxSeries.wilder.adx);
+      const diMinusWilder = getVal(adxSeries.wilder.minus);
+      const diPlusWilder = getVal(adxSeries.wilder.plus);
 
-    const ew_crash = 100 * Math.abs(diPlusWilder.value - adxWilder.value) / adxWilder.value;
-    const emt_crash = 100 * Math.abs(diPlusMT5.value - adxMT5.value) / adxMT5.value;
+      // Si une seule donnée manque, on sort pour éviter le crash
+      if (!adxMT5 || !diMinusMT5 || !adxWilder || !diMinusWilder || !diPlusMT5 || !diPlusWilder) return null;
 
-    // --- LOGIQUE DE DÉTECTION AVEC FILTRE EMA ---
-    // Boom 1000 : Vendre uniquement si sous EMA 50 + Gaps valides  
-    const isBoomSellSignal = (emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230);
+      // --- CALCUL DES GAPS ---
+      const ew_boom = 100 * Math.abs(diMinusWilder.value - adxWilder.value) / adxWilder.value;
+      const emt_boom = 100 * Math.abs(diMinusMT5.value - adxMT5.value) / adxMT5.value;
 
-    // Crash 1000 : Acheter uniquement si sous EMA 50 + Gaps valides
-    const isCrashBuySignal = (emt_crash > 2.1 && emt_crash <= 4 && ew_crash > 50 && ew_crash <= 170);
+      const ew_crash = 100 * Math.abs(diPlusWilder.value - adxWilder.value) / adxWilder.value;
+      const emt_crash = 100 * Math.abs(diPlusMT5.value - adxMT5.value) / adxMT5.value;
 
-    return {
-      boom: isBoomSellSignal,
-      crash: isCrashBuySignal,
-      ema: ema50,
-      price: lastBar.close
-    };
+      // --- LOGIQUE DE DÉTECTION ---
+      const isBoomSellSignal = (emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230);
+      const isCrashBuySignal = (emt_crash > 2.1 && emt_crash <= 4 && ew_crash > 50 && ew_crash <= 170);
+
+      return {
+        boom: isBoomSellSignal,
+        crash: isCrashBuySignal,
+        ema: ema50,
+        price: lastBar.close
+      };
+    } catch (e) {
+      console.error("Erreur dans le calcul des signaux ADX:", e);
+      return null;
+    }
   }
 
   // --- SECTION ÉCOUTEURS D'ÉVÉNEMENTS (Après la création du Chart) ---
@@ -5577,14 +5589,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- CALCULS ET REFRESH ---
   function refreshADX(type) {
     const data = priceDataZZ; // Utilise vos bougies de Deriv (cache)
-    if (!isAdxActive[type] || !adxCharts[type] || !data || data.length < 30) return;
+    if (!adxSeries[type].adx || !data || data.length < 30) return;
 
     const p = 14;
     let tms = [], trs = [], pdms = [], mdms = [], plusSdiMT4 = [], minusSdiMT4 = [];
 
     // 1. Préparation des données brutes
     for (let i = 1; i < data.length; i++) {
-      const cur = data[i], prev = data[i - 1];
+      const cur = data[i], prev = data[i - 1];  
       tms.push(cur.time);
 
       let pdm = cur.high - prev.high;
