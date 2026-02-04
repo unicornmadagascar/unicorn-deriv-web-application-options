@@ -5600,7 +5600,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tms.push(cur.time);
 
       let pdm = cur.high - prev.high;
-      let mdm = prev.low - cur.low;
+      let mdm = prev.low - cur.low;  
       if (pdm < 0) pdm = 0;
       if (mdm < 0) mdm = 0;
       if (pdm === mdm) { pdm = 0; mdm = 0; }
