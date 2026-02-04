@@ -5635,7 +5635,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const sum = Math.abs(v + minusDiW[i]);
         return sum === 0 ? 0 : 100 * (Math.abs(v - minusDiW[i]) / sum);
       });
-      adxSeries.wilder.adx.setData(format(calcRMA(dxW, p)));
+      adxSeries.wilder.adx.setData(format(calcRMA(dxW, p)));  
       adxSeries.wilder.plus.setData(format(plusDiW));
       adxSeries.wilder.minus.setData(format(minusDiW));
     }
