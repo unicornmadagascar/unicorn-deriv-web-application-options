@@ -278,13 +278,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // previousMomentum is kept across ticks for derivative calc
   let previousMomentum = 0;
   let smoothEMA = null;
-  //---- BC MODEL ////////////////////////
-  let prices__ = [];
-  let lastProb = null;
-  let probsNew = [];
-  let ProbTick = [];
-  let candles__ = [];
-  let candles = [];
   // --- Tableau de markers déjà ajoutés sur le chart ---
   const calendarMarkers = {}; // stocke les markers par rowId
   // ================================
