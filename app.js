@@ -1157,7 +1157,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(async () => { await loadSymbol(); }, 300);
     };
 
-    ws.onerror = () => {
+    ws.onerror = () => {  
       ws.close();
       setTimeout(async () => { await loadSymbol(); }, 300);
     };
