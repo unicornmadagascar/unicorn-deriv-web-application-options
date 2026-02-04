@@ -1163,7 +1163,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (ws) ws.close();
         return;
       }
-
+   
       const msg = JSON.parse(data);
 
       // 1. Autorisation -> Envoi des Payloads (Market + Contracts)
