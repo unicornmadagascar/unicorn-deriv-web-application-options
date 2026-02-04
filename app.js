@@ -993,7 +993,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
 
     // AJOUTEZ CECI ICI :
-    chart.subscribeCrosshairMove(param => {
+    chart.subscribeCrosshairMove(param => {  
       // Sécurité : on vérifie que param existe
       if (!param || param.time === undefined) {
         // Optionnel : remettre à "--" quand la souris quitte le graphique
@@ -1001,7 +1001,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         // On met à jour les deux légendes ADX avec les données au point de la souris
         if (isAdxActive.mt5) updateAdxLegend('mt5', param);
-        if (isAdxActive.wilder) updateAdxLegend('wilder', param);
+        if (isAdxActive.wilder) updateAdxLegend('wilder', param);  
       }  
     });
 
