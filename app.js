@@ -995,7 +995,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // AJOUTEZ CECI ICI :
     chart.subscribeCrosshairMove(param => {  
       // Sécurité : on vérifie que param existe
-      if (!param || param.time === undefined) {
+      if (!param || param.time === undefined) {   
         // Optionnel : remettre à "--" quand la souris quitte le graphique
         resetAdxLegends();
       } else {
