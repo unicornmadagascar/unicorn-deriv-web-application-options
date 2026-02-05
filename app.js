@@ -1115,7 +1115,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- NETTOYAGE COMPLET ---
     if (ws) {
-      ws.onclose = null;  
+      //ws.onclose = null;  
       ws.close();
       ws = null;
     }
