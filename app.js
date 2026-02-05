@@ -4317,14 +4317,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // --- B. RÉCEPTION DU PORTFOLIO (Au démarrage/Refresh) ---
       if (data.msg_type === "portfolio") {
-        const contracts = data.portfolio.contracts || [];
-        console.log("PORTFOLIO CONTRACT LENGTH :", contracts.length);
-        contracts.forEach(c => {
+        const contracts__ = data.portfolio.contracts || [];
+        console.log("PORTFOLIO CONTRACT LENGTH :", contracts__.length);
+        contracts__.forEach(c => {
           // On s'abonne à chaque contrat pour avoir le flux temps réel
           window.subscribeToContract(c.contract_id);
         });
       }
-    };
+    };  
 
     ws4update.onerror = (err) => {
       ws4update.close();
