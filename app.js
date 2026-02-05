@@ -5763,15 +5763,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (vpData) {
         ctx.save();
         const { profile, maxTotalVolume, rowHeight, vah, val } = vpData;
-        const maxWidth = 200;  
+        const maxWidth = 200;   
         const offsetFromPriceScale = 70;
         const startX = canvas.width - offsetFromPriceScale;
 
-        for (const yKey in profile) {
+        for (const yKey in profile) {  
           const d = profile[yKey];
           const y = parseFloat(yKey);
           const isInValueArea = d.price <= vah && d.price >= val;
-
+   
           // Couleurs optimisées fond blanc
           const buyColor = isInValueArea ? 'rgba(0, 150, 136, 0.55)' : 'rgba(0, 150, 136, 0.15)';
           const sellColor = isInValueArea ? 'rgba(255, 82, 82, 0.45)' : 'rgba(255, 82, 82, 0.10)';
