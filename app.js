@@ -4288,7 +4288,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function initPortfolioStream() {
     // Éviter les connexions multiples si une est déjà active
     if (ws4update === null) {
-      ws4update = new WebSocket(WS_URL);
+      ws4update = new WebSocket(WS_URL);  
       ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };  
     }  
 
