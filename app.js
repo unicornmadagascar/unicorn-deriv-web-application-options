@@ -5295,7 +5295,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // --- LOGIQUE DE DÉTECTION ---
       const isBoomSellSignal = (emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230);  
-      const isCrashBuySignal = (emt_crash > 3.2 && emt_crash <= 7 && ew_crash > 50 && ew_crash <= 200);
+      const isCrashBuySignal = (emt_crash > 3.2 && emt_crash <= 7 && ew_crash > 70 && ew_crash <= 200);
 
       return {
         boom: isBoomSellSignal,
