@@ -5531,10 +5531,6 @@ document.addEventListener("DOMContentLoaded", () => {
     playTradeSound('open');
 
     // Capture automatique après un léger délai pour laisser le marqueur s'afficher
-    setTimeout(() => {
-      window.ADXtakeTradeScreenshot('OPEN', asset);
-    }, 200);
-
     if (isScreenshotEnabled) {
       setTimeout(() => window.ADXtakeTradeScreenshot('OPEN', asset), 500);
     }
