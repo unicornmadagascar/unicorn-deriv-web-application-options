@@ -4289,8 +4289,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Éviter les connexions multiples si une est déjà active
     if (ws4update === null) {
       ws4update = new WebSocket(WS_URL);
-      ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
-    }
+      ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };  
+    }  
 
     if (ws4update && (ws4update.readyState === WebSocket.OPEN || ws4update.readyState === WebSocket.CONNECTING)) {
       ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
