@@ -8427,7 +8427,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialisation de vos deux badges
   window.addEventListener('load', () => {
     makeElementDraggable("ma-sniper-label");
-    makeElementDraggable("volatility-label");
+    makeElementDraggable("volatility-label");  
+    makeElementDraggable("deriv-bot-panel-root");
   });
 
   // Écouteur pour le redimensionnement de la fenêtre
