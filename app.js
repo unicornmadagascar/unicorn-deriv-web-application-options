@@ -348,11 +348,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let isAdxActive = { mt5: false, wilder: false };
   let adxSeries = {
     mt5: { adx: null, plus: null, minus: null },
-    wilder: { adx: null, plus: null, minus: null }  
+    wilder: { adx: null, plus: null, minus: null }
   };
 
   window.MasterStorage = {
-    key: 'sniper_master_db',   
+    key: 'sniper_master_db',
 
     getDb: function () {
       try {
@@ -890,6 +890,8 @@ document.addEventListener("DOMContentLoaded", () => {
     container.innerHTML = "";
     priceLines4openlines = {}; // Reset de l'objet des contrats
 
+    // Au tout début de initChart
+    isWsInitialized = false; // Bloque le traitement des messages WS pendant la reconstruction
     // Reset des séries pour forcer leur recréation
     currentSeries = null;
     zigzagSeries = null;
@@ -980,6 +982,8 @@ document.addEventListener("DOMContentLoaded", () => {
         lineWidth: 2,
       });
     }
+
+    currentSeries.title = "MainPrice";
 
     // ==========================================
     // AJOUT : SYNCHRONISATION ET LÉGENDES ADX
@@ -1117,7 +1121,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (ws) {
       //ws.onclose = null;  
       ws.close();
-      ws = null;  
+      ws = null;
     }
 
     cache = [];
@@ -1141,8 +1145,8 @@ document.addEventListener("DOMContentLoaded", () => {
       ws.send(JSON.stringify({ authorize: TOKEN }));
     };
 
-    ws.onclose = () => {   
-      ws.close();  
+    ws.onclose = () => {
+      ws.close();
       ws = null;
       setTimeout(async () => { await loadSymbol(); }, 300);
     };
@@ -1152,7 +1156,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     ws.onmessage = ({ data }) => {
-      if (thisSessionId !== currentSessionId) {  
+      if (thisSessionId !== currentSessionId) {
         if (ws) ws.close();
         return;
       }
@@ -5239,28 +5243,36 @@ document.addEventListener("DOMContentLoaded", () => {
  * @param {string} side - 'BUY' ou 'SELL'
  */
   function addTradeMarker(time, label, side) {
-    if (!currentSeries) return;
+    // Vérification : La série existe-t-elle et est-ce bien une série Lightweight Charts ?
+    if (!currentSeries || typeof currentSeries.setMarkers !== 'function') {
+      console.warn("⚠️ Impossible d'ajouter le marqueur : currentSeries n'est pas prête.");
+      return;
+    }
 
-    // Récupération des marqueurs existants
-    const currentMarkers = currentSeries.getMarkers() || [];
+    try {
+      // Récupération des marqueurs avec fallback si getMarkers n'existe pas
+      const currentMarkers = (typeof currentSeries.getMarkers === 'function')
+        ? currentSeries.getMarkers()
+        : [];
 
-    // Définition des couleurs (Bleu pour OPEN, Orange pour CLOSE)
-    const isOpening = (label === 'OPEN');
-    const color = isOpening ? '#2196F3' : '#FF9800';
+      const isOpening = (label === 'OPEN');
+      const color = isOpening ? '#2196F3' : '#FF9800';
 
-    const newMarker = {
-      time: time,
-      position: 'aboveBar', // Positionné juste au-dessus de la mèche haute
-      color: color,
-      shape: 'arrowDown',   // Crée la ligne verticale pointant vers la bougie
-      text: `${label} ${side}`, // Texte simple sans fioritures
-      size: 2,              // Taille augmentée pour une ligne plus longue/visible
-    };
+      const newMarker = {
+        time: time,
+        position: 'aboveBar',
+        color: color,
+        shape: 'arrowDown',
+        text: `${label} ${side}`,
+        size: 2,
+      };
 
-    // On ajoute le nouveau et on trie par timestamp pour éviter les bugs d'affichage
-    const updatedMarkers = [...currentMarkers, newMarker].sort((a, b) => a.time - b.time);
+      const updatedMarkers = [...currentMarkers, newMarker].sort((a, b) => a.time - b.time);
+      currentSeries.setMarkers(updatedMarkers);
 
-    currentSeries.setMarkers(updatedMarkers);
+    } catch (error) {
+      console.error("❌ Erreur lors de l'ajout du marqueur:", error);
+    }
   }
 
   // Fonction utilitaire pour calculer l'EMA
@@ -5589,11 +5601,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 1. Préparation des données brutes
     for (let i = 1; i < data.length; i++) {
-      const cur = data[i], prev = data[i - 1];  
+      const cur = data[i], prev = data[i - 1];
       tms.push(cur.time);
 
       let pdm = cur.high - prev.high;
-      let mdm = prev.low - cur.low;  
+      let mdm = prev.low - cur.low;
       if (pdm < 0) pdm = 0;
       if (mdm < 0) mdm = 0;
       if (pdm === mdm) { pdm = 0; mdm = 0; }
@@ -5643,10 +5655,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function resetAdxLegends() {
-    document.querySelectorAll('.adx-legend span:not(.close-adx)').forEach(s => {
-      if (s.innerText.includes(':')) {
-        const label = s.innerText.split(':')[0];
-        s.innerText = `${label}: --`;
+    ['mt5', 'wilder'].forEach(type => {
+      const legend = document.getElementById(`legend-${type}`);
+      if (legend) {
+        // On saute le premier enfant si c'est la croix de fermeture
+        const start = legend.children[0].classList.contains('close-adx') ? 1 : 0;
+        for (let i = start; i < legend.children.length; i++) {
+          const parts = legend.children[i].innerText.split(':');
+          if (parts.length > 1) {
+            legend.children[i].innerText = parts[0] + ': --';
+          }
+        }   
       }
     });
   }
@@ -8427,8 +8446,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialisation de vos deux badges
   window.addEventListener('load', () => {
     makeElementDraggable("ma-sniper-label");
-    makeElementDraggable("volatility-label");    
-    makeElementDraggable("deriv-bot-panel-root");    
+    makeElementDraggable("volatility-label");
+    makeElementDraggable("deriv-bot-panel-root");
   });
 
   // Écouteur pour le redimensionnement de la fenêtre
