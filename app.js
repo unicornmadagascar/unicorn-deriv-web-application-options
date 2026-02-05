@@ -5491,7 +5491,7 @@ document.addEventListener("DOMContentLoaded", () => {
       slider.value = window.currentBotVolume;
       display.innerText = Math.round(window.currentBotVolume * 100) + "%";
 
-      // Écouteur du slider
+      // Écouteur du slider  
       slider.oninput = function () {
         window.currentBotVolume = parseFloat(this.value);
         display.innerText = Math.round(window.currentBotVolume * 100) + "%";
