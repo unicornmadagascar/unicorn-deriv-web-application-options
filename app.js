@@ -5765,7 +5765,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const { profile, maxTotalVolume, rowHeight, vah, val } = vpData;
         const maxWidth = 200;   
         const offsetFromPriceScale = 70;
-        const startX = canvas.width - offsetFromPriceScale;
+        const startX = canvas.width - offsetFromPriceScale;  
 
         for (const yKey in profile) {  
           const d = profile[yKey];
