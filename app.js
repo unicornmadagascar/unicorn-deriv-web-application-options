@@ -5659,11 +5659,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const legend = document.getElementById(`legend-${type}`);
       if (legend) {
         // On saute le premier enfant si c'est la croix de fermeture
-        const start = legend.children[0].classList.contains('close-adx') ? 1 : 0;
+        const start = legend.children[0].classList.contains('close-adx') ? 1 : 0;  
         for (let i = start; i < legend.children.length; i++) {
           const parts = legend.children[i].innerText.split(':');
           if (parts.length > 1) {
-            legend.children[i].innerText = parts[0] + ': --';
+            legend.children[i].innerText = parts[0] + ': --';   
           }
         }   
       }
