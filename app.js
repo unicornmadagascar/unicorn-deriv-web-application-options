@@ -1007,14 +1007,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     activeContractsData = {};
     activeContracts = {};
-    lastTotalPnL = 0;
+    lastTotalPnL = 0;  
 
     // --- 5. FINALISATION ET RETRAIT DU LOADER ---
     if (fill) fill.style.width = "100%";    
-    setTimeout(() => {  
+    setTimeout(() => {   
       if (loader) {
         loader.style.opacity = "0";
-        setTimeout(() => {
+        setTimeout(() => {  
           loader.remove();
           isWsInitialized = true; // Débloque le bot une fois que TOUT est prêt
         }, 300);
