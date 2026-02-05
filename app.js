@@ -5858,10 +5858,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 5000);
 
     // Capture automatique de la sortie
-    setTimeout(() => {
-      window.ADXtakeTradeScreenshot(`CLOSED_${reason}`, currentActiveTrade.asset);
-    }, 200);
-
     if (isScreenshotEnabled) {
       setTimeout(() => window.ADXtakeTradeScreenshot(`CLOSED_${reason}`, currentActiveTrade.asset), 500);
     }
