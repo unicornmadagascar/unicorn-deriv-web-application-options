@@ -874,7 +874,7 @@ document.addEventListener("DOMContentLoaded", () => {
       container.style.position = 'relative';
       container.insertAdjacentHTML('beforeend', `
             <div id="chart-init-loader" class="chart-loader">
-                <span style="font-size: 12px; font-weight: bold; color: #1e293b;">INITIALISATION DU MOTEUR...</span>
+                <span style="font-size: 12px; font-weight: bold; color: #1e293b;">INITIALIZATION...</span>
                 <div class="loader-bar"><div id="loader-fill" class="loader-progress"></div></div>
             </div>
         `);
@@ -964,7 +964,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (typeof resetAdxLegends === 'function') resetAdxLegends();
       } else {
         if (isAdxActive.mt5) updateAdxLegend('mt5', param);
-        if (isAdxActive.wilder) updateAdxLegend('wilder', param);
+        if (isAdxActive.wilder) updateAdxLegend('wilder', param);   
       }
     });
 
@@ -991,9 +991,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (fill) fill.style.width = "80%";
 
     // RÉGLAGE TAILLE
-    const chartInner = document.getElementById("chartInner");
+    const chartInner = document.getElementById("chartInner");    
     chartInner.style.minHeight = "0px";
-    chartInner.style.height = "750px";
+    chartInner.style.height = "750px";  
     chart.resize(chartInner.clientWidth, 750);
 
     document.getElementById("adxMt5Chart").innerHTML = "";

@@ -4522,40 +4522,57 @@
         transform: scale(0.98);
       }
     }
-  
+
     /* Overlay de chargement */
+    /* Conteneur principal du loader */
     .chart-loader {
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(4px);
+      background: rgba(255, 255, 255, 0.85);
+      /* Fond blanc semi-transparent */
+      backdrop-filter: blur(5px);
+      /* Effet de flou sur le graphique derrière */
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      z-index: 20000;
-      /* Au-dessus de l'overlay de tendance */
-      transition: opacity 0.3s ease;
+      z-index: 99999;
+      /* Toujours au premier plan */
+      transition: opacity 0.4s ease;
+      /* Animation de disparition fluide */
     }
 
-    .loader-bar {   
-      width: 200px;
-      height: 4px;  
-      background: #e2e8f0;
-      border-radius: 10px;
-      overflow: hidden;
-      margin-top: 10px;
-    }   
+    /* Texte de chargement */
+    .chart-loader span {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+    }
 
-    .loader-progress {  
+    /* Structure de la barre */
+    .loader-bar {
+      width: 250px;
+      height: 6px;
+      background: #edf2f7;
+      border-radius: 20px;
+      overflow: hidden;
+      /* Pour que la progression ne dépasse pas des arrondis */
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    /* La partie bleue qui avance */
+    .loader-progress {
       width: 0%;
       height: 100%;
-      background: #2196F3;
-      transition: width 0.4s ease;
+      background: linear-gradient(90deg, #3182ce, #63b3ed);
+      border-radius: 20px;
+      transition: width 0.3s ease-out; 
+      /* Animation fluide de l'avancement */
     }
+
   </style>
 </head>
 
