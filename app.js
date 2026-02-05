@@ -867,16 +867,29 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 1. NETTOYAGE PHYSIQUE ET MÉMOIRE
+    // --- 1. AFFICHAGE DU LOADER (Évite les clics et les erreurs pendant l'init) ---
+    isWsInitialized = false; // Bloque immédiatement le traitement des messages WS
+    let loader = document.getElementById('chart-init-loader');
+    if (!loader) {
+      container.style.position = 'relative';
+      container.insertAdjacentHTML('beforeend', `
+            <div id="chart-init-loader" class="chart-loader">
+                <span style="font-size: 12px; font-weight: bold; color: #1e293b;">INITIALISATION DU MOTEUR...</span>
+                <div class="loader-bar"><div id="loader-fill" class="loader-progress"></div></div>
+            </div>
+        `);
+      loader = document.getElementById('chart-init-loader');
+    }
+    const fill = document.getElementById('loader-fill');
+    if (fill) fill.style.width = "20%";
+
+    // 2. NETTOYAGE PHYSIQUE ET MÉMOIRE
     if (chart) {
-      // Avant de supprimer le chart, on nettoie les lignes de prix actives
-      // pour éviter les fuites de mémoire (Memory Leaks)
       if (currentSeries && priceLines4openlines) {
         Object.values(priceLines4openlines).forEach(line => {
           try { currentSeries.removePriceLine(line); } catch (e) { }
         });
       }
-
       try {
         chart.remove();
       } catch (e) {
@@ -888,22 +901,19 @@ document.addEventListener("DOMContentLoaded", () => {
     // RÉINITIALISATION DES VARIABLES GLOBALES
     containerHistoryList.innerHTML = "";
     container.innerHTML = "";
-    priceLines4openlines = {}; // Reset de l'objet des contrats
-
-    // Au tout début de initChart
-    isWsInitialized = false; // Bloque le traitement des messages WS pendant la reconstruction
-    // Reset des séries pour forcer leur recréation
+    priceLines4openlines = {};
     currentSeries = null;
     zigzagSeries = null;
     maSeries = null;
 
-    // Reset des tableaux de données (Important pour ne pas mélanger les symboles)
-    cache = [];         // Votre historique bougies
-    priceData = [];     // Votre historique ticks (300)
-    priceDataZZ = [];   // Source unifiée pour ZigZag/MA
-    isWsInitialized = false;
+    // Reset des tableaux de données
+    cache = [];
+    priceData = [];
+    priceDataZZ = [];
 
-    // CRÉATION DU NOUVEAU GRAPHIQUE (Optimisé Fond Blanc)
+    if (fill) fill.style.width = "40%";
+
+    // 3. CRÉATION DU NOUVEAU GRAPHIQUE
     chart = LightweightCharts.createChart(container, {
       layout: {
         background: { type: LightweightCharts.ColorType.Solid, color: '#ffffff' },
@@ -912,46 +922,21 @@ document.addEventListener("DOMContentLoaded", () => {
         fontFamily: 'Trebuchet MS, Roboto, Ubuntu, sans-serif',
       },
       grid: {
-        // On utilise une couleur très claire pour que les lignes de Fibonacci restent prioritaires
         vertLines: { color: 'rgba(197, 203, 206, 0.2)' },
         horzLines: { color: 'rgba(197, 203, 206, 0.2)' },
       },
       crosshair: {
-        // Crosshair sombre pour contraste sur fond blanc
         mode: LightweightCharts.CrosshairMode.Normal,
-        vertLine: {
-          width: 1,
-          color: '#758696',
-          style: LightweightCharts.LineStyle.Dash,
-        },
-        horzLine: {
-          width: 1,
-          color: '#758696',
-          style: LightweightCharts.LineStyle.Dash,
-        },
+        vertLine: { width: 1, color: '#758696', style: LightweightCharts.LineStyle.Dash },
+        horzLine: { width: 1, color: '#758696', style: LightweightCharts.LineStyle.Dash },
       },
-      timeScale: {
-        timeVisible: true,
-        secondsVisible: true,
-        borderColor: '#D1D4DC', // Ligne de séparation propre en bas
-      },
-      rightPriceScale: {
-        borderColor: '#D1D4DC', // Ligne de séparation propre à droite
-        width: 80, // Largeur fixe identique pour tous les graphiques
-        borderVisible: false,
-      },
-      handleScroll: {
-        mouseWheel: true,
-        pressedMouseMove: true,
-      },
-      handleScale: {
-        axisPressedMouseMove: true,
-        mouseWheel: true,
-        pinch: true,
-      },
+      timeScale: { timeVisible: true, secondsVisible: true, borderColor: '#D1D4DC' },
+      rightPriceScale: { borderColor: '#D1D4DC', width: 80, borderVisible: false },
+      handleScroll: { mouseWheel: true, pressedMouseMove: true },
+      handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true },
     });
 
-    // CONFIGURATION DES SÉRIES SELON LE TYPE
+    // CONFIGURATION DES SÉRIES
     if (currentChartType === "area") {
       currentSeries = chart.addAreaSeries({
         lineColor: "rgba(189, 6, 221, 1)",
@@ -961,107 +946,80 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     } else if (currentChartType === "candlestick") {
       currentSeries = chart.addCandlestickSeries({
-        // Couleurs corps (plus denses pour le fond blanc)
-        upColor: "#26a69a",
-        downColor: "#ef5350",
-
-        // Bordures : On utilise des couleurs pleines pour bien détacher la bougie
-        borderUpColor: "#1a7369",   // Vert plus sombre pour le contour
-        borderDownColor: "#b23c39", // Rouge plus sombre pour le contour
-
-        // Mèches : Identiques aux bordures pour une cohérence visuelle
-        wickUpColor: "#1a7369",
-        wickDownColor: "#b23c39",
-
-        // Optionnel : épaisseur des bordures
+        upColor: "#26a69a", downColor: "#ef5350",
+        borderUpColor: "#1a7369", borderDownColor: "#b23c39",
+        wickUpColor: "#1a7369", wickDownColor: "#b23c39",
         borderVisible: true,
       });
-    } else { // Fallback sur "line"
-      currentSeries = chart.addLineSeries({
-        color: "#2962FF",
-        lineWidth: 2,
-      });
+    } else {
+      currentSeries = chart.addLineSeries({ color: "#2962FF", lineWidth: 2 });
     }
 
     currentSeries.title = "MainPrice";
+    if (fill) fill.style.width = "60%";
 
-    // ==========================================
-    // AJOUT : SYNCHRONISATION ET LÉGENDES ADX
-    // ==========================================
-
-    // AJOUTEZ CECI ICI :
+    // SYNCHRONISATION ET LÉGENDES ADX
     chart.subscribeCrosshairMove(param => {
-      // Sécurité : on vérifie que param existe
       if (!param || param.time === undefined) {
-        // Optionnel : remettre à "--" quand la souris quitte le graphique
-        resetAdxLegends();
+        if (typeof resetAdxLegends === 'function') resetAdxLegends();
       } else {
-        // On met à jour les deux légendes ADX avec les données au point de la souris
         if (isAdxActive.mt5) updateAdxLegend('mt5', param);
         if (isAdxActive.wilder) updateAdxLegend('wilder', param);
       }
     });
 
-    // ÉCOUTEUR DU ZOOM / SCROLL (TimeScale)
-    // Indispensable pour que les ADX bougent en même temps que le prix
     chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
-      if (isAdxActive.mt5 && adxCharts.mt5) {
-        adxCharts.mt5.timeScale().setVisibleLogicalRange(range);
-      }
-      if (isAdxActive.wilder && adxCharts.wilder) {
-        adxCharts.wilder.timeScale().setVisibleLogicalRange(range);
-      }
+      if (isAdxActive.mt5 && adxCharts.mt5) adxCharts.mt5.timeScale().setVisibleLogicalRange(range);
+      if (isAdxActive.wilder && adxCharts.wilder) adxCharts.wilder.timeScale().setVisibleLogicalRange(range);
     });
 
-    // 2. RÉINITIALISER LES GRAPHIQUES ADX S'ILS EXISTENT
+    // 4. RÉINITIALISATION DES ADX
     ['mt5', 'wilder'].forEach(type => {
-      if (adxSeries[type] && adxSeries[type].adx) {
-        adxSeries[type].adx.setData([]);
-        adxSeries[type].plus.setData([]);
-        adxSeries[type].minus.setData([]);
-      }
-    });
-
-    ['mt5', 'wilder'].forEach(type => {
-      // Si le graphique existe déjà, on le détruit proprement pour éviter les fuites mémoire
       if (adxCharts[type]) {
-        adxCharts[type].remove();
+        try { adxCharts[type].remove(); } catch (e) { }
         adxCharts[type] = null;
       }
     });
 
-    // On vide les références des séries
-    // On réinitialise les références des séries
-    adxSeries = { mt5: { adx: null, plus: null, minus: null }, wilder: { adx: null, plus: null, minus: null } };
-    isAdxActive = { mt5: false, wilder: false }; // On remet les états à false
-
-    // Réinitialiser les boutons (enlever la classe 'active')  
+    adxSeries = {
+      mt5: { adx: null, plus: null, minus: null },
+      wilder: { adx: null, plus: null, minus: null }
+    };
+    isAdxActive = { mt5: false, wilder: false };
     document.querySelectorAll('.btn-adx').forEach(btn => btn.classList.remove('active'));
 
-    // RÉGLAGE DE LA HAUTEUR : On retire le minHeight qui bloque tout
+    if (fill) fill.style.width = "80%";
+
+    // RÉGLAGE TAILLE
     const chartInner = document.getElementById("chartInner");
-    chartInner.style.minHeight = "0px"; // Libère le verrou
+    chartInner.style.minHeight = "0px";
     chartInner.style.height = "750px";
+    chart.resize(chartInner.clientWidth, 750);
 
-    if (chart) {
-      chart.resize(chartInner.clientWidth, 750);
-    }
-
-    // On s'assure que les conteneurs HTML sont vidés avant la recréation
     document.getElementById("adxMt5Chart").innerHTML = "";
     document.getElementById("adxWilderChart").innerHTML = "";
 
-    if (activePeriods.length > 0) {
-      initMaSeries(); // Recrée les 3 lignes EMA 20, 50, 200 via le nouveau chart
-    }
+    // INITIALISATION INDICATEURS ET SESSION
+    if (activePeriods && activePeriods.length > 0) initMaSeries();
+    if (typeof initBollingerSeries === 'function') initBollingerSeries();
 
-    initBollingerSeries();  // Bollinger Bands INITIALIZATION
     window.restoreTradingSession();
 
-    // 1. Réinitialisation de la mémoire des contrats  
     activeContractsData = {};
     activeContracts = {};
-    lastTotalPnL = 0; // On remet aussi la mémoire de tendance à zéro
+    lastTotalPnL = 0;
+
+    // --- 5. FINALISATION ET RETRAIT DU LOADER ---
+    if (fill) fill.style.width = "100%";
+    setTimeout(() => {  
+      if (loader) {
+        loader.style.opacity = "0";
+        setTimeout(() => {
+          loader.remove();
+          isWsInitialized = true; // Débloque le bot une fois que TOUT est prêt
+        }, 300);
+      }
+    }, 500);
   }
 
   function styleType(currentChartType) {
@@ -5659,16 +5617,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const legend = document.getElementById(`legend-${type}`);
       if (legend) {
         // On saute le premier enfant si c'est la croix de fermeture
-        const start = legend.children[0].classList.contains('close-adx') ? 1 : 0;  
+        const start = legend.children[0].classList.contains('close-adx') ? 1 : 0;
         for (let i = start; i < legend.children.length; i++) {
           const parts = legend.children[i].innerText.split(':');
           if (parts.length > 1) {
-            legend.children[i].innerText = parts[0] + ': --';   
+            legend.children[i].innerText = parts[0] + ': --';
           }
-        }   
+        }
       }
     });
-  }  
+  }
 
   function updateAdxLegend(type, param) {
     const legendId = type === 'mt5' ? 'legend-mt5' : 'legend-wilder';
