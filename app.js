@@ -5444,7 +5444,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pill.style.display = 'block';
 
     addTradeMarker(lastBar.time, 'OPEN', side);
-    playTradeSound('OPEN');
+    playTradeSound('open');
 
     // Capture automatique après un léger délai pour laisser le marqueur s'afficher
     setTimeout(() => {
@@ -5580,7 +5580,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Marqueur Orange
     addTradeMarker(bar.time, 'CLOSE', currentActiveTrade.side);
-    playTradeSound('CLOSE');
+    playTradeSound('close');
 
     pill.innerText = `CLOSED (${reason})`;
     pill.style.backgroundColor = "#FF9800"; // Orange
