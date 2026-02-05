@@ -5668,7 +5668,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }   
       }
     });
-  }
+  }  
 
   function updateAdxLegend(type, param) {
     const legendId = type === 'mt5' ? 'legend-mt5' : 'legend-wilder';
