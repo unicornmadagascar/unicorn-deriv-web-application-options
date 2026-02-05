@@ -1012,8 +1012,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 5. FINALISATION ET RETRAIT DU LOADER ---
     if (fill) fill.style.width = "100%";    
     setTimeout(() => {   
-      if (loader) {
-        loader.style.opacity = "0";
+      if (loader) {   
+        loader.style.opacity = "0";  
         setTimeout(() => {  
           loader.remove();
           isWsInitialized = true; // Débloque le bot une fois que TOUT est prêt
