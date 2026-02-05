@@ -5501,7 +5501,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Mise à jour de la variable globale et du stockage  
         window.currentBotVolume = val;
-        localStorage.setItem('botVolumePref', val);
+        localStorage.setItem('botVolumePref', val);  
 
         console.log("Volume mis à jour :", val); // Pour debug
       });
