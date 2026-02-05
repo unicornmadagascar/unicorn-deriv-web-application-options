@@ -1005,9 +1005,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.restoreTradingSession();
 
-    activeContractsData = {};
-    activeContracts = {};
-    lastTotalPnL = 0;  
+    activeContractsData = {};  
+    activeContracts = {};  
+    lastTotalPnL = 0;    
 
     // --- 5. FINALISATION ET RETRAIT DU LOADER ---
     if (fill) fill.style.width = "100%";    
