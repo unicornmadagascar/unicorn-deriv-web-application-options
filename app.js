@@ -5491,7 +5491,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const savedVolume = parseFloat(localStorage.getItem('botVolumePref')) || 0.5;
       slider.value = savedVolume;
       display.innerText = Math.round(savedVolume * 100) + "%";
-      window.currentBotVolume = savedVolume;
+      window.currentBotVolume = savedVolume;  
 
       // 2. Écouter le changement en temps réel
       slider.addEventListener('input', function () {
