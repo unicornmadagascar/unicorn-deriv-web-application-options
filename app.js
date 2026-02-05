@@ -5495,7 +5495,7 @@ document.addEventListener("DOMContentLoaded", () => {
       slider.oninput = function () {
         window.currentBotVolume = parseFloat(this.value);
         display.innerText = Math.round(window.currentBotVolume * 100) + "%";
-        localStorage.setItem('botVolumePref', window.currentBotVolume);
+        localStorage.setItem('botVolumePref', window.currentBotVolume);  
       };  
     }
     updateAudioUI();
