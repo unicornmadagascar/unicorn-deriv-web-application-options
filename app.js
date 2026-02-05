@@ -77,16 +77,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let priceData = [];
   let activePeriods = [];
   let isConnected = false; // Pour savoir si le WebSocket est déjà lancé
-  let wszz = null;
-  let zigzagSeries = null;
   let priceDataZZ = [];
-  let zigzagCache = [];
-  let zigzagMarkers = [];
-  let isWsConnected = false;
   let isWsInitialized = false;
   let currentSessionId = 0;
-  let isZigZagActive = false;
-  let isMAActive = false; // Variable globale pour l'état
   let lastTotalPnL = 0;
   let allTradesData = [];
   let currentPage = 1;
@@ -116,8 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let showVolumeProfile = true; // État spécifique pour le VP
   let showFiboAnalysis = false; // Variable globale pour le rendu
   let selectedSymbol = null;
-  let selectedSymbolLocated = null;
-  let selectedSymbolconverted = null;
   let smoothedVol = 0; // Mémoire de la position précédente
   let areaSeriesBB;
   let upperLine, middleLine, lowerLine;
@@ -172,8 +163,6 @@ document.addEventListener("DOMContentLoaded", () => {
     totalWins: 0
   };
   // 1. Déclaration de la variable d'état
-  let tradeCount = 0; // Si vous l'utilisez toujours
-  let maHistory = [];
   let isAutoTradeEnabled = localStorage.getItem('autoTradePref') === 'true'; // Récupère la préférence
   let isScreenshotEnabled = localStorage.getItem('screenshotPref') === 'true';
   let currentActiveTrade = null; // Stocke l'objet du trade en cours
@@ -205,9 +194,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let wsContracts_winning = null;
   let wsContracts_losing = null;
   let wsAutomation_close = null;
-  let connection_ws = null;
-  let connection_ws_htx = null;
-  let wsAutomation = null;
   let wsContracts = null;
   let wsplContracts = null;
   let wsContracts__ = null;
@@ -1220,13 +1206,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // 3. Lancer la détection si l'Auto-Trade est actif
             if (isAutoTradeEnabled) {
-              const signal = checkStrategySignals();
+              const signal = checkStrategySignals(currentSymbol);
 
               if (signal) {
                 if (signal.boom) {
                   triggerTrade('SELL', currentSymbol);
+                  executeGlobalTrade(currentSymbol, 'SELL');
                 } else if (signal.crash) {
                   triggerTrade('BUY', currentSymbol);
+                  executeGlobalTrade(currentSymbol, 'BUY');
                 }
               }
             }
@@ -1253,11 +1241,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Contrat encore ouvert
         if (c.is_sold === 0) {
+          // 1. 
           activeContracts[id] = Number(c.profit || 0);
+
+          // 2. On récupère le symbole depuis nos données techniques
+          const technicalData = activeContractsData[id];
+          const currentSymbol__ = technicalData ? technicalData.symbol : "Inconnu";
+
+          const signal = checkStrategySignals(currentSymbol__);
+          // Si le signal dit de fermer (isOtherSignal === true)
+          if (signal.close) {
+            executeGlobalClose(id);
+            // Optionnel : on supprime immédiatement pour éviter les doubles appels
+            delete activeContracts[id];
+          }
         }
         // Contrat fermé → suppression  
         else {
           delete activeContracts[id];
+          delete activeContractsData[id];
         }
 
         updateDonutCharts();
@@ -5116,7 +5118,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 3. Afficher/Masquer le volet de l'indicateur concerné
     if (isAdxActive[type]) {
-      container.style.display = 'block';  
+      container.style.display = 'block';
       if (!adxCharts[type]) {
         initAdxChart(type, type === 'mt5' ? 'adxMt5Chart' : 'adxWilderChart');
       }
@@ -5247,7 +5249,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return ema;
   }
 
-  function checkStrategySignals() {
+  function checkStrategySignals(symbol) {
+    let isBoomSell = false;
+    let isCrashBuy = false;
+
     const data = cache;
     if (data.length < 50) return null;
 
@@ -5290,12 +5295,20 @@ document.addEventListener("DOMContentLoaded", () => {
       const emt_crash = 100 * Math.abs(diPlusMT5.value - adxMT5.value) / adxMT5.value;
 
       // --- LOGIQUE DE DÉTECTION ---
-      const isBoomSellSignal = (emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230);
-      const isCrashBuySignal = (emt_crash > 3.2 && emt_crash <= 7 && ew_crash > 70 && ew_crash <= 200);
+      //const isBoomSellSignal = (emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230);
+      //const isCrashBuySignal = (emt_crash > 3.2 && emt_crash <= 7 && ew_crash > 70 && ew_crash <= 200);
+
+      if (symbol === "BOOM1000" && emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230) {
+        isBoomSell = true;
+      }
+      else if (symbol === "CRASH1000" && emt_crash > 3.2 && emt_crash <= 7 && ew_crash > 70 && ew_crash <= 200) {
+        isCrashBuy = true;
+      }
 
       return {
-        boom: isBoomSellSignal,
-        crash: isCrashBuySignal,
+        boom: isBoomSell,
+        crash: isCrashBuy,
+        close: (!isBoomSell && !isCrashBuy),
         ema: ema50,
         price: lastBar.close
       };
@@ -5459,6 +5472,180 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`%c [TRADE START] ${side} sur ${asset} à ${lastBar.close}`, 'background: #008080; color: #fff; font-weight: bold;');
   }
 
+  async function executeGlobalTrade(symbol, side) {
+    // --- 1. SÉCURITÉ : VÉRIFICATION DE POSITION DÉJÀ OUVERTE ---
+    // On cherche si un contrat avec ce symbole existe déjà dans nos données actives
+    const isAlreadyOpen = Object.values(activeContractsData).some(c => c.symbol === symbol);
+
+    if (isAlreadyOpen) {
+      console.log(`⏳ Signal ignoré : Une position est déjà ouverte sur ${symbol}.`);
+      return; // On sort de la fonction, on n'ouvre rien
+    }
+
+    // --- 2. CONFIGURATION DU TYPE DE CONTRAT ---
+    const derivContractType = side === 'BUY' ? "MULTUP" : "MULTDOWN";
+
+    // --- 3. RÉCUPÉRATION DES PARAMÈTRES UI ---
+    const count = side === 'BUY'
+      ? (parseInt(document.getElementById("buyNumberInput").value) || 1)
+      : (parseInt(document.getElementById("sellNumberInput").value) || 1);
+
+    const stake = parseFloat(document.getElementById("stakeInput").value) || 1.0;
+    const mult = parseInt(document.getElementById("multiplierSelect").value) || 40;
+
+    console.log(`🚀 Signal validé. Ouverture de ${count} position(s) sur ${symbol}...`);
+
+    // --- 4. APPEL AU SERVEUR PYTHON ---
+    const response = await talkToPython({
+      action: 'OPEN',
+      symbol: symbol,
+      currency: CURRENCY,
+      token: TOKEN,
+      multiplier: mult,
+      contract_type: derivContractType,
+      amount: stake,
+      price: stake,
+      repeat: count
+    });
+
+    // --- 5. TRAITEMENT DE LA RÉPONSE ---
+    if (response) {
+      const results = Array.isArray(response) ? response : [response];
+
+      results.forEach((res) => {
+        if (res.buy) {
+          const contractId = res.buy.contract_id;
+
+          // Enregistrement technique
+          activeContractsData[contractId] = {
+            symbol: symbol,
+            side: side,
+            type: derivContractType,
+            stake: stake,
+            openTime: Date.now()
+          };
+
+          // Enregistrement pour le profit (Donuts)
+          activeContracts[contractId] = 0;
+
+          console.log(`✅ Position ${contractId} confirmée.`);
+        }
+        else if (res.error) {
+          console.error(`❌ Erreur Deriv:`, res.error.message);
+        }
+      });
+
+      if (results.some(r => r.buy)) {
+        playTradeSound('open');
+        updateDonutCharts();
+      }
+    }
+  }
+
+  /**
+  * Envoie une requête au serveur Python et attend la réponse JSON.
+  * @param {Object} payload - Les données du trade (action, symbol, token, etc.)
+  * @returns {Promise<Object|Array|null>} - La réponse de l'API ou null en cas d'échec
+  */
+  async function talkToPython(payload) {
+    const PYTHON_URL = 'http://localhost:5000/execute';
+
+    try {
+      console.log("📤 Envoi vers Python :", payload.action, payload.symbol || "");
+
+      const response = await fetch(PYTHON_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      // Vérification du statut HTTP
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Erreur Serveur (${response.status}): ${errorText}`);
+      }
+
+      const data = await response.json();
+      return data;
+
+    } catch (error) {
+      console.error("❌ Erreur de communication avec Python :");
+      console.error(error.message);
+
+      // Optionnel : Alerte visuelle pour l'utilisateur
+      if (typeof showToast === 'function') {
+        showToast(`Erreur de liaison Python`, 'error');
+      }
+
+      return null;
+    }
+  }
+
+  async function executeGlobalClose(contractId) {
+    // 1. On vérifie si on a les données techniques du contrat
+    const techData = activeContractsData[contractId];
+
+    if (!techData) {
+      console.warn(`⚠️ Données techniques pour le contrat ${contractId} introuvables.`);
+      return;
+    }
+
+    // --- SÉCURITÉ ANTI-SPAM : Vérification du verrou ---
+    if (techData.isClosing) {
+      // console.log(`⏳ Fermeture déjà en cours pour ${contractId}, requête ignorée.`);
+      return;
+    }
+
+    // --- VERROUILLAGE : On marque le contrat comme "en cours de fermeture" ---
+    techData.isClosing = true;
+    const symbol = techData.symbol;
+
+    console.log(`💰 Demande de fermeture envoyée pour ${symbol} (ID: ${contractId})`);
+
+    // 2. Appel au serveur Python pour vendre
+    const response = await talkToPython({
+      action: 'CLOSE',
+      contract_id: contractId,
+      token: TOKEN
+    });
+   
+    if (response && response.sell) {
+      // Calcul du profit réel renvoyé par Deriv
+      const profit = response.sell.sold_for - response.sell.price;
+      const status = profit >= 0 ? "✅ WIN" : "❌ LOSS";
+
+      console.log(`${status} | Contrat: ${contractId} | Actif: ${symbol} | Profit: ${profit.toFixed(2)}$`);
+
+      // 3. NETTOYAGE DES DEUX VARIABLES
+      delete activeContracts[contractId];
+      delete activeContractsData[contractId];
+
+      // 4. Mises à jour visuelles
+      updateDonutCharts();
+      playTradeSound('close');
+
+    } else {
+      // --- GESTION DES ERREURS ET DÉVERROUILLAGE ---
+      if (response && response.error) {
+        console.error(`❌ Erreur Deriv sur ${contractId}:`, response.error.message);
+
+        // Si le contrat n'existe plus (déjà fermé), on nettoie les variables
+        if (response.error.code === 'InvalidContractProposal' || response.error.code === 'UpdateStatusNotAllowed') {
+          delete activeContracts[contractId];
+          delete activeContractsData[contractId];
+          updateDonutCharts();
+          return;
+        }
+      }
+
+      // En cas d'erreur de réseau ou autre, on retire le verrou pour permettre une nouvelle tentative au prochain tick
+      console.warn(`🔄 Déverrouillage du contrat ${contractId} pour nouvelle tentative.`);
+      techData.isClosing = false;
+    }
+  }
+
   // 2. Fonction de lecture (Appelée lors des trades)
   function playTradeSound(type) {
     if (isMuted) return;
@@ -5491,7 +5678,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const savedVolume = parseFloat(localStorage.getItem('botVolumePref')) || 0.5;
       slider.value = savedVolume;
       display.innerText = Math.round(savedVolume * 100) + "%";
-      window.currentBotVolume = savedVolume;  
+      window.currentBotVolume = savedVolume;
 
       // 2. Écouter le changement en temps réel
       slider.addEventListener('input', function () {
@@ -5500,8 +5687,8 @@ document.addEventListener("DOMContentLoaded", () => {
         display.innerText = Math.round(val * 100) + "%";
 
         // Mise à jour de la variable globale et du stockage  
-        window.currentBotVolume = val;    
-        localStorage.setItem('botVolumePref', val);    
+        window.currentBotVolume = val;
+        localStorage.setItem('botVolumePref', val);
 
         console.log("Volume mis à jour :", val); // Pour debug
       });
@@ -5576,7 +5763,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Fonction interne pour centraliser la fermeture visuelle
   function executeClosingLogic(bar, reason) {
-    const pill = document.getElementById('deriv-bot-signal-display');   
+    const pill = document.getElementById('deriv-bot-signal-display');
 
     // Marqueur Orange
     addTradeMarker(bar.time, 'CLOSE', currentActiveTrade.side);
