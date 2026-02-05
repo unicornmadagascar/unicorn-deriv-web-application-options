@@ -5486,7 +5486,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const slider = document.getElementById('bot-volume-slider');
     const display = document.getElementById('volume-value');
 
-    if (slider && display) {
+    if (slider && display) {  
       // Appliquer les valeurs sauvegardées
       slider.value = window.currentBotVolume;
       display.innerText = Math.round(window.currentBotVolume * 100) + "%";
