@@ -5532,7 +5532,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Marqueur Orange
     addTradeMarker(bar.time, 'CLOSE', currentActiveTrade.side);
-    playTradeSound('CLOSE');
+    playTradeSound('CLOSE');  
 
     pill.innerText = `CLOSED (${reason})`;
     pill.style.backgroundColor = "#FF9800"; // Orange
