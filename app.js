@@ -5500,8 +5500,8 @@ document.addEventListener("DOMContentLoaded", () => {
         display.innerText = Math.round(val * 100) + "%";
 
         // Mise à jour de la variable globale et du stockage  
-        window.currentBotVolume = val;  
-        localStorage.setItem('botVolumePref', val);  
+        window.currentBotVolume = val;    
+        localStorage.setItem('botVolumePref', val);    
 
         console.log("Volume mis à jour :", val); // Pour debug
       });
