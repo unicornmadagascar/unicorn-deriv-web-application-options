@@ -4572,6 +4572,7 @@
       transition: width 0.3s ease-out;
       /* Animation fluide de l'avancement */
     }
+
   </style>
 </head>
 
@@ -4842,13 +4843,30 @@
         </div>
 
         <div id="deriv-bot-panel-root">
-          <div class="deriv-bot-panel-header">
-            <span class="deriv-bot-indicator-dot"></span>
-            <span class="deriv-bot-panel-title">AUTO-TRADE</span>
+          <div class="deriv-bot-panel-header" style="flex-wrap: wrap; height: auto; padding-bottom: 5px;">
+            <div style="display: flex; align-items: center; gap: 5px; flex: 1;">
+              <span class="deriv-bot-indicator-dot"></span>
+              <span class="deriv-bot-panel-title">AUTO-TRADE</span>
+            </div>
             <label class="deriv-bot-switch-container">
               <input type="checkbox" id="deriv-bot-auto-toggle">
               <span class="deriv-bot-switch-slider deriv-bot-radius-round"></span>
             </label>
+
+            <div id="python-status-container"
+              style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 4px; padding: 2px 5px; background: rgba(0,0,0,0.2); border-radius: 4px;">
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <span id="python-status-dot"
+                  style="width: 7px; height: 7px; background-color: #ff4444; border-radius: 50%; display: inline-block; box-shadow: 0 0 4px #ff4444;"></span>
+                <span id="python-status-text"
+                  style="font-size: 8px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Python:
+                  Offline</span>
+              </div>
+              <button id="btn-reconnect-python"
+                style="background: none; border: 1px solid #3b82f6; color: #3b82f6; font-size: 7px; padding: 1px 4px; cursor: pointer; border-radius: 3px; text-transform: uppercase;">
+                Reinitialise
+              </button>
+            </div>
           </div>
 
           <div
@@ -4860,7 +4878,7 @@
             </label>
           </div>
 
-          <div style="display: flex; flex-direction: column; gap: 4px; padding: 0 5px;">
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 0 5px; margin-top: 8px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div style="display: flex; align-items: center; gap: 5px;">
                 <span id="btn-mute-toggle" onclick="toggleMute()" style="cursor: pointer; font-size: 12px;"
@@ -4873,7 +4891,7 @@
               style="width: 100%; height: 4px; cursor: pointer; accent-color: #3b82f6;">
           </div>
 
-          <div id="deriv-bot-signal-display" class="deriv-bot-pill-status" style="display: none;">
+          <div id="deriv-bot-signal-display" class="deriv-bot-pill-status" style="display: none; margin-top: 10px;">
             RECHERCHE SIGNAL...
           </div>
 

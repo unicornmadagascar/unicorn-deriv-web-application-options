@@ -5295,9 +5295,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const emt_crash = 100 * Math.abs(diPlusMT5.value - adxMT5.value) / adxMT5.value;
 
       // --- LOGIQUE DE DÉTECTION ---
-      //const isBoomSellSignal = (emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230);
-      //const isCrashBuySignal = (emt_crash > 3.2 && emt_crash <= 7 && ew_crash > 70 && ew_crash <= 200);
-
       if (symbol === "BOOM1000" && emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230) {
         isBoomSell = true;
       }
@@ -5324,35 +5321,109 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusPill = document.getElementById('deriv-bot-signal-display');
     const screenshotToggle = document.getElementById('deriv-bot-screenshot-toggle');
 
+    // Nouveaux éléments pour le statut Python
+    const pythonDot = document.getElementById('python-status-dot');
+    const pythonText = document.getElementById('python-status-text');
+    const reconnectBtn = document.getElementById('btn-reconnect-python');
+
+    // --- 1. FONCTION DE VÉRIFICATION DU SERVEUR ---
+    async function updatePythonStatus() {
+      const isOnline = await checkServerStatus(); // Utilise fetch vers /execute avec action: 'PING'
+      if (isOnline) {
+        pythonDot.style.backgroundColor = "#00ff00";
+        pythonDot.style.boxShadow = "0 0 5px #00ff00";
+        pythonText.innerText = "Python: Online";
+      } else {
+        pythonDot.style.backgroundColor = "#ff4444";
+        pythonDot.style.boxShadow = "0 0 5px #ff4444";
+        pythonText.innerText = "Python: Offline";
+      }
+      return isOnline;
+    }  
+
     if (autoToggleInput) {
-      // On synchronise le switch visuel avec la variable globale
       autoToggleInput.checked = isAutoTradeEnabled;
+      updatePythonStatus(); // Vérification initiale
 
-      // On gère l'affichage initial de la pilule
-      if (isAutoTradeEnabled) {
-        statusPill.style.display = 'block';
-        statusPill.innerText = "SCANNER ACTIF";
-        statusPill.style.backgroundColor = "#008080";
-      }
+      autoToggleInput.onchange = async function () {
+        if (this.checked) {
+          // --- SÉCURITÉ : On vérifie si Python est là avant d'activer ---
+          const online = await updatePythonStatus();
+          if (!online) {
+            if (typeof showToast === 'function') showToast("Erreur: Lancez le serveur Python d'abord !", "error");
+            this.checked = false;
+            return;
+          }
 
-      // Écouteur pour les changements manuels
-      autoToggleInput.onchange = function () {
-        isAutoTradeEnabled = this.checked;
+          isAutoTradeEnabled = true;
+          statusPill.style.display = 'block';
+          statusPill.innerText = "SCANNER ACTIF";
+          statusPill.style.backgroundColor = "#008080";
+          console.log("🤖 Auto-Trade activé.");
+        } else {
+          // --- ACTIONS DE DÉSACTIVATION ---
+          statusPill.innerText = "ARRÊT EN COURS...";
+          statusPill.style.backgroundColor = "#ff4444";
+
+          // 1. Fermeture groupée
+          const activeIds = Object.keys(activeContractsData);
+          if (activeIds.length > 0) {
+            await talkToPython({
+              action: 'CLOSE_ALL',
+              ids: activeIds,
+              token: TOKEN
+            });
+          }
+
+          // 2. Nettoyage
+          activeContracts = {};
+          activeContractsData = {};
+          updateDonutCharts();
+
+          // 3. Stop Serveur
+          await talkToPython({ action: 'STOP' });
+
+          isAutoTradeEnabled = false;
+          statusPill.style.display = 'none';
+          updatePythonStatus(); // Repasse le voyant au rouge
+          if (typeof showToast === 'function') showToast("Système totalement arrêté", "info");
+        }
         localStorage.setItem('autoTradePref', isAutoTradeEnabled);
-        statusPill.style.display = isAutoTradeEnabled ? 'block' : 'none';
-        if (isAutoTradeEnabled) statusPill.innerText = "SCANNER ACTIF";
       };
+    }
 
-      // Dans setupAutoTradeControls()
-      if (screenshotToggle) {
-        screenshotToggle.checked = isScreenshotEnabled;
-        screenshotToggle.onchange = function () {
-          isScreenshotEnabled = this.checked;
-          localStorage.setItem('screenshotPref', isScreenshotEnabled);
-        };
-      }
+    // --- LOGIQUE DU BOUTON RÉINITIALISER ---
+    if (reconnectBtn) {
+      reconnectBtn.onclick = async function () {
+        reconnectBtn.innerText = "⏳...";
+        await updatePythonStatus();
+        setTimeout(() => { reconnectBtn.innerText = "Réinitialiser"; }, 1000);
+      };
+    }
+
+    // Screenshot Toggle
+    if (screenshotToggle) {
+      screenshotToggle.checked = isScreenshotEnabled;
+      screenshotToggle.onchange = function () {
+        isScreenshotEnabled = this.checked;
+        localStorage.setItem('screenshotPref', isScreenshotEnabled);
+      };
     }
   };
+
+  // Petite fonction utilitaire à ajouter si non présente
+  async function checkServerStatus() {
+    try {
+      const res = await fetch('http://localhost:5000/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'PING' })
+      });
+      return res.ok;
+    } catch (e) {
+      return false;
+    }
+  }
 
   window.resetTradingSettings = function () {
     if (confirm("Voulez-vous réinitialiser tous les paramètres et effacer la session ?")) {
@@ -5548,37 +5619,42 @@ document.addEventListener("DOMContentLoaded", () => {
   * @returns {Promise<Object|Array|null>} - La réponse de l'API ou null en cas d'échec
   */
   async function talkToPython(payload) {
-    const PYTHON_URL = 'http://localhost:5000/execute';
+    // On définit l'URL de base
+    const BASE_URL = 'http://localhost:5000';
+
+    // On choisit le "chemin" (endpoint) selon l'action
+    let endpoint = '/execute';
+    if (payload.action === 'STOP') endpoint = '/stop';
+    if (payload.action === 'CLOSE_ALL') endpoint = '/close_all';
 
     try {
-      console.log("📤 Envoi vers Python :", payload.action, payload.symbol || "");
+      console.log(`📤 Envoi vers Python [${endpoint}] :`, payload.action);
 
-      const response = await fetch(PYTHON_URL, {
+      const response = await fetch(`${BASE_URL}${endpoint}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
-      // Vérification du statut HTTP
+      // Cas particulier pour STOP : le serveur se coupe, donc la réponse peut échouer
+      if (payload.action === 'STOP') return { status: "Server stopping..." };
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Erreur Serveur (${response.status}): ${errorText}`);
       }
 
-      const data = await response.json();
-      return data;
+      return await response.json();
 
     } catch (error) {
-      console.error("❌ Erreur de communication avec Python :");
-      console.error(error.message);
-
-      // Optionnel : Alerte visuelle pour l'utilisateur
-      if (typeof showToast === 'function') {
-        showToast(`Erreur de liaison Python`, 'error');
+      // Si on a demandé STOP, l'erreur de connexion est normale (le serveur est mort)
+      if (payload.action === 'STOP') {
+        console.log("🛑 Serveur Python arrêté avec succès.");
+        return { status: "Offline" };
       }
 
+      console.error("❌ Erreur de communication avec Python :", error.message);
+      if (typeof showToast === 'function') showToast(`Liaison Python perdue`, 'error');
       return null;
     }
   }
@@ -5610,7 +5686,7 @@ document.addEventListener("DOMContentLoaded", () => {
       contract_id: contractId,
       token: TOKEN
     });
-   
+
     if (response && response.sell) {
       // Calcul du profit réel renvoyé par Deriv
       const profit = response.sell.sold_for - response.sell.price;
