@@ -5503,7 +5503,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateAudioUI() {
     const btn = document.getElementById('btn-mute-toggle');
-    const slider = document.getElementById('bot-volume-slider');
+    const slider = document.getElementById('bot-volume-slider');  
 
     if (btn) {
       btn.innerText = isMuted ? "🔕" : "🔔";
