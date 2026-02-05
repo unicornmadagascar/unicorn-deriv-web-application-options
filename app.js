@@ -352,7 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.MasterStorage = {
-    key: 'sniper_master_db',
+    key: 'sniper_master_db',   
 
     getDb: function () {
       try {
