@@ -1141,8 +1141,8 @@ document.addEventListener("DOMContentLoaded", () => {
       ws.send(JSON.stringify({ authorize: TOKEN }));
     };
 
-    ws.onclose = () => {
-      ws.close();
+    ws.onclose = () => {   
+      ws.close();  
       ws = null;
       setTimeout(async () => { await loadSymbol(); }, 300);
     };
