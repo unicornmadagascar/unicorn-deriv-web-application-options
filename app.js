@@ -1010,7 +1010,7 @@ document.addEventListener("DOMContentLoaded", () => {
     lastTotalPnL = 0;
 
     // --- 5. FINALISATION ET RETRAIT DU LOADER ---
-    if (fill) fill.style.width = "100%";  
+    if (fill) fill.style.width = "100%";    
     setTimeout(() => {  
       if (loader) {
         loader.style.opacity = "0";
