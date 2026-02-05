@@ -181,6 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Déclaration des sons (URLs d'exemples libres de droits)
   const soundOpen = new Audio('https://actions.google.com/sounds/v1/foley/notification_high_intensity.ogg');
   const soundClose = new Audio('https://actions.google.com/sounds/v1/emergency/beep_warning.ogg');
+  let isMuted = localStorage.getItem('botMutePref') === 'true';
 
   // Optionnel : Régler le volume (0.0 à 1.0)
   soundOpen.volume = 0.5;
@@ -5458,49 +5459,61 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`%c [TRADE START] ${side} sur ${asset} à ${lastBar.close}`, 'background: #008080; color: #fff; font-weight: bold;');
   }
 
+  // 2. Fonction de lecture (Appelée lors des trades)
   function playTradeSound(type) {
-    const sound = (type === 'OPEN') ? soundOpen : soundClose;
+    if (isMuted) return;
 
+    const sound = (type === 'open') ? soundOpen : soundClose;
     if (sound) {
-      // Appliquer le volume actuel défini par le slider (variable globale)
-      sound.volume = window.currentBotVolume || 0.5;
-
+      sound.volume = window.currentBotVolume;
       sound.currentTime = 0;
-      const playPromise = sound.play();
-
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          // Succès : si l'icône de blocage est encore là, on la retire
-          if (!isAudioUnlocked) hideAudioWarning();
-        }).catch(error => {
-          // Échec discret (autoplay policy)
-          console.log("🔇 Audio en attente d'interaction.");
-        });
-      }
+      sound.play().catch(() => {
+        // Silence discret si le navigateur bloque encore l'autoplay
+        console.log("🔊 Audio en attente d'interaction.");
+      });
     }
   }
 
-  // Fonction pour masquer l'alerte visuelle
-  function hideAudioWarning() {
-    const icon = document.getElementById('audio-status-icon');
-    if (icon) {
-      icon.style.transition = "opacity 0.5s ease";
-      icon.style.opacity = "0";
-      setTimeout(() => icon.remove(), 500);
-    }
-    isAudioUnlocked = true;
-    console.log("🔊 Système Audio Opérationnel");
-  }
-
-  // Fonction de déverrouillage forcé au clic sur l'icône
-  window.forceUnlockAudio = function () {
-    // On joue un micro-son de 0.1s pour valider l'autorisation
-    soundOpen.play().then(() => {
-      soundOpen.pause();
-      soundOpen.currentTime = 0;
-      hideAudioWarning();
-    }).catch(e => console.log("L'interaction n'a pas suffi à débloquer le son."));
+  // 3. Gestion du Mute (Branché sur onclick="toggleMute()")
+  window.toggleMute = function () {
+    isMuted = !isMuted;
+    localStorage.setItem('botMutePref', isMuted);
+    updateAudioUI();
   };
+
+  // 4. Configuration et Mise à jour de l'interface
+  function setupAudioControls() {
+    const slider = document.getElementById('bot-volume-slider');
+    const display = document.getElementById('volume-value');
+
+    if (slider && display) {
+      // Appliquer les valeurs sauvegardées
+      slider.value = window.currentBotVolume;
+      display.innerText = Math.round(window.currentBotVolume * 100) + "%";
+
+      // Écouteur du slider
+      slider.oninput = function () {
+        window.currentBotVolume = parseFloat(this.value);
+        display.innerText = Math.round(window.currentBotVolume * 100) + "%";
+        localStorage.setItem('botVolumePref', window.currentBotVolume);
+      };  
+    }
+    updateAudioUI();
+  }
+
+  function updateAudioUI() {
+    const btn = document.getElementById('btn-mute-toggle');
+    const slider = document.getElementById('bot-volume-slider');
+
+    if (btn) {
+      btn.innerText = isMuted ? "🔕" : "🔔";
+      btn.style.opacity = isMuted ? "0.5" : "1";
+    }
+    if (slider) {
+      slider.style.opacity = isMuted ? "0.3" : "1";
+      slider.disabled = isMuted; // Désactive le slider si muet
+    }
+  }
 
   function checkExit(currentBar) {
     if (!currentActiveTrade) return;
@@ -8433,6 +8446,8 @@ document.addEventListener("DOMContentLoaded", () => {
   window.requestNotificationPermission();
   // Lancer la routine au démarrage
   startSafetySaveRoutine();
+  // Lancement au démarrage
+  setupAudioControls();;
 
   if (typeof window.updateSymbols === 'function') {
     window.updateSymbols();
