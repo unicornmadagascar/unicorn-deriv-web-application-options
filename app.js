@@ -178,6 +178,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let isScreenshotEnabled = localStorage.getItem('screenshotPref') === 'true';
   let currentActiveTrade = null; // Stocke l'objet du trade en cours
   let lastWsHeartbeat = Date.now(); // Pour la sécurité de connexion
+  // Déclaration des sons (URLs d'exemples libres de droits)
+  const soundOpen = new Audio('https://actions.google.com/sounds/v1/foley/notification_high_intensity.ogg');
+  const soundClose = new Audio('https://actions.google.com/sounds/v1/emergency/beep_warning.ogg');
+
+  // Optionnel : Régler le volume (0.0 à 1.0)
+  soundOpen.volume = 0.5;
+  soundClose.volume = 0.6;
   // ================== x ==================  
 
   let wsReady = false;
@@ -964,7 +971,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (typeof resetAdxLegends === 'function') resetAdxLegends();
       } else {
         if (isAdxActive.mt5) updateAdxLegend('mt5', param);
-        if (isAdxActive.wilder) updateAdxLegend('wilder', param);   
+        if (isAdxActive.wilder) updateAdxLegend('wilder', param);
       }
     });
 
@@ -991,9 +998,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (fill) fill.style.width = "80%";
 
     // RÉGLAGE TAILLE
-    const chartInner = document.getElementById("chartInner");    
+    const chartInner = document.getElementById("chartInner");
     chartInner.style.minHeight = "0px";
-    chartInner.style.height = "750px";  
+    chartInner.style.height = "750px";
     chart.resize(chartInner.clientWidth, 750);
 
     document.getElementById("adxMt5Chart").innerHTML = "";
@@ -1005,16 +1012,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.restoreTradingSession();
 
-    activeContractsData = {};  
-    activeContracts = {};  
-    lastTotalPnL = 0;    
+    activeContractsData = {};
+    activeContracts = {};
+    lastTotalPnL = 0;
 
     // --- 5. FINALISATION ET RETRAIT DU LOADER ---
-    if (fill) fill.style.width = "100%";    
-    setTimeout(() => {   
-      if (loader) {   
-        loader.style.opacity = "0";  
-        setTimeout(() => {  
+    if (fill) fill.style.width = "100%";
+    setTimeout(() => {
+      if (loader) {
+        loader.style.opacity = "0";
+        setTimeout(() => {
           loader.remove();
           isWsInitialized = true; // Débloque le bot une fois que TOUT est prêt
         }, 300);
@@ -4288,9 +4295,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function initPortfolioStream() {
     // Éviter les connexions multiples si une est déjà active
     if (ws4update === null) {
-      ws4update = new WebSocket(WS_URL);  
-      ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };  
-    }  
+      ws4update = new WebSocket(WS_URL);
+      ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
+    }
 
     if (ws4update && (ws4update.readyState === WebSocket.OPEN || ws4update.readyState === WebSocket.CONNECTING)) {
       ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
@@ -4300,9 +4307,9 @@ document.addEventListener("DOMContentLoaded", () => {
       ws4update = new WebSocket(WS_URL);
       ws4update.onopen = () => { ws4update.send(JSON.stringify({ authorize: TOKEN })); };
     }
-    
+
     ws4update.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);  
+      const data = JSON.parse(msg.data);
 
       // --- A. AUTHENTIFICATION RÉUSSIE ---
       if (data.msg_type === "authorize") {
@@ -4324,7 +4331,7 @@ document.addEventListener("DOMContentLoaded", () => {
           window.subscribeToContract(c.contract_id);
         });
       }
-    };  
+    };
 
     ws4update.onerror = (err) => {
       ws4update.close();
@@ -5441,6 +5448,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pill.style.display = 'block';
 
     addTradeMarker(lastBar.time, 'OPEN', side);
+    playTradeSound('OPEN');
 
     // Capture automatique après un léger délai pour laisser le marqueur s'afficher
     setTimeout(() => {
@@ -5453,6 +5461,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Log formaté pour la console
     console.log(`%c [TRADE START] ${side} sur ${asset} à ${lastBar.close}`, 'background: #008080; color: #fff; font-weight: bold;');
+  }
+
+  function playTradeSound(type) {
+    try {
+      if (type === 'OPEN') {
+        soundOpen.currentTime = 0; // Recommence le son s'il joue déjà
+        soundOpen.play().catch(e => console.warn("Son bloqué par le navigateur (Attente interaction)"));
+      } else {
+        soundClose.currentTime = 0;
+        soundClose.play().catch(e => console.warn("Son bloqué par le navigateur"));
+      }
+    } catch (err) {
+      console.error("Erreur lecture son:", err);
+    }
   }
 
   function checkExit(currentBar) {
@@ -5510,6 +5532,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Marqueur Orange
     addTradeMarker(bar.time, 'CLOSE', currentActiveTrade.side);
+    playTradeSound('CLOSE');
 
     pill.innerText = `CLOSED (${reason})`;
     pill.style.backgroundColor = "#FF9800"; // Orange
@@ -5763,15 +5786,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (vpData) {
         ctx.save();
         const { profile, maxTotalVolume, rowHeight, vah, val } = vpData;
-        const maxWidth = 200;   
+        const maxWidth = 300;
         const offsetFromPriceScale = 70;
-        const startX = canvas.width - offsetFromPriceScale;  
+        const startX = canvas.width - offsetFromPriceScale;
 
-        for (const yKey in profile) {  
+        for (const yKey in profile) {
           const d = profile[yKey];
           const y = parseFloat(yKey);
           const isInValueArea = d.price <= vah && d.price >= val;
-   
+
           // Couleurs optimisées fond blanc
           const buyColor = isInValueArea ? 'rgba(0, 150, 136, 0.55)' : 'rgba(0, 150, 136, 0.15)';
           const sellColor = isInValueArea ? 'rgba(255, 82, 82, 0.45)' : 'rgba(255, 82, 82, 0.10)';
