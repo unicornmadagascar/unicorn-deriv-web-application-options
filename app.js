@@ -5340,7 +5340,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       return isOnline;
     }  
-
+   
     if (autoToggleInput) {
       autoToggleInput.checked = isAutoTradeEnabled;
       updatePythonStatus(); // Vérification initiale
