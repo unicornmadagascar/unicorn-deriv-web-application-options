@@ -5309,7 +5309,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ema: ema50,
         price: lastBar.close
       };
-    } catch (e) {
+    } catch (e) {  
       console.error("Erreur dans le calcul des signaux ADX:", e);
       return null;
     }
