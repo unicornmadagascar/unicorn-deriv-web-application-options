@@ -5116,7 +5116,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 3. Afficher/Masquer le volet de l'indicateur concerné
     if (isAdxActive[type]) {
-      container.style.display = 'block';
+      container.style.display = 'block';  
       if (!adxCharts[type]) {
         initAdxChart(type, type === 'mt5' ? 'adxMt5Chart' : 'adxWilderChart');
       }
