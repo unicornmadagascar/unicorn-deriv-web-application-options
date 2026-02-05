@@ -5165,7 +5165,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Ajuste les graphiques ADX actifs pour qu'ils aient la même largeur
       window.autoResizeAllCharts();  
     });
-  };
+  };  
 
   window.autoResizeAllCharts = function () {
     const container = document.getElementById('chartInner'); // Votre conteneur principal
