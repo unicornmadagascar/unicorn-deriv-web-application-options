@@ -348,7 +348,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let isAdxActive = { mt5: false, wilder: false };
   let adxSeries = {
     mt5: { adx: null, plus: null, minus: null },
-    wilder: { adx: null, plus: null, minus: null }
+    wilder: { adx: null, plus: null, minus: null }  
   };
 
   window.MasterStorage = {
