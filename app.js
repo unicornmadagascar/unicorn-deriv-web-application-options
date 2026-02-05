@@ -5576,7 +5576,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Fonction interne pour centraliser la fermeture visuelle
   function executeClosingLogic(bar, reason) {
-    const pill = document.getElementById('deriv-bot-signal-display');  
+    const pill = document.getElementById('deriv-bot-signal-display');   
 
     // Marqueur Orange
     addTradeMarker(bar.time, 'CLOSE', currentActiveTrade.side);
