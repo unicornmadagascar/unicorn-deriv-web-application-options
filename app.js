@@ -5486,24 +5486,34 @@ document.addEventListener("DOMContentLoaded", () => {
     const slider = document.getElementById('bot-volume-slider');
     const display = document.getElementById('volume-value');
 
-    if (slider && display) {  
-      // Appliquer les valeurs sauvegardées
-      slider.value = window.currentBotVolume;
-      display.innerText = Math.round(window.currentBotVolume * 100) + "%";
+    if (slider && display) {
+      // 1. Appliquer la valeur initiale au chargement
+      const savedVolume = parseFloat(localStorage.getItem('botVolumePref')) || 0.5;
+      slider.value = savedVolume;
+      display.innerText = Math.round(savedVolume * 100) + "%";
+      window.currentBotVolume = savedVolume;
 
-      // Écouteur du slider  
-      slider.oninput = function () {
-        window.currentBotVolume = parseFloat(this.value);
-        display.innerText = Math.round(window.currentBotVolume * 100) + "%";
-        localStorage.setItem('botVolumePref', window.currentBotVolume);  
-      };  
+      // 2. Écouter le changement en temps réel
+      slider.addEventListener('input', function () {
+        const val = parseFloat(this.value);
+        // Mise à jour visuelle immédiate
+        display.innerText = Math.round(val * 100) + "%";
+
+        // Mise à jour de la variable globale et du stockage  
+        window.currentBotVolume = val;
+        localStorage.setItem('botVolumePref', val);
+
+        console.log("Volume mis à jour :", val); // Pour debug
+      });
+    } else {
+      console.error("Éléments audio introuvables : slider ou display manquants.");
     }
-    updateAudioUI();     
+    updateAudioUI();
   }
 
   function updateAudioUI() {
     const btn = document.getElementById('btn-mute-toggle');
-    const slider = document.getElementById('bot-volume-slider');  
+    const slider = document.getElementById('bot-volume-slider');
 
     if (btn) {
       btn.innerText = isMuted ? "🔕" : "🔔";
