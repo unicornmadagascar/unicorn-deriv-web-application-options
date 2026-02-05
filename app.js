@@ -5498,7 +5498,7 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem('botVolumePref', window.currentBotVolume);  
       };  
     }
-    updateAudioUI();
+    updateAudioUI();   
   }
 
   function updateAudioUI() {
