@@ -4302,7 +4302,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     ws4update.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
+      const data = JSON.parse(msg.data);  
 
       // --- A. AUTHENTIFICATION RÉUSSIE ---
       if (data.msg_type === "authorize") {
