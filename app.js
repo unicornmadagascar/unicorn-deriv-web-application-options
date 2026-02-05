@@ -5763,7 +5763,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (vpData) {
         ctx.save();
         const { profile, maxTotalVolume, rowHeight, vah, val } = vpData;
-        const maxWidth = 500;
+        const maxWidth = 200;
         const offsetFromPriceScale = 70;
         const startX = canvas.width - offsetFromPriceScale;
 
