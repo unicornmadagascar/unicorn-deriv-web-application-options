@@ -185,6 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Optionnel : Régler le volume (0.0 à 1.0)
   soundOpen.volume = 0.5;
   soundClose.volume = 0.6;
+  let isAudioUnlocked = false;
   // ================== x ==================  
 
   let wsReady = false;
@@ -287,12 +288,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let smoothEMA = null;
   // --- Tableau de markers déjà ajoutés sur le chart ---
   const calendarMarkers = {}; // stocke les markers par rowId
-  // ================================
-  // VARIABLES GLOBALES 
-  // ================================
-  let economicMarkers = {};
-  let economicEventLines = [];
-  let overlayCtx = null;
   // ================================
   // VARIABLES GLOBALES SYMBOLS
   // ================================ 
@@ -5163,9 +5158,9 @@ document.addEventListener("DOMContentLoaded", () => {
         chart.resize(currentWidth, newHeight);
       }
       // Ajuste les graphiques ADX actifs pour qu'ils aient la même largeur
-      window.autoResizeAllCharts();  
+      window.autoResizeAllCharts();
     });
-  };  
+  };
 
   window.autoResizeAllCharts = function () {
     const container = document.getElementById('chartInner'); // Votre conteneur principal
@@ -5294,8 +5289,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const emt_crash = 100 * Math.abs(diPlusMT5.value - adxMT5.value) / adxMT5.value;
 
       // --- LOGIQUE DE DÉTECTION ---
-      const isBoomSellSignal = (emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230);    
-      const isCrashBuySignal = (emt_crash > 3.2 && emt_crash <= 7 && ew_crash > 70 && ew_crash <= 200);  
+      const isBoomSellSignal = (emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230);
+      const isCrashBuySignal = (emt_crash > 3.2 && emt_crash <= 7 && ew_crash > 70 && ew_crash <= 200);
 
       return {
         boom: isBoomSellSignal,
@@ -5464,18 +5459,48 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function playTradeSound(type) {
-    try {
-      if (type === 'OPEN') {
-        soundOpen.currentTime = 0; // Recommence le son s'il joue déjà
-        soundOpen.play().catch(e => console.warn("Son bloqué par le navigateur (Attente interaction)"));
-      } else {
-        soundClose.currentTime = 0;
-        soundClose.play().catch(e => console.warn("Son bloqué par le navigateur"));
+    const sound = (type === 'OPEN') ? soundOpen : soundClose;
+
+    if (sound) {
+      // Appliquer le volume actuel défini par le slider (variable globale)
+      sound.volume = window.currentBotVolume || 0.5;
+
+      sound.currentTime = 0;
+      const playPromise = sound.play();
+
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          // Succès : si l'icône de blocage est encore là, on la retire
+          if (!isAudioUnlocked) hideAudioWarning();
+        }).catch(error => {
+          // Échec discret (autoplay policy)
+          console.log("🔇 Audio en attente d'interaction.");
+        });
       }
-    } catch (err) {
-      console.error("Erreur lecture son:", err);
     }
   }
+
+  // Fonction pour masquer l'alerte visuelle
+  function hideAudioWarning() {
+    const icon = document.getElementById('audio-status-icon');
+    if (icon) {
+      icon.style.transition = "opacity 0.5s ease";
+      icon.style.opacity = "0";
+      setTimeout(() => icon.remove(), 500);
+    }
+    isAudioUnlocked = true;
+    console.log("🔊 Système Audio Opérationnel");
+  }
+
+  // Fonction de déverrouillage forcé au clic sur l'icône
+  window.forceUnlockAudio = function () {
+    // On joue un micro-son de 0.1s pour valider l'autorisation
+    soundOpen.play().then(() => {
+      soundOpen.pause();
+      soundOpen.currentTime = 0;
+      hideAudioWarning();
+    }).catch(e => console.log("L'interaction n'a pas suffi à débloquer le son."));
+  };
 
   function checkExit(currentBar) {
     if (!currentActiveTrade) return;
@@ -5532,7 +5557,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Marqueur Orange
     addTradeMarker(bar.time, 'CLOSE', currentActiveTrade.side);
-    playTradeSound('CLOSE');    
+    playTradeSound('CLOSE');
 
     pill.innerText = `CLOSED (${reason})`;
     pill.style.backgroundColor = "#FF9800"; // Orange
@@ -8430,6 +8455,13 @@ document.addEventListener("DOMContentLoaded", () => {
     makeElementDraggable("volatility-label");
     makeElementDraggable("deriv-bot-panel-root");
   });
+
+  // Écouteur global pour déverrouiller au premier clic n'importe où
+  document.addEventListener('click', () => {
+    if (!isAudioUnlocked) {
+      window.forceUnlockAudio();
+    }
+  }, { once: true }); // Ne s'exécute qu'une seule fois
 
   // Écouteur pour le redimensionnement de la fenêtre
   window.addEventListener('resize', () => {
