@@ -4266,7 +4266,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const tsOptions = {
       price: tsPrice,
-      color: '#10b981',
+      color: '#10b981',  
       lineWidth: 2,
       lineStyle: LineStyle.Solid,
       axisLabelVisible: true,
