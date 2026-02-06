@@ -5576,7 +5576,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function initDerivConnection() {
-    derivSocket = new WebSocket(DERIV_WS_URL);
+    derivSocket = new WebSocket(WS_URL);
 
     derivSocket.onopen = () => {
       console.log("🟢 Connecté directement à Deriv via Browser");
