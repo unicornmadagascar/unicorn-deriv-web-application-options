@@ -5318,7 +5318,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- SECTION ÉCOUTEURS D'ÉVÉNEMENTS (Après la création du Chart) ---
-  window.setupAutoTradeControls = function () {
+  window.setupAutoTradeControls = function () {   
     const autoToggleInput = document.getElementById('deriv-bot-auto-toggle');
     const statusPill = document.getElementById('deriv-bot-signal-display');
     const screenshotToggle = document.getElementById('deriv-bot-screenshot-toggle');
