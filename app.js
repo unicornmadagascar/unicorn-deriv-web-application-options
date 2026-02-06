@@ -4261,7 +4261,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // We only need to ensure the calculation doesn't result in a negative offset 
     const tsPrice = (side === 'BUY')
-      ? Buyfunction4TS(entry, currentSpot, previousPrice, beforepreviousPrice)
+      ? Buyfunction4TS(entry, currentSpot, previousPrice, beforepreviousPrice)  
       : Sellfunction4TS(entry, currentSpot, previousPrice, beforepreviousPrice);  
 
     const tsOptions = {
