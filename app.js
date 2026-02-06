@@ -5372,7 +5372,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (this.checked) {
           // ACTIONS SUR "ON"
           statusPill.style.display = 'block';
-          statusPill.innerText = "CONNEXION EN COURS...";
+          statusPill.innerText = "CONNEXION IN PROCESSING...";
           statusPill.style.backgroundColor = "#ffa500";
 
           // On lance la connexion WebSocket
@@ -5392,7 +5392,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (typeof showToast === 'function') showToast("Bot Deriv opérationnel", "success");
               } else {
                 this.checked = false;
-                statusPill.innerText = "ÉCHEC CONNEXION";
+                statusPill.innerText = "CONNEXION FAILED";
                 if (typeof showToast === 'function') showToast("Connexion impossible", "error");
               }
             }
@@ -5401,7 +5401,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } else {
           // ACTIONS SUR "OFF"
-          statusPill.innerText = "ARRÊT DU SYSTÈME...";
+          statusPill.innerText = "POWERING OFF...";
           statusPill.style.backgroundColor = "#ff4444";
 
           // Fermeture des contrats actifs avant de couper
@@ -5439,7 +5439,7 @@ document.addEventListener("DOMContentLoaded", () => {
           initDerivConnection();
         }
         setTimeout(() => {
-          reconnectBtn.innerText = "Réinitialiser";
+          reconnectBtn.innerText = "Reset";
           updateDerivStatus();
         }, 1000);
       };
@@ -5458,7 +5458,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const msg = isScreenshotEnabled ? "Captures activées" : "Captures désactivées";
         if (typeof showToast === 'function') showToast(msg, "info");
       };
-    }
+    }  
   };
 
   window.resetTradingSettings = function () {
