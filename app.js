@@ -4054,7 +4054,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5. STOP LOSS (Avec verrou temporel pour le spread)
     if (pnl <= tm.maxLoss) {
-      if (tradeDuration > 5) {
+      if (tradeDuration > 5) {  
         //window.executeClosePosition(`🚨 SL HIT (${pnl.toFixed(2)}%)`);
         return;
       }
