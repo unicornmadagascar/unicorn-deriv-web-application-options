@@ -5651,7 +5651,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- 3. VERROUILLAGE ---
-    symbolsInFlight[symbol] = true;
+    symbolsInFlight[symbol] = true;   
 
     // --- 4. RÉCUPÉRATION DES PARAMÈTRES DE L'INTERFACE (UI) ---
     const derivContractType = side === 'BUY' ? "MULTUP" : "MULTDOWN";  
