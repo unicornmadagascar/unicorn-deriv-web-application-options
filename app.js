@@ -176,6 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
   soundOpen.volume = 0.5;
   soundClose.volume = 0.6;
   let isAudioUnlocked = false;
+  let symbolsInFlight = {};
   // ================== x ==================  
 
   let wsReady = false;
@@ -5309,7 +5310,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ema: ema50,
         price: lastBar.close
       };
-    } catch (e) {  
+    } catch (e) {
       console.error("Erreur dans le calcul des signaux ADX:", e);
       return null;
     }
@@ -5339,8 +5340,8 @@ document.addEventListener("DOMContentLoaded", () => {
         pythonText.innerText = "Python: Offline";
       }
       return isOnline;
-    }  
-   
+    }
+
     if (autoToggleInput) {
       autoToggleInput.checked = isAutoTradeEnabled;
       updatePythonStatus(); // Vérification initiale
@@ -5528,7 +5529,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pill.style.display = 'block';
 
     addTradeMarker(lastBar.time, 'OPEN', side);
-    playTradeSound('open');  
+    playTradeSound('open');
 
     // Capture automatique après un léger délai pour laisser le marqueur s'afficher
     if (isScreenshotEnabled) {
@@ -5540,72 +5541,83 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function executeGlobalTrade(symbol, side) {
-    // --- 1. SÉCURITÉ : VÉRIFICATION DE POSITION DÉJÀ OUVERTE ---
-    // On cherche si un contrat avec ce symbole existe déjà dans nos données actives
+    // --- 1. SÉCURITÉ : VÉRIFICATION DE POSITION OUVERTE OU EN COURS ---
     const isAlreadyOpen = Object.values(activeContractsData).some(c => c.symbol === symbol);
 
-    if (isAlreadyOpen) {
-      console.log(`⏳ Signal ignoré : Une position est déjà ouverte sur ${symbol}.`);
-      return; // On sort de la fonction, on n'ouvre rien
+    // Si on a déjà une position OU si une requête est déjà partie vers Python pour ce symbole
+    if (isAlreadyOpen || symbolsInFlight[symbol]) {
+      // Optionnel : ne loggez rien ici pour éviter de polluer la console à chaque tick
+      return;
     }
 
-    // --- 2. CONFIGURATION DU TYPE DE CONTRAT ---
-    const derivContractType = side === 'BUY' ? "MULTUP" : "MULTDOWN";
+    // --- 2. VERROUILLAGE ---
+    symbolsInFlight[symbol] = true;
 
-    // --- 3. RÉCUPÉRATION DES PARAMÈTRES UI ---
+    // Configuration
+    const derivContractType = side === 'BUY' ? "MULTUP" : "MULTDOWN";
+    const stake = parseFloat(document.getElementById("stakeInput").value) || 1.0;
+    const mult = parseInt(document.getElementById("multiplierSelect").value) || 40;
     const count = side === 'BUY'
       ? (parseInt(document.getElementById("buyNumberInput").value) || 1)
       : (parseInt(document.getElementById("sellNumberInput").value) || 1);
 
-    const stake = parseFloat(document.getElementById("stakeInput").value) || 1.0;
-    const mult = parseInt(document.getElementById("multiplierSelect").value) || 40;
+    console.log(`🚀 Signal validé. Envoi de l'ordre (${count}x) pour ${symbol} vers Python...`);
 
-    console.log(`🚀 Signal validé. Ouverture de ${count} position(s) sur ${symbol}...`);
-
-    // --- 4. APPEL AU SERVEUR PYTHON ---
-    const response = await talkToPython({
-      action: 'OPEN',
-      symbol: symbol,
-      currency: CURRENCY,
-      token: TOKEN,
-      multiplier: mult,
-      contract_type: derivContractType,
-      amount: stake,
-      price: stake,
-      repeat: count
-    });
-
-    // --- 5. TRAITEMENT DE LA RÉPONSE ---
-    if (response) {
-      const results = Array.isArray(response) ? response : [response];
-
-      results.forEach((res) => {
-        if (res.buy) {
-          const contractId = res.buy.contract_id;
-
-          // Enregistrement technique
-          activeContractsData[contractId] = {
-            symbol: symbol,
-            side: side,
-            type: derivContractType,
-            stake: stake,
-            openTime: Date.now()
-          };
-
-          // Enregistrement pour le profit (Donuts)
-          activeContracts[contractId] = 0;
-
-          console.log(`✅ Position ${contractId} confirmée.`);
-        }
-        else if (res.error) {
-          console.error(`❌ Erreur Deriv:`, res.error.message);
-        }
+    try {
+      // --- 3. APPEL AU SERVEUR PYTHON ---
+      const response = await talkToPython({
+        action: 'OPEN',
+        symbol: symbol,
+        currency: CURRENCY,
+        token: TOKEN,
+        multiplier: mult,
+        contract_type: derivContractType,
+        amount: stake,
+        price: stake,
+        repeat: count
       });
 
-      if (results.some(r => r.buy)) {
-        playTradeSound('open');
-        updateDonutCharts();
+      // --- 4. TRAITEMENT DE LA RÉPONSE ---
+      if (response) {
+        const results = Array.isArray(response) ? response : [response];
+        let successOccurred = false;
+
+        results.forEach((res) => {
+          if (res.buy) {
+            const contractId = res.buy.contract_id;
+
+            // Enregistrement technique
+            activeContractsData[contractId] = {
+              symbol: symbol,
+              side: side,
+              type: derivContractType,
+              stake: stake,
+              openTime: Date.now(),
+              isClosing: false // Important pour la fonction close
+            };
+
+            activeContracts[contractId] = 0;
+            console.log(`✅ Position ${contractId} confirmée.`);
+            successOccurred = true;
+          } else if (res.error) {
+            console.error(`❌ Erreur Deriv sur ${symbol}:`, res.error.message);
+          }
+        });
+
+        if (successOccurred) {
+          playTradeSound('open');
+          updateDonutCharts();
+        }
       }
+    } catch (error) {
+      console.error("❌ Erreur critique lors de l'exécution du trade:", error);
+    } finally {
+      // --- 5. DÉVERROUILLAGE ---
+      // On libère le symbole après la réponse (succès ou échec)
+      // Note: Le "isAlreadyOpen" prendra le relais au prochain tick si le trade a réussi
+      setTimeout(() => {
+        delete symbolsInFlight[symbol];
+      }, 1000); // Petit délai de sécurité pour laisser le temps au WebSocket de se mettre à jour
     }
   }
 
