@@ -5104,10 +5104,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusPill = document.getElementById('deriv-bot-signal-display');
     const toggleInput = document.getElementById('deriv-bot-auto-toggle');
 
-    // 1. Basculer l'état actif de l'indicateur cliqué
+    // 1. Basculer l'état actif de l'indicateur cliqué  
     isAdxActive[type] = btn.classList.toggle("active");
 
-    // 2. Calcul du nombre d'indicateurs actifs et ajustement de la hauteur
+    // 2. Calcul du nombre d'indicateurs actifs et ajustement de la hauteur  
     let activeCount = (isAdxActive.mt5 ? 1 : 0) + (isAdxActive.wilder ? 1 : 0);
 
     let newHeight = 750; // Hauteur par défaut (plein écran)
