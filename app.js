@@ -5102,7 +5102,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const chartInner = document.getElementById("chartInner");
     const botPanel = document.getElementById('deriv-bot-panel-root');
     const statusPill = document.getElementById('deriv-bot-signal-display');
-    const toggleInput = document.getElementById('deriv-bot-auto-toggle');
+    const toggleInput = document.getElementById('deriv-bot-auto-toggle');  
 
     // 1. Basculer l'état actif de l'indicateur cliqué  
     isAdxActive[type] = btn.classList.toggle("active");
