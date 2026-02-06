@@ -177,6 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
   soundClose.volume = 0.6;
   let isAudioUnlocked = false;
   let symbolsInFlight = {};
+  let derivSocket = null;
   // ================== x ==================  
 
   let wsReady = false;
@@ -185,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let ControlSocket = null;
   let engineStarted = false;
   let totalPL = 0; // cumul des profits et pertes
-  let ws = null;  
+  let ws = null;
   let wsTranscation = null;
   let authToken = null;
   let connection = null;
@@ -5322,109 +5323,143 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusPill = document.getElementById('deriv-bot-signal-display');
     const screenshotToggle = document.getElementById('deriv-bot-screenshot-toggle');
 
-    // Nouveaux éléments pour le statut Python
-    const pythonDot = document.getElementById('python-status-dot');
-    const pythonText = document.getElementById('python-status-text');
+    // Éléments visuels du statut
+    const derivDot = document.getElementById('python-status-dot');
+    const derivText = document.getElementById('python-status-text');
     const reconnectBtn = document.getElementById('btn-reconnect-python');
 
-    // --- 1. FONCTION DE VÉRIFICATION DU SERVEUR ---
-    async function updatePythonStatus() {
-      const isOnline = await checkServerStatus(); // Utilise fetch vers /execute avec action: 'PING'
-      if (isOnline) {
-        pythonDot.style.backgroundColor = "#00ff00";
-        pythonDot.style.boxShadow = "0 0 5px #00ff00";
-        pythonText.innerText = "Python: Online";
-      } else {
-        pythonDot.style.backgroundColor = "#ff4444";
-        pythonDot.style.boxShadow = "0 0 5px #ff4444";
-        pythonText.innerText = "Python: Offline";
+    // --- 1. GESTION VISUELLE DU STATUT (AVEC ANIMATION) ---
+    function updateDerivStatus() {
+      if (!derivSocket) {
+        derivDot.style.backgroundColor = "#ff4444";
+        derivDot.style.animation = "none";
+        derivText.innerText = "Deriv: Offline";
+        return false;
       }
-      return isOnline;
+
+      const state = derivSocket.readyState;
+
+      if (state === WebSocket.OPEN) {
+        derivDot.style.backgroundColor = "#00ff00";
+        derivDot.style.boxShadow = "0 0 10px #00ff00";
+        derivDot.style.animation = "none";
+        derivText.innerText = "Deriv: Connected";
+        return true;
+      } else if (state === WebSocket.CONNECTING) {
+        derivDot.style.backgroundColor = "#ffa500";
+        derivDot.style.boxShadow = "0 0 10px #ffa500";
+        derivDot.style.animation = "pulse 1s infinite"; // Animation de chargement
+        derivText.innerText = "Deriv: Connecting...";
+        return false;
+      } else {
+        derivDot.style.backgroundColor = "#ff4444";
+        derivDot.style.boxShadow = "0 0 10px #ff4444";
+        derivDot.style.animation = "none";
+        derivText.innerText = "Deriv: Disconnected";
+        return false;
+      }
     }
 
+    // Mise à jour automatique du voyant toutes les 2 secondes
+    setInterval(updateDerivStatus, 2000);
+
+    // --- 2. LOGIQUE DU BOUTON AUTO-TRADE (ON/OFF) ---
     if (autoToggleInput) {
+      // État initial au chargement
       autoToggleInput.checked = isAutoTradeEnabled;
-      updatePythonStatus(); // Vérification initiale
 
       autoToggleInput.onchange = async function () {
         if (this.checked) {
-          // --- SÉCURITÉ : On vérifie si Python est là avant d'activer ---
-          const online = await updatePythonStatus();
-          if (!online) {
-            if (typeof showToast === 'function') showToast("Erreur: Lancez le serveur Python d'abord !", "error");
-            this.checked = false;
-            return;
+          // ACTIONS SUR "ON"
+          statusPill.style.display = 'block';
+          statusPill.innerText = "CONNEXION EN COURS...";
+          statusPill.style.backgroundColor = "#ffa500";
+
+          // On lance la connexion WebSocket
+          if (typeof initDerivConnection === 'function') {
+            initDerivConnection();
           }
 
-          isAutoTradeEnabled = true;
-          statusPill.style.display = 'block';
-          statusPill.innerText = "SCANNER ACTIF";
-          statusPill.style.backgroundColor = "#008080";
-          console.log("🤖 Auto-Trade activé.");
+          // Boucle de vérification pour activer le scanner une fois connecté
+          let attempts = 0;
+          const checkConnect = setInterval(() => {
+            if (updateDerivStatus() || attempts > 25) {
+              clearInterval(checkConnect);
+              if (updateDerivStatus()) {
+                isAutoTradeEnabled = true;
+                statusPill.innerText = "SCANNER ACTIF";
+                statusPill.style.backgroundColor = "#008080";
+                if (typeof showToast === 'function') showToast("Bot Deriv opérationnel", "success");
+              } else {
+                this.checked = false;
+                statusPill.innerText = "ÉCHEC CONNEXION";
+                if (typeof showToast === 'function') showToast("Connexion impossible", "error");
+              }
+            }
+            attempts++;
+          }, 200);
+
         } else {
-          // --- ACTIONS DE DÉSACTIVATION ---
-          statusPill.innerText = "ARRÊT EN COURS...";
+          // ACTIONS SUR "OFF"
+          statusPill.innerText = "ARRÊT DU SYSTÈME...";
           statusPill.style.backgroundColor = "#ff4444";
 
-          // 1. Fermeture groupée
+          // Fermeture des contrats actifs avant de couper
           const activeIds = Object.keys(activeContractsData);
-          if (activeIds.length > 0) {
-            await talkToPython({
-              action: 'CLOSE_ALL',
-              ids: activeIds,
-              token: TOKEN
-            });
-          }
+          activeIds.forEach(id => {
+            if (derivSocket && derivSocket.readyState === WebSocket.OPEN) {
+              derivSocket.send(JSON.stringify({ sell: id, price: 0 }));
+            }
+          });
 
-          // 2. Nettoyage
-          activeContracts = {};
-          activeContractsData = {};
-          updateDonutCharts();
-
-          // 3. Stop Serveur
-          await talkToPython({ action: 'STOP' });
+          // Fermeture du Socket
+          if (derivSocket) derivSocket.close();
 
           isAutoTradeEnabled = false;
-          statusPill.style.display = 'none';
-          updatePythonStatus(); // Repasse le voyant au rouge
-          if (typeof showToast === 'function') showToast("Système totalement arrêté", "info");
+          activeContracts = {};
+          activeContractsData = {};
+
+          // On cache le pill et on nettoie l'interface
+          setTimeout(() => {
+            statusPill.style.display = 'none';
+            if (typeof updateDonutCharts === 'function') updateDonutCharts();
+          }, 1000);
+
+          if (typeof showToast === 'function') showToast("Système déconnecté", "info");
         }
         localStorage.setItem('autoTradePref', isAutoTradeEnabled);
       };
     }
 
-    // --- LOGIQUE DU BOUTON RÉINITIALISER ---
+    // --- 3. BOUTON RÉINITIALISER (RECONNEXION) ---
     if (reconnectBtn) {
-      reconnectBtn.onclick = async function () {
+      reconnectBtn.onclick = function () {
         reconnectBtn.innerText = "⏳...";
-        await updatePythonStatus();
-        setTimeout(() => { reconnectBtn.innerText = "Réinitialiser"; }, 1000);
+        if (typeof initDerivConnection === 'function') {
+          initDerivConnection();
+        }
+        setTimeout(() => {
+          reconnectBtn.innerText = "Réinitialiser";
+          updateDerivStatus();
+        }, 1000);
       };
     }
 
-    // Screenshot Toggle
+    // --- 4. GESTION DES SCREENSHOTS (LocalStorage) ---
     if (screenshotToggle) {
+      // Récupération de la préférence sauvegardée
+      const savedShotPref = localStorage.getItem('screenshotPref');
+      isScreenshotEnabled = (savedShotPref === 'true');
       screenshotToggle.checked = isScreenshotEnabled;
+
       screenshotToggle.onchange = function () {
         isScreenshotEnabled = this.checked;
         localStorage.setItem('screenshotPref', isScreenshotEnabled);
+        const msg = isScreenshotEnabled ? "Captures activées" : "Captures désactivées";
+        if (typeof showToast === 'function') showToast(msg, "info");
       };
     }
   };
-
-  // Petite fonction utilitaire à ajouter si non présente
-  async function checkServerStatus() {
-    try {
-      const res = await fetch('http://localhost:5000/execute', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'PING' })
-      });
-      return res.ok;
-    } catch (e) {
-      return false;
-    }
-  }
 
   window.resetTradingSettings = function () {
     if (confirm("Voulez-vous réinitialiser tous les paramètres et effacer la session ?")) {
@@ -5540,130 +5575,156 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`%c [TRADE START] ${side} sur ${asset} à ${lastBar.close}`, 'background: #008080; color: #fff; font-weight: bold;');
   }
 
+  function initDerivConnection() {
+    derivSocket = new WebSocket(DERIV_WS_URL);
+
+    derivSocket.onopen = () => {
+      console.log("🟢 Connecté directement à Deriv via Browser");
+      // Authentification immédiate
+      derivSocket.send(JSON.stringify({ authorize: TOKEN }));
+    };
+
+    derivSocket.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+      handleDerivResponse(data);
+    };
+
+    derivSocket.onclose = () => {
+      console.warn("🔴 Connexion perdue. Reconnexion...");
+      setTimeout(initDerivConnection, 5000);
+    };
+  }
+
   async function executeGlobalTrade(symbol, side) {
-    // --- 1. SÉCURITÉ : VÉRIFICATION DE POSITION OUVERTE OU EN COURS ---
+    // 1. SÉCURITÉ : VÉRIFICATION DE POSITION DÉJÀ OUVERTE
+    // On vérifie si une position existe déjà pour ce symbole dans vos données locales
     const isAlreadyOpen = Object.values(activeContractsData).some(c => c.symbol === symbol);
 
-    // Si on a déjà une position OU si une requête est déjà partie vers Python pour ce symbole
+    // 2. SÉCURITÉ : VÉRIFICATION DE REQUÊTE EN COURS (ANTI-SPAM)
+    // On vérifie si on n'est pas déjà en train d'envoyer un ordre pour ce symbole
     if (isAlreadyOpen || symbolsInFlight[symbol]) {
-      // Optionnel : ne loggez rien ici pour éviter de polluer la console à chaque tick
+      // On quitte silencieusement pour ne pas polluer la console
       return;
     }
 
-    // --- 2. VERROUILLAGE ---
+    // --- 3. VERROUILLAGE ---
     symbolsInFlight[symbol] = true;
 
-    // Configuration
+    // --- 4. RÉCUPÉRATION DES PARAMÈTRES DE L'INTERFACE (UI) ---
     const derivContractType = side === 'BUY' ? "MULTUP" : "MULTDOWN";
-    const stake = parseFloat(document.getElementById("stakeInput").value) || 1.0;
-    const mult = parseInt(document.getElementById("multiplierSelect").value) || 40;
+
+    // Récupération du montant (Stake)
+    const stake = parseFloat(document.getElementById("stakeInput")?.value) || 1.0;
+
+    // Récupération du multiplicateur
+    const mult = parseInt(document.getElementById("multiplierSelect")?.value) || 40;
+
+    // Récupération du nombre de positions à ouvrir (Repeat)
     const count = side === 'BUY'
-      ? (parseInt(document.getElementById("buyNumberInput").value) || 1)
-      : (parseInt(document.getElementById("sellNumberInput").value) || 1);
+      ? (parseInt(document.getElementById("buyNumberInput")?.value) || 1)
+      : (parseInt(document.getElementById("sellNumberInput")?.value) || 1);
 
-    console.log(`🚀 Signal validé. Envoi de l'ordre (${count}x) pour ${symbol} vers Python...`);
+    console.log(`🚀 [SIGNAL ${side}] sur ${symbol}. Tentative d'ouverture de ${count} position(s)...`);
 
-    try {
-      // --- 3. APPEL AU SERVEUR PYTHON ---
-      const response = await talkToPython({
-        action: 'OPEN',
-        symbol: symbol,
-        currency: CURRENCY,
-        token: TOKEN,
-        multiplier: mult,
-        contract_type: derivContractType,
+    // --- 5. CONSTRUCTION DU PAYLOAD (API DERIV) ---
+    const payload = {
+      buy: 1,
+      price: stake,
+      parameters: {
         amount: stake,
-        price: stake,
-        repeat: count
-      });
+        basis: "stake",
+        contract_type: derivContractType,
+        currency: CURRENCY || "USD",
+        multiplier: mult,
+        symbol: symbol
+      }
+    };
 
-      // --- 4. TRAITEMENT DE LA RÉPONSE ---
-      if (response) {
-        const results = Array.isArray(response) ? response : [response];
-        let successOccurred = false;
-
-        results.forEach((res) => {
-          if (res.buy) {
-            const contractId = res.buy.contract_id;
-
-            // Enregistrement technique
-            activeContractsData[contractId] = {
-              symbol: symbol,
-              side: side,
-              type: derivContractType,
-              stake: stake,
-              openTime: Date.now(),
-              isClosing: false // Important pour la fonction close
-            };
-
-            activeContracts[contractId] = 0;
-            console.log(`✅ Position ${contractId} confirmée.`);
-            successOccurred = true;
-          } else if (res.error) {
-            console.error(`❌ Erreur Deriv sur ${symbol}:`, res.error.message);
-          }
-        });
-
-        if (successOccurred) {
-          playTradeSound('open');
-          updateDonutCharts();
+    // --- 6. ENVOI DIRECT VIA WEBSOCKET ---
+    try {
+      if (derivSocket && derivSocket.readyState === WebSocket.OPEN) {
+        for (let i = 0; i < count; i++) {
+          // On envoie l'ordre directement à Deriv
+          derivSocket.send(JSON.stringify(payload));
         }
+        console.log(`📡 Requête(s) envoyée(s) à Deriv.`);
+      } else {
+        throw new Error("La connexion WebSocket vers Deriv n'est pas active.");
       }
     } catch (error) {
-      console.error("❌ Erreur critique lors de l'exécution du trade:", error);
-    } finally {
-      // --- 5. DÉVERROUILLAGE ---
-      // On libère le symbole après la réponse (succès ou échec)
-      // Note: Le "isAlreadyOpen" prendra le relais au prochain tick si le trade a réussi
-      setTimeout(() => {
-        delete symbolsInFlight[symbol];
-      }, 1000); // Petit délai de sécurité pour laisser le temps au WebSocket de se mettre à jour
+      console.error("❌ Échec de l'envoi de l'ordre :", error.message);
+      // En cas d'échec d'envoi, on libère le verrou pour permettre une nouvelle tentative
+      delete symbolsInFlight[symbol];
     }
+
+    // Note : Le verrou symbolsInFlight[symbol] sera définitivement supprimé 
+    // dans votre fonction handleDerivResponse() dès que Deriv confirmera l'achat ('msg_type: buy').
   }
 
   /**
-  * Envoie une requête au serveur Python et attend la réponse JSON.
-  * @param {Object} payload - Les données du trade (action, symbol, token, etc.)
-  * @returns {Promise<Object|Array|null>} - La réponse de l'API ou null en cas d'échec
-  */
-  async function talkToPython(payload) {
-    // On définit l'URL de base
-    const BASE_URL = 'http://localhost:5000';
+ * Traite toutes les réponses venant du WebSocket direct de Deriv
+ */
+  function handleDerivResponse(data) {
+    // 1. GESTION DES ERREURS
+    if (data.error) {
+      console.error("❌ Erreur API Deriv:", data.error.message);
+      // Libération des verrous pour ne pas bloquer le bot
+      symbolsInFlight = {};
+      if (typeof showToast === 'function') showToast(`Erreur: ${data.error.message}`, 'error');
+      return;
+    }
 
-    // On choisit le "chemin" (endpoint) selon l'action
-    let endpoint = '/execute';
-    if (payload.action === 'STOP') endpoint = '/stop';
-    if (payload.action === 'CLOSE_ALL') endpoint = '/close_all';
+    // 2. CONFIRMATION D'ACHAT
+    if (data.msg_type === 'buy') {
+      const contractId = data.buy.contract_id;
+      console.log(`✅ Contrat acheté avec succès ! ID: ${contractId}`);
 
-    try {
-      console.log(`📤 Envoi vers Python [${endpoint}] :`, payload.action);
+      // Initialisation immédiate pour éviter les erreurs de calcul
+      activeContracts[contractId] = 0;
 
-      const response = await fetch(`${BASE_URL}${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      // Libération des verrous
+      symbolsInFlight = {};
 
-      // Cas particulier pour STOP : le serveur se coupe, donc la réponse peut échouer
-      if (payload.action === 'STOP') return { status: "Server stopping..." };
+      playTradeSound('open');
+      if (typeof showToast === 'function') showToast("Position ouverte !", "success");
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Erreur Serveur (${response.status}): ${errorText}`);
+      // OPTIONNEL : S'abonner spécifiquement à ce contrat pour avoir le flux de profit
+      // derivSocket.send(JSON.stringify({ proposal_open_contract: 1, contract_id: contractId, subscribe: 1 }));
+    }
+
+    // 3. RÉCEPTION DES DÉTAILS DU CONTRAT (Tick by Tick)
+    if (data.msg_type === 'proposal_open_contract') {
+      const contract = data.proposal_open_contract;
+      const id = contract.contract_id;
+
+      // --- SÉCURITÉ : Si le contrat est fermé (vendu ou expiré) ---
+      if (contract.status !== 'open') {
+        console.log(`🧹 Nettoyage du contrat terminé : ${id}`);
+        delete activeContractsData[id];
+        delete activeContracts[id];
+
+        if (typeof updateDonutCharts === 'function') updateDonutCharts();
+        return; // On arrête le traitement pour ce contrat
       }
 
-      return await response.json();
+      // --- MISE À JOUR DES DONNÉES ACTIVES ---
+      activeContractsData[id] = {
+        symbol: contract.display_name,
+        underlying: contract.underlying,
+        side: contract.contract_type === 'MULTUP' ? 'BUY' : 'SELL',
+        profit: parseFloat(contract.profit),
+        status: contract.status,
+        entry: contract.entry_tick,
+        current: contract.current_spot
+      };
 
-    } catch (error) {
-      // Si on a demandé STOP, l'erreur de connexion est normale (le serveur est mort)
-      if (payload.action === 'STOP') {
-        console.log("🛑 Serveur Python arrêté avec succès.");
-        return { status: "Offline" };
+      // Synchronisation du dictionnaire de profit global
+      activeContracts[id] = parseFloat(contract.profit);
+
+      // --- MISE À JOUR VISUELLE ---
+      if (typeof updateDonutCharts === 'function') {
+        updateDonutCharts();
       }
-
-      console.error("❌ Erreur de communication avec Python :", error.message);
-      if (typeof showToast === 'function') showToast(`Liaison Python perdue`, 'error');
-      return null;
     }
   }
 
@@ -5672,13 +5733,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const techData = activeContractsData[contractId];
 
     if (!techData) {
-      console.warn(`⚠️ Données techniques pour le contrat ${contractId} introuvables.`);
+      // Si le contrat n'est plus là, c'est qu'il a déjà été nettoyé
       return;
     }
 
     // --- SÉCURITÉ ANTI-SPAM : Vérification du verrou ---
     if (techData.isClosing) {
-      // console.log(`⏳ Fermeture déjà en cours pour ${contractId}, requête ignorée.`);
       return;
     }
 
@@ -5686,48 +5746,30 @@ document.addEventListener("DOMContentLoaded", () => {
     techData.isClosing = true;
     const symbol = techData.symbol;
 
-    console.log(`💰 Demande de fermeture envoyée pour ${symbol} (ID: ${contractId})`);
+    console.log(`🔌 [BROWSER DIRECT] Fermeture demandée pour ${symbol} (ID: ${contractId})`);
 
-    // 2. Appel au serveur Python pour vendre
-    const response = await talkToPython({
-      action: 'CLOSE',
-      contract_id: contractId,
-      token: TOKEN
-    });
+    // 2. Envoi direct de l'ordre de vente via WebSocket
+    if (derivSocket && derivSocket.readyState === WebSocket.OPEN) {
+      const payload = {
+        sell: contractId,
+        price: 0 // 0 signifie "vendre au prix actuel du marché"
+      };
 
-    if (response && response.sell) {
-      // Calcul du profit réel renvoyé par Deriv
-      const profit = response.sell.sold_for - response.sell.price;
-      const status = profit >= 0 ? "✅ WIN" : "❌ LOSS";
-
-      console.log(`${status} | Contrat: ${contractId} | Actif: ${symbol} | Profit: ${profit.toFixed(2)}$`);
-
-      // 3. NETTOYAGE DES DEUX VARIABLES
-      delete activeContracts[contractId];
-      delete activeContractsData[contractId];
-
-      // 4. Mises à jour visuelles
-      updateDonutCharts();
-      playTradeSound('close');
-
-    } else {
-      // --- GESTION DES ERREURS ET DÉVERROUILLAGE ---
-      if (response && response.error) {
-        console.error(`❌ Erreur Deriv sur ${contractId}:`, response.error.message);
-
-        // Si le contrat n'existe plus (déjà fermé), on nettoie les variables
-        if (response.error.code === 'InvalidContractProposal' || response.error.code === 'UpdateStatusNotAllowed') {
-          delete activeContracts[contractId];
-          delete activeContractsData[contractId];
-          updateDonutCharts();
-          return;
-        }
+      try {
+        derivSocket.send(JSON.stringify(payload));
+      } catch (error) {
+        console.error(`❌ Erreur lors de l'envoi de la fermeture:`, error);
+        // En cas d'erreur d'envoi, on retire le verrou pour retenter au prochain tick
+        techData.isClosing = false;
       }
-
-      // En cas d'erreur de réseau ou autre, on retire le verrou pour permettre une nouvelle tentative au prochain tick
-      console.warn(`🔄 Déverrouillage du contrat ${contractId} pour nouvelle tentative.`);
+    } else {
+      console.error("❌ Impossible de fermer : Connexion WebSocket Deriv perdue.");
       techData.isClosing = false;
     }
+
+    // NOTE : Le nettoyage des variables (delete activeContractsData[contractId])
+    // se fait désormais dans handleDerivResponse() quand Deriv renvoie 
+    // un 'proposal_open_contract' avec le statut 'won' ou 'lost'.
   }
 
   // 2. Fonction de lecture (Appelée lors des trades)
