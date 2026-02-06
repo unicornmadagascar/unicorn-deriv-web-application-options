@@ -5325,8 +5325,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Éléments visuels du statut
     const derivDot = document.getElementById('python-status-dot');
-    const derivText = document.getElementById('python-status-text');
-    const reconnectBtn = document.getElementById('btn-reconnect-python');
+    const derivText = document.getElementById('python-status-text');  
+    const reconnectBtn = document.getElementById('btn-reconnect-python');   
 
     // --- 1. GESTION VISUELLE DU STATUT (AVEC ANIMATION) ---
     function updateDerivStatus() {
