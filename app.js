@@ -1349,7 +1349,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("currentActiveContrat :", window.currentActiveContract);
         // Extraction et conversion des données
         const entryPrice = parseFloat(c.entry_tick_display_value || c.entry_spot);
-        const profit = parseFloat(c.profit || 0);
+        const profit = parseFloat(c.profit || 0);  
         const profitPercentage = parseFloat(c.profit_percentage || 0);
         const currentSpot = parseFloat(c.current_spot);
         tradeManager.entryPrice = entryPrice;
@@ -4215,6 +4215,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.updateRiskLinesOnChart = function (pnl, currentPrice) {
     const hasContract = window.currentActiveContract !== null;
     const tm = tradeManager;
+    const data = cache;
 
     // 1. Safety Check: If no contract or manager isn't armed, wipe everything
     if (!hasContract || !currentSeries || !tm || !tm.isActive) {
@@ -4225,6 +4226,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const entry = parseFloat(window.currentActiveContract?.entry_tick || window.currentActiveContract?.buy_price);
     const side = (window.currentActiveContract?.contract_type?.includes('UP') ||
       window.currentActiveContract?.contract_type === 'MULTUP') ? 'BUY' : 'SELL';
+
+    const currentSpot = currentPrice;
+    const previousPrice = data[data.length-2].close;
+    const beforepreviousPrice = data[data.length-3].close;
 
     if (!entry) return;
 
@@ -4255,12 +4260,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const tsDistPercent = parseFloat(tm.tsTrailingDist || 0.2);
 
     // We only need to ensure the calculation doesn't result in a negative offset 
-    // that would put the line on the wrong side of the price.
-    const tsOffset = highestPnL - tsDistPercent;
-
     const tsPrice = (side === 'BUY')
-      ? entry * (1 + tsOffset / 100)
-      : entry * (1 - tsOffset / 100);
+      ? Buyfunction4TS(entry, currentSpot, previousPrice, beforepreviousPrice)
+      : Sellfunction4TS(entry, currentSpot, previousPrice, beforepreviousPrice);  
 
     const tsOptions = {
       price: tsPrice,
@@ -4291,6 +4293,44 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   };
+
+  function Buyfunction4TS(entry__, currentSpot__, previousPrice__, beforepreviousPrice__) { 
+    let ts_price;
+
+    if (currentSpot__ > entry__) {
+      ts_price = entry__ + (Math.abs(currentSpot__ - entry__) * 80)/100;
+      if(beforepreviousPrice__ < previousPrice__ && previousPrice__ < currentSpot__) { return ts_price; } 
+      else if (beforepreviousPrice__ < previousPrice__ && previousPrice__ > currentSpot__) { return ts_price; } 
+      else if (beforepreviousPrice__ > previousPrice__ && previousPrice__ > currentSpot__) { return ts_price; } 
+      else if (beforepreviousPrice__ > previousPrice__ && previousPrice__ == currentSpot__) { return ts_price; } 
+      else if (beforepreviousPrice__ > previousPrice__ && previousPrice__ < currentSpot__) { return ts_price; } 
+      else if (beforepreviousPrice__ == previousPrice__ && previousPrice__ == currentSpot__) { return ts_price; } 
+      else if (beforepreviousPrice__ == previousPrice__ && previousPrice__ < currentSpot__) { return ts_price; } 
+      else if (beforepreviousPrice__ == previousPrice__ && previousPrice__ > currentSpot__) { return ts_price; } 
+      else if (beforepreviousPrice__ < previousPrice__ && previousPrice__ == currentSpot__) { return ts_price; }
+    } else {
+      return (entry__ + parseFloat(document.getElementById("set-max-loss").value)/100);
+    }
+  }
+
+  function Sellfunction4TS(entry__, currentSpot__, previousPrice__, beforepreviousPrice__) { 
+    let ts_price;
+
+    if (currentSpot__ < entry__) {
+      ts_price = entry__ - (Math.abs(currentSpot__ - entry__) * 80)/100;
+      if(beforepreviousPrice__ > previousPrice__ && previousPrice__ > currentSpot__) { return ts_price; } 
+      else if (beforepreviousPrice__ > previousPrice__ && previousPrice__ < currentSpot__) { return ts_price; } 
+      else if (beforepreviousPrice__ < previousPrice__ && previousPrice__ < currentSpot__) { return ts_price; } 
+      else if (beforepreviousPrice__ < previousPrice__ && previousPrice__ == currentSpot__) { return ts_price; } 
+      else if (beforepreviousPrice__ < previousPrice__ && previousPrice__ > currentSpot__) { return ts_price; } 
+      else if (beforepreviousPrice__ == previousPrice__ && previousPrice__ == currentSpot__) { return ts_price; } 
+      else if (beforepreviousPrice__ == previousPrice__ && previousPrice__ > currentSpot__) { return ts_price; } 
+      else if (beforepreviousPrice__ == previousPrice__ && previousPrice__ < currentSpot__) { return ts_price; } 
+      else if (beforepreviousPrice__ > previousPrice__ && previousPrice__ == currentSpot__) { return ts_price; }
+    } else {
+      return (entry__ - parseFloat(document.getElementById("set-max-loss").value)/100);
+    }
+  }
 
   function initPortfolioStream() {
     // Éviter les connexions multiples si une est déjà active
