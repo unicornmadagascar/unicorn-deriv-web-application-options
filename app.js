@@ -178,6 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let isAudioUnlocked = false;
   let symbolsInFlight = {};
   let derivSocket = null;
+  window.currentActivePortfolio = [];
   // ================== x ==================  
 
   let wsReady = false;
@@ -4004,19 +4005,28 @@ document.addEventListener("DOMContentLoaded", () => {
       streakElement.classList.remove('streak-hot');
     }
   };
-
+  
   window.runSmartRiskManager = function (currentPrice) {
     const c = window.currentActiveContract;
 
     // 1. SÉCURITÉ : On n'exécute le manager que si le contrat est ACTIF (is_sold === 0)
     if (!c || c.is_sold === 1 || !tradeManager || !tradeManager.isActive) {
       return;
-    }
+    }  
 
     const pnl = parseFloat(c.profit_percentage || 0);
     const now = Date.now();
     const tradeDuration = (now - (tradeManager.startTime || 0)) / 1000;
     const tm = tradeManager;
+    const entry = parseFloat(window.currentActiveContract?.entry_tick || window.currentActiveContract?.buy_price);
+    const side = (window.currentActiveContract?.contract_type?.includes('UP') ||
+      window.currentActiveContract?.contract_type === 'MULTUP') ? 'BUY' : 'SELL';
+
+    const currentSpot = currentPrice;
+    const previousPrice = data[data.length-2].close;
+    const beforepreviousPrice = data[data.length-3].close;
+
+    if (!entry) return;
 
     // 2. MISE À JOUR DU PEAK (On s'assure que le Peak suit toujours le profit maximum)
     if (pnl > tm.highestPnL) {
@@ -4024,40 +4034,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 3. LOGIQUE BREAKEVEN (BE)
-    if (pnl >= tm.beActivation && !tm.isBE && tradeDuration > 3) {
+    if (pnl >= tm.beActivation && !tm.isBE) {
       tm.isBE = true;
       console.log(`%c 🛡️ BE ARMÉ à ${pnl}% `, 'background: #3b82f6; color: white;');
     }
 
     // Sortie BE : On ne ferme que si on repasse sous 0.01% APRÈS activation
-    if (tm.isBE && pnl <= 0.01 && tradeDuration > 5) {
-      //window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`);
+    if (tm.isBE && pnl <= 0.02) {
+      window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`);  
       return;
     }
 
+    const tsPrice = (side === 'BUY')
+          ? Buyfunction4TS(entry, currentSpot, previousPrice, beforepreviousPrice)  
+          : Sellfunction4TS(entry, currentSpot, previousPrice, beforepreviousPrice);  
+
     // 4. LOGIQUE TRAILING STOP (TS) - RECTIFIÉE
-    if (pnl >= tm.tsActivation) {
-      // SÉCURITÉ CRUCIALE : On ne calcule le drop que si le Peak est supérieur à la distance
-      // Sinon, (Peak - Distance) donne un chiffre négatif qui ferme le trade prématurément.
-      if (tm.highestPnL > tm.tsTrailingDist) {
-
-        const dropFromPeak = tm.highestPnL - pnl;
-
-        // On ne déclenche la fermeture que si le profit actuel est redescendu 
-        // en dessous du niveau de stop calculé (Peak - Distance)
-        if (dropFromPeak >= tm.tsTrailingDist) {
-          //window.executeClosePosition(`🔥 TS EXIT (Drop: ${dropFromPeak.toFixed(2)}%)`);
-          return;
-        }
-      }
-    }
+    if (side === 'BUY' && currentSpot <= tsPrice && currentSpot > entry) { window.executeClosePosition(`🔥 BUY TS EXIT`); }
+    else if (side === 'SELL' && currentSpot >= tsPrice && currentSpot < entry) { window.executeClosePosition(`🔥 SELL TS EXIT`); }  
 
     // 5. STOP LOSS (Avec verrou temporel pour le spread)
-    if (pnl <= tm.maxLoss) {
-      if (tradeDuration > 5) {  
-        //window.executeClosePosition(`🚨 SL HIT (${pnl.toFixed(2)}%)`);
-        return;
-      }
+    if (pnl < 0) {
+      if (side === 'BUY' && currentSpot < entry && currentSpot <= tsPrice) { window.executeClosePosition(`🚨 SL HIT`); }
+      else if (side === 'SELL' && currentSpot > entry && currentSpot >= tsPrice) { window.executeClosePosition(`🚨 SL HIT`); }
     }
 
     // --- MISE À JOUR VISUELLE ---
@@ -4365,6 +4364,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- B. RÉCEPTION DU PORTFOLIO (Au démarrage/Refresh) ---
       if (data.msg_type === "portfolio") {
         const contracts__ = data.portfolio.contracts || [];
+        window.currentActivePortfolio = contracts__;
         console.log("PORTFOLIO CONTRACT LENGTH :", contracts__.length);
         contracts__.forEach(c => {
           // On s'abonne à chaque contrat pour avoir le flux temps réel
@@ -5191,7 +5191,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (statusPill) statusPill.style.display = 'none';
 
       // Réinitialisation des calculs statistiques (Z-Score) pour éviter les erreurs de décalage
-      maHistory = [];
+      //maHistory = [];
       console.log("🤖 Auto-trading désactivé par sécurité (Indicateurs incomplets)");
     }
 
@@ -5639,6 +5639,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. SÉCURITÉ : VÉRIFICATION DE POSITION DÉJÀ OUVERTE
     // On vérifie si une position existe déjà pour ce symbole dans vos données locales
     const isAlreadyOpen = Object.values(activeContractsData).some(c => c.symbol === symbol);
+    const c = window.currentActivePortfolio || [];
+
+    if (c.length) return;  
 
     // 2. SÉCURITÉ : VÉRIFICATION DE REQUÊTE EN COURS (ANTI-SPAM)
     // On vérifie si on n'est pas déjà en train d'envoyer un ordre pour ce symbole
