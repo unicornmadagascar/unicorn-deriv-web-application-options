@@ -5654,7 +5654,7 @@ document.addEventListener("DOMContentLoaded", () => {
     symbolsInFlight[symbol] = true;
 
     // --- 4. RÉCUPÉRATION DES PARAMÈTRES DE L'INTERFACE (UI) ---
-    const derivContractType = side === 'BUY' ? "MULTUP" : "MULTDOWN";
+    const derivContractType = side === 'BUY' ? "MULTUP" : "MULTDOWN";  
 
     // Récupération du montant (Stake)
     const stake = parseFloat(document.getElementById("stakeInput")?.value) || 1.0;
