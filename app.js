@@ -5387,7 +5387,7 @@ document.addEventListener("DOMContentLoaded", () => {
               clearInterval(checkConnect);
               if (updateDerivStatus()) {
                 isAutoTradeEnabled = true;
-                statusPill.innerText = "SCANNER ACTIF";
+                statusPill.innerText = "SCANNER ACTIVE";  
                 statusPill.style.backgroundColor = "#008080";
                 if (typeof showToast === 'function') showToast("Bot Deriv opérationnel", "success");
               } else {
