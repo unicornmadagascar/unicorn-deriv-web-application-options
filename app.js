@@ -5591,7 +5591,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     derivSocket.onclose = () => {
       console.warn("🔴 Connexion perdue. Reconnexion...");
-      setTimeout(initDerivConnection, 5000);
+      setTimeout(initDerivConnection, 5000);  
     };
   }
 
