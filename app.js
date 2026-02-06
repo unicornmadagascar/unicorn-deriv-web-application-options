@@ -5575,7 +5575,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`%c [TRADE START] ${side} sur ${asset} à ${lastBar.close}`, 'background: #008080; color: #fff; font-weight: bold;');
   }
 
-  function initDerivConnection() {
+  function initDerivConnection() {   
     derivSocket = new WebSocket(WS_URL);
 
     derivSocket.onopen = () => {
@@ -5587,7 +5587,7 @@ document.addEventListener("DOMContentLoaded", () => {
     derivSocket.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
       handleDerivResponse(data);
-    };
+    };  
 
     derivSocket.onclose = () => {
       console.warn("🔴 Connexion perdue. Reconnexion...");
