@@ -5584,8 +5584,8 @@ document.addEventListener("DOMContentLoaded", () => {
       derivSocket.send(JSON.stringify({ authorize: TOKEN }));
     };
 
-    derivSocket.onmessage = (msg) => {
-      const data = JSON.parse(msg.data);
+    derivSocket.onmessage = (msg) => {    
+      const data = JSON.parse(msg.data);  
       handleDerivResponse(data);
     };  
 
