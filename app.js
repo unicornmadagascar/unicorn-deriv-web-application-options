@@ -5333,7 +5333,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!derivSocket) {
         derivDot.style.backgroundColor = "#ff4444";
         derivDot.style.animation = "none";
-        derivText.innerText = "Deriv: Offline";
+        derivText.innerText = "Deriv: Offline";   
         return false;
       }
 
