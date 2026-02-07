@@ -4347,7 +4347,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
       }
     } else if (currentSpot__ > entry__) {
-      return (entry__ - parseFloat(document.getElementById("set-max-loss").value) / 100);
+      return (entry__ - parseFloat(document.getElementById("set-max-loss").value) / 100);  
     }
   }
 
