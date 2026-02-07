@@ -179,6 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let symbolsInFlight = {};
   let derivSocket = null;
   window.currentActiveProposal = null;
+  const ws_close = null;
   // ================== x ==================  
 
   let wsReady = false;
@@ -4062,7 +4063,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Envoi des données vers le graphique pour mise à jour des lignes
     if (typeof window.updateRiskLinesOnChart === 'function') {
-      const currentSpot = parseFloat(currentPrice || c.current_spot);
+      const currentSpot = parseFloat(currentPrice || c.current_spot);  
       // On passe le PnL actuel pour que la fonction de dessin sache si elle doit afficher le TS
       window.updateRiskLinesOnChart(pnl, currentSpot);
     }
@@ -4125,10 +4126,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- 2. EXÉCUTION RÉELLE CHEZ LE BROKER ---
-    if (contractId && typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
-      if (typeof closeAllPositionsStandalone === 'function') {
-        closeAllPositionsStandalone();
-      }
+    if (typeof closeAllPositionsStandalone === 'function') {
+      closeAllPositionsStandalone();
     }
 
     // --- 3. FEEDBACK SONORE & STATS ---
@@ -4228,7 +4227,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const LineStyle = (window.LightweightCharts && window.LightweightCharts.LineStyle)
       ? window.LightweightCharts.LineStyle
-      : { Solid: 0, Dashed: 2 };  
+      : { Solid: 0, Dashed: 2 };
 
     // --- 2. BREAKEVEN (BE) LINE ---
     // Always draws when armed and contract is active
@@ -4347,7 +4346,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
       }
     } else if (currentSpot__ > entry__) {
-      return (entry__ - parseFloat(document.getElementById("set-max-loss").value) / 100);  
+      return (entry__ - parseFloat(document.getElementById("set-max-loss").value) / 100);
     }
   }
 
@@ -4418,12 +4417,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function closeAllPositionsStandalone() {
     // Vérification si l'URL et le Token sont dispos   
-    if (typeof WS_URL === 'undefined' || typeof TOKEN === 'undefined') {
-      console.error("❌ WS_URL ou TOKEN non défini.");
-      return;
-    }
-   
-    const ws_close = new WebSocket(WS_URL);
+    if (ws_close) {ws_close.close(); ws_close =null;}
+    
+    ws_close = new WebSocket(WS_URL);
     let contractsToClose = 0;
     let closedCount = 0;
 
@@ -4434,13 +4430,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     ws_close.onmessage = (event) => {
       const data = JSON.parse(event.data);
-
-      if (data.error) {
-        console.error("❌ Erreur Deriv :", data.error.message);
-        // On ne ferme pas forcément, sauf si erreur d'autorisation
-        if (data.msg_type === 'authorize') ws_close.close();
-        return;
-      }
 
       // 1️⃣ Autorisation réussie -> Demander le portfolio
       if (data.msg_type === 'authorize') {
@@ -4484,10 +4473,12 @@ document.addEventListener("DOMContentLoaded", () => {
     ws_close.onerror = (err) => {
       console.error("🚨 Erreur WebSocket Clôture", err);
       ws_close.close();
+      setTimeout(closeAllPositionsStandalone, 300);
     };
 
     ws_close.onclose = () => {
       console.log("🔌 Connexion de clôture terminée.");
+      setTimeout(closeAllPositionsStandalone, 300);
     };
   };
 
