@@ -4059,7 +4059,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (pnl < 0) {
       if (side === 'BUY' && currentSpot < entry && currentSpot <= tsPrice) { window.executeClosePosition(`🚨 SL HIT`); }
       else if (side === 'SELL' && currentSpot > entry && currentSpot >= tsPrice) { window.executeClosePosition(`🚨 SL HIT`); }
-    }
+    }  
   
     // --- MISE À JOUR VISUELLE ---
     if (typeof window.updatePnLUI === 'function') window.updatePnLUI(pnl);
