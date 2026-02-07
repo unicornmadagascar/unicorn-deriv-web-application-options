@@ -5641,7 +5641,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const isAlreadyOpen = Object.values(activeContractsData).some(c => c.symbol === symbol);
     const c = window.currentActivePortfolio || [];
 
-    if (c.length !== 0) return;    
+    if (c.length !== 0) return;      
 
     // 2. SÉCURITÉ : VÉRIFICATION DE REQUÊTE EN COURS (ANTI-SPAM)
     // On vérifie si on n'est pas déjà en train d'envoyer un ordre pour ce symbole
