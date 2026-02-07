@@ -4292,9 +4292,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function Buyfunction4TS(data__, entry__, currentSpot__) { 
     let ts_price;
 
+    ts_price = entry__;
+    const ts_percent = parseInt(document.getElementById("set-ts-dist").value);
+
     if (currentSpot__ > entry__) {
       if (data__[data__.length - 3].close < data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
-         ts_price = entry__ + (Math.abs(currentSpot__ - entry__) * 50)/100;
+         ts_price = entry__ + (Math.abs(currentSpot__ - entry__) * ts_percent)/100;
          if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close < data__[data__.length - 2].close && data__[data__.length - 2].close > data__[data__.length - 1].close) {
          if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
@@ -4318,14 +4321,19 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       return (entry__ + parseFloat(document.getElementById("set-max-loss").value)/100);
     }
+
+    return ts_price;
   }
 
   function Sellfunction4TS(data__, entry__, currentSpot__) { 
     let ts_price;
+    
+    ts_price = entry__;
+    const ts_percent = parseInt(document.getElementById("set-ts-dist").value);
 
     if (currentSpot__ < entry__) {
       if (data__[data__.length - 3].close > data__[data__.length - 2].close && data__[data__.length - 2].close > data__[data__.length - 1].close) {
-         ts_price = entry__ - (Math.abs(currentSpot__ - entry__) * 50)/100;
+         ts_price = entry__ - (Math.abs(currentSpot__ - entry__) * ts_percent)/100;
          if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close > data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
          if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
@@ -4347,6 +4355,8 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       return (entry__ - parseFloat(document.getElementById("set-max-loss").value)/100);
     }
+
+    return ts_price;
   }
 
   function initPortfolioStream() {
