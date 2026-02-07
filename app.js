@@ -5715,7 +5715,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       if (derivSocket && derivSocket.readyState === WebSocket.OPEN) {
         for (let i = 0; i < count; i++) {
-          // On envoie l'ordre directement à Deriv
+          // On envoie l'ordre directement à Deriv    
           derivSocket.send(JSON.stringify(payload));  
         }
         console.log(`📡 Requête(s) envoyée(s) à Deriv.`);
