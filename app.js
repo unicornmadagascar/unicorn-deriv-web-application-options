@@ -178,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let symbolsInFlight = {};
   let derivSocket = null;
   window.currentActiveProposal = null;
-  let ws_close = null;
+  let ws_close = null;  
   // ================== x ==================  
 
   let wsReady = false;
