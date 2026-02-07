@@ -4346,7 +4346,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else if (data__[data__.length - 3].close > data__[data__.length - 2].close && data__[data__.length - 2].close == data__[data__.length - 1].close) {
          if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
       }
-    } else {  
+    } else {    
       return (entry__ - parseFloat(document.getElementById("set-max-loss").value)/100);  
     }
   }  
