@@ -4291,8 +4291,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function Buyfunction4TS(data__, entry__, currentSpot__) { 
     let ts_price;
-
-    ts_price = entry__;
     const ts_percent = parseInt(document.getElementById("set-ts-dist").value);
 
     if (currentSpot__ > entry__) {
@@ -4321,14 +4319,10 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       return (entry__ + parseFloat(document.getElementById("set-max-loss").value)/100);
     }
-
-    return ts_price;
   }
 
   function Sellfunction4TS(data__, entry__, currentSpot__) { 
     let ts_price;
-    
-    ts_price = entry__;
     const ts_percent = parseInt(document.getElementById("set-ts-dist").value);
 
     if (currentSpot__ < entry__) {
@@ -4355,8 +4349,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       return (entry__ - parseFloat(document.getElementById("set-max-loss").value)/100);
     }
-
-    return ts_price;
   }
 
   function initPortfolioStream() {
