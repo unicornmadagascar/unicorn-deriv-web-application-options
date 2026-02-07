@@ -178,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let isAudioUnlocked = false;
   let symbolsInFlight = {};
   let derivSocket = null;
-  window.currentActivePortfolio = [];
+  window.currentActiveProposal = null;
   // ================== x ==================  
 
   let wsReady = false;
@@ -5667,9 +5667,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. SÉCURITÉ : VÉRIFICATION DE POSITION DÉJÀ OUVERTE
     // On vérifie si une position existe déjà pour ce symbole dans vos données locales
     const isAlreadyOpen = Object.values(activeContractsData).some(c => c.symbol === symbol);
-    const c = window.currentActivePortfolio || [];
+    const c = window.currentActiveContract;
 
-    if (c.length !== 0) return;      
+    if (c.contract_id) return;      
 
     // 2. SÉCURITÉ : VÉRIFICATION DE REQUÊTE EN COURS (ANTI-SPAM)
     // On vérifie si on n'est pas déjà en train d'envoyer un ordre pour ce symbole
@@ -5800,26 +5800,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function executeGlobalClose(contractId) {
-    // 1. On vérifie si on a les données techniques du contrat
-    const techData = activeContractsData[contractId];
-
-    if (!techData) {
-      // Si le contrat n'est plus là, c'est qu'il a déjà été nettoyé
-      return;
-    }
-
-    // --- SÉCURITÉ ANTI-SPAM : Vérification du verrou ---
-    if (techData.isClosing) {
-      return;
-    }
-
-    // --- VERROUILLAGE : On marque le contrat comme "en cours de fermeture" ---
-    techData.isClosing = true;
-    const symbol = techData.symbol;
-
-    console.log(`🔌 [BROWSER DIRECT] Fermeture demandée pour ${symbol} (ID: ${contractId})`);
-
-    // 2. Envoi direct de l'ordre de vente via WebSocket
     if (derivSocket && derivSocket.readyState === WebSocket.OPEN) {
       const payload = {
         sell: contractId,
@@ -5830,17 +5810,11 @@ document.addEventListener("DOMContentLoaded", () => {
         derivSocket.send(JSON.stringify(payload));
       } catch (error) {
         console.error(`❌ Erreur lors de l'envoi de la fermeture:`, error);
-        // En cas d'erreur d'envoi, on retire le verrou pour retenter au prochain tick
-        techData.isClosing = false;
       }
     } else {
       console.error("❌ Impossible de fermer : Connexion WebSocket Deriv perdue.");
-      techData.isClosing = false;
+      setTimeout(initDerivConnection,400);
     }
-
-    // NOTE : Le nettoyage des variables (delete activeContractsData[contractId])
-    // se fait désormais dans handleDerivResponse() quand Deriv renvoie 
-    // un 'proposal_open_contract' avec le statut 'won' ou 'lost'.
   }
 
   // 2. Fonction de lecture (Appelée lors des trades)
