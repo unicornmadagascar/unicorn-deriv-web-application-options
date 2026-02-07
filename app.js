@@ -4349,7 +4349,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {  
       return (entry__ - parseFloat(document.getElementById("set-max-loss").value)/100);  
     }
-  }
+  }  
 
   function initPortfolioStream() {
     // Éviter les connexions multiples si une est déjà active
