@@ -4415,12 +4415,12 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   function closeAllPositionsStandalone() {
-    // Vérification si l'URL et le Token sont dispos
+    // Vérification si l'URL et le Token sont dispos   
     if (typeof WS_URL === 'undefined' || typeof TOKEN === 'undefined') {
       console.error("❌ WS_URL ou TOKEN non défini.");
       return;
     }
-
+   
     const ws_close = new WebSocket(WS_URL);
     let contractsToClose = 0;
     let closedCount = 0;
