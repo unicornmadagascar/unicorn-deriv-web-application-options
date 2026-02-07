@@ -4057,7 +4057,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (side === 'BUY' && currentSpot < entry && currentSpot <= tsPrice) { window.executeClosePosition(`🚨 SL HIT`); }
       else if (side === 'SELL' && currentSpot > entry && currentSpot >= tsPrice) { window.executeClosePosition(`🚨 SL HIT`); }
     }
-
+  
     // --- MISE À JOUR VISUELLE ---
     if (typeof window.updatePnLUI === 'function') window.updatePnLUI(pnl);
 
@@ -4065,7 +4065,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof window.updateRiskLinesOnChart === 'function') {
       const currentSpot = parseFloat(currentPrice || c.current_spot);  
       // On passe le PnL actuel pour que la fonction de dessin sache si elle doit afficher le TS
-      window.updateRiskLinesOnChart(pnl, currentSpot);
+      window.updateRiskLinesOnChart(pnl, currentSpot);  
     }
   };
 
