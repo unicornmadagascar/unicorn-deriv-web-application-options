@@ -4228,7 +4228,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const LineStyle = (window.LightweightCharts && window.LightweightCharts.LineStyle)
       ? window.LightweightCharts.LineStyle
-      : { Solid: 0, Dashed: 2 };
+      : { Solid: 0, Dashed: 2 };  
 
     // --- 2. BREAKEVEN (BE) LINE ---
     // Always draws when armed and contract is active
