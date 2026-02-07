@@ -4263,7 +4263,7 @@ document.addEventListener("DOMContentLoaded", () => {
       lineWidth: 2,
       lineStyle: LineStyle.Solid,
       axisLabelVisible: true,
-      title: `TS LEVEL (-${tsDistPercent}%)`,
+      title: `TS LEVEL (${tsDistPercent}%)`,
     };
 
     if (!tsPriceLine) {
