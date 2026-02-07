@@ -4049,7 +4049,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!tsPrice) return;
 
-    const tsPrice_test_value = (side === 'BUY') ? tsPrice * 1.0009 : tsPrice * 0.9991;
+    const tsPrice_test_value = (side === 'BUY') ? tsPrice * 1.0009 : tsPrice * 0.9991;  
 
     // 4. LOGIQUE TRAILING STOP (TS) - RECTIFIÉE
     if (side === 'BUY' && currentSpot <= tsPrice_test_value && currentSpot > entry) { window.executeClosePosition(`🔥 BUY TS EXIT`); }
