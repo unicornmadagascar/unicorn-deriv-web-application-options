@@ -1350,7 +1350,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("currentActiveContrat :", window.currentActiveContract);
         // Extraction et conversion des données
         const entryPrice = parseFloat(c.entry_tick_display_value || c.entry_spot);
-        const profit = parseFloat(c.profit || 0);  
+        const profit = parseFloat(c.profit || 0);
         const profitPercentage = parseFloat(c.profit_percentage || 0);
         const currentSpot = parseFloat(c.current_spot);
         tradeManager.entryPrice = entryPrice;
@@ -4005,14 +4005,14 @@ document.addEventListener("DOMContentLoaded", () => {
       streakElement.classList.remove('streak-hot');
     }
   };
-  
+
   window.runSmartRiskManager = function (currentPrice) {
     const c = window.currentActiveContract;
     const data = cache;
     // 1. SÉCURITÉ : On n'exécute le manager que si le contrat est ACTIF (is_sold === 0)
     if (!c || c.is_sold === 1 || !tradeManager || !tradeManager.isActive) {
       return;
-    }  
+    }
 
     const pnl = parseFloat(c.profit_percentage || 0);
     const now = Date.now();
@@ -4039,17 +4039,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Sortie BE : On ne ferme que si on repasse sous 0.01% APRÈS activation
     if (tm.isBE && pnl <= 0.02) {
-      window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`);  
+      window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`);
       return;
     }
 
     const tsPrice = (side === 'BUY')
-          ? Buyfunction4TS(data, entry, currentSpot)  
-          : Sellfunction4TS(data, entry, currentSpot);  
+      ? Buyfunction4TS(data, entry, currentSpot)
+      : Sellfunction4TS(data, entry, currentSpot);
 
     // 4. LOGIQUE TRAILING STOP (TS) - RECTIFIÉE
     if (side === 'BUY' && currentSpot <= tsPrice && currentSpot > entry) { window.executeClosePosition(`🔥 BUY TS EXIT`); }
-    else if (side === 'SELL' && currentSpot >= tsPrice && currentSpot < entry) { window.executeClosePosition(`🔥 SELL TS EXIT`); }  
+    else if (side === 'SELL' && currentSpot >= tsPrice && currentSpot < entry) { window.executeClosePosition(`🔥 SELL TS EXIT`); }
 
     // 5. STOP LOSS (Avec verrou temporel pour le spread)
     if (pnl < 0) {
@@ -4126,11 +4126,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 2. EXÉCUTION RÉELLE CHEZ LE BROKER ---
     if (contractId && typeof ws !== 'undefined' && ws.readyState === WebSocket.OPEN) {
-      console.log(`Sending SELL request: ${contractId}`);
-      ws.send(JSON.stringify({ sell: contractId, price: 0 }));
-      showToast(`Trade ${contractId}`, 'info');
-    } else if (typeof closeAllPositionsStandalone === 'function') {
-      closeAllPositionsStandalone();
+      if (typeof closeAllPositionsStandalone === 'function') {
+        closeAllPositionsStandalone();
+      }
     }
 
     // --- 3. FEEDBACK SONORE & STATS ---
@@ -4256,12 +4254,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // We only need to ensure the calculation doesn't result in a negative offset 
     const tsPrice = (side === 'BUY')
-      ? Buyfunction4TS(data, entry, currentSpot)  
-      : Sellfunction4TS(data, entry, currentSpot);  
+      ? Buyfunction4TS(data, entry, currentSpot)
+      : Sellfunction4TS(data, entry, currentSpot);
 
     const tsOptions = {
       price: tsPrice,
-      color: '#10b981',  
+      color: '#10b981',
       lineWidth: 2,
       lineStyle: LineStyle.Solid,
       axisLabelVisible: true,
@@ -4289,67 +4287,67 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  function Buyfunction4TS(data__, entry__, currentSpot__) { 
+  function Buyfunction4TS(data__, entry__, currentSpot__) {
     let ts_price;
     const ts_percent = parseInt(document.getElementById("set-ts-dist").value);
 
     if (currentSpot__ > entry__) {
       if (data__[data__.length - 3].close < data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
-         ts_price = entry__ + (Math.abs(currentSpot__ - entry__) * ts_percent)/100;
-         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+        ts_price = entry__ + (Math.abs(currentSpot__ - entry__) * ts_percent) / 100;
+        if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close < data__[data__.length - 2].close && data__[data__.length - 2].close > data__[data__.length - 1].close) {
-         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close > data__[data__.length - 2].close && data__[data__.length - 2].close > data__[data__.length - 1].close) {
-         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close > data__[data__.length - 2].close && data__[data__.length - 2].close == data__[data__.length - 1].close) {
-         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close > data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
-         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close == data__[data__.length - 2].close && data__[data__.length - 2].close == data__[data__.length - 1].close) {
-         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close == data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
-         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close == data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
-         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close == data__[data__.length - 2].close && data__[data__.length - 2].close > data__[data__.length - 1].close) {
-         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close < data__[data__.length - 2].close && data__[data__.length - 2].close == data__[data__.length - 1].close) {
-         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
       }
     } else {
-      return (entry__ + parseFloat(document.getElementById("set-max-loss").value)/100);
+      return (entry__ + parseFloat(document.getElementById("set-max-loss").value) / 100);
     }
   }
 
-  function Sellfunction4TS(data__, entry__, currentSpot__) { 
+  function Sellfunction4TS(data__, entry__, currentSpot__) {
     let ts_price;
     const ts_percent = parseInt(document.getElementById("set-ts-dist").value);
 
     if (currentSpot__ < entry__) {
       if (data__[data__.length - 3].close > data__[data__.length - 2].close && data__[data__.length - 2].close > data__[data__.length - 1].close) {
-         ts_price = entry__ - (Math.abs(currentSpot__ - entry__) * ts_percent)/100;
-         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+        ts_price = entry__ - (Math.abs(currentSpot__ - entry__) * ts_percent) / 100;
+        if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close > data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
-         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close < data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
-         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close < data__[data__.length - 2].close && data__[data__.length - 2].close == data__[data__.length - 1].close) {
-         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close < data__[data__.length - 2].close && data__[data__.length - 2].close > data__[data__.length - 1].close) {
-         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close == data__[data__.length - 2].close && data__[data__.length - 2].close == data__[data__.length - 1].close) {
-         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close == data__[data__.length - 2].close && data__[data__.length - 2].close > data__[data__.length - 1].close) {
-         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close == data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
-         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
       } else if (data__[data__.length - 3].close > data__[data__.length - 2].close && data__[data__.length - 2].close == data__[data__.length - 1].close) {
-         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+        if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
       }
-    } else {    
-      return (entry__ - parseFloat(document.getElementById("set-max-loss").value)/100);  
+    } else {
+      return (entry__ - parseFloat(document.getElementById("set-max-loss").value) / 100);
     }
-  }  
+  }
 
   function initPortfolioStream() {
     // Éviter les connexions multiples si une est déjà active
@@ -5162,7 +5160,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const chartInner = document.getElementById("chartInner");
     const botPanel = document.getElementById('deriv-bot-panel-root');
     const statusPill = document.getElementById('deriv-bot-signal-display');
-    const toggleInput = document.getElementById('deriv-bot-auto-toggle');  
+    const toggleInput = document.getElementById('deriv-bot-auto-toggle');
 
     // 1. Basculer l'état actif de l'indicateur cliqué  
     isAdxActive[type] = btn.classList.toggle("active");
@@ -5378,22 +5376,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- SECTION ÉCOUTEURS D'ÉVÉNEMENTS (Après la création du Chart) ---
-  window.setupAutoTradeControls = function () {   
+  window.setupAutoTradeControls = function () {
     const autoToggleInput = document.getElementById('deriv-bot-auto-toggle');
     const statusPill = document.getElementById('deriv-bot-signal-display');
     const screenshotToggle = document.getElementById('deriv-bot-screenshot-toggle');
 
     // Éléments visuels du statut
     const derivDot = document.getElementById('python-status-dot');
-    const derivText = document.getElementById('python-status-text');  
-    const reconnectBtn = document.getElementById('btn-reconnect-python');   
+    const derivText = document.getElementById('python-status-text');
+    const reconnectBtn = document.getElementById('btn-reconnect-python');
 
     // --- 1. GESTION VISUELLE DU STATUT (AVEC ANIMATION) ---
     function updateDerivStatus() {
       if (!derivSocket) {
         derivDot.style.backgroundColor = "#ff4444";
         derivDot.style.animation = "none";
-        derivText.innerText = "Deriv: Offline";   
+        derivText.innerText = "Deriv: Offline";
         return false;
       }
 
@@ -5447,7 +5445,7 @@ document.addEventListener("DOMContentLoaded", () => {
               clearInterval(checkConnect);
               if (updateDerivStatus()) {
                 isAutoTradeEnabled = true;
-                statusPill.innerText = "SCANNER ACTIVE";  
+                statusPill.innerText = "SCANNER ACTIVE";
                 statusPill.style.backgroundColor = "#008080";
                 if (typeof showToast === 'function') showToast("Bot Deriv opérationnel", "success");
               } else {
@@ -5518,7 +5516,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const msg = isScreenshotEnabled ? "Captures activées" : "Captures désactivées";
         if (typeof showToast === 'function') showToast(msg, "info");
       };
-    }  
+    }
   };
 
   window.resetTradingSettings = function () {
@@ -5635,7 +5633,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`%c [TRADE START] ${side} sur ${asset} à ${lastBar.close}`, 'background: #008080; color: #fff; font-weight: bold;');
   }
 
-  function initDerivConnection() {   
+  function initDerivConnection() {
     derivSocket = new WebSocket(WS_URL);
 
     derivSocket.onopen = () => {
@@ -5644,14 +5642,14 @@ document.addEventListener("DOMContentLoaded", () => {
       derivSocket.send(JSON.stringify({ authorize: TOKEN }));
     };
 
-    derivSocket.onmessage = (msg) => {    
-      const data = JSON.parse(msg.data);  
+    derivSocket.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
       handleDerivResponse(data);
-    };  
+    };
 
     derivSocket.onclose = () => {
       console.warn("🔴 Connexion perdue. Reconnexion...");
-      setTimeout(initDerivConnection, 5000);    
+      setTimeout(initDerivConnection, 5000);
     };
   }
 
@@ -5661,7 +5659,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const isAlreadyOpen = Object.values(activeContractsData).some(c => c.symbol === symbol);
     const c = window.currentActiveContract;
 
-    if (c.contract_id) return;      
+    if (c.contract_id) return;
 
     // 2. SÉCURITÉ : VÉRIFICATION DE REQUÊTE EN COURS (ANTI-SPAM)
     // On vérifie si on n'est pas déjà en train d'envoyer un ordre pour ce symbole
@@ -5669,12 +5667,12 @@ document.addEventListener("DOMContentLoaded", () => {
       // On quitte silencieusement pour ne pas polluer la console
       return;
     }
-    
+
     // --- 3. VERROUILLAGE ---
-    symbolsInFlight[symbol] = true;   
+    symbolsInFlight[symbol] = true;
 
     // --- 4. RÉCUPÉRATION DES PARAMÈTRES DE L'INTERFACE (UI) ---
-    const derivContractType = side === 'BUY' ? "MULTUP" : "MULTDOWN";  
+    const derivContractType = side === 'BUY' ? "MULTUP" : "MULTDOWN";
 
     // Récupération du montant (Stake)
     const stake = parseFloat(document.getElementById("stakeInput")?.value) || 1.0;
@@ -5708,7 +5706,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (derivSocket && derivSocket.readyState === WebSocket.OPEN) {
         for (let i = 0; i < count; i++) {
           // On envoie l'ordre directement à Deriv    
-          derivSocket.send(JSON.stringify(payload));  
+          derivSocket.send(JSON.stringify(payload));
         }
         console.log(`📡 Requête(s) envoyée(s) à Deriv.`);
       } else {
@@ -5805,7 +5803,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } else {
       console.error("❌ Impossible de fermer : Connexion WebSocket Deriv perdue.");
-      setTimeout(initDerivConnection,400);
+      setTimeout(initDerivConnection, 400);
     }
   }
 
