@@ -4008,7 +4008,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
   window.runSmartRiskManager = function (currentPrice) {
     const c = window.currentActiveContract;
-
+    const data = cache;
     // 1. SÉCURITÉ : On n'exécute le manager que si le contrat est ACTIF (is_sold === 0)
     if (!c || c.is_sold === 1 || !tradeManager || !tradeManager.isActive) {
       return;
@@ -4023,8 +4023,6 @@ document.addEventListener("DOMContentLoaded", () => {
       window.currentActiveContract?.contract_type === 'MULTUP') ? 'BUY' : 'SELL';
 
     const currentSpot = currentPrice;
-    const previousPrice = data[data.length-2].close;
-    const beforepreviousPrice = data[data.length-3].close;
 
     if (!entry) return;
 
@@ -4046,8 +4044,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const tsPrice = (side === 'BUY')
-          ? Buyfunction4TS(entry, currentSpot, previousPrice, beforepreviousPrice)  
-          : Sellfunction4TS(entry, currentSpot, previousPrice, beforepreviousPrice);  
+          ? Buyfunction4TS(data, entry, currentSpot)  
+          : Sellfunction4TS(data, entry, currentSpot);  
 
     // 4. LOGIQUE TRAILING STOP (TS) - RECTIFIÉE
     if (side === 'BUY' && currentSpot <= tsPrice && currentSpot > entry) { window.executeClosePosition(`🔥 BUY TS EXIT`); }
@@ -4227,8 +4225,6 @@ document.addEventListener("DOMContentLoaded", () => {
       window.currentActiveContract?.contract_type === 'MULTUP') ? 'BUY' : 'SELL';
 
     const currentSpot = currentPrice;
-    const previousPrice = data[data.length-2].close;
-    const beforepreviousPrice = data[data.length-3].close;
 
     if (!entry) return;
 
@@ -4260,8 +4256,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // We only need to ensure the calculation doesn't result in a negative offset 
     const tsPrice = (side === 'BUY')
-      ? Buyfunction4TS(entry, currentSpot, previousPrice, beforepreviousPrice)  
-      : Sellfunction4TS(entry, currentSpot, previousPrice, beforepreviousPrice);  
+      ? Buyfunction4TS(data, entry, currentSpot)  
+      : Sellfunction4TS(data, entry, currentSpot);  
 
     const tsOptions = {
       price: tsPrice,
@@ -4293,39 +4289,61 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  function Buyfunction4TS(entry__, currentSpot__, previousPrice__, beforepreviousPrice__) { 
+  function Buyfunction4TS(data__, entry__, currentSpot__) { 
     let ts_price;
 
     if (currentSpot__ > entry__) {
-      ts_price = entry__ + (Math.abs(currentSpot__ - entry__) * 80)/100;
-      if(beforepreviousPrice__ < previousPrice__ && previousPrice__ < currentSpot__) { return ts_price; } 
-      else if (beforepreviousPrice__ < previousPrice__ && previousPrice__ > currentSpot__) { return ts_price; } 
-      else if (beforepreviousPrice__ > previousPrice__ && previousPrice__ > currentSpot__) { return ts_price; } 
-      else if (beforepreviousPrice__ > previousPrice__ && previousPrice__ == currentSpot__) { return ts_price; } 
-      else if (beforepreviousPrice__ > previousPrice__ && previousPrice__ < currentSpot__) { return ts_price; } 
-      else if (beforepreviousPrice__ == previousPrice__ && previousPrice__ == currentSpot__) { return ts_price; } 
-      else if (beforepreviousPrice__ == previousPrice__ && previousPrice__ < currentSpot__) { return ts_price; } 
-      else if (beforepreviousPrice__ == previousPrice__ && previousPrice__ > currentSpot__) { return ts_price; } 
-      else if (beforepreviousPrice__ < previousPrice__ && previousPrice__ == currentSpot__) { return ts_price; }
+      if (data__[data__.length - 3].close < data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
+         ts_price = entry__ + (Math.abs(currentSpot__ - entry__) * 50)/100;
+         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close < data__[data__.length - 2].close && data__[data__.length - 2].close > data__[data__.length - 1].close) {
+         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close > data__[data__.length - 2].close && data__[data__.length - 2].close > data__[data__.length - 1].close) {
+         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close > data__[data__.length - 2].close && data__[data__.length - 2].close == data__[data__.length - 1].close) {
+         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close > data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
+         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close == data__[data__.length - 2].close && data__[data__.length - 2].close == data__[data__.length - 1].close) {
+         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close == data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
+         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close == data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
+         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close == data__[data__.length - 2].close && data__[data__.length - 2].close > data__[data__.length - 1].close) {
+         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close < data__[data__.length - 2].close && data__[data__.length - 2].close == data__[data__.length - 1].close) {
+         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
+      }
     } else {
       return (entry__ + parseFloat(document.getElementById("set-max-loss").value)/100);
     }
   }
 
-  function Sellfunction4TS(entry__, currentSpot__, previousPrice__, beforepreviousPrice__) { 
+  function Sellfunction4TS(data__, entry__, currentSpot__) { 
     let ts_price;
 
     if (currentSpot__ < entry__) {
-      ts_price = entry__ - (Math.abs(currentSpot__ - entry__) * 80)/100;
-      if(beforepreviousPrice__ > previousPrice__ && previousPrice__ > currentSpot__) { return ts_price; } 
-      else if (beforepreviousPrice__ > previousPrice__ && previousPrice__ < currentSpot__) { return ts_price; } 
-      else if (beforepreviousPrice__ < previousPrice__ && previousPrice__ < currentSpot__) { return ts_price; } 
-      else if (beforepreviousPrice__ < previousPrice__ && previousPrice__ == currentSpot__) { return ts_price; } 
-      else if (beforepreviousPrice__ < previousPrice__ && previousPrice__ > currentSpot__) { return ts_price; } 
-      else if (beforepreviousPrice__ == previousPrice__ && previousPrice__ == currentSpot__) { return ts_price; } 
-      else if (beforepreviousPrice__ == previousPrice__ && previousPrice__ > currentSpot__) { return ts_price; } 
-      else if (beforepreviousPrice__ == previousPrice__ && previousPrice__ < currentSpot__) { return ts_price; } 
-      else if (beforepreviousPrice__ > previousPrice__ && previousPrice__ == currentSpot__) { return ts_price; }
+      if (data__[data__.length - 3].close > data__[data__.length - 2].close && data__[data__.length - 2].close > data__[data__.length - 1].close) {
+         ts_price = entry__ - (Math.abs(currentSpot__ - entry__) * 50)/100;
+         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close > data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
+         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close < data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
+         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close < data__[data__.length - 2].close && data__[data__.length - 2].close == data__[data__.length - 1].close) {
+         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close < data__[data__.length - 2].close && data__[data__.length - 2].close > data__[data__.length - 1].close) {
+         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close == data__[data__.length - 2].close && data__[data__.length - 2].close == data__[data__.length - 1].close) {
+         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close == data__[data__.length - 2].close && data__[data__.length - 2].close > data__[data__.length - 1].close) {
+         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close == data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
+         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+      } else if (data__[data__.length - 3].close > data__[data__.length - 2].close && data__[data__.length - 2].close == data__[data__.length - 1].close) {
+         if (ts_price < entry__ && ts_price > data__[data__.length - 1].close) { return ts_price; }
+      }
     } else {
       return (entry__ - parseFloat(document.getElementById("set-max-loss").value)/100);
     }
