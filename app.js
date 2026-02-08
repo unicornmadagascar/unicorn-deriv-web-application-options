@@ -4029,7 +4029,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3. LOGIQUE BREAKEVEN (BE)
     if (pnl >= tm.beActivation && !tm.isBE && tradeDuration > 10) {
       tm.isBE = true;
-      console.log(`%c 🛡️ BE ARMÉ à ${pnl}% `, 'background: #3b82f6; color: white;');
+      console.log(`%c 🛡️ BE ARMÉ à ${pnl}% `, 'background: #3b82f6; color: white;');   
     }
    
     // Sortie BE : On ne ferme que si on repasse sous 0.01% APRÈS activation
