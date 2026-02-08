@@ -179,6 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let derivSocket = null;
   window.currentActiveProposal = null;
   let ws_close = null;  
+  const isClose = false;
   // ================== x ==================  
 
   let wsReady = false;
@@ -5362,7 +5363,7 @@ document.addEventListener("DOMContentLoaded", () => {
         isClose = false;
       }
       else {
-        isCrashBuy = false;
+        isCrashBuy = false;  
         isBoomSell = false;
         isClose = true;
       }
