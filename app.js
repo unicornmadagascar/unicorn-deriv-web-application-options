@@ -2213,7 +2213,7 @@ document.addEventListener("DOMContentLoaded", () => {
           tradeManager.highestPnL = 0;
           tradeManager.isBE = false;
           tradeManager.startTime = Date.now();
-          tradeManager.isActive = true;
+          tradeManager.isActive = false;
           tradeManager.side = oppositeType === "MULTUP" ? "BUY" : "SELL";
         }
 
@@ -3889,8 +3889,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const slInput = document.getElementById('set-max-loss');
       const tsInput = document.getElementById('set-ts-dist');
 
-      const selectedSL = slInput ? parseFloat(slInput.value) : -1.5;
-      const selectedTS = tsInput ? parseFloat(tsInput.value) : 0.2;
+      const selectedSL = slInput ? parseFloat(slInput.value) : -10;
+      const selectedTS = tsInput ? parseFloat(tsInput.value) : 30;
 
       // On (re)crée l'objet de gestion
       tradeManager = {
@@ -3913,7 +3913,7 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.innerHTML = "🛡️ RISK ARMED";
       }
 
-      if (pnlLabel) {
+      if (pnlLabel) {  
         pnlLabel.classList.remove('ready-pulse');
         pnlLabel.innerText = "ARMED";
         pnlLabel.style.color = "#fb923c"; // Orange "Préparation"
@@ -4005,7 +4005,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const c = window.currentActiveContract;
     const data = cache;
     // 1. SÉCURITÉ : On n'exécute le manager que si le contrat est ACTIF (is_sold === 0)
-    if (!c || c.is_sold === 1 || !tradeManager || !tradeManager.isActive) {
+    if (!c || c.is_sold === 1 || !tradeManager.isActive) {
       return;
     }
 
@@ -4036,7 +4036,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (tm.isBE && pnl <= 0.07) {
       if (side === 'BUY' && currentPrice > entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }
       else if (side === 'SELL' && currentPrice < entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }   
-      return;
     }
 
     const tsPrice = (side === 'BUY')
