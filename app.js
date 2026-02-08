@@ -4034,8 +4034,8 @@ document.addEventListener("DOMContentLoaded", () => {
    
     // Sortie BE : On ne ferme que si on repasse sous 0.01% APRÈS activation
     if (tm.isBE && pnl <= 0.07) {
-      //if (side === 'BUY' && currentPrice > entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }
-      //else if (side === 'SELL' && currentPrice < entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }   
+      if (side === 'BUY' && currentPrice > entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }
+      else if (side === 'SELL' && currentPrice < entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }   
     }
 
     const tsPrice = (side === 'BUY')
@@ -4047,8 +4047,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const tsPrice_test_value = (side === 'BUY') ? tsPrice * 1.0005 : tsPrice * 0.9995;
 
     // 4. LOGIQUE TRAILING STOP (TS) - RECTIFIÉE
-    //if (side === 'BUY' && currentSpot <= tsPrice_test_value && currentSpot > entry) { window.executeClosePosition(`🔥 BUY TS EXIT`); }
-    //else if (side === 'SELL' && currentSpot >= tsPrice_test_value && currentSpot < entry) { window.executeClosePosition(`🔥 SELL TS EXIT`); }
+    if (side === 'BUY' && currentSpot <= tsPrice_test_value && currentSpot > entry) { window.executeClosePosition(`🔥 BUY TS EXIT`); }
+    else if (side === 'SELL' && currentSpot >= tsPrice_test_value && currentSpot < entry) { window.executeClosePosition(`🔥 SELL TS EXIT`); }
 
     // 5. STOP LOSS (Avec verrou temporel pour le spread)
     if (pnl < 0) {
