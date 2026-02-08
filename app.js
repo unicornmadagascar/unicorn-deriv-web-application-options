@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
   soundOpen.volume = 0.5;
   soundClose.volume = 0.6;
   let isAudioUnlocked = false;
-  let symbolsInFlight = {};
+  let symbolsInFlight = {};   
   let derivSocket = null;
   window.currentActiveProposal = null;
   let ws_close = null;  
@@ -4293,7 +4293,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let ts_price;
     const ts_percent = parseInt(document.getElementById("set-ts-dist").value);
 
-    if (currentSpot__ > entry__) {
+    if (currentSpot__ > entry__) {   
       if (data__[data__.length - 3].close < data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
         ts_price = entry__ + (Math.abs(currentSpot__ - entry__) * ts_percent) / 100;
         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
