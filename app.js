@@ -1376,7 +1376,7 @@ document.addEventListener("DOMContentLoaded", () => {
             axisLabelVisible: true,
             title: labelText,
           });
-          priceLines4openlines[id] = { line, entryPrice, id };
+          priceLines4openlines[id] = { line, entryPrice, id };  
         } else {
           priceLines4openlines[id].line.applyOptions({
             title: labelText,
