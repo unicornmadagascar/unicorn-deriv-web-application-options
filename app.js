@@ -3910,7 +3910,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (btn) {
         btn.classList.add('active');
         btn.style.backgroundColor = "#ef4444"; // Rouge "Alerte"
-        btn.innerHTML = "🛡️ RISK ARMED";
+        btn.innerHTML = "🛡️ RISK ARMED";   
       }
 
       if (pnlLabel) {  
@@ -4033,7 +4033,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Sortie BE : On ne ferme que si on repasse sous 0.01% APRÈS activation
-    if (tm.isBE && pnl <= 0.07) {
+    if (tm.isBE && pnl <= 0.07 && tradeDuration > 10) {
       if (side === 'BUY' && currentPrice > entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }
       else if (side === 'SELL' && currentPrice < entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }   
     }
