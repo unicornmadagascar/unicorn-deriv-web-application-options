@@ -4135,9 +4135,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 3. FEEDBACK SONORE & STATS ---
     if (typeof playSniperSound === 'function') {
-      if (pnl >= 10) playSniperSound('JACKPOT');
-      else if (pnl > 0) playSniperSound('CLOSE_WIN');
-      else if (pnl < 0) playSniperSound('CLOSE_LOSS');
+      if (pnl >= 10) playSniperSound('JACKPOT');  
+      else if (pnl > 0) playSniperSound('CLOSE_WIN');   
+      else if (pnl < 0) playSniperSound('CLOSE_LOSS');   
     }
 
     // Mise à jour des statistiques
