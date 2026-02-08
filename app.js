@@ -5365,7 +5365,7 @@ document.addEventListener("DOMContentLoaded", () => {
       else {
         isCrashBuy = false;  
         isBoomSell = false;
-        isClose = true;
+        isClose = true;  
       }
 
       return {
