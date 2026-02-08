@@ -5802,7 +5802,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       try {
-        derivSocket.send(JSON.stringify(payload));
+        derivSocket.send(JSON.stringify(payload));  
       } catch (error) {
         console.error(`❌ Erreur lors de l'envoi de la fermeture:`, error);
       }
