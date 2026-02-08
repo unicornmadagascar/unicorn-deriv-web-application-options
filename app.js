@@ -4239,9 +4239,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!bePriceLine) {
       bePriceLine = currentSeries.createPriceLine({
         price: bePrice,
-        color: '#3b82f6',
+        color: '#3b82f6',  
         lineWidth: 2,
-        lineStyle: LineStyle.Dashed,
+        lineStyle: LineStyle.Dashed,  
         axisLabelVisible: true,
         title: 'BE LEVEL',
       });
