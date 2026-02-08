@@ -175,11 +175,10 @@ document.addEventListener("DOMContentLoaded", () => {
   soundOpen.volume = 0.5;
   soundClose.volume = 0.6;
   let isAudioUnlocked = false;
-  let symbolsInFlight = {};   
+  let symbolsInFlight = {};
   let derivSocket = null;
   window.currentActiveProposal = null;
-  let ws_close = null;  
-  const isClose = false;
+  let ws_close = null;
   // ================== x ==================  
 
   let wsReady = false;
@@ -4040,7 +4039,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Sortie BE : On ne ferme que si on repasse sous 0.01% APRÈS activation
     if (tm.isBE && pnl <= 0.07) {
-      window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`);   
+      window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`);
       return;
     }
 
@@ -4050,7 +4049,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!tsPrice) return;
 
-    const tsPrice_test_value = (side === 'BUY') ? tsPrice * 1.0009 : tsPrice * 0.9991;  
+    const tsPrice_test_value = (side === 'BUY') ? tsPrice * 1.0009 : tsPrice * 0.9991;
 
     // 4. LOGIQUE TRAILING STOP (TS) - RECTIFIÉE
     if (side === 'BUY' && currentSpot <= tsPrice_test_value && currentSpot > entry) { window.executeClosePosition(`🔥 BUY TS EXIT`); }
@@ -4060,16 +4059,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (pnl < 0) {
       if (side === 'BUY' && currentSpot < entry && currentSpot <= tsPrice) { window.executeClosePosition(`🚨 SL HIT`); }
       else if (side === 'SELL' && currentSpot > entry && currentSpot >= tsPrice) { window.executeClosePosition(`🚨 SL HIT`); }
-    }  
-  
+    }
+
     // --- MISE À JOUR VISUELLE ---
     if (typeof window.updatePnLUI === 'function') window.updatePnLUI(pnl);
 
     // Envoi des données vers le graphique pour mise à jour des lignes
     if (typeof window.updateRiskLinesOnChart === 'function') {
-      const currentSpot = parseFloat(currentPrice || c.current_spot);  
+      const currentSpot = parseFloat(currentPrice || c.current_spot);
       // On passe le PnL actuel pour que la fonction de dessin sache si elle doit afficher le TS
-      window.updateRiskLinesOnChart(pnl, currentSpot);  
+      window.updateRiskLinesOnChart(pnl, currentSpot);
     }
   };
 
@@ -4136,9 +4135,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 3. FEEDBACK SONORE & STATS ---
     if (typeof playSniperSound === 'function') {
-      if (pnl >= 10) playSniperSound('JACKPOT');  
-      else if (pnl > 0) playSniperSound('CLOSE_WIN');   
-      else if (pnl < 0) playSniperSound('CLOSE_LOSS');   
+      if (pnl >= 10) playSniperSound('JACKPOT');
+      else if (pnl > 0) playSniperSound('CLOSE_WIN');
+      else if (pnl < 0) playSniperSound('CLOSE_LOSS');
     }
 
     // Mise à jour des statistiques
@@ -4240,9 +4239,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!bePriceLine) {
       bePriceLine = currentSeries.createPriceLine({
         price: bePrice,
-        color: '#3b82f6',  
+        color: '#3b82f6',
         lineWidth: 2,
-        lineStyle: LineStyle.Dashed,  
+        lineStyle: LineStyle.Dashed,
         axisLabelVisible: true,
         title: 'BE LEVEL',
       });
@@ -4294,7 +4293,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let ts_price;
     const ts_percent = parseInt(document.getElementById("set-ts-dist").value);
 
-    if (currentSpot__ > entry__) {   
+    if (currentSpot__ > entry__) {
       if (data__[data__.length - 3].close < data__[data__.length - 2].close && data__[data__.length - 2].close < data__[data__.length - 1].close) {
         ts_price = entry__ + (Math.abs(currentSpot__ - entry__) * ts_percent) / 100;
         if (ts_price > entry__ && ts_price < data__[data__.length - 1].close) { return ts_price; }
@@ -4421,8 +4420,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function closeAllPositionsStandalone() {
     // Vérification si l'URL et le Token sont dispos   
-    if (ws_close) {ws_close.close(); ws_close =null;}
-    
+    if (ws_close) { ws_close.close(); ws_close = null; }
+
     ws_close = new WebSocket(WS_URL);
     let contractsToClose = 0;
     let closedCount = 0;
@@ -5309,6 +5308,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function checkStrategySignals(symbol) {
     let isBoomSell = false;
     let isCrashBuy = false;
+    let isClose = false;
 
     const data = cache;
     if (data.length < 50) return null;
@@ -5354,19 +5354,12 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- LOGIQUE DE DÉTECTION ---
       if (symbol === "BOOM1000" && emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230) {
         isBoomSell = true;
-        isCrashBuy = false;
-        isClose = false;
       }
       else if (symbol === "CRASH1000" && emt_crash > 3.2 && emt_crash <= 7 && ew_crash > 70 && ew_crash <= 200) {
         isCrashBuy = true;
-        isBoomSell = false;
-        isClose = false;
       }
-      else {
-        isCrashBuy = false;  
-        isBoomSell = false;
-        isClose = true;  
-      }
+
+      isClose = (!isBoomSell && !isCrashBuy);
 
       return {
         boom: isBoomSell,
@@ -5660,22 +5653,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function executeGlobalTrade(symbol, side) {
-    // 1. SÉCURITÉ : VÉRIFICATION DE POSITION DÉJÀ OUVERTE
-    // On vérifie si une position existe déjà pour ce symbole dans vos données locales
-    const isAlreadyOpen = Object.values(activeContractsData).some(c => c.symbol === symbol);
     const c = window.currentActiveContract;
 
     if (c.contract_id) return;
-
-    // 2. SÉCURITÉ : VÉRIFICATION DE REQUÊTE EN COURS (ANTI-SPAM)
-    // On vérifie si on n'est pas déjà en train d'envoyer un ordre pour ce symbole
-    if (isAlreadyOpen || symbolsInFlight[symbol]) {
-      // On quitte silencieusement pour ne pas polluer la console
-      return;
-    }
-
-    // --- 3. VERROUILLAGE ---
-    symbolsInFlight[symbol] = true;
 
     // --- 4. RÉCUPÉRATION DES PARAMÈTRES DE L'INTERFACE (UI) ---
     const derivContractType = side === 'BUY' ? "MULTUP" : "MULTDOWN";
@@ -5708,21 +5688,15 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // --- 6. ENVOI DIRECT VIA WEBSOCKET ---
-    try {
-      if (derivSocket && derivSocket.readyState === WebSocket.OPEN) {
-        for (let i = 0; i < count; i++) {
-          // On envoie l'ordre directement à Deriv    
-          derivSocket.send(JSON.stringify(payload));
-        }
-        console.log(`📡 Requête(s) envoyée(s) à Deriv.`);
-      } else {
-        throw new Error("La connexion WebSocket vers Deriv n'est pas active.");
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      for (let i = 0; i < count; i++) {
+        // On envoie l'ordre directement à Deriv    
+        ws.send(JSON.stringify(payload));
       }
-    } catch (error) {
-      console.error("❌ Échec de l'envoi de l'ordre :", error.message);
-      // En cas d'échec d'envoi, on libère le verrou pour permettre une nouvelle tentative
-      delete symbolsInFlight[symbol];
-    }  
+    } else {
+      throw new Error("La connexion WebSocket vers Deriv n'est pas active.");
+    }
+
 
     // Note : Le verrou symbolsInFlight[symbol] sera définitivement supprimé 
     // dans votre fonction handleDerivResponse() dès que Deriv confirmera l'achat ('msg_type: buy').
@@ -5803,7 +5777,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       try {
-        derivSocket.send(JSON.stringify(payload));  
+        derivSocket.send(JSON.stringify(payload));
       } catch (error) {
         console.error(`❌ Erreur lors de l'envoi de la fermeture:`, error);
       }
@@ -5930,7 +5904,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Fonction interne pour centraliser la fermeture visuelle
   function executeClosingLogic(bar, reason) {
-    const pill = document.getElementById('deriv-bot-signal-display');   
+    const pill = document.getElementById('deriv-bot-signal-display');
 
     // Marqueur Orange
     addTradeMarker(bar.time, 'CLOSE', currentActiveTrade.side);
@@ -5946,7 +5920,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Retour au mode scan
     setTimeout(() => {
-      if (isAutoTradeEnabled) {  
+      if (isAutoTradeEnabled) {
         pill.innerText = "RESEARCH SIGNAL...";
         pill.style.backgroundColor = "#008080";
       }
