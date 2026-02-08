@@ -4051,7 +4051,7 @@ document.addEventListener("DOMContentLoaded", () => {
     else if (side === 'SELL' && currentSpot >= tsPrice_test_value && currentSpot < entry) { window.executeClosePosition(`🔥 SELL TS EXIT`); }
 
     // 5. STOP LOSS (Avec verrou temporel pour le spread)
-    if (pnl < 0) {
+    if (pnl < tm.maxLoss) {
       //if (side === 'BUY' && currentSpot < entry && currentSpot <= tsPrice) { window.executeClosePosition(`🚨 SL HIT`); }
       //else if (side === 'SELL' && currentSpot > entry && currentSpot >= tsPrice) { window.executeClosePosition(`🚨 SL HIT`); }
     }
