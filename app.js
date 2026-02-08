@@ -4038,7 +4038,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Sortie BE : On ne ferme que si on repasse sous 0.01% APRÈS activation
-    if (tm.isBE && pnl <= 0.5) {
+    if (tm.isBE && pnl <= 0.07) {
       window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`);
       return;
     }
