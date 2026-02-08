@@ -4010,7 +4010,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const c = window.currentActiveContract;
     const data = cache;
     // 1. SÉCURITÉ : On n'exécute le manager que si le contrat est ACTIF (is_sold === 0)
-    if (!c || c.is_sold === 1 || !tradeManager || !tradeManager.isActive) {
+    if (!c || !tradeManager || !tradeManager.isActive) {
       return;
     }
 
@@ -4039,7 +4039,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Sortie BE : On ne ferme que si on repasse sous 0.01% APRÈS activation
     if (tm.isBE && pnl <= 0.07) {
-      window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`);
+      //window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`);
       return;
     }
 
