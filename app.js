@@ -1367,7 +1367,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const labelText = `${c.contract_type} @${entryPrice} | ${profitPercentage.toFixed(2)}% (${profit.toFixed(2)} ${CURRENCY})`;
 
         // Gestion de la ligne sur le graphique
-        if (!priceLines4openlines[id]) {
+        if (!priceLines4openlines[id]) {   
           const line = currentSeries.createPriceLine({
             price: entryPrice,
             color: color,
