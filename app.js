@@ -1251,7 +1251,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const technicalData = activeContractsData[id];
           const currentSymbol__ = technicalData ? technicalData.symbol : "Inconnu";
 
-          const signal = checkStrategySignals(currentSymbol__);
+          const signal = checkStrategySignals(currentSymbol);
           // Si le signal dit de fermer (isOtherSignal === true)
           if (signal.close) {
             executeGlobalClose(id);
@@ -1337,11 +1337,6 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("🧹 Nettoyage visuel effectué après confirmation de vente.");
           }, 1500);
 
-          // 3. On ferme l'UI immédiatement
-          if (typeof window.executeClosePosition === 'function') {
-            //window.executeClosePosition("Broker Confirmed Sold");  
-          }
-
           return;
         }
 
@@ -1376,7 +1371,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const line = currentSeries.createPriceLine({
             price: entryPrice,
             color: color,
-            lineWidth: 2,
+            lineWidth: 2,  
             lineStyle: lineStyle,
             axisLabelVisible: true,
             title: labelText,
@@ -4010,7 +4005,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const c = window.currentActiveContract;
     const data = cache;
     // 1. SÉCURITÉ : On n'exécute le manager que si le contrat est ACTIF (is_sold === 0)
-    if (!c || !tradeManager || !tradeManager.isActive) {
+    if (!c || c.is_sold === 1 || !tradeManager || !tradeManager.isActive) {
       return;
     }
 
@@ -4039,7 +4034,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Sortie BE : On ne ferme que si on repasse sous 0.01% APRÈS activation
     if (tm.isBE && pnl <= 0.07) {
-      //window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`);
+      if (side === 'BUY' && currentPrice > entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }
+      else if (side === 'SELL' && currentPrice < entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }   
       return;
     }
 
