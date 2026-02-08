@@ -5353,15 +5353,24 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- LOGIQUE DE DÉTECTION ---
       if (symbol === "BOOM1000" && emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230) {
         isBoomSell = true;
+        isCrashBuy = false;
+        isClose = false;
       }
       else if (symbol === "CRASH1000" && emt_crash > 3.2 && emt_crash <= 7 && ew_crash > 70 && ew_crash <= 200) {
         isCrashBuy = true;
+        isBoomSell = false;
+        isClose = false;
+      }
+      else {
+        isCrashBuy = false;
+        isBoomSell = false;
+        isClose = true;
       }
 
       return {
         boom: isBoomSell,
         crash: isCrashBuy,
-        close: (!isBoomSell && !isCrashBuy),
+        close: isClose,
         ema: ema50,
         price: lastBar.close
       };
@@ -5712,7 +5721,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("❌ Échec de l'envoi de l'ordre :", error.message);
       // En cas d'échec d'envoi, on libère le verrou pour permettre une nouvelle tentative
       delete symbolsInFlight[symbol];
-    }
+    }  
 
     // Note : Le verrou symbolsInFlight[symbol] sera définitivement supprimé 
     // dans votre fonction handleDerivResponse() dès que Deriv confirmera l'achat ('msg_type: buy').
