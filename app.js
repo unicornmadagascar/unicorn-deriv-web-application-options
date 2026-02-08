@@ -4027,15 +4027,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 3. LOGIQUE BREAKEVEN (BE)
-    if (pnl >= tm.beActivation && !tm.isBE) {
+    if (pnl >= tm.beActivation && !tm.isBE && tradeDuration > 10) {
       tm.isBE = true;
       console.log(`%c 🛡️ BE ARMÉ à ${pnl}% `, 'background: #3b82f6; color: white;');
     }
 
     // Sortie BE : On ne ferme que si on repasse sous 0.01% APRÈS activation
-    if (tm.isBE && pnl <= 0.07 && tradeDuration > 10) {
-      if (side === 'BUY' && currentPrice > entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }
-      else if (side === 'SELL' && currentPrice < entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }   
+    if (tm.isBE && pnl <= 0.07) {
+      //if (side === 'BUY' && currentPrice > entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }
+      //else if (side === 'SELL' && currentPrice < entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }   
     }
 
     const tsPrice = (side === 'BUY')
@@ -4047,13 +4047,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const tsPrice_test_value = (side === 'BUY') ? tsPrice * 1.0005 : tsPrice * 0.9995;
 
     // 4. LOGIQUE TRAILING STOP (TS) - RECTIFIÉE
-    if (side === 'BUY' && currentSpot <= tsPrice_test_value && currentSpot > entry) { window.executeClosePosition(`🔥 BUY TS EXIT`); }
-    else if (side === 'SELL' && currentSpot >= tsPrice_test_value && currentSpot < entry) { window.executeClosePosition(`🔥 SELL TS EXIT`); }
+    //if (side === 'BUY' && currentSpot <= tsPrice_test_value && currentSpot > entry) { window.executeClosePosition(`🔥 BUY TS EXIT`); }
+    //else if (side === 'SELL' && currentSpot >= tsPrice_test_value && currentSpot < entry) { window.executeClosePosition(`🔥 SELL TS EXIT`); }
 
     // 5. STOP LOSS (Avec verrou temporel pour le spread)
     if (pnl < 0) {
-      if (side === 'BUY' && currentSpot < entry && currentSpot <= tsPrice) { window.executeClosePosition(`🚨 SL HIT`); }
-      else if (side === 'SELL' && currentSpot > entry && currentSpot >= tsPrice) { window.executeClosePosition(`🚨 SL HIT`); }
+      //if (side === 'BUY' && currentSpot < entry && currentSpot <= tsPrice) { window.executeClosePosition(`🚨 SL HIT`); }
+      //else if (side === 'SELL' && currentSpot > entry && currentSpot >= tsPrice) { window.executeClosePosition(`🚨 SL HIT`); }
     }
 
     // --- MISE À JOUR VISUELLE ---
