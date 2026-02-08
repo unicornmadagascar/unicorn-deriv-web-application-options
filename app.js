@@ -5696,10 +5696,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       throw new Error("La connexion WebSocket vers Deriv n'est pas active.");
     }
-
-
-    // Note : Le verrou symbolsInFlight[symbol] sera définitivement supprimé 
-    // dans votre fonction handleDerivResponse() dès que Deriv confirmera l'achat ('msg_type: buy').
   }
 
   /**
