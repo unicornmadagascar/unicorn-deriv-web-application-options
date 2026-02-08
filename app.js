@@ -1368,7 +1368,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Gestion de la ligne sur le graphique
         if (!priceLines4openlines[id]) {   
-          const line = currentSeries.createPriceLine({
+          const line = currentSeries.createPriceLine({  
             price: entryPrice,
             color: color,
             lineWidth: 2,  
