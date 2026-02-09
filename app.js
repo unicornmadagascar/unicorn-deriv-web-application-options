@@ -4039,8 +4039,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const tsPrice = (side === 'BUY')
-      ? Buyfunction4TS(data, entry, currentSpot)
-      : Sellfunction4TS(data, entry, currentSpot);   
+      ? Buyfunction4TS(data, entry, currentSpot)  
+      : Sellfunction4TS(data, entry, currentSpot);     
 
     if (!tsPrice) return;  
 
