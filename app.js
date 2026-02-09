@@ -4040,9 +4040,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const tsPrice = (side === 'BUY')
       ? Buyfunction4TS(data, entry, currentSpot)
-      : Sellfunction4TS(data, entry, currentSpot);
+      : Sellfunction4TS(data, entry, currentSpot);  
 
-    if (!tsPrice) return;
+    if (!tsPrice) return;  
 
     const tsPrice_test_value = (side === 'BUY') ? tsPrice * 1.0005 : tsPrice * 0.9995;
 
