@@ -3904,7 +3904,7 @@ document.addEventListener("DOMContentLoaded", () => {
         startTime: Date.now(),      // Démarre le chrono pour le délai de grâce
         hasAlertedArmed: false,     // Reset du flag pour le son sonar
         entryPrice: parseFloat(d.entry_tick || d.buy_price),  
-        side: window.lastSignalSide || 'BUY',
+        side: d.contract_type || 'BUY',  
         highestPnL: 0,
         isBE: false,
         maxLoss: selectedSL,
