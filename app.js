@@ -1316,7 +1316,7 @@ document.addEventListener("DOMContentLoaded", () => {
           // Optionnel : on supprime immédiatement pour éviter les doubles appels
           delete activeContracts[id];
         }
-
+   
         // --- 1. GESTION DU CAS : CONTRAT CLOS (Vendu, Expiré, etc.) ---
         // On utilise c.is_sold qui est l'indicateur le plus fiable chez Deriv
         // On ne déclenche le nettoyage QUE si le contrat est officiellement vendu
