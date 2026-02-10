@@ -1249,7 +1249,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // 2. On récupère le symbole depuis nos données techniques
           const signal = checkStrategySignals(currentSymbol);
-          // Si le signal dit de fermer (isOtherSignal === true)
+          // Si le signal dit de fermer (isOtherSignal === true)  
           if (signal.close) {
             executeGlobalClose(id);
             // Optionnel : on supprime immédiatement pour éviter les doubles appels
