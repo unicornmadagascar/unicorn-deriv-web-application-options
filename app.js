@@ -1327,7 +1327,7 @@ document.addEventListener("DOMContentLoaded", () => {
               window.removeRiskLines();  
             }   
 
-            if (window.currentActiveContract && window.currentActiveContract.contract_id === id) {
+            if (window.currentActiveContract && window.currentActiveContract.contract_id === id) {  
               window.currentActiveContract = null;
             }
 
