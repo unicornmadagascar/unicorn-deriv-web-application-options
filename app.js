@@ -3892,12 +3892,18 @@ document.addEventListener("DOMContentLoaded", () => {
       const selectedSL = slInput ? parseFloat(slInput.value) : -10;
       const selectedTS = tsInput ? parseFloat(tsInput.value) : 30;
 
+      const d = window.currentActiveContract;
+
+      if (!c || c.is_sold === 1) {
+         return;
+      }
+
       // On (re)crée l'objet de gestion
       tradeManager = {
         isActive: true,
         startTime: Date.now(),      // Démarre le chrono pour le délai de grâce
         hasAlertedArmed: false,     // Reset du flag pour le son sonar
-        entryPrice: window.currentClosePrice || 0,
+        entryPrice: parseFloat(d.entry_tick || d.buy_price),  
         side: window.lastSignalSide || 'BUY',
         highestPnL: 0,
         isBE: false,
