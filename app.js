@@ -5764,14 +5764,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function executeGlobalClose(contractId) {
-    if (WS && WS.readyState === WebSocket.OPEN) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
       const payload = {
         sell: contractId,
         price: 0 // 0 signifie "vendre au prix actuel du marché"
       };
 
       try {
-        WS.send(JSON.stringify(payload));
+        ws.send(JSON.stringify(payload));
       } catch (error) {
         console.error(`❌ Erreur lors de l'envoi de la fermeture:`, error);
       }
