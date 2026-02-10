@@ -2275,7 +2275,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tradeManager.startTime = Date.now();
       tradeManager.highestPnL = 0;
       tradeManager.isBE = false;
-      tradeManager.isActive = false;        // <--- CORRIGÉ : On active le moteur !
+      tradeManager.isActive = true;        // <--- CORRIGÉ : On active le moteur !
       tradeManager.side = type;
       tradeManager.hasAlertedArmed = false;
     }
