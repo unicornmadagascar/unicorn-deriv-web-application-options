@@ -3909,9 +3909,9 @@ document.addEventListener("DOMContentLoaded", () => {
         isBE: false,
         maxLoss: selectedSL,
         tsTrailingDist: selectedTS,
-        beActivation: 0.3,          // Seuil d'activation du Breakeven
+        beActivation: 0.1,          // Seuil d'activation du Breakeven
         tsActivation: 0.6           // Seuil d'activation du Trailing
-      };
+      };   
 
       if (btn) {
         btn.classList.add('active');
