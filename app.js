@@ -1309,7 +1309,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const id = c.contract_id;
 
         //  On récupère le symbole depuis nos données techniques
-        const signal = checkStrategySignals(currentSymbol);
+        const signal = checkStrategySignals(currentSymbol);  
         // Si le signal dit de fermer (isOtherSignal === true)  
         if (signal.close) {    
           executeGlobalClose(id);     
