@@ -1314,7 +1314,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (signal.close) {    
           executeGlobalClose(id);   
           // Optionnel : on supprime immédiatement pour éviter les doubles appels
-          delete activeContracts[id];
+          delete activeContracts[id];  
         }
    
         // --- 1. GESTION DU CAS : CONTRAT CLOS (Vendu, Expiré, etc.) ---
