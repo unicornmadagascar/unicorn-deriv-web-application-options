@@ -4034,8 +4034,8 @@ document.addEventListener("DOMContentLoaded", () => {
    
     // Sortie BE : On ne ferme que si on repasse sous 0.01% APRÈS activation
     if (tm.isBE && pnl <= 0.02) {
-      //if (side === 'BUY' && currentPrice > entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }
-      //else if (side === 'SELL' && currentPrice < entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }   
+      if (side === 'BUY' && currentPrice > entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }
+      else if (side === 'SELL' && currentPrice < entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }   
     }
 
     const tsPrice = (side === 'BUY')
