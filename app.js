@@ -5776,7 +5776,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error(`❌ Erreur lors de l'envoi de la fermeture:`, error);
       }
     } else {
-      console.error("❌ Impossible de fermer : Connexion WebSocket Deriv perdue.");
+      console.error("❌ Impossible de fermer : Connexion WebSocket Deriv perdue.");  
     }
   }
 
