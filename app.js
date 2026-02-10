@@ -1248,9 +1248,6 @@ document.addEventListener("DOMContentLoaded", () => {
           activeContracts[id] = Number(c.profit || 0);
 
           // 2. On récupère le symbole depuis nos données techniques
-          const technicalData = activeContractsData[id];
-          const currentSymbol__ = technicalData ? technicalData.symbol : "Inconnu";
-
           const signal = checkStrategySignals(currentSymbol);
           // Si le signal dit de fermer (isOtherSignal === true)
           if (signal.close) {
@@ -5767,20 +5764,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function executeGlobalClose(contractId) {
-    if (derivSocket && derivSocket.readyState === WebSocket.OPEN) {
+    if (WS && WS.readyState === WebSocket.OPEN) {
       const payload = {
         sell: contractId,
         price: 0 // 0 signifie "vendre au prix actuel du marché"
       };
 
       try {
-        derivSocket.send(JSON.stringify(payload));
+        WS.send(JSON.stringify(payload));
       } catch (error) {
         console.error(`❌ Erreur lors de l'envoi de la fermeture:`, error);
       }
     } else {
       console.error("❌ Impossible de fermer : Connexion WebSocket Deriv perdue.");
-      setTimeout(initDerivConnection, 400);
     }
   }
 
