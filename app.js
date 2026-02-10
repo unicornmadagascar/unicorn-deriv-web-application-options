@@ -5772,7 +5772,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       try {
         ws.send(JSON.stringify(payload));
-      } catch (error) {
+      } catch (error) {   
         console.error(`❌ Erreur lors de l'envoi de la fermeture:`, error);
       }
     } else {  
