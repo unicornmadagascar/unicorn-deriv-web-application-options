@@ -1308,6 +1308,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const c = data.proposal_open_contract;
         const id = c.contract_id;
 
+        //  On récupère le symbole depuis nos données techniques
+        const signal = checkStrategySignals(currentSymbol);
+        // Si le signal dit de fermer (isOtherSignal === true)  
+        if (signal.close) {
+          executeGlobalClose(id);
+          // Optionnel : on supprime immédiatement pour éviter les doubles appels
+          delete activeContracts[id];
+        }
+
         // --- 1. GESTION DU CAS : CONTRAT CLOS (Vendu, Expiré, etc.) ---
         // On utilise c.is_sold qui est l'indicateur le plus fiable chez Deriv
         // On ne déclenche le nettoyage QUE si le contrat est officiellement vendu
@@ -1324,10 +1333,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (typeof window.removeRiskLines === 'function') {
-              window.removeRiskLines();  
-            }   
+              window.removeRiskLines();
+            }
 
-            if (window.currentActiveContract && window.currentActiveContract.contract_id === id) {  
+            if (window.currentActiveContract && window.currentActiveContract.contract_id === id) {
               window.currentActiveContract = null;
             }
 
@@ -1364,16 +1373,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const labelText = `${c.contract_type} @${entryPrice} | ${profitPercentage.toFixed(2)}% (${profit.toFixed(2)} ${CURRENCY})`;
 
         // Gestion de la ligne sur le graphique
-        if (!priceLines4openlines[id]) {   
-          const line = currentSeries.createPriceLine({  
+        if (!priceLines4openlines[id]) {
+          const line = currentSeries.createPriceLine({
             price: entryPrice,
             color: color,
-            lineWidth: 2,  
+            lineWidth: 2,
             lineStyle: lineStyle,
             axisLabelVisible: true,
             title: labelText,
           });
-          priceLines4openlines[id] = { line, entryPrice, id };  
+          priceLines4openlines[id] = { line, entryPrice, id };
         } else {
           priceLines4openlines[id].line.applyOptions({
             title: labelText,
@@ -3892,7 +3901,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const d = window.currentActiveContract;
 
       if (!c || c.is_sold === 1) {
-         return;
+        return;
       }
 
       // On (re)crée l'objet de gestion
@@ -3900,23 +3909,23 @@ document.addEventListener("DOMContentLoaded", () => {
         isActive: true,
         startTime: Date.now(),      // Démarre le chrono pour le délai de grâce
         hasAlertedArmed: false,     // Reset du flag pour le son sonar
-        entryPrice: parseFloat(d.entry_tick || d.buy_price),  
-        side: d.contract_type || 'BUY',  
+        entryPrice: parseFloat(d.entry_tick || d.buy_price),
+        side: d.contract_type || 'BUY',
         highestPnL: 0,
         isBE: false,
         maxLoss: selectedSL,
         tsTrailingDist: selectedTS,
         beActivation: 0.1,          // Seuil d'activation du Breakeven
         tsActivation: 0.6           // Seuil d'activation du Trailing
-      };   
+      };
 
       if (btn) {
         btn.classList.add('active');
         btn.style.backgroundColor = "#ef4444"; // Rouge "Alerte"
-        btn.innerHTML = "🛡️ RISK ARMED";   
+        btn.innerHTML = "🛡️ RISK ARMED";
       }
 
-      if (pnlLabel) {  
+      if (pnlLabel) {
         pnlLabel.classList.remove('ready-pulse');
         pnlLabel.innerText = "ARMED";
         pnlLabel.style.color = "#fb923c"; // Orange "Préparation"
@@ -4032,20 +4041,20 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3. LOGIQUE BREAKEVEN (BE)
     if (pnl >= tm.beActivation && !tm.isBE && tradeDuration > 10) {
       tm.isBE = true;
-      console.log(`%c 🛡️ BE ARMÉ à ${pnl}% `, 'background: #3b82f6; color: white;');   
+      console.log(`%c 🛡️ BE ARMÉ à ${pnl}% `, 'background: #3b82f6; color: white;');
     }
-   
+
     // Sortie BE : On ne ferme que si on repasse sous 0.01% APRÈS activation
     if (tm.isBE && pnl <= 0.02) {
       if (side === 'BUY' && currentPrice > entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }
-      else if (side === 'SELL' && currentPrice < entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }   
+      else if (side === 'SELL' && currentPrice < entry) { window.executeClosePosition(`🛡️ BE PROTECT (${pnl.toFixed(2)}%)`); }
     }
 
     const tsPrice = (side === 'BUY')
-      ? Buyfunction4TS(data, entry, currentSpot)    
-      : Sellfunction4TS(data, entry, currentSpot);     
+      ? Buyfunction4TS(data, entry, currentSpot)
+      : Sellfunction4TS(data, entry, currentSpot);
 
-    if (!tsPrice) return;  
+    if (!tsPrice) return;
 
     const tsPrice_test_value = (side === 'BUY') ? tsPrice * 1.0005 : tsPrice * 0.9995;
 
@@ -5772,11 +5781,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       try {
         ws.send(JSON.stringify(payload));
-      } catch (error) {   
+      } catch (error) {
         console.error(`❌ Erreur lors de l'envoi de la fermeture:`, error);
       }
-    } else {  
-      console.error("❌ Impossible de fermer : Connexion WebSocket Deriv perdue.");  
+    } else {
+      console.error("❌ Impossible de fermer : Connexion WebSocket Deriv perdue.");
     }
   }
 
