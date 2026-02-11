@@ -5346,7 +5346,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const adxWilder = getVal(adxSeries.wilder.adx);
       const diMinusWilder = getVal(adxSeries.wilder.minus);
-      const diPlusWilder = getVal(adxSeries.wilder.plus);
+      const diPlusWilder = getVal(adxSeries.wilder.plus);  
 
       // Si une seule donnée manque, on sort pour éviter le crash
       if (!adxMT5 || !diMinusMT5 || !adxWilder || !diMinusWilder || !diPlusMT5 || !diPlusWilder) return null;
