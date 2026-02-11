@@ -5356,7 +5356,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const emt_boom = 100 * Math.abs(diMinusMT5.value - adxMT5.value) / adxMT5.value;   
 
       const ew_crash = 100 * Math.abs(diPlusWilder.value - adxWilder.value) / adxWilder.value;
-      const emt_crash = 100 * Math.abs(diPlusMT5.value - adxMT5.value) / adxMT5.value;
+      const emt_crash = 100 * Math.abs(diPlusMT5.value - adxMT5.value) / adxMT5.value;   
 
       // --- LOGIQUE DE DÉTECTION ---
       if (symbol === "BOOM1000" && emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230) {
