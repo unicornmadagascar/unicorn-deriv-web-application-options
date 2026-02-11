@@ -5350,7 +5350,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Si une seule donnée manque, on sort pour éviter le crash
       if (!adxMT5 || !diMinusMT5 || !adxWilder || !diMinusWilder || !diPlusMT5 || !diPlusWilder) return null;
-
+      
       // --- CALCUL DES GAPS ---
       const ew_boom = 100 * Math.abs(diMinusWilder.value - adxWilder.value) / adxWilder.value;
       const emt_boom = 100 * Math.abs(diMinusMT5.value - adxMT5.value) / adxMT5.value;   
