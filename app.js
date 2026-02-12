@@ -5325,11 +5325,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const lastBar = data[data.length - 1];
     const ema50 = calculateEMAADX(data, 50);
-
+    
     // --- SÉCURITÉ : Vérifier si les séries ADX existent ---
     // Si l'utilisateur n'a pas ouvert les panneaux ADX, adxSeries.mt5.adx peut être null
     if (!adxSeries.mt5.adx || !adxSeries.wilder.adx) {
-      console.warn("[STRATEGY] Les séries ADX ne sont pas encore prêtes.");
       return null;
     }
 
