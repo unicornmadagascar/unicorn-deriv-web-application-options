@@ -5326,9 +5326,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const lastBar = data[data.length - 1];
     const ema50 = calculateEMAADX(data, 50);
 
-    const isPriceBelowEMA = lastBar.close < ema50;
-    if (!isPriceBelowEMA) return null;
-
     // --- SÉCURITÉ : Vérifier si les séries ADX existent ---
     // Si l'utilisateur n'a pas ouvert les panneaux ADX, adxSeries.mt5.adx peut être null
     if (!adxSeries.mt5.adx || !adxSeries.wilder.adx) {
@@ -5362,13 +5359,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const emt_crash = 100 * Math.abs(diPlusMT5.value - adxMT5.value) / adxMT5.value;
 
       // --- LOGIQUE DE DÉTECTION ---
-      if (symbol === "BOOM1000" && emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230) {
+      if (symbol === "BOOM1000" && lastBar.close < ema50 && emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230) {
         isBoomSell = true;
       }
-      else if (symbol === "CRASH1000" && emt_crash > 3.2 && emt_crash <= 7 && ew_crash > 70 && ew_crash <= 200) {
+      else if (symbol === "CRASH1000" && lastBar.close > ema50 && emt_crash > 3.2 && emt_crash <= 7 && ew_crash > 70 && ew_crash <= 200) {
         isCrashBuy = true;
       }
-
+   
       isClose = (!isBoomSell && !isCrashBuy);
 
       return {
