@@ -1308,15 +1308,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const c = data.proposal_open_contract;
         const id = c.contract_id;
 
-        //  On récupère le symbole depuis nos données techniques
-        const signal = checkStrategySignals(currentSymbol);  
-        // Si le signal dit de fermer (isOtherSignal === true)  
-        if (signal.close) {    
-          executeGlobalClose(id);     
-          // Optionnel : on supprime immédiatement pour éviter les doubles appels
-          delete activeContracts[id];  
+        if (c.is_sold === 0) {
+          //  On récupère le symbole depuis nos données techniques
+          const signal = checkStrategySignals(currentSymbol);
+          if (signal === null) return;
+          // Si le signal dit de fermer (isOtherSignal === true)  
+          if (signal.close) {
+            executeGlobalClose(id);
+            // Optionnel : on supprime immédiatement pour éviter les doubles appels
+            delete activeContracts[id];    
+          }
         }
-   
+
         // --- 1. GESTION DU CAS : CONTRAT CLOS (Vendu, Expiré, etc.) ---
         // On utilise c.is_sold qui est l'indicateur le plus fiable chez Deriv
         // On ne déclenche le nettoyage QUE si le contrat est officiellement vendu
@@ -5108,14 +5111,14 @@ document.addEventListener("DOMContentLoaded", () => {
       height: 180,
       layout: { background: { color: '#ffffff' }, textColor: '#333' },
       grid: { vertLines: { color: '#f0f0f0' }, horzLines: { color: '#f0f0f0' } },
-      rightPriceScale: {  
+      rightPriceScale: {
         borderVisible: false,
         width: 80, // Largeur fixe identique pour tous les graphiques
         autoScale: true,
         scaleMargins: { top: 0.1, bottom: 0.1 },
       },
       timeScale: { visible: false, borderVisible: false },
-      crosshair: { mode: LightweightCharts.CrosshairMode.Normal }     
+      crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
     };
 
     const chart = LightweightCharts.createChart(document.getElementById(containerId), options);
@@ -5346,17 +5349,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const adxWilder = getVal(adxSeries.wilder.adx);
       const diMinusWilder = getVal(adxSeries.wilder.minus);
-      const diPlusWilder = getVal(adxSeries.wilder.plus);  
-    
+      const diPlusWilder = getVal(adxSeries.wilder.plus);
+
       // Si une seule donnée manque, on sort pour éviter le crash
       if (!adxMT5 || !diMinusMT5 || !adxWilder || !diMinusWilder || !diPlusMT5 || !diPlusWilder) return null;
-      
+
       // --- CALCUL DES GAPS ---
-      const ew_boom = 100 * Math.abs(diMinusWilder.value - adxWilder.value) / adxWilder.value;    
-      const emt_boom = 100 * Math.abs(diMinusMT5.value - adxMT5.value) / adxMT5.value;   
+      const ew_boom = 100 * Math.abs(diMinusWilder.value - adxWilder.value) / adxWilder.value;
+      const emt_boom = 100 * Math.abs(diMinusMT5.value - adxMT5.value) / adxMT5.value;
 
       const ew_crash = 100 * Math.abs(diPlusWilder.value - adxWilder.value) / adxWilder.value;
-      const emt_crash = 100 * Math.abs(diPlusMT5.value - adxMT5.value) / adxMT5.value;   
+      const emt_crash = 100 * Math.abs(diPlusMT5.value - adxMT5.value) / adxMT5.value;
 
       // --- LOGIQUE DE DÉTECTION ---
       if (symbol === "BOOM1000" && emt_boom > 3.5 && emt_boom <= 7 && ew_boom > 70 && ew_boom <= 230) {
