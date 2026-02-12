@@ -5108,7 +5108,7 @@ document.addEventListener("DOMContentLoaded", () => {
       height: 180,
       layout: { background: { color: '#ffffff' }, textColor: '#333' },
       grid: { vertLines: { color: '#f0f0f0' }, horzLines: { color: '#f0f0f0' } },
-      rightPriceScale: {
+      rightPriceScale: {  
         borderVisible: false,
         width: 80, // Largeur fixe identique pour tous les graphiques
         autoScale: true,
