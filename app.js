@@ -2284,7 +2284,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tradeManager.startTime = Date.now();
       tradeManager.highestPnL = 0;
       tradeManager.isBE = false;
-      tradeManager.isActive = true;        // <--- CORRIGÉ : On active le moteur !
+      tradeManager.isActive = false;        // <--- CORRIGÉ : On active le moteur !
       tradeManager.side = type;
       tradeManager.hasAlertedArmed = false;
     }
@@ -2558,7 +2558,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function initBollingerSeries() {
     if (!chart) return;
     // Création du nuage (Area) en premier pour qu'il soit en arrière-plan
-    areaSeriesBB = chart.addAreaSeries({
+    areaSeriesBB = chart.addAreaSeries({  
       topColor: 'rgba(8, 153, 129, 0.05)',
       bottomColor: 'rgba(8, 153, 129, 0.05)',
       lineVisible: false,
