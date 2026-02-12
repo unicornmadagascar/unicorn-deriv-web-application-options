@@ -5115,7 +5115,7 @@ document.addEventListener("DOMContentLoaded", () => {
         scaleMargins: { top: 0.1, bottom: 0.1 },
       },
       timeScale: { visible: false, borderVisible: false },
-      crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+      crosshair: { mode: LightweightCharts.CrosshairMode.Normal }     
     };
 
     const chart = LightweightCharts.createChart(document.getElementById(containerId), options);
