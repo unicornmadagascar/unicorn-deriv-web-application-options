@@ -5790,9 +5790,9 @@ document.addEventListener("DOMContentLoaded", () => {
   async function executeGlobalClose(contractId) {
     if (ws && ws.readyState === WebSocket.OPEN) {
       const payload = {
-        sell: contractId,
+        sell: contractId,  
         price: 0 // 0 signifie "vendre au prix actuel du marché"
-      };
+      };  
 
       try {
         ws.send(JSON.stringify(payload));
