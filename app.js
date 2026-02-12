@@ -1316,9 +1316,9 @@ document.addEventListener("DOMContentLoaded", () => {
           if (signal.close) {
             executeGlobalClose(id);
             // Optionnel : on supprime immédiatement pour éviter les doubles appels
-            delete activeContracts[id];    
-          }  
-        }    
+            delete activeContracts[id];
+          }
+        }
 
         // --- 1. GESTION DU CAS : CONTRAT CLOS (Vendu, Expiré, etc.) ---
         // On utilise c.is_sold qui est l'indicateur le plus fiable chez Deriv
@@ -2558,7 +2558,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function initBollingerSeries() {
     if (!chart) return;
     // Création du nuage (Area) en premier pour qu'il soit en arrière-plan
-    areaSeriesBB = chart.addAreaSeries({  
+    areaSeriesBB = chart.addAreaSeries({
       topColor: 'rgba(8, 153, 129, 0.05)',
       bottomColor: 'rgba(8, 153, 129, 0.05)',
       lineVisible: false,
@@ -3834,7 +3834,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if ("Notification" in window && Notification.permission === "granted") {
       const title = `${signal.icon} SNIPER: ${signal.type} ${symbol}`;
       const options = {
-        body: `Stratégie: ${signal.subtype}\nGap: ${gap}%\nPrix: ${price}\nTF: ${window.currentInterval || '1m'}`,
+        body: `Stratégie: ${signal.subtype}\nGap: ${gap}%\nPrix: ${price}\nTF: ${currentInterval || '1m'}`,
         silent: false,
         requireInteraction: false
       };
@@ -4532,7 +4532,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="msg-close-btn" onclick="if(window.closeSniperAlert) closeSniperAlert(); else this.parentElement.remove();" style="cursor:pointer">✕</div>
             </div>
             ${(isCritical || isLocked) ? `
-                <div class="sniper-checklist" id="current-sniper-checklist" style="position: absolute; top: 95px; right: 0; width: 190px; background: white; border: 1px solid #ccc; padding: 10px; z-index: 10087; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                <div class="sniper-checklist" id="current-sniper-checklist" style="position: absolute; top: 95px; right: 0; width: 190px; background: white; border: 1px solid #ccc; padding: 10px; z-index: 10100; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
                     <div style="font-size:10px; font-weight:900; color: #ef4444; margin-bottom:5px;">⚠️ VÉRIFICATION REQUISE</div>
                     <div style="font-size:11px; line-height: 1.4;">
                         ⬜ ${isLocked ? 'EXTREM : WAIT' : 'HIGH VOLATILITY'}<br>
@@ -5365,8 +5365,8 @@ document.addEventListener("DOMContentLoaded", () => {
       else if (symbol === "CRASH1000" && lastBar.close > ema50 && emt_crash > 3.2 && emt_crash <= 7 && ew_crash > 70 && ew_crash <= 200) {
         isCrashBuy = true;
       }
-   
-      isClose = (!isBoomSell && !isCrashBuy);  
+
+      isClose = (!isBoomSell && !isCrashBuy);
 
       return {
         boom: isBoomSell,
@@ -5659,10 +5659,25 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
+  window.sendPushNotificationADX = function (signal, symbol, price) {
+    if ("Notification" in window && Notification.permission === "granted") {
+      const title = `ENTRY SIGNAL: ${signal} ${symbol}`;
+      const options = {
+        body: `Strategy: ${signal}\nPrix: ${price}\nTF: ${currentInterval || '1m'}`,
+        silent: false,
+        requireInteraction: false
+      };
+      new Notification(title, options);
+    }
+  };
+
   async function executeGlobalTrade(symbol, side) {
     const c = window.currentActiveContract;
 
     if (c.contract_id) return;
+
+    const entry = parseFloat(c.entry_tick || c.buy_price);
+    if (typeof window.sendPushNotificationADX === 'function') window.sendPushNotificationADX(side, symbol, entry);
 
     // --- 4. RÉCUPÉRATION DES PARAMÈTRES DE L'INTERFACE (UI) ---
     const derivContractType = side === 'BUY' ? "MULTUP" : "MULTDOWN";
