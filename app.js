@@ -5661,6 +5661,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function executeGlobalTrade(symbol, side) {
     const c = window.currentActiveContract;
+    if (!c || c.is_sold == 1) return;  
 
     if (c.contract_id) return;
 
