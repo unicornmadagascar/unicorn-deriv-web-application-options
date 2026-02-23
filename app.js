@@ -5580,7 +5580,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = chartCanvas.width;
     tempCanvas.height = chartCanvas.height;
-    const ctx = tempCanvas.getContext('2d');
+    const ctx = tempCanvas.getContext('2d');   
 
     // 1. Dessiner le graphique principal
     ctx.drawImage(chartCanvas, 0, 0);
