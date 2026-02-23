@@ -5567,13 +5567,13 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.reload();
       }, 500);
     }
-  };
+  };   
 
   window.ADXtakeTradeScreenshot = function (status, asset) {
     const chartContainer = document.getElementById('chartInner'); // Remplacez par votre ID de container
-    const chartCanvas = chartContainer.querySelector('canvas');
-    const overlayCanvas = document.getElementById('Trendoverlay__');        
-
+    const chartCanvas = chartContainer.querySelector('canvas');  
+    const overlayCanvas = document.getElementById('Trendoverlay__');          
+  
     if (!chartCanvas) return;
 
     // Création d'un canvas temporaire pour la fusion
