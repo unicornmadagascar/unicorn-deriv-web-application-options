@@ -5359,7 +5359,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // --- LOGIQUE DE DÉTECTION ---
       if (symbol === "BOOM1000" && lastBar.close < ema50 && emt_boom > 0.05 && emt_boom <= 9 && ew_boom > 30 && ew_boom <= 230) {
-        isBoomSell = true;
+        isBoomSell = true;  
       }
       else if (symbol === "CRASH1000" && lastBar.close > ema50 && emt_crash > 0.05 && emt_crash <= 9 && ew_crash > 30 && ew_crash <= 230) {
         isCrashBuy = true;
