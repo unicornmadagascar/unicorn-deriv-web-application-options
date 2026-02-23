@@ -5648,7 +5648,7 @@ document.addEventListener("DOMContentLoaded", () => {
       derivSocket.send(JSON.stringify({ authorize: TOKEN }));
     };
 
-    derivSocket.onmessage = (msg) => {
+    derivSocket.onmessage = (msg) => {  
       const data = JSON.parse(msg.data);
       handleDerivResponse(data);
     };
@@ -5659,25 +5659,12 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  window.sendPushNotificationADX = function (signal, symbol, price) {
-    if ("Notification" in window && Notification.permission === "granted") {
-      const title = `ENTRY SIGNAL: ${signal} ${symbol}`;
-      const options = {
-        body: `Strategy: ${signal}\nPrix: ${price}\nTF: ${currentInterval || '1m'}`,
-        silent: false,
-        requireInteraction: false
-      };
-      new Notification(title, options);
-    }
-  };
-
   async function executeGlobalTrade(symbol, side) {
     const c = window.currentActiveContract;
 
     if (c.contract_id) return;
 
     const entry = parseFloat(c.entry_tick || c.buy_price);
-    if (typeof window.sendPushNotificationADX === 'function') window.sendPushNotificationADX(side, symbol, entry);
 
     // --- 4. RÉCUPÉRATION DES PARAMÈTRES DE L'INTERFACE (UI) ---
     const derivContractType = side === 'BUY' ? "MULTUP" : "MULTDOWN";
