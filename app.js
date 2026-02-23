@@ -5424,7 +5424,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Mise à jour automatique du voyant toutes les 2 secondes
-    setInterval(updateDerivStatus, 2000);
+    //setInterval(updateDerivStatus, 2000);
+    setTimeout(updateDerivStatus,500);
 
     // --- 2. LOGIQUE DU BOUTON AUTO-TRADE (ON/OFF) ---
     if (autoToggleInput) {
