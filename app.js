@@ -9571,7 +9571,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key?.toLowerCase() === 'v') {
       showVolumeProfile = !showVolumeProfile;
       render(); // Force le rafraîchissement
-    }
+    }  
   });
 
   // 2. Désactivation automatique (Relâchement de touche)
