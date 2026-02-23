@@ -9568,7 +9568,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Dans votre écouteur d'événements clavier (keydown)
   window.addEventListener('keydown', (e) => {
-    if (e.key.toLowerCase() === 'v') {
+    if (e.key?.toLowerCase() === 'v') {
       showVolumeProfile = !showVolumeProfile;
       render(); // Force le rafraîchissement
     }
