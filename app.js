@@ -5358,10 +5358,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const emt_crash = 100 * Math.abs(diPlusMT5.value - adxMT5.value) / adxMT5.value;
 
       // --- LOGIQUE DE DÉTECTION ---
-      if (symbol === "BOOM1000" && lastBar.close < ema50 && emt_boom > 0.05 && emt_boom <= 9 && ew_boom > 30 && ew_boom <= 230) {
+      if (symbol === "BOOM1000" && lastBar.close < ema50 && emt_boom > 0.05 && emt_boom <= 9 && ew_boom > 30 && ew_boom <= 570) {
         isBoomSell = true;  
       }
-      else if (symbol === "CRASH1000" && lastBar.close > ema50 && emt_crash > 0.05 && emt_crash <= 9 && ew_crash > 30 && ew_crash <= 230) {
+      else if (symbol === "CRASH1000" && lastBar.close > ema50 && emt_crash > 0.05 && emt_crash <= 9 && ew_crash > 30 && ew_crash <= 570) {
         isCrashBuy = true;
       }
 
