@@ -156,6 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let contrats4update = [];
   let ws4update = null;
   window.currentActiveContract = null;
+  window.currentActiveContrat_porfolio = [];
   window.tradingStats = {
     winStreak: 0,
     bestStreak: 0,
@@ -1239,6 +1240,11 @@ document.addEventListener("DOMContentLoaded", () => {
         render();
       }
 
+      if (data.msg_type === "portfolio") {
+        contracts = data.portfolio.contracts || [];
+        if (!contracts || contracts === undefined || contracts === null) return;
+      }
+
       if (data.msg_type === "proposal_open_contract" && data.proposal_open_contract) {
         const c = data.proposal_open_contract;
         const id = c.contract_id;
@@ -1405,6 +1411,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (typeof window.runSmartRiskManager === 'function') {
           window.runSmartRiskManager(currentSpot);
         }
+      }
+
+      if (data.msg_type === "portfolio") {
+        contracts = data.portfolio.contracts || [];
+        if (!contracts || contracts === undefined || contracts === null) return;
+
+        window.currentActiveContrat_porfolio = contracts;
       }
 
       // Heartbeat
@@ -1716,21 +1729,28 @@ document.addEventListener("DOMContentLoaded", () => {
       if (now >= timeoutUntil) {     // !spikeTradeTimerActive && 
         // A. Fermer tous les contrats actifs (ex: Fermer les BUY en cours sur Crash)
         const c = window.currentActiveContract;
-        if (c && c.contract_id && c.is_sold === 0) {
-          executeClose_spike(c.contract_id);        
-        }  
+        let Cp = window.currentActiveContrat_porfolio;
+        console.log("Contracts Portfolio (On IsPike):", Cp);
+        if (c.contract_id && Cp.length > 0) {
+          let __sidespike = (baseSymbol === "CRA") ? "MULTUP" : "MULTDOWN";
+          Cp
+            .filter(c => c.symbol === symbol && c.contract_type === __sidespike)
+            .forEach(c => {
+              ws.send(JSON.stringify({ sell: c.contract_id, price: 0 }));
+            });
+        }
 
         // B. Ouvrir le SELL (pour Crash) ou BUY (pour Boom)
         let sideSpike = (baseSymbol === "CRA") ? 'SELL' : 'BUY';
-        executeTrade_spike(symbol, sideSpike);  
+        executeTrade_spike(symbol, sideSpike);
         spikeTradeTimerActive = true;
-   
+
         // Feedback visuel et sonore
         createHistoricalMarker(currentSeries, price, signal, baseSymbol, prob, now / 1000);
         playBeepSound();
 
         // ⏱️ Mise à jour du Timeout : On bloque toute nouvelle action 'spike' pendant SIGNAL_TIMEOUT
-        timeoutUntil = now + SIGNAL_TIMEOUT;  
+        timeoutUntil = now + SIGNAL_TIMEOUT;
       }
     } else {
       // 🔵 HORS SPIKE (Tendance Normale)
@@ -1745,22 +1765,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 🔴 FERMETURE DU SPIKE
     // --- 3. FIN DU DÉLAI : RETOUR AU MODE NORMAL ---
-    if (spikeTradeTimerActive && now >= timeoutUntil) {   
+    if (spikeTradeTimerActive && now >= timeoutUntil) {
       console.log("⏱️ Délai de Spike terminé. Retour à la tendance normale.");
 
       // A. Fermer le contrat du Spike (le SELL du Crash)
       const c = window.currentActiveContract;
-      if (c && c.contract_id && c.is_sold === 0) {
-        executeClose_spike(c.contract_id);    
+      let Cp = window.currentActiveContrat_porfolio;
+      console.log("Contracts Portfolio (In the last Delay):", Cp);
+      if (c.contract_id && Cp.length > 0) {
+        let side__ = (baseSymbol === "CRA") ? "MULTDOWN" : "MULTUP";
+        Cp
+          .filter(c => c.symbol === symbol && c.contract_type ===side__)
+          .forEach(c => {
+            ws.send(JSON.stringify({ sell: c.contract_id, price: 0 }));  
+          });
       }
 
       // B. Réinitialiser pour que le bloc "else" (Mode Normal) reprenne le relais
       spikeTradeTimerActive = false;
       timeoutUntil = 0;
-    
+
       // C. Réouverture immédiate du sens normal (Optionnel)
-      let sideNormal = (baseSymbol === "CRA") ? 'BUY' : 'SELL';
-      executeTrade_spike(symbol, sideNormal);    
+      let sideNormal__ = (baseSymbol === "CRA") ? 'BUY' : 'SELL';
+      executeTrade_spike(symbol, sideNormal__);
     }
   }
 
