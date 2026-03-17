@@ -1730,7 +1730,7 @@ document.addEventListener("DOMContentLoaded", () => {
         playBeepSound();
 
         // ⏱️ Mise à jour du Timeout : On bloque toute nouvelle action 'spike' pendant SIGNAL_TIMEOUT
-        timeoutUntil = now + SIGNAL_TIMEOUT;
+        timeoutUntil = now + SIGNAL_TIMEOUT;  
       }
     } else {
       // 🔵 HORS SPIKE (Tendance Normale)
