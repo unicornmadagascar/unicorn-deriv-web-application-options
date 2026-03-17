@@ -1717,7 +1717,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // A. Fermer tous les contrats actifs (ex: Fermer les BUY en cours sur Crash)
         const c = window.currentActiveContract;
         if (c && c.contract_id && c.is_sold === 0) {
-          executeClose_spike(c.contract_id);      
+          executeClose_spike(c.contract_id);        
         }  
 
         // B. Ouvrir le SELL (pour Crash) ou BUY (pour Boom)
@@ -1745,7 +1745,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 🔴 FERMETURE DU SPIKE
     // --- 3. FIN DU DÉLAI : RETOUR AU MODE NORMAL ---
-    if (spikeTradeTimerActive && now >= timeoutUntil) {
+    if (spikeTradeTimerActive && now >= timeoutUntil) {   
       console.log("⏱️ Délai de Spike terminé. Retour à la tendance normale.");
 
       // A. Fermer le contrat du Spike (le SELL du Crash)
