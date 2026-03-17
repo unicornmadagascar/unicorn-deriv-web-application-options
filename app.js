@@ -1679,7 +1679,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ======================= MAIN HANDLER =======================
   function handleMLSignal(data) {
-    const c = window.currentActiveContract;
+    
     // Validation des données
     if (!data || typeof data !== 'object') return;
 
@@ -1738,7 +1738,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (spikeTradeTimerActive && now >= timeoutUntil) {
       const c = window.currentActiveContract;
       if (c && c.contract_id && c.is_sold === 0) {
-        executeClose_spike(c.contract_id);
+        executeClose_spike(c.contract_id);  
       }
       spikeTradeTimerActive = false; // Permet de repasser en mode Normal
 
