@@ -1713,7 +1713,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 📌 TOUJOURS ajouter un marker historique pour les spikes
     if (isSpike) {
       // 🟢 DÉTECTION SPIKE : On ouvre SELL (Crash) ou BUY (Boom)
-      if (!spikeTradeTimerActive && now >= timeoutUntil) {
+      if (now >= timeoutUntil) {     // !spikeTradeTimerActive && 
         // A. Fermer tous les contrats actifs (ex: Fermer les BUY en cours sur Crash)
         const c = window.currentActiveContract;
         if (c && c.contract_id && c.is_sold === 0) {
