@@ -262,8 +262,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let activeSignal = null;     // "BUY" ou "SELL"
   let activeLine = null;       // PriceLine
   let timeoutUntil = 0;        // timestamp (ms)
-  const SIGNAL_TIMEOUT = 20000; // 20s   
+  const SIGNAL_TIMEOUT = 30000; // 30s   
   const historicalMarkers = []; // Stocke tous les markers historiques
+  let spikeTradeTimerActive = false;
   //------
   let currentChartType = "candlestick"; // par défaut
   let currentInterval = "1m";  // par défaut
@@ -1678,6 +1679,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ======================= MAIN HANDLER =======================
   function handleMLSignal(data) {
+    const c = window.currentActiveContract;
     // Validation des données
     if (!data || typeof data !== 'object') return;
 
@@ -1710,15 +1712,106 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 📌 TOUJOURS ajouter un marker historique pour les spikes
     if (isSpike) {
-      createHistoricalMarker(currentSeries, price, signal, baseSymbol, prob, now / 1000);
+      // 🟢 DÉTECTION SPIKE : On ouvre SELL (Crash) ou BUY (Boom)
+      if (!spikeTradeTimerActive && now >= timeoutUntil) {
+        let side = (baseSymbol === "CRA") ? 'SELL' : 'BUY';
+        executeTrade_spike(symbol, side);
+        spikeTradeTimerActive = true;
 
-      // 🔊 Jouer le son
-      playBeepSound();
+        // Feedback visuel et sonore
+        createHistoricalMarker(currentSeries, price, signal, baseSymbol, prob, now / 1000);
+        playBeepSound();
 
-      // ⏱️ Activer timeout pour la ligne active
-      timeoutUntil = now + SIGNAL_TIMEOUT;
+        // ⏱️ Mise à jour du Timeout : On bloque toute nouvelle action 'spike' pendant SIGNAL_TIMEOUT
+        timeoutUntil = now + SIGNAL_TIMEOUT;
+      }
     } else {
-      timeoutUntil = 0;
+      // 🔵 HORS SPIKE (Tendance Normale)
+      // On n'ouvre en mode normal QUE si aucun trade de spike n'est en cours
+      if (!spikeTradeTimerActive) {
+        let sideNormal = (baseSymbol === "CRA") ? 'BUY' : 'SELL';
+        executeTrade_spike(symbol, sideNormal);
+      }
+    }
+
+    // 🔴 FERMETURE DU SPIKE
+    if (spikeTradeTimerActive && now >= timeoutUntil) {
+      const c = window.currentActiveContract;
+      if (c && c.contract_id && c.is_sold === 0) {
+        executeClose_spike(c.contract_id);
+      }
+      spikeTradeTimerActive = false; // Permet de repasser en mode Normal
+
+      // ON RÉINITIALISE ICI
+      timeoutUntil = 0; // Permet au prochain spike d'être détecté immédiatement
+      console.log("Délai expiré, timeout réinitialisé.");
+    }
+  }
+
+  // ======================= EXECUTE CONTRACT OPERATION =======================
+  async function executeTrade_spike(symbol, side) {
+    const c = window.currentActiveContract;
+
+    if (c && c.contract_id && c.is_sold === 0) {
+      console.log("⚠️ Trade déjà actif. Annulation de l'ouverture.");
+      return;
+    }
+
+    // --- 4. RÉCUPÉRATION DES PARAMÈTRES DE L'INTERFACE (UI) ---
+    const derivContractType = side === 'BUY' ? "MULTUP" : "MULTDOWN";
+
+    // Récupération du montant (Stake)
+    const stake = parseFloat(document.getElementById("stakeInput")?.value) || 1.0;
+
+    // Récupération du multiplicateur
+    const mult = parseInt(document.getElementById("multiplierSelect")?.value) || 40;
+
+    // Récupération du nombre de positions à ouvrir (Repeat)
+    const count = side === 'BUY'
+      ? (parseInt(document.getElementById("buyNumberInput")?.value) || 1)
+      : (parseInt(document.getElementById("sellNumberInput")?.value) || 1);
+
+    console.log(`🚀 [SIGNAL ${side}] sur ${symbol}. Tentative d'ouverture de ${count} position(s)...`);
+
+    // --- 5. CONSTRUCTION DU PAYLOAD (API DERIV) ---
+    const payload = {
+      buy: 1,
+      price: stake,
+      parameters: {
+        amount: stake,
+        basis: "stake",
+        contract_type: derivContractType,
+        currency: CURRENCY || "USD",
+        multiplier: mult,
+        symbol: symbol
+      }
+    };
+
+    // --- 6. ENVOI DIRECT VIA WEBSOCKET ---
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      for (let i = 0; i < count; i++) {
+        // On envoie l'ordre directement à Deriv    
+        ws.send(JSON.stringify(payload));
+      }
+    } else {
+      throw new Error("La connexion WebSocket vers Deriv n'est pas active.");
+    }
+  }
+
+  async function executeClose_spike(contractId) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      const payload = {
+        sell: contractId,
+        price: 0 // 0 signifie "vendre au prix actuel du marché"
+      };
+
+      try {
+        ws.send(JSON.stringify(payload));
+      } catch (error) {
+        console.error(`❌ Erreur lors de l'envoi de la fermeture:`, error);
+      }
+    } else {
+      console.error("❌ Impossible de fermer : Connexion WebSocket Deriv perdue.");
     }
   }
 
@@ -5325,7 +5418,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const lastBar = data[data.length - 1];
     const ema50 = calculateEMAADX(data, 50);
-    
+
     // --- SÉCURITÉ : Vérifier si les séries ADX existent ---
     // Si l'utilisateur n'a pas ouvert les panneaux ADX, adxSeries.mt5.adx peut être null
     if (!adxSeries.mt5.adx || !adxSeries.wilder.adx) {
@@ -5359,7 +5452,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // --- LOGIQUE DE DÉTECTION ---
       if (symbol === "BOOM1000" && lastBar.close < ema50 && emt_boom > 0.05 && emt_boom <= 9 && ew_boom > 30 && ew_boom <= 570) {
-        isBoomSell = true;  
+        isBoomSell = true;
       }
       else if (symbol === "CRASH1000" && lastBar.close > ema50 && emt_crash > 0.05 && emt_crash <= 9 && ew_crash > 30 && ew_crash <= 570) {
         isCrashBuy = true;
@@ -5425,7 +5518,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Mise à jour automatique du voyant toutes les 2 secondes
     //setInterval(updateDerivStatus, 2000);
-    setTimeout(updateDerivStatus,500);
+    setTimeout(updateDerivStatus, 500);
 
     // --- 2. LOGIQUE DU BOUTON AUTO-TRADE (ON/OFF) ---
     if (autoToggleInput) {
@@ -5567,20 +5660,20 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.reload();
       }, 500);
     }
-  };   
+  };
 
   window.ADXtakeTradeScreenshot = function (status, asset) {
     const chartContainer = document.getElementById('chartInner'); // Remplacez par votre ID de container
-    const chartCanvas = chartContainer.querySelector('canvas');  
-    const overlayCanvas = document.getElementById('Trendoverlay__');          
-  
+    const chartCanvas = chartContainer.querySelector('canvas');
+    const overlayCanvas = document.getElementById('Trendoverlay__');
+
     if (!chartCanvas) return;
 
     // Création d'un canvas temporaire pour la fusion
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = chartCanvas.width;
     tempCanvas.height = chartCanvas.height;
-    const ctx = tempCanvas.getContext('2d');   
+    const ctx = tempCanvas.getContext('2d');
 
     // 1. Dessiner le graphique principal
     ctx.drawImage(chartCanvas, 0, 0);
@@ -5648,7 +5741,7 @@ document.addEventListener("DOMContentLoaded", () => {
       derivSocket.send(JSON.stringify({ authorize: TOKEN }));
     };
 
-    derivSocket.onmessage = (msg) => {  
+    derivSocket.onmessage = (msg) => {
       const data = JSON.parse(msg.data);
       handleDerivResponse(data);
     };
@@ -5661,7 +5754,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function executeGlobalTrade(symbol, side) {
     const c = window.currentActiveContract;
-    if (!c || c.is_sold == 1) return;  
+    if (!c || c.is_sold == 1) return;
 
     if (c.contract_id) return;
 
@@ -5778,17 +5871,17 @@ document.addEventListener("DOMContentLoaded", () => {
   async function executeGlobalClose(contractId) {
     if (ws && ws.readyState === WebSocket.OPEN) {
       const payload = {
-        sell: contractId,  
+        sell: contractId,
         price: 0 // 0 signifie "vendre au prix actuel du marché"
-      };  
-    
+      };
+
       try {
         ws.send(JSON.stringify(payload));
       } catch (error) {
         console.error(`❌ Erreur lors de l'envoi de la fermeture:`, error);
       }
     } else {
-      console.error("❌ Impossible de fermer : Connexion WebSocket Deriv perdue.");  
+      console.error("❌ Impossible de fermer : Connexion WebSocket Deriv perdue.");
     }
   }
 
@@ -9560,7 +9653,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key?.toLowerCase() === 'v') {
       showVolumeProfile = !showVolumeProfile;
       render(); // Force le rafraîchissement
-    }  
+    }
   });
 
   // 2. Désactivation automatique (Relâchement de touche)
