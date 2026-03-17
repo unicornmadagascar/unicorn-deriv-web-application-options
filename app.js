@@ -1751,7 +1751,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // A. Fermer le contrat du Spike (le SELL du Crash)
       const c = window.currentActiveContract;
       if (c && c.contract_id && c.is_sold === 0) {
-        executeClose_spike(c.contract_id);  
+        executeClose_spike(c.contract_id);    
       }
 
       // B. Réinitialiser pour que le bloc "else" (Mode Normal) reprenne le relais
