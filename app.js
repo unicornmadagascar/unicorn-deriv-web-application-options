@@ -1722,7 +1722,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // B. Ouvrir le SELL (pour Crash) ou BUY (pour Boom)
         let sideSpike = (baseSymbol === "CRA") ? 'SELL' : 'BUY';
-        executeTrade_spike(symbol, sideSpike);
+        executeTrade_spike(symbol, sideSpike);  
         spikeTradeTimerActive = true;
 
         // Feedback visuel et sonore
