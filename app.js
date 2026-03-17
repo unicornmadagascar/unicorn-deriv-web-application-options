@@ -1760,7 +1760,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // C. Réouverture immédiate du sens normal (Optionnel)
       let sideNormal = (baseSymbol === "CRA") ? 'BUY' : 'SELL';
-      executeTrade_spike(symbol, sideNormal);  
+      executeTrade_spike(symbol, sideNormal);    
     }
   }
 
