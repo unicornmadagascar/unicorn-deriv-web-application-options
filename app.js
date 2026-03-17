@@ -1724,7 +1724,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let sideSpike = (baseSymbol === "CRA") ? 'SELL' : 'BUY';
         executeTrade_spike(symbol, sideSpike);  
         spikeTradeTimerActive = true;
-
+   
         // Feedback visuel et sonore
         createHistoricalMarker(currentSeries, price, signal, baseSymbol, prob, now / 1000);
         playBeepSound();
