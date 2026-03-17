@@ -1730,7 +1730,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // On n'ouvre en mode normal QUE si aucun trade de spike n'est en cours
       //if (!spikeTradeTimerActive) {
       let sideNormal = (baseSymbol === "CRA") ? 'BUY' : 'SELL';
-      executeTrade_spike(symbol, sideNormal);
+      executeTrade_spike(symbol, sideNormal);  
       //}
 
       timeoutUntil = 0; // Permet au prochain spike d'être détecté immédiatement
