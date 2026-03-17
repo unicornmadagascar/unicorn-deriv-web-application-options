@@ -1713,9 +1713,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // 📌 TOUJOURS ajouter un marker historique pour les spikes
     if (isSpike) {
       // 🟢 DÉTECTION SPIKE : On ouvre SELL (Crash) ou BUY (Boom)
-      if (now >= timeoutUntil) {                      // !spikeTradeTimerActive && 
-        let side = (baseSymbol === "CRA") ? 'SELL' : 'BUY';
-        executeTrade_spike(symbol, side);
+      if (!spikeTradeTimerActive && now >= timeoutUntil) {
+        // A. Fermer tous les contrats actifs (ex: Fermer les BUY en cours sur Crash)
+        const c = window.currentActiveContract;
+        if (c && c.contract_id && c.is_sold === 0) {
+          executeClose_spike(c.contract_id);
+        }
+
+        // B. Ouvrir le SELL (pour Crash) ou BUY (pour Boom)
+        let sideSpike = (baseSymbol === "CRA") ? 'SELL' : 'BUY';
+        executeTrade_spike(symbol, sideSpike);
         spikeTradeTimerActive = true;
 
         // Feedback visuel et sonore
@@ -1730,23 +1737,30 @@ document.addEventListener("DOMContentLoaded", () => {
       // On n'ouvre en mode normal QUE si aucun trade de spike n'est en cours
       //if (!spikeTradeTimerActive) {
       let sideNormal = (baseSymbol === "CRA") ? 'BUY' : 'SELL';
-      executeTrade_spike(symbol, sideNormal);  
+      executeTrade_spike(symbol, sideNormal);
       //}
 
       timeoutUntil = 0; // Permet au prochain spike d'être détecté immédiatement
     }
 
     // 🔴 FERMETURE DU SPIKE
-    if (now >= timeoutUntil) {         // spikeTradeTimerActive && 
+    // --- 3. FIN DU DÉLAI : RETOUR AU MODE NORMAL ---
+    if (spikeTradeTimerActive && now >= timeoutUntil) {
+      console.log("⏱️ Délai de Spike terminé. Retour à la tendance normale.");
+
+      // A. Fermer le contrat du Spike (le SELL du Crash)
       const c = window.currentActiveContract;
       if (c && c.contract_id && c.is_sold === 0) {
         executeClose_spike(c.contract_id);
       }
-      spikeTradeTimerActive = false; // Permet de repasser en mode Normal
 
-      // ON RÉINITIALISE ICI
-      timeoutUntil = 0; // Permet au prochain spike d'être détecté immédiatement
-      console.log("Délai expiré, timeout réinitialisé.");
+      // B. Réinitialiser pour que le bloc "else" (Mode Normal) reprenne le relais
+      spikeTradeTimerActive = false;
+      timeoutUntil = 0;
+
+      // C. Réouverture immédiate du sens normal (Optionnel)
+      let sideNormal = (baseSymbol === "CRA") ? 'BUY' : 'SELL';
+      executeTrade_spike(symbol, sideNormal);  
     }
   }
 
