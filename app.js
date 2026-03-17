@@ -262,7 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let activeSignal = null;     // "BUY" ou "SELL"
   let activeLine = null;       // PriceLine
   let timeoutUntil = 0;        // timestamp (ms)
-  const SIGNAL_TIMEOUT = 30000; // 30s   
+  const SIGNAL_TIMEOUT = 120000; // 120s   
   const historicalMarkers = []; // Stocke tous les markers historiques
   let spikeTradeTimerActive = false;
   //------
@@ -1718,7 +1718,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const c = window.currentActiveContract;
         if (c && c.contract_id && c.is_sold === 0) {
           executeClose_spike(c.contract_id);    
-        }
+        }  
 
         // B. Ouvrir le SELL (pour Crash) ou BUY (pour Boom)
         let sideSpike = (baseSymbol === "CRA") ? 'SELL' : 'BUY';
