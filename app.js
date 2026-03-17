@@ -1779,7 +1779,7 @@ document.addEventListener("DOMContentLoaded", () => {
           .forEach(c => {
             ws.send(JSON.stringify({ sell: c.contract_id, price: 0 }));  
           });
-      }
+      }  
 
       // B. Réinitialiser pour que le bloc "else" (Mode Normal) reprenne le relais
       spikeTradeTimerActive = false;
