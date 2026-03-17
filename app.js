@@ -1732,6 +1732,8 @@ document.addEventListener("DOMContentLoaded", () => {
         let sideNormal = (baseSymbol === "CRA") ? 'BUY' : 'SELL';
         executeTrade_spike(symbol, sideNormal);
       }
+
+      timeoutUntil = 0; // Permet au prochain spike d'être détecté immédiatement
     }
 
     // 🔴 FERMETURE DU SPIKE
