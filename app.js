@@ -1679,7 +1679,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ======================= MAIN HANDLER =======================
   function handleMLSignal(data) {
-    
+
     // Validation des données
     if (!data || typeof data !== 'object') return;
 
@@ -1713,7 +1713,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 📌 TOUJOURS ajouter un marker historique pour les spikes
     if (isSpike) {
       // 🟢 DÉTECTION SPIKE : On ouvre SELL (Crash) ou BUY (Boom)
-      if (!spikeTradeTimerActive && now >= timeoutUntil) {
+      if (now >= timeoutUntil) {                      // !spikeTradeTimerActive && 
         let side = (baseSymbol === "CRA") ? 'SELL' : 'BUY';
         executeTrade_spike(symbol, side);
         spikeTradeTimerActive = true;
@@ -1728,19 +1728,19 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       // 🔵 HORS SPIKE (Tendance Normale)
       // On n'ouvre en mode normal QUE si aucun trade de spike n'est en cours
-      if (!spikeTradeTimerActive) {
-        let sideNormal = (baseSymbol === "CRA") ? 'BUY' : 'SELL';
-        executeTrade_spike(symbol, sideNormal);
-      }
+      //if (!spikeTradeTimerActive) {
+      let sideNormal = (baseSymbol === "CRA") ? 'BUY' : 'SELL';
+      executeTrade_spike(symbol, sideNormal);
+      //}
 
       timeoutUntil = 0; // Permet au prochain spike d'être détecté immédiatement
     }
 
     // 🔴 FERMETURE DU SPIKE
-    if (spikeTradeTimerActive && now >= timeoutUntil) {
+    if (now >= timeoutUntil) {         // spikeTradeTimerActive && 
       const c = window.currentActiveContract;
       if (c && c.contract_id && c.is_sold === 0) {
-        executeClose_spike(c.contract_id);  
+        executeClose_spike(c.contract_id);
       }
       spikeTradeTimerActive = false; // Permet de repasser en mode Normal
 
