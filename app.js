@@ -1783,12 +1783,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // B. Réinitialiser pour que le bloc "else" (Mode Normal) reprenne le relais
       spikeTradeTimerActive = false;
-      timeoutUntil = 0;
+      timeoutUntil = 0;   
 
       // C. Réouverture immédiate du sens normal (Optionnel)
       let sideNormal__ = (baseSymbol === "CRA") ? 'BUY' : 'SELL';
       executeTrade_spike(symbol, sideNormal__);
-    }
+    }  
   }
 
   // ======================= EXECUTE CONTRACT OPERATION =======================
